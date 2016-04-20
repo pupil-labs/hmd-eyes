@@ -1,2 +1,2 @@
 # hmd-eyes
-Building block for eye tracking in AR and VR.
+Building blocks for eye tracking in AR and VR.
