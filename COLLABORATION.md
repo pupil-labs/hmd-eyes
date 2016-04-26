@@ -4,7 +4,7 @@ The Collective Code Construction Contract (C4) is an evolution of the github.com
 * Editor: Pieter Hintjens <ph@imatix.com>
 * State: stable
 
-++ License
+## License
 
 Copyright (c) 2009-2015 Pieter Hintjens.
 
@@ -14,11 +14,11 @@ This Specification is distributed in the hope that it will be useful, but WITHOU
 
 You should have received a copy of the GNU General Public License along with this program; if not, see <http://www.gnu.org/licenses>.
 
-++ Language
+## Language
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [http://tools.ietf.org/html/rfc2119 RFC 2119].
 
-++ Goals
+## Goals
 
 C4 is meant to provide a reusable optimal collaboration model for open source software projects. It has these specific goals:
 
@@ -34,9 +34,9 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * To enforce collective ownership of the project, which increases economic incentive to Contributors and reduces the risk of hijack by hostile entities.
 
-++ Design
+## Design
 
-+++ Preliminaries
+##+ Preliminaries
 
 * The project SHALL use the git distributed revision control system.
 
@@ -56,7 +56,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * Everyone, without distinction or discrimination, SHALL have an equal right to become a Contributor under the terms of this contract.
 
-+++ Licensing and Ownership
+##+ Licensing and Ownership
 
 * The project SHALL use a share-alike license, such as the GPLv3 or a variant thereof (LGPL, AGPL), or the MPLv2.
 
@@ -68,7 +68,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * Each Contributor SHALL be responsible for identifying themselves in the project Contributor list.
 
-+++ Patch Requirements
+##+ Patch Requirements
 
 * Maintainers and Contributors MUST have a Platform account and SHOULD use their real names or a well-known alias.
 
@@ -86,7 +86,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * A "Correct Patch" is one that satisfies the above requirements.
 
-+++ Development Process
+##+ Development Process
 
 * Change on the project SHALL be governed by the pattern of accurately identifying problems and applying minimal, accurate solutions to these problems.
 
@@ -128,7 +128,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * Maintainers MAY commit changes to non-source documentation directly to the project.
 
-+++ Creating Stable Releases
+##+ Creating Stable Releases
 
 * The project SHALL have one branch ("master") that always holds the latest in-progress version and SHOULD always build.
 
@@ -142,7 +142,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * A patch to a stabilization project declared "stable" SHALL be accompanied by a reproducible test case.
 
-+++ Evolution of Public Contracts
+##+ Evolution of Public Contracts
 
 * All Public Contracts (APIs or protocols) SHALL be documented.
 
@@ -160,7 +160,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * When old names are removed, their implementations MUST provoke an exception (assertion) if used by applications.
 
-+++ Project Administration
+## Project Administration
 
 * The project founders SHALL act as Administrators to manage the set of project Maintainers.
 
@@ -172,13 +172,13 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * Administrators SHOULD block or ban "bad actors" who cause stress and pain to others in the project. This should be done after public discussion, with a chance for all parties to speak. A bad actor is someone who repeatedly ignores the rules and culture of the project, who is needlessly argumentative or hostile, or who is offensive, and who is unable to self-correct their behavior when asked to do so by others.
 
-++ Further Reading
+## Further Reading
 
 * [http://en.wikipedia.org/wiki/Chris_Argyris Argyris' Models 1 and 2] - the goals of C4.1 are consistent with Argyris' Model 2.
 
 * [http://en.wikipedia.org/wiki/Toyota_Kata Toyota Kata] - covering the Improvement Kata (fixing problems one at a time) and the Coaching Kata (helping others to learn the Improvement Kata).
 
-++ Implementations
+## Implementations
 
 * The [http://zeromq.org ZeroMQ community] uses the C4.1 process for many projects.
 * [http://www.ossec.net/ OSSEC] [http://ossec-docs.readthedocs.org/en/latest/oRFC/orfc-1.html uses the C4.1 process].
