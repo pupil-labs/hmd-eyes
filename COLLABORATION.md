@@ -114,4 +114,5 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 * [Toyota Kata](http://en.wikipedia.org/wiki/Toyota_Kata) - covering the Improvement Kata (fixing problems one at a time) and the Coaching Kata (helping others to learn the Improvement Kata).
 
 ## Implementations
-* The [ZeroMQ community](http://zeromq.org) uses the C4.1 process for many projects.* [OSSEC](http://www.ossec.net/) [uses the C4.1 process](http://ossec-docs.readthedocs.org/en/latest/oRFC/orfc-1.html).* The [Machinekit](http://www.machinekit.io/) community [uses the C4.1 process](http://www.machinekit.io/about/).
+* The [ZeroMQ community](http://zeromq.org) uses the C4.1 process for many projects.
+* [OSSEC](http://www.ossec.net/) [uses the C4.1 process](http://ossec-docs.readthedocs.org/en/latest/oRFC/orfc-1.html).* The [Machinekit](http://www.machinekit.io/) community [uses the C4.1 process](http://www.machinekit.io/about/).
