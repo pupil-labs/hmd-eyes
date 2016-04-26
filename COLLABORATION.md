@@ -1,4 +1,4 @@
-The Collective Code Construction Contract (C4) is an evolution of the github.com [http://help.github.com/send-pull-requests/ Fork + Pull Model], aimed at providing an optimal collaboration model for free software projects. This is revision 1 of the C4 specification.
+The Collective Code Construction Contract (C4) is an evolution of the github.com [http://help.github.com/send-pull-requests/ Fork # Pull Model], aimed at providing an optimal collaboration model for free software projects. This is revision 1 of the C4 specification.
 
 * Name: rfc.zeromq.org/spec:22/C4.1
 * Editor: Pieter Hintjens <ph@imatix.com>
@@ -36,7 +36,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 ## Design
 
-##+ Preliminaries
+### Preliminaries
 
 * The project SHALL use the git distributed revision control system.
 
@@ -56,7 +56,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * Everyone, without distinction or discrimination, SHALL have an equal right to become a Contributor under the terms of this contract.
 
-##+ Licensing and Ownership
+### Licensing and Ownership
 
 * The project SHALL use a share-alike license, such as the GPLv3 or a variant thereof (LGPL, AGPL), or the MPLv2.
 
@@ -68,7 +68,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * Each Contributor SHALL be responsible for identifying themselves in the project Contributor list.
 
-##+ Patch Requirements
+### Patch Requirements
 
 * Maintainers and Contributors MUST have a Platform account and SHOULD use their real names or a well-known alias.
 
@@ -86,7 +86,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * A "Correct Patch" is one that satisfies the above requirements.
 
-##+ Development Process
+### Development Process
 
 * Change on the project SHALL be governed by the pattern of accurately identifying problems and applying minimal, accurate solutions to these problems.
 
@@ -128,7 +128,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * Maintainers MAY commit changes to non-source documentation directly to the project.
 
-##+ Creating Stable Releases
+### Creating Stable Releases
 
 * The project SHALL have one branch ("master") that always holds the latest in-progress version and SHOULD always build.
 
@@ -142,7 +142,7 @@ C4 is meant to provide a reusable optimal collaboration model for open source so
 
 * A patch to a stabilization project declared "stable" SHALL be accompanied by a reproducible test case.
 
-##+ Evolution of Public Contracts
+### Evolution of Public Contracts
 
 * All Public Contracts (APIs or protocols) SHALL be documented.
 
