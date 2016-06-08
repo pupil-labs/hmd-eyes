@@ -13,7 +13,7 @@ A new calibration plugin: `HMD_Calibration` and gaze mapper `Dual_Monocular_Gaze
 The calibration plugin samples pupil positions and receives reference postions (positions of a stimulus on the left and right hmd screen) from the client app. The reference positions are detemined by the client and sent in normalized screen coordinates with timestamp and id.
 
 ```python
-{'norm_pos':pos,'timestamp':t,'id':0}
+ref_data = [{'norm_pos':pos,'timestamp':t,'id':0},...]
 ```
 
 The right side is denoted as id 0 , the left side as id 1. The timestamp giving clock needs to be in sync with the Pupil Capture / Service.
