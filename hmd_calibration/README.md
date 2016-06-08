@@ -6,11 +6,9 @@ Starting with v0.8 Pupil Capture (and the new Pupil Service) will have a fully a
 
 The pupil wiki page [Pupil-Interprocess-and-Network-Communication](https://github.com/pupil-labs/pupil/wiki/Pupil-Interprocess-and-Network-Communication) documents the protocol and gives an example on how listen and talk to the bus.
 
-Using this new way of talking on any place of the the app we can control and listen to all parts of Pupil Capture.
-
 A new calibration plugin: `HMD_Calibration` and gaze mapper `Dual_Monocular_Gaze_Mapper` have been added.
 
-## Basic Working principle of the `HMD_Calibration`
+### Basic Working principle of the `HMD_Calibration`
 
 The calibration plugin samples pupil positions and receives reference postions (positions of a stimulus on the left and right hmd screen) from the client app. The reference positions are detemined by the client and sent in normalized screen coordinates with timestamp and id.
 
@@ -24,17 +22,17 @@ When the user stops calibration pupil-ref matches are created through temporal c
 
 Once the mapping coefficients are succesfully determined a new gaze mapper becomes active and gaze data is now mapped according to the calibration.
 
-The left and right side are treated seperately during parameter estimation and gaze mapping. (Thus the name Dual Monocular Gaze Mapper.)
+The left and right side are treated seperately during parameter estimation and gaze mapping. (Thus the name `Dual Monocular Gaze Mapper`.)
 
 
-## Basic workflow of this demo
+### Basic workflow of this demo
 
  1) run `notification_monitor.py` to see what happens on the IPC Backbone
- 2) start Pupil Capture app
+ 2) start Pupil Capture app (download v0.8 pre-release for [linux]() and [mac]())
  3) run `hmd_calibration_client.py`
 
 
-## Going from here...
+### Going from here...
 
 The files in this dir and [Pupil-Interprocess-and-Network-Communication](https://github.com/pupil-labs/pupil/wiki/Pupil-Interprocess-and-Network-Communication) should give enough insight to build a client in any other language. The only dependecies are zmq and a json serializer. For any qustions please connect on [gitter](https://gitter.im/pupil-labs/hmd-eyes). For corrections and improvement raise an issue or Pull Request.
 
