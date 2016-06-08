@@ -27,9 +27,9 @@ The left and right side are treated seperately during parameter estimation and g
 
 ### Basic workflow of this demo
 
- 1) run `notification_monitor.py` to see what happens on the IPC Backbone
- 2) start Pupil Capture app (download v0.8 pre-release for [linux]() and [mac]())
- 3) run `hmd_calibration_client.py`
+ -1 run `notification_monitor.py` to see what happens on the IPC Backbone
+ -2 start Pupil Capture app (download v0.8 pre-release for [linux]() and [mac]())
+ -3 run `hmd_calibration_client.py`
 
 
 ### Going from here...
