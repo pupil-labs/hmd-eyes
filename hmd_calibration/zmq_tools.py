@@ -2,23 +2,24 @@
 This file contains convenience classes for communication with
 the Pupil IPC Backbone.
 '''
+
 import zmq
 from zmq.utils.monitor import recv_monitor_message
-import ujson as json
+# import ujson as serializer # uncomment for json seialization
+import msgpack as serializer
 import logging
-import threading
 
 
 class ZMQ_handler(logging.Handler):
     '''
-    A handler that send log records as json strings via zmq
+    A handler that send log records as serialized strings via zmq
     '''
     def __init__(self,ctx,ipc_pub_url):
         super(ZMQ_handler, self).__init__()
         self.socket = Msg_Dispatcher(ctx,ipc_pub_url)
 
     def emit(self, record):
-        self.socket.send('logging.%s'%str(record.levelname).lower(),record)
+        self.socket.send('logging.%s'%str(record.levelname).lower(),record.__dict__)
 
 class Msg_Receiver(object):
     '''
@@ -26,11 +27,11 @@ class Msg_Receiver(object):
     Not threadsave. Make a new one for each thread
     __init__ will block until connection is established.
     '''
-    def __init__(self,ctx,url,topics = (),block_unitl_connected=True):
+    def __init__(self,ctx,url,topics = (),block_until_connected=True):
         self.socket = zmq.Socket(ctx,zmq.SUB)
         assert type(topics) != str
 
-        if block_unitl_connected:
+        if block_until_connected:
             #connect node and block until a connecetion has been made
             monitor = self.socket.get_monitor_socket()
             self.socket.connect(url)
@@ -60,7 +61,7 @@ class Msg_Receiver(object):
         recv a generic message with topic, payload
         '''
         topic = self.socket.recv(*args,**kwargs)
-        payload = json.loads(self.socket.recv(*args,**kwargs))
+        payload = serializer.loads(self.socket.recv(*args,**kwargs))
         return topic,payload
 
     @property
@@ -70,52 +71,24 @@ class Msg_Receiver(object):
     def __del__(self):
         self.socket.close()
 
-
-class Msg_Dispatcher(object):
+class Msg_Streamer(object):
     '''
     Send messages on a pub port.
     Not threadsave. Make a new one for each thread
-    __init__ will block until connection is established.
     '''
-    def __init__(self,ctx,url,block_unitl_connected=True):
+    def __init__(self,ctx,url):
         self.socket = zmq.Socket(ctx,zmq.PUB)
-
-        if block_unitl_connected:
-            #connect node and block until a connecetion has been made
-            monitor = self.socket.get_monitor_socket()
-            self.socket.connect(url)
-            while True:
-                status =  recv_monitor_message(monitor)
-                if status['event'] == zmq.EVENT_CONNECTED:
-                    break
-                elif status['event'] == zmq.EVENT_CONNECT_DELAYED:
-                    pass
-                else:
-                    raise Exception("ZMQ connection failed")
-            self.socket.disable_monitor()
-        else:
-            self.socket.connect(url)
+        self.socket.connect(url)
 
     def send(self,topic,payload):
         '''
         send a generic message with topic, payload
         '''
         self.socket.send(str(topic),flags=zmq.SNDMORE)
-        self.socket.send(json.dumps(payload))
-
-    def notify(self,notification):
-        '''
-        send a pupil notification
-        notification is a dict with a least a subject field
-        if a 'delay' field exsits the notification it will be grouped with notifications
-        of same subject and only one send after specified delay.
-        '''
-        if notification.get('delay',0):
-            self.send("delayed_notify.%s"%notification['subject'],notification)
-        else:
-            self.send("notify.%s"%notification['subject'],notification)
-
+        self.socket.send(serializer.dumps(payload))
 
     def __del__(self):
         self.socket.close()
+
+
 

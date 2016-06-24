@@ -3,7 +3,7 @@ HMD calibration client example.
 This script shows how to talk to Pupil Capture or Pupil Service
 and run a gaze mapper calibration.
 '''
-import zmq, json, time
+import zmq, msgpack, time
 ctx = zmq.Context()
 
 
@@ -14,13 +14,21 @@ req.connect('tcp://localhost:50020')
 
 #convenience functions
 def send_recv_notification(n):
-    # REQ REP requirese lock step communication with multipart msg (topic,json_encoded dict)
-    req.send_multipart(('notify.%s'%n['subject'], json.dumps(n)))
+    # REQ REP requirese lock step communication with multipart msg (topic,msgpack_encoded dict)
+    req.send_multipart(('notify.%s'%n['subject'], msgpack.dumps(n)))
     return req.recv()
 
 def get_pupil_timestamp():
     req.send('t') #see Pupil Remote Plugin for details
     return float(req.recv())
+
+# set calibration method to hmd calibration
+n = {'subject':'eye_process.should_start.0','eye_id':0, 'args':{}}
+print send_recv_notification(n)
+# set calibration method to hmd calibration
+n = {'subject':'eye_process.should_start.1','eye_id':1, 'args':{}}
+print send_recv_notification(n)
+time.sleep(2)
 
 
 # set calibration method to hmd calibration
@@ -65,4 +73,11 @@ print send_recv_notification(n)
 # compute the gaze mapping params, and start a new gaze mapper.
 n = {'subject':'calibration.should_stop'}
 print send_recv_notification(n)
+
+time.sleep(2)
+# set calibration method to hmd calibration
+n = {'subject':'service_process.should_stop'}
+print send_recv_notification(n)
+
+
 

@@ -34,7 +34,7 @@ The left and right side are treated seperately during parameter estimation and g
 
 ### Going from here...
 
-The files in this dir and [Pupil-Interprocess-and-Network-Communication](https://github.com/pupil-labs/pupil/wiki/Pupil-Interprocess-and-Network-Communication) should give enough insight to build a client in any other language. The only dependecies are zmq and a json serializer. For any qustions please connect on [gitter](https://gitter.im/pupil-labs/hmd-eyes). For corrections and improvement raise an issue or Pull Request.
+The files in this dir and [Pupil-Interprocess-and-Network-Communication](https://github.com/pupil-labs/pupil/wiki/Pupil-Interprocess-and-Network-Communication) should give enough insight to build a client in any other language. The only dependecies are zmq and a msgpack serializer. For any qustions please connect on [gitter](https://gitter.im/pupil-labs/hmd-eyes). For corrections and improvement raise an issue or Pull Request.
 
 
 
