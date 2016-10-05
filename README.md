@@ -9,7 +9,7 @@ Chat with the hmd-eyes community here [![Gitter](https://badges.gitter.im/pupil-
 Join the [google group](https://groups.google.com/forum/#!forum/hmd-eyes) to discuss ideas and stay updated. 
 
 ## Pre-release v0.1.0
-Unity Integration Unity Package
+Unity Integration Package
 
 ## Getting Started
 
