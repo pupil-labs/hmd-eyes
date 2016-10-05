@@ -13,8 +13,8 @@ Unity Integration Unity Package
 
 ## Getting Started
 
-Download Unity3D
-In Scenes folder, open main.unity
-Before playing make sure to configure the IP and PORT numbers
-Select PupilListener in the hierarchy tab
-Configure the wifi IP and PORT numbers from the computer running Pupil Service on the Inspector tab 
+- Download Unity3D
+- In Scenes folder, open main.unity
+- Before playing make sure to configure the IP and PORT numbers
+- Select PupilListener in the hierarchy tab
+- Configure the wifi IP and PORT numbers from the computer running Pupil Service on the Inspector tab 
