@@ -14,7 +14,7 @@ Unity Integration Package
 ## Getting Started
 
 - Download Unity3D
-- In the downloaded package, go to Scenes folder and open main.unity
-- Before playing make sure to configure the IP and PORT numbers
+- In the downloaded package, go to Scenes folder and open `main.unity`
 - Select **PupilListener** in the Hierarchy tab
-- Configure the wifi **IP** and **PORT** numbers from the computer running Pupil Service on the Inspector tab 	
+- Open the Inspector tab. Set the **IP** and **PORT** to the address and port of the computer running `Pupil Service` or `Pupil Capture`.
+- Switch to `Game` mode by pressing the play button in Unity3d interface.
