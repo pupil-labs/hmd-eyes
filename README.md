@@ -8,13 +8,3 @@ Chat with the hmd-eyes community here [![Gitter](https://badges.gitter.im/pupil-
 
 Join the [google group](https://groups.google.com/forum/#!forum/hmd-eyes) to discuss ideas and stay updated. 
 
-## Pre-release v0.1.0
-Unity Integration Package
-
-## Getting Started
-
-- Download Unity3D
-- In the downloaded package, go to Scenes folder and open `main.unity`
-- Select **PupilListener** in the Hierarchy tab
-- Open the Inspector tab. Set the **IP** and **PORT** to the address and port of the computer running `Pupil Service` or `Pupil Capture`.
-- Switch to `Game` mode by pressing the play button in Unity3d interface.
