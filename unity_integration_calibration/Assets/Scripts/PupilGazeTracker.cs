@@ -379,9 +379,9 @@ public class PupilGazeTracker:MonoBehaviour
 	public void StartCalibration()
 	{
 		//calibrate using default 9 points and 120 samples for each target
-		StartCalibration (new Vector2[] {new Vector2 (0.5f, 0.5f), new Vector2 (0f, 0f), new Vector2 (0f, 0.5f),
-			new Vector2 (0f, 1.0f), new Vector2 (0.5f, 1f), new Vector2 (1.0f, 1.0f),
-			new Vector2 (1f, 0.5f), new Vector2 (1f, 0f), new Vector2 (0.5f, 0f)
+		StartCalibration (new Vector2[] {new Vector2 (0.5f, 0.5f), new Vector2 (0.2f, 0.2f), new Vector2 (0.2f, 0.5f),
+			new Vector2 (0.2f, 0.8f), new Vector2 (0.5f, 0.8f), new Vector2 (0.8f, 0.8f),
+			new Vector2 (0.8f, 0.5f), new Vector2 (0.8f, 0.2f), new Vector2 (0.5f, 0.2f)
 		},DefaultCalibrationCount);
 	}
 	public void StartCalibration(Vector2[] calibPoints,int samples)
