@@ -4,11 +4,11 @@ Building blocks for eye tracking in Augmented Reality `AR` and Virtual Reality `
 
 ## Setup:
 
-1- Run Pupil Capture or Pupil Service in ubuntu/mac. Pupil Server has to be turned on.
+1- Run Pupil Capture or Pupil Service in ubuntu/mac. Pupil Remote has to be turned on.
 
 2- Open Assets/scene/Calibration.unity with the Unity Editor
 
-3- Configure PupilGaze's property "Server IP" to point to Pupil PC (Port: 50020)
+3- Configure PupilGaze's property "Server IP" to point to the PC running Pupil Remote (Port: 50020)
 
 [4- Some headsets like the HTC Vive require the Open VR SDK, which is not enabled in the project by default. You can add it by going to Edit -> Project Settings -> Player -> Other Settings and selecting it using the +-symbol ("Virtual Reality Supported" has to be checked too)]
 
