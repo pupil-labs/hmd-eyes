@@ -10,9 +10,9 @@ Building blocks for eye tracking in Augmented Reality `AR` and Virtual Reality `
 
 3- Configure PupilGaze's property "Server IP" to point to Pupil PC (Port: 50020)
 
-4- Add the Virtual Reality SDK "Open VR" by going to Edit -> Project Settings -> Player -> Other Settings and selecting it using the +-symbol ("Virtual Reality Supported" has to be checked)
+[4- Some headsets like the HTC Vive require the Open VR SDK, which is not enabled in the project by default. You can add it by going to Edit -> Project Settings -> Player -> Other Settings and selecting it using the +-symbol ("Virtual Reality Supported" has to be checked too)]
 
-5- Plugin HTC Valve and start SteamVR in Steam
+5- Plugin the HMD and start it if you have not done so yet
 
 6- Hit the Play-Button in the Unity Editor (This starts Pupil Eye Processes, make sure the pupil is detected well)
 
