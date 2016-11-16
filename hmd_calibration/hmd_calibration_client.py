@@ -22,10 +22,9 @@ def get_pupil_timestamp():
     req.send('t') #see Pupil Remote Plugin for details
     return float(req.recv())
 
-# set calibration method to hmd calibration
+# set start eye windows
 n = {'subject':'eye_process.should_start.0','eye_id':0, 'args':{}}
 print send_recv_notification(n)
-# set calibration method to hmd calibration
 n = {'subject':'eye_process.should_start.1','eye_id':1, 'args':{}}
 print send_recv_notification(n)
 time.sleep(2)
