@@ -74,7 +74,6 @@ n = {'subject':'calibration.should_stop'}
 print send_recv_notification(n)
 
 time.sleep(2)
-# set calibration method to hmd calibration
 n = {'subject':'service_process.should_stop'}
 print send_recv_notification(n)
 
