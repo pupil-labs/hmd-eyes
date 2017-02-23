@@ -122,8 +122,6 @@ public class PupilGazeTracker:MonoBehaviour
 	EyeData rightEye;
 
 	Vector2 _eyePos;
-	float confidence;
-
 
 	Thread _serviceThread;
 	bool _isDone=false;
@@ -217,6 +215,15 @@ public class PupilGazeTracker:MonoBehaviour
 		if (s == GazeSource.LeftEye)
 			return LeftEyePos;
 		return NormalizedEyePos;
+	}
+	
+	public double Confidence
+	{
+		get
+		{
+			if (_pupilData == null){return 0;}
+			return _pupilData.confidence;
+		}
 	}
 
 	public PupilGazeTracker()
