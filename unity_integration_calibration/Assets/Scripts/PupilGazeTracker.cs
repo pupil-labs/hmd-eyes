@@ -3,6 +3,7 @@
 // https://github.com/mrayy
 
 using UnityEngine;
+using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -62,6 +63,10 @@ namespace Pupil
 		public double model_birth_timestamp;
 		public Circle3d circle_3d = new Circle3d();
 		public Ellipse ellipese = new Ellipse();
+		public double gaze_point_3d_x;
+		public float gaze_point_3d_y;
+		public float gaze_point_3d_z;
+		public float a;
 	}
 }
 
@@ -155,13 +160,28 @@ public class PupilGazeTracker:MonoBehaviour
 	int _currCalibPoint=0;
 	int _currCalibSamples=0;
 
-	public string ServerIP="";
+
+	public string ServerIP;
 	public int ServicePort=50020;
 	public int DefaultCalibrationCount=120;
 	public int SamplesCount=4;
 	public float CanvasWidth = 640;
 	public float CanvasHeight=480;
 
+	public int ServiceStartupDelay = 7000;//Time to allow the Service to start before connecting to Server.
+
+	//CUSTOM EDITOR VARIABLES
+	public int tab = 0;
+	public int calibrationMode = 0;
+	public bool isDebugFoldout;
+	public bool ShowBaseInspector;
+	public GUIStyle MainTabsStyle = new GUIStyle ();
+	public GUIStyle SettingsLabelsStyle = new GUIStyle ();
+	public GUIStyle SettingsValuesStyle = new GUIStyle ();
+	public GUIStyle LogoStyle = new GUIStyle ();
+	//CUSTOM EDITOR VARIABLES
+
+	Process serviceProcess;
 
 	int _gazeFPS = 0;
 	int _currentFps = 0;
@@ -239,6 +259,8 @@ public class PupilGazeTracker:MonoBehaviour
 
 		_dataLock = new object ();
 
+		RunServiceAtPath ();
+
 		_serviceThread = new Thread(NetMQClient);
 		_serviceThread.Start();
 
@@ -249,6 +271,7 @@ public class PupilGazeTracker:MonoBehaviour
 			StopCalibration ();
 		_isDone = true;
 		_serviceThread.Join();
+
 	}
 
 	NetMQMessage _sendRequestMessage(Dictionary<string,object> data)
@@ -281,6 +304,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	void NetMQClient()
 	{
+		
 		//thanks for Yuta Itoh sample code to connect via NetMQ with Pupil Service
 		string IPHeader = ">tcp://" + ServerIP + ":";
 		var timeout = new System.TimeSpan(0, 0, 1); //1sec
@@ -292,7 +316,8 @@ public class PupilGazeTracker:MonoBehaviour
 		NetMQConfig.ContextCreate(true);
 
 		string subport="";
-		Debug.Log("Connect to the server: "+ IPHeader + ServicePort + ".");
+		print ("Connect to the server: " + IPHeader + ServicePort + ".");
+		Thread.Sleep (ServiceStartupDelay);
 		_requestSocket = new RequestSocket(IPHeader + ServicePort);
 
 		_requestSocket.SendFrame("SUB_PORT");
@@ -304,6 +329,7 @@ public class PupilGazeTracker:MonoBehaviour
 		{
 			StartProcess ();
 			var subscriberSocket = new SubscriberSocket( IPHeader + subport);
+
 			subscriberSocket.Subscribe("gaze"); //subscribe for gaze data
 			subscriberSocket.Subscribe("notify."); //subscribe for all notifications
 			_setStatus(EStatus.ProcessingGaze);
@@ -320,6 +346,7 @@ public class PupilGazeTracker:MonoBehaviour
 						if(msgType=="gaze")
 						{
 							var message = MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
+							//print(message);
 							MsgPack.MessagePackObject mmap = message.Value;
 							lock (_dataLock)
 							{
@@ -345,19 +372,24 @@ public class PupilGazeTracker:MonoBehaviour
 			}
 
 			StopProcess ();
-
 			subscriberSocket.Close();
 		}
 		else
 		{
-			Debug.Log("Failed to connect the server.");
+			print ("Failed to connect the server.");
+			//If needed here could come a retry connection.
 		}
 
-		_requestSocket.Close();
+
+		StopService();
+		_requestSocket.Close ();
 		// Necessary to handle this NetMQ issue on Unity editor
 		// https://github.com/zeromq/netmq/issues/526
-		Debug.Log("ContextTerminate.");
+		print("ContextTerminate.");
 		NetMQConfig.ContextTerminate();
+
+
+
 	}
 
 	void _setStatus(EStatus st)
@@ -370,6 +402,22 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 
 		m_status = st;
+	}
+
+	public void StopService(){
+		print ("Stopping service");
+		_sendRequestMessage (new Dictionary<string,object> { { "subject","service_process.should_stop" }, { "eye_id",1 } });
+		_sendRequestMessage (new Dictionary<string,object> { { "subject","service_process.should_stop" }, { "eye_id",0 } });
+	}
+
+	//Service is currently stored in Assets/Plugins/pupil_service_versionNumber . This path is hardcoded. See servicePath.
+	public void RunServiceAtPath(){
+		string servicePath = Application.dataPath;
+		servicePath += "/Plugins/pupil_service_v091/";
+		serviceProcess = new Process ();
+		serviceProcess.StartInfo.Arguments = servicePath;
+		serviceProcess.StartInfo.FileName = servicePath + "pupil_service.exe";
+		serviceProcess.Start ();
 	}
 
 	public void StartProcess()
