@@ -169,15 +169,36 @@ public class PupilGazeTracker:MonoBehaviour
 	public float CanvasHeight=480;
 
 	public int ServiceStartupDelay = 7000;//Time to allow the Service to start before connecting to Server.
+	bool _serviceStarted = false;
 
 	//CUSTOM EDITOR VARIABLES
 	public int tab = 0;
 	public int calibrationMode = 0;
 	public bool isDebugFoldout;
 	public bool ShowBaseInspector;
+	public string PupilServicePath = "";
+	public string PupilServiceFileName = "";
+//	public string DefaultPathMac = "~/Applications/Pupil/";
+//	public string DefaultPathWin = "~Program Files/Pupil Service";
+//	public string DefaultPathLinux = "$HOME";
+//	public string ServiceFileNameMac = "Service.app";
+//	public string ServiceFileNameWin = "pupil_service.exe";
+//	public string ServiceFileNameLinux = "pupil_service";
+	//public RuntimePlatform platforms;
+	[Serializable]
+	public struct Platform
+	{
+		public RuntimePlatform platform;
+		public string DefaultPath;
+		public string FileName;
+	}
+	public Platform[] Platforms;
+	public Dictionary<RuntimePlatform, string[]> PlatformsDictionary;
+
 	public GUIStyle MainTabsStyle = new GUIStyle ();
 	public GUIStyle SettingsLabelsStyle = new GUIStyle ();
 	public GUIStyle SettingsValuesStyle = new GUIStyle ();
+	public GUIStyle SettingsBrowseStyle = new GUIStyle ();
 	public GUIStyle LogoStyle = new GUIStyle ();
 	//CUSTOM EDITOR VARIABLES
 
@@ -250,6 +271,7 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		_Instance = this;
 	}
+
 	void Start()
 	{
 		if (PupilGazeTracker._Instance == null)
@@ -380,8 +402,9 @@ public class PupilGazeTracker:MonoBehaviour
 			//If needed here could come a retry connection.
 		}
 
-
-		StopService();
+		if (_serviceStarted)
+			StopService ();
+		
 		_requestSocket.Close ();
 		// Necessary to handle this NetMQ issue on Unity editor
 		// https://github.com/zeromq/netmq/issues/526
@@ -410,14 +433,37 @@ public class PupilGazeTracker:MonoBehaviour
 		_sendRequestMessage (new Dictionary<string,object> { { "subject","service_process.should_stop" }, { "eye_id",0 } });
 	}
 
+	//Check platform dependent path for pupil service, only if there is no custom PupilServicePathSet
+	public void AdjustPath(){
+		InitializePlatformsDictionary ();
+		if (PupilServicePath == "" && PlatformsDictionary.ContainsKey (Application.platform)) {
+			PupilServicePath = PlatformsDictionary [Application.platform] [0];
+			PupilServiceFileName = PlatformsDictionary [Application.platform] [1];
+			print ("Pupil service path is set to the default : " + PupilServicePath);
+		} else if (!PlatformsDictionary.ContainsKey (Application.platform)) {
+			print ("There is no platform default path set for " + Application.platform + ". Please set it under Settings/Platforms!");
+		}
+
+	}
+
 	//Service is currently stored in Assets/Plugins/pupil_service_versionNumber . This path is hardcoded. See servicePath.
 	public void RunServiceAtPath(){
-		string servicePath = Application.dataPath;
-		servicePath += "/Plugins/pupil_service_v091/";
-		serviceProcess = new Process ();
-		serviceProcess.StartInfo.Arguments = servicePath;
-		serviceProcess.StartInfo.FileName = servicePath + "pupil_service.exe";
-		serviceProcess.Start ();
+		AdjustPath ();
+		string servicePath = PupilServicePath;
+		if (Directory.Exists (servicePath) && PupilServiceFileName != "") {
+			serviceProcess = new Process ();
+			serviceProcess.StartInfo.Arguments = servicePath;
+			serviceProcess.StartInfo.FileName = servicePath + PupilServiceFileName;
+			serviceProcess.Start ();
+			_serviceStarted = true;
+		} else{
+			if (PupilServiceFileName == "") {
+				print ("Pupil Service filename is not specified, most likely you will have to check if you have it set for the current platform under settings Platforms(DEV opt.)");
+			}
+			if (!Directory.Exists (servicePath)){
+				print ("Pupil Service directory incorrect, please change under Settings");
+			}
+		}
 	}
 
 	public void StartProcess()
@@ -464,6 +510,14 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		if(OnCalibData!=null)
 			OnCalibData (this,x, y);
+	}
+
+	public void InitializePlatformsDictionary(){
+		PlatformsDictionary = new Dictionary<RuntimePlatform, string[]> ();
+		foreach (Platform p in Platforms) {
+			PlatformsDictionary.Add (p.platform, new string[]{ p.DefaultPath, p.FileName });
+		}
+		print (PlatformsDictionary.Count);
 	}
 
 

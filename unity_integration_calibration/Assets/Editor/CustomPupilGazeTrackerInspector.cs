@@ -19,6 +19,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 	void OnEnable(){
 	
 		pupilTracker = (PupilGazeTracker)target;
+		pupilTracker.AdjustPath ();
 
 	}
 
@@ -107,32 +108,42 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		////////INPUT FIELDS////////
 
 		/// Accessing the relevant GUIStyles from PupilGazeTracker
-		GUILayout.BeginHorizontal();
+		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////BROWSE FOR PUPIL SERVICE PATH
+		GUILayout.Label ("Pupil Service App Path : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
+		pupilTracker.PupilServicePath = EditorGUILayout.TextArea (pupilTracker.PupilServicePath, pupilTracker.SettingsBrowseStyle, GUILayout.Width (150), GUILayout.Height (22));
+		if (GUILayout.Button ("Browse", GUILayout.Width(55), GUILayout.Height(22))) {
+			pupilTracker.PupilServicePath = EditorUtility.OpenFolderPanel ("TITLE", pupilTracker.PupilServicePath, "Default Name !");
+		}
+		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+
+		EditorGUILayout.Separator ();//------------------------------------------------------------//
+
+		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
 		GUILayout.Label ("Server IP : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
 		pupilTracker.ServerIP = EditorGUILayout.TextArea (pupilTracker.ServerIP, pupilTracker.SettingsValuesStyle, GUILayout.Width (150), GUILayout.Height (22));
-		GUILayout.EndHorizontal ();
+		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
-		EditorGUILayout.Separator ();
+		EditorGUILayout.Separator ();//------------------------------------------------------------//
 
-		GUILayout.BeginHorizontal();
+		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
 		GUILayout.Label ("Service Port : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
 		pupilTracker.ServicePort = EditorGUILayout.IntField (pupilTracker.ServicePort, pupilTracker.SettingsValuesStyle, GUILayout.Width(150), GUILayout.Height(22));
-		GUILayout.EndHorizontal ();
+		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
-		GUILayout.Space (5);
+		GUILayout.Space (5);//------------------------------------------------------------//
 
-		GUILayout.BeginHorizontal();
+		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
 		GUILayout.Label ("Calibration Count : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
 		pupilTracker.DefaultCalibrationCount = EditorGUILayout.IntSlider (pupilTracker.DefaultCalibrationCount,1,120);
-		GUILayout.EndHorizontal ();
+		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
-		EditorGUILayout.Separator ();
+		EditorGUILayout.Separator ();//------------------------------------------------------------//
 		GUILayout.Space (5);
 
-		GUILayout.BeginHorizontal();
+		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
 		GUILayout.Label ("Show All : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
 		pupilTracker.ShowBaseInspector = EditorGUILayout.Toggle (pupilTracker.ShowBaseInspector);
-		GUILayout.EndHorizontal ();
+		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 		////////INPUT FIELDS////////
 
