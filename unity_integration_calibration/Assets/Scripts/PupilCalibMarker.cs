@@ -31,10 +31,11 @@ public class PupilCalibMarker : MonoBehaviour {
 		_started = false;
 	}
 
-	void OnCalibData(PupilGazeTracker m,float x,float y)
+	void OnCalibData(PupilGazeTracker m,object position)
 	{
-		this.x = x;
-		this.y = y;
+		Vector2 _v2 = (Vector2)position;
+		this.x = _v2.x;
+		this.y = _v2.y;
 	}
 
 	void _SetLocation(float x,float y)

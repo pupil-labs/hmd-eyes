@@ -4,7 +4,7 @@
 /// These are not accessable by default, to gain access, please go to Settings/ShowAll (this toggle will be removed in public version).
 
 
-
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,6 +21,9 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		pupilTracker = (PupilGazeTracker)target;
 		pupilTracker.AdjustPath ();
 
+		if (pupilTracker.DrawMenu == null)
+			pupilTracker.DrawMenu += DrawMainMenu;
+
 	}
 
 	public override void OnInspectorGUI(){
@@ -29,53 +32,47 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		GUILayout.Space (20);
 
-		//At first I have declared my Styles here, now they are stored in the PupilGazeTracker (target), as public accessable Styles. This is subject to delete.
-		////////STYLES////////
-//		GUIStyle parameterStyle = new GUIStyle();
-//		parameterStyle = GUI.skin.textArea;
-//		parameterStyle.alignment = TextAnchor.MiddleCenter;
-//		//parameterStyle.normal.background = MakeTexture (100, 200, new Color (1, 1, 1, 0.2f));
-//		parameterStyle.fontSize = 15;
-//
-//		GUIStyle parameterLabelStyle = new GUIStyle ();
-//		parameterLabelStyle.alignment = TextAnchor.MiddleLeft;
-//		//parameterLabelStyle.normal.background = MakeTexture (600, 1, new Color (1, 1, 1, 0.5f));
-//		parameterLabelStyle.fontSize = 15;
-//
-//		GUIStyle logoStyle = new GUIStyle ();
-//		logoStyle.alignment = TextAnchor.UpperCenter;
-		////////STYLES////////
-
-
 		////////LABEL WITH STYLE////////
-		Object logo = Resources.Load("PupilLabsLogo") as Texture;
+		System.Object logo = Resources.Load("PupilLabsLogo") as Texture;
 		GUILayout.Label (logo as Texture, pupilTracker.LogoStyle);
 		////////LABEL WITH STYLE////////
 
 		////////DRAW TAB MENU SYSTEM////////
-		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
+		EditorGUI.BeginChangeCheck();
+		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
 		pupilTracker.tab = GUILayout.Toolbar (pupilTracker.tab, new string[]{ "Main Menu", "Settings", "Calibration" });
-		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
+		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
+		if (EditorGUI.EndChangeCheck ()) {//I delegates are used to assign the relevant menu to be drawn. This way I can fire off something on tab change.
+			switch (pupilTracker.tab) {
+			case 0:////////MAIN MENU////////
+				pupilTracker.DrawMenu = null;
+				pupilTracker.DrawMenu += DrawMainMenu;
+				break;
+			case 1:////////SETTINGS////////
+				pupilTracker.DrawMenu = null;
+				pupilTracker.DrawMenu += DrawSettings;
+				break;
+			case 2:////////CALIBRATION////////
+				pupilTracker.DrawMenu = null;
+				pupilTracker.DrawMenu += DrawCalibration;
 
-		GUILayout.Space (30);
+				try{
+				pupilTracker.CalibrationGameObject2D = GameObject.Find ("Calibrator").gameObject.transform.FindChild ("2D Calibrator").gameObject;
+				pupilTracker.CalibrationGameObject3D = GameObject.Find ("Calibrator").gameObject.transform.FindChild ("3D Calibrator").gameObject;
+				}
+				catch{
+					EditorUtility.DisplayDialog ("Pupil Service Warning", "Calibrator prefab cannot be found, or not complete, please add under main camera ! ", "Will Do");
+				}
 
-		switch (pupilTracker.tab) {
-		////////MAIN MENU////////
-		case 0:
-			DrawMainMenu ();
-			break;
-		////////SETTINGS////////
-		case 1:
-			DrawSettings ();
-			break;
-		////////CALIBRATION////////
-		case 2:
-			DrawCalibration ();
-			break;
+
+				break;
+			}
 		}
+
+		if (pupilTracker.DrawMenu != null)
+			pupilTracker.DrawMenu ();
+		
 		////////DRAW TAB MENU SYSTEM////////
-
-
 		GUILayout.Space (50);
 
 		//Show default Inspector with all exposed variables
@@ -105,45 +102,63 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		// test for changes in exposed values
 		EditorGUI.BeginChangeCheck();
 
+		pupilTracker.SettingsTab = GUILayout.Toolbar (pupilTracker.SettingsTab, new string[]{ "Service", "Calibration" });
+		GUILayout.Space (30);
 		////////INPUT FIELDS////////
+		switch (pupilTracker.SettingsTab) {
+		case 0://SERVICE
+			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////BROWSE FOR PUPIL SERVICE PATH
+			GUILayout.Label ("Pupil Service App Path : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
+			pupilTracker.PupilServicePath = EditorGUILayout.TextArea (pupilTracker.PupilServicePath, pupilTracker.SettingsBrowseStyle, GUILayout.Width (150), GUILayout.Height (22));
+			if (GUILayout.Button ("Browse", GUILayout.Width(55), GUILayout.Height(22))) {
+				pupilTracker.PupilServicePath = EditorUtility.OpenFolderPanel ("TITLE", pupilTracker.PupilServicePath, "Default Name !");
+			}
+			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+
+			EditorGUILayout.Separator ();//------------------------------------------------------------//
+
+			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
+			GUILayout.Label ("Server IP : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
+			pupilTracker.ServerIP = EditorGUILayout.TextArea (pupilTracker.ServerIP, pupilTracker.SettingsValuesStyle, GUILayout.Width (150), GUILayout.Height (22));
+			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+
+			EditorGUILayout.Separator ();//------------------------------------------------------------//
+
+			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
+			GUILayout.Label ("Service Port : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
+			pupilTracker.ServicePort = EditorGUILayout.IntField (pupilTracker.ServicePort, pupilTracker.SettingsValuesStyle, GUILayout.Width(150), GUILayout.Height(22));
+			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+
+			GUILayout.Space (5);//------------------------------------------------------------//
+
+			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
+			GUILayout.Label ("Show All : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
+			pupilTracker.ShowBaseInspector = EditorGUILayout.Toggle (pupilTracker.ShowBaseInspector);
+			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+
+			break;
+		case 1://CALIBRATION
+			
+			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
+			GUILayout.Label ("GameObject for 3D calibration : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(200));
+			pupilTracker.CalibrationGameObject3D = (GameObject)EditorGUILayout.ObjectField(pupilTracker.CalibrationGameObject3D, typeof(GameObject), true);
+			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+
+			GUILayout.Space (5);//------------------------------------------------------------//
+
+			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
+			GUILayout.Label ("GameObject for 2D calibration : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(200));
+			pupilTracker.CalibrationGameObject2D = (GameObject)EditorGUILayout.ObjectField(pupilTracker.CalibrationGameObject2D, typeof(GameObject), true);
+			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+
+			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
+			GUILayout.Label ("Calibration Sample Count : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(175));
+			pupilTracker.DefaultCalibrationCount = EditorGUILayout.IntSlider (pupilTracker.DefaultCalibrationCount,1,120);
+			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+			break;
+		}
 
 		/// Accessing the relevant GUIStyles from PupilGazeTracker
-		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////BROWSE FOR PUPIL SERVICE PATH
-		GUILayout.Label ("Pupil Service App Path : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
-		pupilTracker.PupilServicePath = EditorGUILayout.TextArea (pupilTracker.PupilServicePath, pupilTracker.SettingsBrowseStyle, GUILayout.Width (150), GUILayout.Height (22));
-		if (GUILayout.Button ("Browse", GUILayout.Width(55), GUILayout.Height(22))) {
-			pupilTracker.PupilServicePath = EditorUtility.OpenFolderPanel ("TITLE", pupilTracker.PupilServicePath, "Default Name !");
-		}
-		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
-
-		EditorGUILayout.Separator ();//------------------------------------------------------------//
-
-		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-		GUILayout.Label ("Server IP : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
-		pupilTracker.ServerIP = EditorGUILayout.TextArea (pupilTracker.ServerIP, pupilTracker.SettingsValuesStyle, GUILayout.Width (150), GUILayout.Height (22));
-		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
-
-		EditorGUILayout.Separator ();//------------------------------------------------------------//
-
-		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-		GUILayout.Label ("Service Port : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
-		pupilTracker.ServicePort = EditorGUILayout.IntField (pupilTracker.ServicePort, pupilTracker.SettingsValuesStyle, GUILayout.Width(150), GUILayout.Height(22));
-		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
-
-		GUILayout.Space (5);//------------------------------------------------------------//
-
-		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-		GUILayout.Label ("Calibration Count : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
-		pupilTracker.DefaultCalibrationCount = EditorGUILayout.IntSlider (pupilTracker.DefaultCalibrationCount,1,120);
-		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
-
-		EditorGUILayout.Separator ();//------------------------------------------------------------//
-		GUILayout.Space (5);
-
-		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-		GUILayout.Label ("Show All : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
-		pupilTracker.ShowBaseInspector = EditorGUILayout.Toggle (pupilTracker.ShowBaseInspector);
-		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 		////////INPUT FIELDS////////
 
@@ -159,9 +174,28 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	//TODO: Create 3D calibration method, access 2D calibration method
 	private void DrawCalibration(){
+		EditorGUI.BeginChangeCheck ();
 		pupilTracker.calibrationMode = GUILayout.Toolbar (pupilTracker.calibrationMode, new string[]{ "2D", "3D" });
-
-		GUILayout.Button("Calibrate", GUILayout.Height(35));
+		if (EditorGUI.EndChangeCheck ()) {
+			switch (pupilTracker.calibrationMode) {
+			case 0:
+				pupilTracker.CalibrationGameObject2D.SetActive (true);
+				pupilTracker.CalibrationGameObject3D.SetActive (false);
+				break;
+			case 1:
+				pupilTracker.CalibrationGameObject2D.SetActive (false);
+				pupilTracker.CalibrationGameObject3D.SetActive (true);
+				break;
+			}
+		}
+		if (GUILayout.Button ("Calibrate", GUILayout.Height (35))) {
+			if (Application.isPlaying) {
+				pupilTracker.StartCalibration ();
+			} else {
+				EditorUtility.DisplayDialog ("Pupil service message", "You can only use calibration in playmode", "Understood");
+			}
+		}
+		
 	}
 
 

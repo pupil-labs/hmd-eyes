@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Net;
 using System.Threading;
 using NetMQ;
@@ -135,13 +136,15 @@ public class PupilGazeTracker:MonoBehaviour
 	public delegate void OnCalibrationStartedDeleg(PupilGazeTracker manager);
 	public delegate void OnCalibrationDoneDeleg(PupilGazeTracker manager);
 	public delegate void OnEyeGazeDeleg(PupilGazeTracker manager);
-	public delegate void OnCalibDataDeleg(PupilGazeTracker manager,float x,float y);
+	//public delegate void OnCalibDataDeleg(PupilGazeTracker manager,float x,float y);
+	public delegate void OnCalibDataDeleg(PupilGazeTracker manager,object position);
+	public delegate void DrawMenuDeleg ();
 
 	public event OnCalibrationStartedDeleg OnCalibrationStarted;
 	public event OnCalibrationDoneDeleg OnCalibrationDone;
 	public event OnEyeGazeDeleg OnEyeGaze;
 	public event OnCalibDataDeleg OnCalibData;
-
+	public DrawMenuDeleg DrawMenu;
 
 	bool _isconnected =false;
 	RequestSocket _requestSocket ;
@@ -160,6 +163,31 @@ public class PupilGazeTracker:MonoBehaviour
 	int _currCalibPoint=0;
 	int _currCalibSamples=0;
 
+	[Serializable]
+	public struct floatArray{
+		public float[] axisValues;
+	}
+	public floatArray[] CalibPoints2D;
+	public floatArray[] CalibPoints3D;
+
+	public floatArray[] GetCalibPoints{
+		get{ 
+			return CalibrationModes [CurrentCalibrationMode].calibrationPoints;
+		}
+	}
+
+	Dictionary<CalibModes,CalibModeDetails> CalibrationModes;
+
+
+	public enum CalibModes{
+		_2D,
+		_3D
+	};
+	public struct CalibModeDetails
+	{
+		//public List<float[]> calibrationPoints;
+		public floatArray[] calibrationPoints;
+	}
 
 	public string ServerIP;
 	public int ServicePort=50020;
@@ -173,7 +201,20 @@ public class PupilGazeTracker:MonoBehaviour
 
 	//CUSTOM EDITOR VARIABLES
 	public int tab = 0;
+	public int SettingsTab;
 	public int calibrationMode = 0;
+	public CalibModes CurrentCalibrationMode{
+		get {
+			if (calibrationMode == 0) {
+				return CalibModes._2D;
+			} else {
+				return CalibModes._3D;
+			}
+		}
+	}
+	public GameObject CalibrationGameObject3D;
+	public GameObject CalibrationGameObject2D;
+
 	public bool isDebugFoldout;
 	public bool ShowBaseInspector;
 	public string PupilServicePath = "";
@@ -185,6 +226,13 @@ public class PupilGazeTracker:MonoBehaviour
 //	public string ServiceFileNameWin = "pupil_service.exe";
 //	public string ServiceFileNameLinux = "pupil_service";
 	//public RuntimePlatform platforms;
+
+	public GUIStyle MainTabsStyle = new GUIStyle ();
+	public GUIStyle SettingsLabelsStyle = new GUIStyle ();
+	public GUIStyle SettingsValuesStyle = new GUIStyle ();
+	public GUIStyle SettingsBrowseStyle = new GUIStyle ();
+	public GUIStyle LogoStyle = new GUIStyle ();
+
 	[Serializable]
 	public struct Platform
 	{
@@ -194,12 +242,6 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 	public Platform[] Platforms;
 	public Dictionary<RuntimePlatform, string[]> PlatformsDictionary;
-
-	public GUIStyle MainTabsStyle = new GUIStyle ();
-	public GUIStyle SettingsLabelsStyle = new GUIStyle ();
-	public GUIStyle SettingsValuesStyle = new GUIStyle ();
-	public GUIStyle SettingsBrowseStyle = new GUIStyle ();
-	public GUIStyle LogoStyle = new GUIStyle ();
 	//CUSTOM EDITOR VARIABLES
 
 	Process serviceProcess;
@@ -281,6 +323,17 @@ public class PupilGazeTracker:MonoBehaviour
 
 		_dataLock = new object ();
 
+		CalibrationModes = new Dictionary<CalibModes, CalibModeDetails> { 
+			{
+				CalibModes._2D,
+				new CalibModeDetails (){ calibrationPoints = CalibPoints2D }
+			},
+			{
+				CalibModes._3D,
+				new CalibModeDetails (){ calibrationPoints = CalibPoints3D }
+			}
+		};
+
 		RunServiceAtPath ();
 
 		_serviceThread = new Thread(NetMQClient);
@@ -340,15 +393,17 @@ public class PupilGazeTracker:MonoBehaviour
 		string subport="";
 		print ("Connect to the server: " + IPHeader + ServicePort + ".");
 		Thread.Sleep (ServiceStartupDelay);
+
 		_requestSocket = new RequestSocket(IPHeader + ServicePort);
 
 		_requestSocket.SendFrame("SUB_PORT");
 		_isconnected = _requestSocket.TryReceiveFrameString(timeout, out subport);
-
+		print (_isconnected + " isconnected");
 		_lastT = DateTime.Now;
 
 		if (_isconnected)
 		{
+			//_serviceStarted = true;
 			StartProcess ();
 			var subscriberSocket = new SubscriberSocket( IPHeader + subport);
 
@@ -388,7 +443,7 @@ public class PupilGazeTracker:MonoBehaviour
 				}
 				else
 				{
-				//	Debug.Log("Failed to receive a message.");
+					print("Failed to receive a message.");
 					Thread.Sleep(500);
 				}
 			}
@@ -402,7 +457,8 @@ public class PupilGazeTracker:MonoBehaviour
 			//If needed here could come a retry connection.
 		}
 
-		if (_serviceStarted)
+		//Can only send request via IPC if the connection has been established, otherwise we are facing, errors and potential freezing.
+		if (_serviceStarted && _isconnected)
 			StopService ();
 		
 		_requestSocket.Close ();
@@ -449,13 +505,17 @@ public class PupilGazeTracker:MonoBehaviour
 	//Service is currently stored in Assets/Plugins/pupil_service_versionNumber . This path is hardcoded. See servicePath.
 	public void RunServiceAtPath(){
 		AdjustPath ();
-		string servicePath = PupilServicePath;
+		string servicePath = PupilServicePath + "/";
 		if (Directory.Exists (servicePath) && PupilServiceFileName != "") {
 			serviceProcess = new Process ();
 			serviceProcess.StartInfo.Arguments = servicePath;
 			serviceProcess.StartInfo.FileName = servicePath + PupilServiceFileName;
-			serviceProcess.Start ();
-			_serviceStarted = true;
+			if (File.Exists (servicePath + PupilServiceFileName)) {
+				serviceProcess.Start ();
+				_serviceStarted = true;
+			} else {
+				print ("Pupil Service could not start! There is a problem with the file path. The file does not exist at given path");
+			}
 		} else{
 			if (PupilServiceFileName == "") {
 				print ("Pupil Service filename is not specified, most likely you will have to check if you have it set for the current platform under settings Platforms(DEV opt.)");
@@ -477,6 +537,13 @@ public class PupilGazeTracker:MonoBehaviour
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",1}});
 	}
 
+	public void StartCalibration3D(){
+		//This might be different for 3DbiocularCalibration
+		_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name","HMD_Calibration"}});
+		_sendRequestMessage ( new Dictionary<string,object> {{"subject","calibration.should_start"},{"hmd_video_frame_size",new float[]{1000,1000}},{"outlier_threshold",35}});
+		_setStatus (EStatus.Calibration);
+	}
+
 	public void StartCalibration()
 	{
 		//calibrate using default 9 points and 120 samples for each target
@@ -487,6 +554,7 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 	public void StartCalibration(Vector2[] calibPoints,int samples)
 	{
+		
 		_calibPoints = calibPoints;
 		_calibSamples = samples;
 
@@ -496,6 +564,8 @@ public class PupilGazeTracker:MonoBehaviour
 
 		if (OnCalibrationStarted != null)
 			OnCalibrationStarted (this);
+
+
 	}
 	public void StopCalibration()
 	{
@@ -505,11 +575,28 @@ public class PupilGazeTracker:MonoBehaviour
 		_setStatus (EStatus.ProcessingGaze);
 	}
 
-
-	void _CalibData(float x,float y)
-	{
-		if(OnCalibData!=null)
-			OnCalibData (this,x, y);
+	//we add function to this OnCalibData delegate in the PupilCalibMarker script
+//	void _CalibData(float x,float y)
+//	{
+//		if(OnCalibData!=null)
+//			OnCalibData (this,x, y);
+//	}
+//	void _CalibData(float x,float y, float z)
+//	{
+//		if(OnCalibData!=null)
+//			OnCalibData (this,x, y, z);
+//	}
+	void _CalibData(float [] axisValues){
+		//TODO:
+		//object _o = axisValues.Length == 3 ? new Vector3 (axisValues [0], axisValues [1], axisValues [2]) : new Vector2 (axisValues [0], axisValues [1]);
+		object _o;
+		if (axisValues.Length == 3) {
+			_o = new Vector3 (axisValues [0], axisValues [1], axisValues [2]);
+		} else {
+			_o = new Vector2 (axisValues [0], axisValues [1]);
+		}
+		if (OnCalibData != null)
+			OnCalibData (this, _o);
 	}
 
 	public void InitializePlatformsDictionary(){
@@ -517,7 +604,6 @@ public class PupilGazeTracker:MonoBehaviour
 		foreach (Platform p in Platforms) {
 			PlatformsDictionary.Add (p.platform, new string[]{ p.DefaultPath, p.FileName });
 		}
-		print (PlatformsDictionary.Count);
 	}
 
 
@@ -553,20 +639,38 @@ public class PupilGazeTracker:MonoBehaviour
 
 		} else if (m_status == EStatus.Calibration) {//gaze calibration stage
 			float t=GetPupilTimestamp();
-			var ref0=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",0}};
-			var ref1=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",1}};
 
-			_CalibData (_calibPoints [_currCalibPoint].x, _calibPoints [_currCalibPoint].y);
+			floatArray[] _cPoints = GetCalibPoints;
+			float[] _cPointFloatValues = _cPoints [_currCalibPoint].axisValues;
+
+
+			var ref0=new Dictionary<string,object>(){{"norm_pos",_cPointFloatValues},{"timestamp",t},{"id",0}};
+			var ref1=new Dictionary<string,object>(){{"norm_pos",_cPointFloatValues},{"timestamp",t},{"id",1}};
+
+			//keeping this until the new calibration method is not yet tested
+//			var ref0=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",0}};
+//			var ref1=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",1}};
+
+			//If OnCalibData delegate has assigned function from the Calibration Marker, assign the current calibration position to it.
+			_CalibData (_cPointFloatValues);
 
 			_calibrationData.Add (ref0);
 			_calibrationData.Add (ref1);
+			//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 			_currCalibSamples++;
+
+			print ("Sampling at : " + _currCalibSamples);
+			//give a small timeout per sample.
 			Thread.Sleep (1000 / 60);
 
+			//If the current calibration sample is bigger or equal to the desired sampling (so we accomplished sampling for this calibration point),
+			//null the current sample and step to next calbration point.
+			//Also prepare calibration data for sending, and send it.
 			if (_currCalibSamples >= _calibSamples) {
 				_currCalibSamples = 0;
 				_currCalibPoint++;
 
+				//reformat the calibration data for sending.
 				string pointsData="[";
 				int index = 0;
 				foreach (var v in _calibrationData) {
@@ -577,13 +681,18 @@ public class PupilGazeTracker:MonoBehaviour
 					}
 				}
 				pointsData += "]";
+
 			//	pointsData = JsonUtility.ToJson (_CalibrationPoints);
 				//Debug.Log (pointsData);
 
+				//Send the current relevant calibration data for the current calibration point.
 				_sendRequestMessage (new Dictionary<string,object> {{"subject","calibration.add_ref_data"},{"ref_data",_CalibrationPoints}});
-				_calibrationData.Clear ();
-				if (_currCalibPoint >= _calibPoints.Length) {
 
+				//Clear the current calibration data, so we can proceed to the next point if there is any.
+				_calibrationData.Clear ();
+
+				//Stop calibration if we accomplished all required calibration target.
+				if (_currCalibPoint >= _cPoints.Length) {
 					StopCalibration ();
 				}
 			}
