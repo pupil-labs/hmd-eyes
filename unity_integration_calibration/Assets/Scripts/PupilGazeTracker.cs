@@ -189,7 +189,7 @@ public class PupilGazeTracker:MonoBehaviour
 		public floatArray[] calibrationPoints;
 	}
 
-	public string ServerIP;
+	public string ServerIP = "127.0.0.1";
 	public int ServicePort=50020;
 	public int DefaultCalibrationCount=120;
 	public int SamplesCount=4;
@@ -546,6 +546,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void StartCalibration()
 	{
+		print ("Calibrating!");
 		//calibrate using default 9 points and 120 samples for each target
 		StartCalibration (new Vector2[] {new Vector2 (0.5f, 0.5f), new Vector2 (0.2f, 0.2f), new Vector2 (0.2f, 0.5f),
 			new Vector2 (0.2f, 0.8f), new Vector2 (0.5f, 0.8f), new Vector2 (0.8f, 0.8f),

@@ -15,14 +15,28 @@ using UnityEditor.SceneManagement;
 public class CustomPupilGazeTrackerInspector : Editor {
 
 	PupilGazeTracker pupilTracker;
-
+		
 	void OnEnable(){
 	
 		pupilTracker = (PupilGazeTracker)target;
 		pupilTracker.AdjustPath ();
 
-		if (pupilTracker.DrawMenu == null)
-			pupilTracker.DrawMenu += DrawMainMenu;
+		if (pupilTracker.DrawMenu == null) {
+			switch (pupilTracker.tab) {
+			case 0:////////MAIN MENU////////
+				pupilTracker.DrawMenu = null;
+				pupilTracker.DrawMenu += DrawMainMenu;
+				break;
+			case 1:////////SETTINGS////////
+				pupilTracker.DrawMenu = null;
+				pupilTracker.DrawMenu += DrawSettings;
+				break;
+			case 2:////////CALIBRATION////////
+				pupilTracker.DrawMenu = null;
+				pupilTracker.DrawMenu += DrawCalibration;
+				break;
+			}
+		}
 
 	}
 
