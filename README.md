@@ -14,6 +14,15 @@ Building blocks for eye tracking in Augmented Reality `AR` and Virtual Reality `
 8. Choose the calibration method under 'PupilGaze' GameObject >> Calibration >>2D/3D
 9. To calibrate press the `C` key, or click on the Calibrate button
 
+## Develeoper Setup
+
+1. Open `Assets/scene/Calibration.unity` with the Unity3d Editor.
+2. Select the GameObject called 'PupilGaze'
+3. Under Settings, tick the ShowAll checkbox, this will enable you to see all exposed variables.
+4. There are 5 Syles that can be adjusted. Main Tabs, Settings Labels, Settings Values, Settings Browse, Logo.
+5. The Default paths and file names for the Pupil Service App are stored under the Platforms variable for each platform. You can add one manually if your current platform is not listed.
+6. In the current version the 2D and 3D calibration points are not exposed in the final GUI, but you can find and edit them here until the interface comes out. Relevant variables : Calib Points 2D, Calib Points 3D.
+
 ## Connect
 
 Chat with the hmd-eyes community here [![Gitter](https://badges.gitter.im/pupil-labs/hmd-eyes.svg)](https://gitter.im/pupil-labs/hmd-eyes?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
