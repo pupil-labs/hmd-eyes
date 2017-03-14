@@ -171,12 +171,12 @@ public class PupilGazeTracker:MonoBehaviour
 	public struct floatArray{
 		public float[] axisValues;
 	}
-	public floatArray[] CalibPoints2D;
-	public floatArray[] CalibPoints3D;
+	public List<floatArray> CalibPoints2D;
+	public List<floatArray> CalibPoints3D;
 
 	public floatArray[] GetCalibPoints{
 		get{ 
-			return CalibrationModes [CurrentCalibrationMode].calibrationPoints;
+			return CalibrationModes [CurrentCalibrationMode].calibrationPoints.ToArray ();
 		}
 	}
 
@@ -190,7 +190,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public struct CalibModeDetails
 	{
 		//public List<float[]> calibrationPoints;
-		public floatArray[] calibrationPoints;
+		public List<floatArray> calibrationPoints;
 	}
 
 	public string ServerIP = "127.0.0.1";
@@ -204,6 +204,9 @@ public class PupilGazeTracker:MonoBehaviour
 	bool _serviceStarted = false;
 
 	//CUSTOM EDITOR VARIABLES
+	public bool CalibrationPointsFoldout;
+	public bool CalibrationPoints2DFoldout;
+	public bool CalibrationPoints3DFoldout;
 	public int tab = 0;
 	public int SettingsTab;
 	public int calibrationMode = 0;
@@ -236,6 +239,9 @@ public class PupilGazeTracker:MonoBehaviour
 	public GUIStyle SettingsValuesStyle = new GUIStyle ();
 	public GUIStyle SettingsBrowseStyle = new GUIStyle ();
 	public GUIStyle LogoStyle = new GUIStyle ();
+	public GUIStyle FoldOutStyle = new GUIStyle ();
+	public GUIStyle ButtonStyle = new GUIStyle();
+	public GUIStyle TextField = new GUIStyle();
 
 	[Serializable]
 	public struct Platform
@@ -655,6 +661,7 @@ public class PupilGazeTracker:MonoBehaviour
 		} else if (m_status == EStatus.Calibration) {//gaze calibration stage
 			float t=GetPupilTimestamp();
 
+			//List<floatArray>
 			floatArray[] _cPoints = GetCalibPoints;
 			float[] _cPointFloatValues = _cPoints [_currCalibPoint].axisValues;
 

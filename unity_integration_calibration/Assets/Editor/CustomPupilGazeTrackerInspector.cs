@@ -47,8 +47,15 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	public override void OnInspectorGUI(){
 		
+		pupilTracker.FoldOutStyle = GUI.skin.GetStyle ("Foldout");
+		//pupilTracker.ButtonStyle = GUI.skin.button;
+		//pupilTracker.TextField = GUI.skin.textField;
+
+		//EditorGUI.Vector2Field
 
 
+		//GUI.skin.font = GUI.skin.button.font;
+		//EditorGUILayout.fo
 		GUILayout.Space (20);
 
 		////////LABEL WITH STYLE////////
@@ -129,7 +136,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////BROWSE FOR PUPIL SERVICE PATH
 			GUILayout.Label ("Pupil Service App Path : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
 			pupilTracker.PupilServicePath = EditorGUILayout.TextArea (pupilTracker.PupilServicePath, pupilTracker.SettingsBrowseStyle, GUILayout.Width (150), GUILayout.Height (22));
-			if (GUILayout.Button ("Browse", GUILayout.Width (55), GUILayout.Height (22))) {
+			if (GUILayout.Button ("Browse")) {
 				pupilTracker.PupilServicePath = EditorUtility.OpenFolderPanel ("TITLE", pupilTracker.PupilServicePath, "Default Name !");
 			}
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
@@ -163,22 +170,112 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			break;
 		case 1://CALIBRATION
 			
-			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-			GUILayout.Label ("GameObject for 3D calibration : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(200));
-			pupilTracker.CalibrationGameObject3D = (GameObject)EditorGUILayout.ObjectField(pupilTracker.CalibrationGameObject3D, typeof(GameObject), true);
+//			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
+//			GUILayout.Label ("GameObject for 3D calibration : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (200));
+//			pupilTracker.CalibrationGameObject3D = (GameObject)EditorGUILayout.ObjectField (pupilTracker.CalibrationGameObject3D, typeof(GameObject), true);
+//			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+//
+//			GUILayout.Space (5);//------------------------------------------------------------//
+//
+//			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
+//			GUILayout.Label ("GameObject for 2D calibration : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (200));
+//			pupilTracker.CalibrationGameObject2D = (GameObject)EditorGUILayout.ObjectField (pupilTracker.CalibrationGameObject2D, typeof(GameObject), true);
+//			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+//
+			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
+			GUILayout.Label ("Calibration Sample Count : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (175));
+			pupilTracker.DefaultCalibrationCount = EditorGUILayout.IntSlider (pupilTracker.DefaultCalibrationCount, 1, 120);
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
-			GUILayout.Space (5);//------------------------------------------------------------//
+			GUILayout.Space (10);//------------------------------------------------------------//
 
-			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-			GUILayout.Label ("GameObject for 2D calibration : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(200));
-			pupilTracker.CalibrationGameObject2D = (GameObject)EditorGUILayout.ObjectField(pupilTracker.CalibrationGameObject2D, typeof(GameObject), true);
-			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+			//EditorGUI.indentLevel = 0;
 
-			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-			GUILayout.Label ("Calibration Sample Count : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(175));
-			pupilTracker.DefaultCalibrationCount = EditorGUILayout.IntSlider (pupilTracker.DefaultCalibrationCount,1,120);
-			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+			//pupilTracker.ButtonStyle.
+			//////////////////////////CALIBRATION POINTS//////////////////////////
+			pupilTracker.CalibrationPointsFoldout = EditorGUILayout.Foldout (pupilTracker.CalibrationPointsFoldout," Calibration Points", pupilTracker.FoldOutStyle);
+			GUILayout.Space (10);//------------------------------------------------------------//
+			if (pupilTracker.CalibrationPointsFoldout) {
+				GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
+				GUILayout.BeginHorizontal ();
+				pupilTracker.CalibrationPoints2DFoldout = EditorGUILayout.Foldout (pupilTracker.CalibrationPoints2DFoldout, "2D", pupilTracker.FoldOutStyle);
+				if (GUILayout.Button ("Add 2D Calibration Point")) {
+					pupilTracker.CalibrationPoints2DFoldout = true;
+					PupilGazeTracker.floatArray _fa = new PupilGazeTracker.floatArray ();
+					_fa.axisValues = new float[]{ 0f, 0f };
+					pupilTracker.CalibPoints2D.Add (_fa);
+					Repaint ();
+				}
+				GUILayout.EndHorizontal ();
+				GUILayout.Space (7);//------------------------------------------------------------//
+
+				if (pupilTracker.CalibrationPoints2DFoldout) {//////2D POINTS//////
+					foreach (PupilGazeTracker.floatArray _point in pupilTracker.CalibPoints2D) {
+						int index = pupilTracker.CalibPoints2D.IndexOf (_point);
+						GUILayout.BeginHorizontal ();
+						//++EditorGUI.indentLevel;
+						Vector3 _v2 = new Vector2 (_point.axisValues [0], _point.axisValues [1]);
+
+						_v2 = EditorGUILayout.Vector2Field ("2D Point " + (index + 1) + " : ", _v2);
+
+						_point.axisValues [0] = _v2.x;
+						_point.axisValues [1] = _v2.y;
+
+						if (GUILayout.Button ("Remove")) {
+							pupilTracker.CalibPoints2D.Remove (_point);
+							Repaint ();
+							break;
+						}
+						if (GUILayout.Button ("Edit")) {
+						}
+
+						GUILayout.EndHorizontal ();
+						GUILayout.Space (2);//------------------------------------------------------------//
+					}
+				}
+				GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
+				GUILayout.BeginHorizontal ();
+				pupilTracker.CalibrationPoints3DFoldout = EditorGUILayout.Foldout (pupilTracker.CalibrationPoints3DFoldout, "3D", pupilTracker.FoldOutStyle);
+				if (GUILayout.Button ("Add 3D Calibration Point")) {
+					pupilTracker.CalibrationPoints3DFoldout = true;
+					PupilGazeTracker.floatArray _fa = new PupilGazeTracker.floatArray ();
+					_fa.axisValues = new float[]{ 0f, 0f, 0f };
+					pupilTracker.CalibPoints3D.Add (_fa);
+					Repaint ();
+				}
+				GUILayout.EndHorizontal ();
+				GUILayout.Space (7);//------------------------------------------------------------//
+				if (pupilTracker.CalibrationPoints3DFoldout) {//////3D POINTS//////
+					foreach (PupilGazeTracker.floatArray _point in pupilTracker.CalibPoints3D) {
+						int index = pupilTracker.CalibPoints3D.IndexOf (_point);
+						GUILayout.BeginHorizontal ();
+
+						Vector3 _v3 = new Vector3 (_point.axisValues [0], _point.axisValues [1], _point.axisValues [2]);
+
+						//EditorGUI.InspectorTitlebar (Rect (0, 0, 200, 20), new UnityEngine.Object[]());
+
+
+						_v3 = EditorGUILayout.Vector3Field ("3D Point " + (index + 1) + " :", _v3);
+
+						_point.axisValues [0] = _v3.x;
+						_point.axisValues [1] = _v3.y;
+						_point.axisValues [2] = _v3.z;
+
+						if (GUILayout.Button ("Remove")) {
+							pupilTracker.CalibPoints3D.Remove (_point);
+							Repaint ();
+							break;
+						}
+						if (GUILayout.Button ("Edit")) {
+						}
+						GUILayout.EndHorizontal ();
+						GUILayout.Space (2);//------------------------------------------------------------//
+					}
+				}
+				GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
+			}
+			//////////////////////////CALIBRATION POINTS//////////////////////////
+
 			break;
 		}
 
@@ -236,6 +333,29 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	public void OnConnected(PupilGazeTracker manager){
 		isConnected = true;
+	}
+
+
+	public static Vector3 Vector3FieldEx(string label, Vector3 value, params GUILayoutOption[] options) {
+		GUILayout.Label(label);
+
+		EditorGUILayout.BeginHorizontal();
+		++EditorGUI.indentLevel;
+
+		EditorGUILayout.LabelField("X", GUILayout.Width(22));
+		value.x = EditorGUILayout.FloatField(value.x);
+
+		--EditorGUI.indentLevel;
+
+		EditorGUILayout.LabelField("Y", GUILayout.Width(22));
+		value.y = EditorGUILayout.FloatField(value.y);
+
+		EditorGUILayout.LabelField("Z", GUILayout.Width(22));
+		value.z = EditorGUILayout.FloatField(value.z);
+
+		EditorGUILayout.EndHorizontal();
+
+		return value;
 	}
 
 	/// Temporary function to create a texture based on a Color value. Most likely will be deleted.
