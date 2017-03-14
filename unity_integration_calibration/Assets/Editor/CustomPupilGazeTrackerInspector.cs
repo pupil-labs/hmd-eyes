@@ -16,6 +16,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	PupilGazeTracker pupilTracker;
 	bool isConnected = false;
+	bool isCalibrating = false;
 		
 	void OnEnable(){
 	
@@ -296,7 +297,17 @@ public class CustomPupilGazeTrackerInspector : Editor {
 	//TODO: Create 3D calibration method, access 2D calibration method
 	private void DrawCalibration(){
 		EditorGUI.BeginChangeCheck ();
+
+		if (isCalibrating) {
+			GUI.enabled = false;
+		} else {
+			GUI.enabled = true;
+		}
+			
 		pupilTracker.calibrationMode = GUILayout.Toolbar (pupilTracker.calibrationMode, new string[]{ "2D", "3D" });
+
+		GUI.enabled = true;
+
 		if (EditorGUI.EndChangeCheck ()) {
 
 			switch (pupilTracker.calibrationMode) {
@@ -314,11 +325,18 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		}
 
 		if (isConnected) {
-			if (GUILayout.Button ("Calibrate", GUILayout.Height (35))) {
-				if (Application.isPlaying) {
-					pupilTracker.StartCalibration ();
-				} else {
-					EditorUtility.DisplayDialog ("Pupil service message", "You can only use calibration in playmode", "Understood");
+			if (!isCalibrating) {
+				if (GUILayout.Button ("Calibrate", GUILayout.Height (35))) {
+					if (Application.isPlaying) {
+						pupilTracker.StartCalibration ();
+						EditorApplication.update += CheckCalibration;
+					} else {
+						EditorUtility.DisplayDialog ("Pupil service message", "You can only use calibration in playmode", "Understood");
+					}
+				}
+			} else {
+				if (GUILayout.Button ("Stop Calibration", GUILayout.Height (35))) {
+					pupilTracker.StopCalibration ();
 				}
 			}
 		} else {
@@ -329,6 +347,16 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		GUI.enabled = true;
 		
+	}
+
+	public void CheckCalibration(){
+		Debug.Log ("Editor Update");
+		if (pupilTracker.m_status == PupilGazeTracker.EStatus.Calibration) {
+			isCalibrating = true;
+		} else {
+			isCalibrating = false;
+			EditorApplication.update = null;
+		}
 	}
 
 	public void OnConnected(PupilGazeTracker manager){
