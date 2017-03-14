@@ -590,10 +590,12 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 	public void StopCalibration()
 	{
+		_setStatus (EStatus.ProcessingGaze);
+		print ("Calibration Stopping !");
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","calibration.should_stop"}});
 		if (OnCalibrationDone != null)
 			OnCalibrationDone(this);
-		_setStatus (EStatus.ProcessingGaze);
+		
 	}
 
 	//we add function to this OnCalibData delegate in the PupilCalibMarker script
@@ -641,7 +643,7 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 
 		if (m_status == EStatus.ProcessingGaze) { //gaze processing stage
-
+			print("Processing gaze");
 			float x,y;
 			x = (float) data.norm_pos [0];
 			y = (float)data.norm_pos [1];
@@ -665,18 +667,19 @@ public class PupilGazeTracker:MonoBehaviour
 			floatArray[] _cPoints = GetCalibPoints;
 			float[] _cPointFloatValues = _cPoints [_currCalibPoint].axisValues;
 
+//			print ("Calibration points amount for calibration method " + CurrentCalibrationMode + " is : " + _cPoints.Length + ". Current Calibration sample is : " + _currCalibSamples);
 
 			var ref0=new Dictionary<string,object>(){{"norm_pos",_cPointFloatValues},{"timestamp",t},{"id",0}};
 			var ref1=new Dictionary<string,object>(){{"norm_pos",_cPointFloatValues},{"timestamp",t},{"id",1}};
 
 			//keeping this until the new calibration method is not yet tested
-//			var ref0=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",0}};
-//			var ref1=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",1}};
+			//var ref0=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",0}};
+			//var ref1=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",1}};
 
 			//If OnCalibData delegate has assigned function from the Calibration Marker, assign the current calibration position to it.
 			_CalibData (_cPointFloatValues);
 
-
+			print ("this should happen");
 
 			_calibrationData.Add (ref0);
 			_calibrationData.Add (ref1);
@@ -693,19 +696,21 @@ public class PupilGazeTracker:MonoBehaviour
 			//If the current calibration sample is bigger or equal to the desired sampling (so we accomplished sampling for this calibration point),
 			//null the current sample and step to next calbration point.
 			//Also prepare calibration data for sending, and send it.
-			if (_currCalibSamples >= _calibSamples) {
+			if (_currCalibSamples >= DefaultCalibrationCount) {
 				_currCalibSamples = 0;
 				_currCalibPoint++;
 
-				OnSwitchCalibPoint (this);
+				print ("Switching Calibration point to : " + _currCalibPoint);
 
+
+					
 				//reformat the calibration data for sending.
 				string pointsData="[";
-				int index = 0;
+				int _index = 0;
 				foreach (var v in _calibrationData) {
-					pointsData+= JsonUtility.ToJson(v);//String.Format("{'norm_pos':({0},{1}),'timestamp':{2},'id':{3}}",v.norm_pos[0],v.norm_pos[1],v.timestamp,v.id);
-					++index;
-					if (index != _calibrationData.Count) {
+					pointsData += JsonUtility.ToJson (v);//String.Format("{'norm_pos':({0},{1}),'timestamp':{2},'id':{3}}",v.norm_pos[0],v.norm_pos[1],v.timestamp,v.id);
+					++_index;
+					if (_index != _calibrationData.Count) {
 						pointsData += ",";
 					}
 				}
@@ -713,17 +718,25 @@ public class PupilGazeTracker:MonoBehaviour
 
 			//	pointsData = JsonUtility.ToJson (_CalibrationPoints);
 				//Debug.Log (pointsData);
-
+				//print(_CalibrationPoints + " PointsData : " + pointsData);
+				Dictionary<string,object> _d = (Dictionary<string,object>)_CalibrationPoints.GetValue (0);
+				object _o = new object ();
+				_d.TryGetValue ("norm_pos", out _o);
+				float[] _f = (float[])_o;
+				print ("Values for calib points : " + _f [0] + " : " + _f [1]);
 				//Send the current relevant calibration data for the current calibration point.
-				_sendRequestMessage (new Dictionary<string,object> {{"subject","calibration.add_ref_data"},{"ref_data",_CalibrationPoints}});
 
+				_sendRequestMessage (new Dictionary<string,object> {{"subject","calibration.add_ref_data"},{"ref_data",_CalibrationPoints}});
 				//Clear the current calibration data, so we can proceed to the next point if there is any.
 				_calibrationData.Clear ();
 
+				print (_currCalibPoint + "  _cPoints.Lengt : " + _cPoints.Length);
 				//Stop calibration if we accomplished all required calibration target.
 				if (_currCalibPoint >= _cPoints.Length) {
+					//print ("We are out of calib points!");
 					StopCalibration ();
 				}
+				OnSwitchCalibPoint (this);
 			}
 		}
 	}

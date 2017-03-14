@@ -57,6 +57,8 @@ public class PupilCalibMarker3D : MonoBehaviour {
 
 	void OnCalibrationDone(PupilGazeTracker m)
 	{
+		object _v3 = new Vector3 (0, 0, 0);
+		MainThread.Call (SetLocation, _v3);
 		_started = false;
 	}
 
@@ -110,13 +112,14 @@ public class PupilCalibMarker3D : MonoBehaviour {
 		haloRenderer.color = _c;
 	}
 
-	void SetLocation(Vector3 _v3){
+	void SetLocation(object location){
+		Vector3 _v3 = (Vector3)location;
 		transform.localPosition = _v3;
 	}
 
 	public void UpdateAnim(object index){
 		int _i = (int)index;
-		print ("test susseccful" + transform.gameObject.name + _i);
+		//print ("test susseccful" + transform.gameObject.name + _i);
 		float _p = Mathf.InverseLerp (0.9f, animSegmentAmount, _i);
 		//print ("Segment percentage : " + _p);
 		float _s = Mathf.Lerp (minScale, maxScale, _p);
