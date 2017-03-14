@@ -16,22 +16,30 @@ public class PupilCalibMarker : MonoBehaviour {
 		_image = GetComponent<Image> ();
 		_image.enabled = false;
 
+		AssignDelegates ();
+
+	}
+
+	public void AssignDelegates(){
+		PupilGazeTracker.Instance.NullDelegates ();
 		PupilGazeTracker.Instance.OnCalibrationStarted += OnCalibrationStarted;
 		PupilGazeTracker.Instance.OnCalibrationDone += OnCalibrationDone;
 		PupilGazeTracker.Instance.OnCalibData += OnCalibData;
+		if (PupilGazeTracker.Instance.m_status == PupilGazeTracker.EStatus.Calibration)
+			Debug.LogWarning ("Switching calibration in playmode. Method to restart calibration in another mode is not yet implemented! This might cause issues");
 	}
 
-	void OnCalibrationStarted(PupilGazeTracker m)
+	public void OnCalibrationStarted(PupilGazeTracker m)
 	{
 		_started = true;
 	}
 
-	void OnCalibrationDone(PupilGazeTracker m)
+	public void OnCalibrationDone(PupilGazeTracker m)
 	{
 		_started = false;
 	}
 
-	void OnCalibData(PupilGazeTracker m,object position)
+	public void OnCalibData(PupilGazeTracker m,object position)
 	{
 		Vector2 _v2 = (Vector2)position;
 		this.x = _v2.x;
@@ -55,5 +63,8 @@ public class PupilCalibMarker : MonoBehaviour {
 		_image.enabled = _started;
 		if(_started)
 			_SetLocation (x, y);
+
+		if (_started)
+			print ("2D calibration method is going on");
 	}
 }

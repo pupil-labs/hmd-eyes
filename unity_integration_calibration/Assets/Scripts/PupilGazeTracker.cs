@@ -139,12 +139,16 @@ public class PupilGazeTracker:MonoBehaviour
 	//public delegate void OnCalibDataDeleg(PupilGazeTracker manager,float x,float y);
 	public delegate void OnCalibDataDeleg(PupilGazeTracker manager,object position);
 	public delegate void DrawMenuDeleg ();
+	public delegate void OnConnectedDeleg (PupilGazeTracker manager);
+	public delegate void OnSwitchCalibPointDeleg(PupilGazeTracker manager);
 
 	public event OnCalibrationStartedDeleg OnCalibrationStarted;
 	public event OnCalibrationDoneDeleg OnCalibrationDone;
 	public event OnEyeGazeDeleg OnEyeGaze;
 	public event OnCalibDataDeleg OnCalibData;
 	public DrawMenuDeleg DrawMenu;
+	public event OnConnectedDeleg OnConnected;
+	public event OnSwitchCalibPointDeleg OnSwitchCalibPoint;
 
 	bool _isconnected =false;
 	RequestSocket _requestSocket ;
@@ -257,14 +261,14 @@ public class PupilGazeTracker:MonoBehaviour
 		get{ return _currentFps; }
 	}
 
-	enum EStatus
+	public enum EStatus
 	{
 		Idle,
 		ProcessingGaze,
 		Calibration
 	}
 
-	EStatus m_status=EStatus.Idle;
+	public EStatus m_status=EStatus.Idle;
 
 	public enum GazeSource
 	{
@@ -349,6 +353,13 @@ public class PupilGazeTracker:MonoBehaviour
 
 	}
 
+	public void NullDelegates(){
+		OnCalibrationStarted = null;
+		OnCalibrationDone = null;
+		OnCalibData = null;
+		OnSwitchCalibPoint = null;
+	}
+
 	NetMQMessage _sendRequestMessage(Dictionary<string,object> data)
 	{
 		NetMQMessage m = new NetMQMessage ();
@@ -398,11 +409,12 @@ public class PupilGazeTracker:MonoBehaviour
 
 		_requestSocket.SendFrame("SUB_PORT");
 		_isconnected = _requestSocket.TryReceiveFrameString(timeout, out subport);
-		print (_isconnected + " isconnected");
+		//print (_isconnected + " isconnected");
 		_lastT = DateTime.Now;
 
 		if (_isconnected)
 		{
+			OnConnected (this);
 			//_serviceStarted = true;
 			StartProcess ();
 			var subscriberSocket = new SubscriberSocket( IPHeader + subport);
@@ -457,6 +469,8 @@ public class PupilGazeTracker:MonoBehaviour
 			//If needed here could come a retry connection.
 		}
 
+		if (m_status == EStatus.Calibration)
+			StopCalibration ();
 		//Can only send request via IPC if the connection has been established, otherwise we are facing, errors and potential freezing.
 		if (_serviceStarted && _isconnected)
 			StopService ();
@@ -655,12 +669,17 @@ public class PupilGazeTracker:MonoBehaviour
 			//If OnCalibData delegate has assigned function from the Calibration Marker, assign the current calibration position to it.
 			_CalibData (_cPointFloatValues);
 
+
+
 			_calibrationData.Add (ref0);
 			_calibrationData.Add (ref1);
 			//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 			_currCalibSamples++;
 
-			print ("Sampling at : " + _currCalibSamples);
+
+
+			//print ("Sampling at : " + _currCalibSamples);
+
 			//give a small timeout per sample.
 			Thread.Sleep (1000 / 60);
 
@@ -670,6 +689,8 @@ public class PupilGazeTracker:MonoBehaviour
 			if (_currCalibSamples >= _calibSamples) {
 				_currCalibSamples = 0;
 				_currCalibPoint++;
+
+				OnSwitchCalibPoint (this);
 
 				//reformat the calibration data for sending.
 				string pointsData="[";

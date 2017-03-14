@@ -15,11 +15,16 @@ using UnityEditor.SceneManagement;
 public class CustomPupilGazeTrackerInspector : Editor {
 
 	PupilGazeTracker pupilTracker;
+	bool isConnected = false;
 		
 	void OnEnable(){
 	
 		pupilTracker = (PupilGazeTracker)target;
 		pupilTracker.AdjustPath ();
+
+
+		pupilTracker.OnConnected -= OnConnected;
+		pupilTracker.OnConnected += OnConnected;
 
 		if (pupilTracker.DrawMenu == null) {
 			switch (pupilTracker.tab) {
@@ -121,19 +126,24 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		////////INPUT FIELDS////////
 		switch (pupilTracker.SettingsTab) {
 		case 0://SERVICE
-			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////BROWSE FOR PUPIL SERVICE PATH
-			GUILayout.Label ("Pupil Service App Path : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
+			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////BROWSE FOR PUPIL SERVICE PATH
+			GUILayout.Label ("Pupil Service App Path : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
 			pupilTracker.PupilServicePath = EditorGUILayout.TextArea (pupilTracker.PupilServicePath, pupilTracker.SettingsBrowseStyle, GUILayout.Width (150), GUILayout.Height (22));
-			if (GUILayout.Button ("Browse", GUILayout.Width(55), GUILayout.Height(22))) {
+			if (GUILayout.Button ("Browse", GUILayout.Width (55), GUILayout.Height (22))) {
 				pupilTracker.PupilServicePath = EditorUtility.OpenFolderPanel ("TITLE", pupilTracker.PupilServicePath, "Default Name !");
 			}
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 			EditorGUILayout.Separator ();//------------------------------------------------------------//
 
-			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-			GUILayout.Label ("Server IP : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
+			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
+			GUILayout.Label ("Server IP : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
 			pupilTracker.ServerIP = EditorGUILayout.TextArea (pupilTracker.ServerIP, pupilTracker.SettingsValuesStyle, GUILayout.Width (150), GUILayout.Height (22));
+			if (GUILayout.Button ("Default")) {
+				pupilTracker.ServerIP = pupilTracker.ServerIP = "127.0.0.1";
+				Repaint ();
+				GUI.FocusControl ("");
+			}
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 			EditorGUILayout.Separator ();//------------------------------------------------------------//
@@ -191,27 +201,42 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		EditorGUI.BeginChangeCheck ();
 		pupilTracker.calibrationMode = GUILayout.Toolbar (pupilTracker.calibrationMode, new string[]{ "2D", "3D" });
 		if (EditorGUI.EndChangeCheck ()) {
+
 			switch (pupilTracker.calibrationMode) {
-			case 0:
+			case 0://On switched to 2D Calibration mode
+				pupilTracker.CalibrationGameObject2D.transform.FindChild("Calib").gameObject.GetComponent<PupilCalibMarker>().AssignDelegates();
 				pupilTracker.CalibrationGameObject2D.SetActive (true);
 				pupilTracker.CalibrationGameObject3D.SetActive (false);
 				break;
-			case 1:
+			case 1://On switched to 3D Calibration mode
+				pupilTracker.CalibrationGameObject3D.transform.FindChild("Calib Marker 3D").gameObject.GetComponent<PupilCalibMarker3D>().AssignDelegates();
 				pupilTracker.CalibrationGameObject2D.SetActive (false);
 				pupilTracker.CalibrationGameObject3D.SetActive (true);
 				break;
 			}
 		}
-		if (GUILayout.Button ("Calibrate", GUILayout.Height (35))) {
-			if (Application.isPlaying) {
-				pupilTracker.StartCalibration ();
-			} else {
-				EditorUtility.DisplayDialog ("Pupil service message", "You can only use calibration in playmode", "Understood");
+
+		if (isConnected) {
+			if (GUILayout.Button ("Calibrate", GUILayout.Height (35))) {
+				if (Application.isPlaying) {
+					pupilTracker.StartCalibration ();
+				} else {
+					EditorUtility.DisplayDialog ("Pupil service message", "You can only use calibration in playmode", "Understood");
+				}
 			}
+		} else {
+			GUI.enabled = false;
+			GUILayout.Button ("Calibrate (Not Connected !)", GUILayout.Height (35));
 		}
+
+
+		GUI.enabled = true;
 		
 	}
 
+	public void OnConnected(PupilGazeTracker manager){
+		isConnected = true;
+	}
 
 	/// Temporary function to create a texture based on a Color value. Most likely will be deleted.
 	private Texture2D MakeTexture(int width, int height, Color color, bool border = false, int borderWidth = 2, Color borderColor = default(Color)){
