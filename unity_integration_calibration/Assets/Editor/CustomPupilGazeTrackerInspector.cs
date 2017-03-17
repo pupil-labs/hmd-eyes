@@ -66,6 +66,10 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		////////DRAW TAB MENU SYSTEM////////
 		EditorGUI.BeginChangeCheck();
+
+		GUILayout.Label ("DEV", pupilTracker.SettingsLabelsStyle, GUILayout.Width(50));
+		pupilTracker.ShowBaseInspector = EditorGUILayout.Toggle (pupilTracker.ShowBaseInspector);
+
 		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
 		pupilTracker.tab = GUILayout.Toolbar (pupilTracker.tab, new string[]{ "Main Menu", "Settings", "Calibration" });
 		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
@@ -134,6 +138,9 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		////////INPUT FIELDS////////
 		switch (pupilTracker.SettingsTab) {
 		case 0://SERVICE
+			if (isCalibrating) {
+				GUI.enabled = false;
+			}
 			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////BROWSE FOR PUPIL SERVICE PATH
 			GUILayout.Label ("Pupil Service App Path : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
 			pupilTracker.PupilServicePath = EditorGUILayout.TextArea (pupilTracker.PupilServicePath, pupilTracker.SettingsBrowseStyle, GUILayout.Width (150), GUILayout.Height (22));
@@ -162,6 +169,8 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 			GUILayout.Space (5);//------------------------------------------------------------//
+
+			GUI.enabled = true;
 
 			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
 			GUILayout.Label ("Show All : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
