@@ -27,19 +27,21 @@ public class PupilCalibMarker3D : MonoBehaviour {
 
 	private bool _started;
 
-	float x,y,z;
 	Vector3 _v3Position;
 
-	private List<GameObject> _goPool = new List<GameObject>();
 
 	void Start () {
+
+
 		animSegmentAmount = PupilGazeTracker.Instance.DefaultCalibrationCount;
 		animSegmentLenght = animTotalLength / animSegmentAmount;
 		haloRenderer = transform.FindChild ("PupilLabsLogoHalo").gameObject.GetComponent<SpriteRenderer> ();
 		AssignDelegates ();
+
 	}
 
 	public void AssignDelegates(){
+
 		PupilGazeTracker.Instance.NullDelegates ();
 		PupilGazeTracker.Instance.OnCalibrationStarted += OnCalibrationStarted;
 		PupilGazeTracker.Instance.OnCalibrationDone += OnCalibrationDone;
@@ -64,21 +66,13 @@ public class PupilCalibMarker3D : MonoBehaviour {
 
 	void OnCalibData(PupilGazeTracker m,object position)
 	{
-
-		Vector3 _v3 = (Vector3)position;
-		this.x = _v3.x;
-		this.y = _v3.y;
-		this.z = _v3.z;
-
+		
 		_v3Position = (Vector3)position;
 
 		print("Receiving calib data : " + position);
 		ind++;
 		object _ind = ind;
-		///////////////////////////////solve this threading issue with GameObject pooling!!!!!!!!!!!!!////////////////
-		//this.gameObject.GetComponent<MainThread> ().Call (UpdateAnim, _ind);
-		//MainThread.Call (UpdateAnim, _ind);
-		//UpdateAnim (ind);
+
 		MainThread.Call(UpdateAnim, _ind);
 	}
 
@@ -143,8 +137,8 @@ public class PupilCalibMarker3D : MonoBehaviour {
 	IEnumerator SegmentAnimation(float length, float scale, GameObject _go){
 		
 		float currTime = 0f;
-		float _minS = 0.1f;
-		float _maxS = scale;
+//		float _minS = 0.1f;
+//		float _maxS = scale;
 		float step = scale / length;
 		while (currTime<length) {
 			try{

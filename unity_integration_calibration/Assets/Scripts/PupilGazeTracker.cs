@@ -3,17 +3,20 @@
 // https://github.com/mrayy
 
 using UnityEngine;
+//TEMP	
+//using UnityEditor;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Net;
 using System.Threading;
+using System.IO;
 using NetMQ;
 using NetMQ.Sockets;
 using System;
-using System.IO;
 using MsgPack.Serialization;
+using System.Linq;
 
 namespace Pupil
 {
@@ -45,30 +48,46 @@ namespace Pupil
 		public double angle;
 		public double[] center = new double[] {0,0};
 	}
+		
 	[Serializable]
-	public class PupilData3D
-	{
+	public class eyes3Ddata{
+		public double[] zero = new double[]{0,0,0};
+		public double[] one = new double[]{ 0, 0, 0 };
+	}
+
+	[Serializable]
+	public class BaseData{
+		public Circle3d circle_3d;
+		public string topic;
 		public double diameter;
 		public double confidence;
-		public ProjectedSphere projected_sphere = new ProjectedSphere();
-		public double theta;
-		public int model_id;
-		public double timestamp;
-		public double model_confidence;
 		public string method;
-		public double phi;
-		public Sphere sphere = new Sphere();
-		public double diameter_3d;
-		public double[] norm_pos = new double[] { 0, 0, 0 };
-		public double[] mm_pos = new double[] { 0, 0, 0 };
-		public int id;
 		public double model_birth_timestamp;
-		public Circle3d circle_3d = new Circle3d();
-		public Ellipse ellipese = new Ellipse();
-		public double gaze_point_3d_x;
-		public float gaze_point_3d_y;
-		public float gaze_point_3d_z;
+		public double theta;
+		public double[] norm_pos = new double[]{ 0, 0, 0 };
+		public Ellipse ellipse;
+		public double model_confidence;
+		public int id;
+		public double timestamp;
+		public Sphere sphere;
+		public ProjectedSphere projected_sphere;
+		public double diameter_3d;
+		public int model_id;
+		public double phi;
 	}
+	[Serializable]
+	public class PupilData{
+		public int id;
+		public eyes3Ddata gaze_normals_3d;
+		public eyes3Ddata eye_centers_3d;
+		public double[] gaze_point_3d = new double[]{ 0, 0, 0 };
+		public string topic;
+		public double confidence;
+		public double timestamp;
+		public double[] norm_pos = new double[]{ 0, 0, 0 };
+		public BaseData[] base_data;
+	}
+
 }
 
 public class PupilGazeTracker:MonoBehaviour
@@ -110,28 +129,41 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		MovingAverage xavg;
 		MovingAverage yavg;
+		MovingAverage zavg;
 
 		public EyeData(int len)
 		{
 			 xavg=new MovingAverage(len);
 			 yavg=new MovingAverage(len);
+			 zavg=new MovingAverage(len);
 		}
-		public Vector2 gaze=new Vector2();
+		public Vector2 gaze2D = new Vector2 ();
 		public Vector2 AddGaze(float x,float y)
 		{
-			gaze.x = xavg.AddSample (x);
-			gaze.y = yavg.AddSample (y);
-			return gaze;
+			gaze2D.x = xavg.AddSample (x);
+			gaze2D.y = yavg.AddSample (y);
+			return gaze2D;
+		}
+
+		public Vector3 gaze3D = new Vector3 ();
+		public Vector3 AddGaze(float x, float y,float z)
+		{
+			gaze3D.x = xavg.AddSample (x);
+			gaze3D.y = yavg.AddSample (y);
+			gaze3D.z = zavg.AddSample (z);
+			return gaze3D;
 		}
 	}
 	EyeData leftEye;
 	EyeData rightEye;
 
-	Vector2 _eyePos;
+	Vector2 _eyeGazePos2D;
+	Vector3 _eyeGazePos3D;
 
 	Thread _serviceThread;
 	bool _isDone=false;
-	Pupil.PupilData3D _pupilData;
+
+	Pupil.PupilData _pupilData;
 
 	public delegate void OnCalibrationStartedDeleg(PupilGazeTracker manager);
 	public delegate void OnCalibrationDoneDeleg(PupilGazeTracker manager);
@@ -139,7 +171,7 @@ public class PupilGazeTracker:MonoBehaviour
 	//public delegate void OnCalibDataDeleg(PupilGazeTracker manager,float x,float y);
 	public delegate void OnCalibDataDeleg(PupilGazeTracker manager,object position);
 	public delegate void DrawMenuDeleg ();
-	public delegate void OnConnectedDeleg (PupilGazeTracker manager);
+//	public delegate void OnConnectedDeleg (PupilGazeTracker manager);
 	public delegate void OnSwitchCalibPointDeleg(PupilGazeTracker manager);
 
 	public event OnCalibrationStartedDeleg OnCalibrationStarted;
@@ -147,13 +179,15 @@ public class PupilGazeTracker:MonoBehaviour
 	public event OnEyeGazeDeleg OnEyeGaze;
 	public event OnCalibDataDeleg OnCalibData;
 	public DrawMenuDeleg DrawMenu;
-	public event OnConnectedDeleg OnConnected;
+//	public event OnConnectedDeleg OnConnected;
 	public event OnSwitchCalibPointDeleg OnSwitchCalibPoint;
 
 	bool _isconnected =false;
+	public bool _isFullConnected =false;
 	RequestSocket _requestSocket ;
 
 	List<Dictionary<string,object>> _calibrationData=new List<Dictionary<string,object>>();
+	public Dictionary<string,object> dict = new Dictionary<string, object>();
 
 	[SerializeField]
 	Dictionary<string,object>[] _CalibrationPoints
@@ -189,10 +223,10 @@ public class PupilGazeTracker:MonoBehaviour
 	};
 	public struct CalibModeDetails
 	{
-		//public List<float[]> calibrationPoints;
 		public List<floatArray> calibrationPoints;
 		public string positionKey;//A string that refers to a value in the ref_data in 2D its norm_pos in 3D its mm_pos
 		public string calibPlugin;//Currently containing HMD_CALIBRATION and HMD_CALIBRATION_3D
+		public Type type;
 	}
 
 	public string ServerIP = "127.0.0.1";
@@ -204,14 +238,29 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public int ServiceStartupDelay = 7000;//Time to allow the Service to start before connecting to Server.
 	bool _serviceStarted = false;
+	bool _calibPointTimeOut = true;
 
+	public struct DebugVars{
+		public bool printMessage;	
+	}
+	public DebugVars debugVars = new DebugVars();
+
+	public bool printSampling;
+	public bool printMessage;
+	public bool printMessageType;
 	//CUSTOM EDITOR VARIABLES
+
+	public bool saved = false;
+
+	public int editedCalibIndex = 0;
+
 	public bool CalibrationPointsFoldout;
 	public bool CalibrationPoints2DFoldout;
 	public bool CalibrationPoints3DFoldout;
 	public int tab = 0;
 	public int SettingsTab;
 	public int calibrationMode = 0;
+	public int connectionMode = 0;
 	public CalibModes CurrentCalibrationMode{
 		get {
 			if (calibrationMode == 0) {
@@ -228,13 +277,6 @@ public class PupilGazeTracker:MonoBehaviour
 	public bool ShowBaseInspector;
 	public string PupilServicePath = "";
 	public string PupilServiceFileName = "";
-//	public string DefaultPathMac = "~/Applications/Pupil/";
-//	public string DefaultPathWin = "~Program Files/Pupil Service";
-//	public string DefaultPathLinux = "$HOME";
-//	public string ServiceFileNameMac = "Service.app";
-//	public string ServiceFileNameWin = "pupil_service.exe";
-//	public string ServiceFileNameLinux = "pupil_service";
-	//public RuntimePlatform platforms;
 
 	public GUIStyle MainTabsStyle = new GUIStyle ();
 	public GUIStyle SettingsLabelsStyle = new GUIStyle ();
@@ -285,32 +327,46 @@ public class PupilGazeTracker:MonoBehaviour
 		BothEyes
 	}
 
-	public Vector2 NormalizedEyePos
+	public Vector2 NormalizedEyePos2D
 	{
-		get{ return _eyePos; }
+		get{ return _eyeGazePos2D; }
 	}
 
-	public Vector2 EyePos
+	public Vector2 NormalizedEyePos3D
 	{
-		get{ return new Vector2((_eyePos.x-0.5f)*CanvasWidth,(_eyePos.y-0.5f)*CanvasHeight); }
+		get{ return _eyeGazePos3D; }
+	}
+	public Vector2 EyePos2D
+	{
+		get{ return new Vector2((_eyeGazePos2D.x-0.5f)*CanvasWidth,(_eyeGazePos2D.y-0.5f)*CanvasHeight); }
+	}
+	public Vector2 EyePos3D
+	{
+		get{ return new Vector3 (_eyeGazePos3D.x, _eyeGazePos3D.y, _eyeGazePos3D.z); }
 	}
 	public Vector2 LeftEyePos
 	{
-		get{ return leftEye.gaze; }
+		get{ return leftEye.gaze2D; }
 	}
 	public Vector2 RightEyePos
 	{
-		get{ return rightEye.gaze; }
+		get{ return rightEye.gaze2D; }
 	}
 
-	public Vector2 GetEyeGaze(GazeSource s)
-	{
+
+		
+	public Vector2 GetEyeGaze2D(GazeSource s){
 		if (s == GazeSource.RightEye)
 			return RightEyePos;
 		if (s == GazeSource.LeftEye)
 			return LeftEyePos;
-		return NormalizedEyePos;
+		return NormalizedEyePos2D;
 	}
+	public Vector3 GetEyeGaze3D(GazeSource s){
+		return _eyeGazePos3D;
+	}
+
+
 	
 	public double Confidence
 	{
@@ -328,6 +384,8 @@ public class PupilGazeTracker:MonoBehaviour
 
 	void Start()
 	{
+		_pupilData = new Pupil.PupilData ();
+
 		if (PupilGazeTracker._Instance == null)
 			PupilGazeTracker._Instance = this;
 		leftEye = new EyeData (SamplesCount);
@@ -346,7 +404,9 @@ public class PupilGazeTracker:MonoBehaviour
 			}
 		};
 
-		RunServiceAtPath ();
+		//Run the service locally, only if under settings its set to local
+		if (connectionMode == 0)
+			RunServiceAtPath ();
 
 		_serviceThread = new Thread(NetMQClient);
 		_serviceThread.Start();
@@ -410,21 +470,25 @@ public class PupilGazeTracker:MonoBehaviour
 		NetMQConfig.ContextCreate(true);
 
 		string subport="";
-		print ("Connect to the server: " + IPHeader + ServicePort + ".");
+		print ("Connecting to the server: " + IPHeader + ServicePort + ".");
 		Thread.Sleep (ServiceStartupDelay);
 
 		_requestSocket = new RequestSocket(IPHeader + ServicePort);
 
 		_requestSocket.SendFrame("SUB_PORT");
 		_isconnected = _requestSocket.TryReceiveFrameString(timeout, out subport);
-		//print (_isconnected + " isconnected");
 		_lastT = DateTime.Now;
 
 		if (_isconnected)
 		{
-			OnConnected (this);
-			//_serviceStarted = true;
-			StartProcess ();
+			_serviceStarted = true;
+			try{
+				StartProcess ();
+			}
+			catch{
+				print ("Couldn't start process");
+			}
+				
 			var subscriberSocket = new SubscriberSocket( IPHeader + subport);
 
 			subscriberSocket.Subscribe("gaze"); //subscribe for gaze data
@@ -433,25 +497,40 @@ public class PupilGazeTracker:MonoBehaviour
 			var msg = new NetMQMessage();
 			while ( _isDone == false)
 			{
+
 				_isconnected = subscriberSocket.TryReceiveMultipartMessage(timeout,ref(msg));
 				if (_isconnected)
 				{
+					_isFullConnected = true;
 					try
 					{
 						string msgType=msg[0].ConvertToString();
-						//Debug.Log(msgType);
+						if (printMessageType){
+							print(msgType);
+						}
 						if(msgType=="gaze")
 						{
 							var message = MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
-							print(message);
+							if (printMessage){
+								print(message);
+							}
 							MsgPack.MessagePackObject mmap = message.Value;
 							lock (_dataLock)
 							{
-								_pupilData = JsonUtility.FromJson<Pupil.PupilData3D>(mmap.ToString());
+								try{
+									string jsonData = mmap.ToString();
+									jsonData = jsonData.Replace ("0 :", "\"zero\" :");//Replacing the stringless keys in the json to a version that is recognizable by Unity's
+									jsonData = jsonData.Replace ("1 :", "\"one\" :");//JsonUtility.
+									_pupilData = JsonUtility.FromJson<Pupil.PupilData>(jsonData);//Be aware that errors in Json will not show on this Thread. For testing run on the MainThread
+								}
+								catch{
+									print("Assigning the _pupilData with the JsonUtility has Failed!");
+								}
 								if(_pupilData.confidence>0.5f)
 								{
 									OnPacket(_pupilData);
 								}
+
 							}
 						}
 						//Debug.Log(message);
@@ -486,6 +565,7 @@ public class PupilGazeTracker:MonoBehaviour
 		_requestSocket.Close ();
 		// Necessary to handle this NetMQ issue on Unity editor
 		// https://github.com/zeromq/netmq/issues/526
+	
 		print("ContextTerminate.");
 		NetMQConfig.ContextTerminate();
 
@@ -550,46 +630,19 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void StartProcess()
 	{
+		try{
 		_sendRequestMessage (new Dictionary<string,object> {{"subject","eye_process.should_start.0"},{"eye_id",0}});
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_start.1"},{"eye_id",1}});
+		}
+		catch{
+			print ("cannot start process");
+		}
 	}
 	public void StopProcess()
 	{
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",0}});
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",1}});
 	}
-	//TODO: Clean this up after testing!!!!!!!!!!!!!!
-//	public void StartCalibration3D(){
-//		//This might be different for 3DbiocularCalibration
-//		_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name","HMD_Calibration"}});
-//		_sendRequestMessage ( new Dictionary<string,object> {{"subject","calibration.should_start"},{"hmd_video_frame_size",new float[]{1000,1000}},{"outlier_threshold",35}});
-//		_setStatus (EStatus.Calibration);
-//	}
-
-//	public void StartCalibration()
-//	{
-//		print ("Calibrating!");
-//		//calibrate using default 9 points and 120 samples for each target
-//		StartCalibration (new Vector2[] {new Vector2 (0.5f, 0.5f), new Vector2 (0.2f, 0.2f), new Vector2 (0.2f, 0.5f),
-//			new Vector2 (0.2f, 0.8f), new Vector2 (0.5f, 0.8f), new Vector2 (0.8f, 0.8f),
-//			new Vector2 (0.8f, 0.5f), new Vector2 (0.8f, 0.2f), new Vector2 (0.5f, 0.2f)
-//		},DefaultCalibrationCount);
-//	}
-//	public void StartCalibration(Vector2[] calibPoints,int samples)
-//	{
-//		
-//		_calibPoints = calibPoints;
-//		_calibSamples = samples;
-//
-//		_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name","HMD_Calibration"}});
-//		_sendRequestMessage ( new Dictionary<string,object> {{"subject","calibration.should_start"},{"hmd_video_frame_size",new float[]{1000,1000}},{"outlier_threshold",35}});
-//		_setStatus (EStatus.Calibration);
-//
-//		if (OnCalibrationStarted != null)
-//			OnCalibrationStarted (this);
-//
-//
-//	}
 
 	public void StartCalibration(){
 		
@@ -613,16 +666,6 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 
 	//we add function to this OnCalibData delegate in the PupilCalibMarker script
-//	void _CalibData(float x,float y)
-//	{
-//		if(OnCalibData!=null)
-//			OnCalibData (this,x, y);
-//	}
-//	void _CalibData(float x,float y, float z)
-//	{
-//		if(OnCalibData!=null)
-//			OnCalibData (this,x, y, z);
-//	}
 	void _CalibData(float [] axisValues){
 		//TODO:
 		//object _o = axisValues.Length == 3 ? new Vector3 (axisValues [0], axisValues [1], axisValues [2]) : new Vector2 (axisValues [0], axisValues [1]);
@@ -644,8 +687,9 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 
 
-	void OnPacket(Pupil.PupilData3D data)
+	void OnPacket(Pupil.PupilData data)
 	{
+
 		//add new frame
 		_gazeFPS++;
 		var ct=DateTime.Now;
@@ -657,14 +701,14 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 
 		if (m_status == EStatus.ProcessingGaze) { //gaze processing stage
-			print("Processing gaze");
+			float x,y,z;
+
 			switch (CurrentCalibrationMode) {
 			case CalibModes._2D:
-				float x, y;
 				x = (float)data.norm_pos [0];
 				y = (float)data.norm_pos [1];
-				_eyePos.x = (leftEye.gaze.x + rightEye.gaze.x) * 0.5f;
-				_eyePos.y = (leftEye.gaze.y + rightEye.gaze.y) * 0.5f;
+				_eyeGazePos2D.x = (leftEye.gaze2D.x + rightEye.gaze2D.x) * 0.5f;
+				_eyeGazePos2D.y = (leftEye.gaze2D.y + rightEye.gaze2D.y) * 0.5f;
 				if (data.id == 0) {
 					leftEye.AddGaze (x, y);
 					if (OnEyeGaze != null)
@@ -676,55 +720,61 @@ public class PupilGazeTracker:MonoBehaviour
 				}
 				break;
 			case CalibModes._3D:
-				Vector3 _v3 = new Vector3 ((float)data.mm_pos [0], (float)data.mm_pos [1], (float)data.mm_pos [2]);
-				print ("receiving 3D mm_pos data : " + _v3);
+				x = (float)data.gaze_point_3d [0];
+				y = (float)data.gaze_point_3d [1];
+				z = (float)data.gaze_point_3d [2];
+				_eyeGazePos3D.x = x;
+				_eyeGazePos3D.y = y;
+				_eyeGazePos3D.z = z;
 				break;
 			}
 
 		} else if (m_status == EStatus.Calibration) {//gaze calibration stage
 			float t=GetPupilTimestamp();
 
-			//List<floatArray>
 			floatArray[] _cPoints = GetCalibPoints;
 			float[] _cPointFloatValues = _cPoints [_currCalibPoint].axisValues;
 
 			CalibModeDetails _cCalibDetails = CalibrationModes[CurrentCalibrationMode];
 
 //			print ("Calibration points amount for calibration method " + CurrentCalibrationMode + " is : " + _cPoints.Length + ". Current Calibration sample is : " + _currCalibSamples);
-
-			var ref0=new Dictionary<string,object>(){{_cCalibDetails.positionKey,_cPointFloatValues},{"timestamp",t},{"id",0}};
-			var ref1=new Dictionary<string,object>(){{_cCalibDetails.positionKey,_cPointFloatValues},{"timestamp",t},{"id",1}};
-
-			//keeping this until the new calibration method is not yet tested
-			//var ref0=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",0}};
-			//var ref1=new Dictionary<string,object>(){{"norm_pos",new float[]{_calibPoints[_currCalibPoint].x,_calibPoints[_currCalibPoint].y}},{"timestamp",t},{"id",1}};
-
 			//If OnCalibData delegate has assigned function from the Calibration Marker, assign the current calibration position to it.
 			_CalibData (_cPointFloatValues);
 
-			print ("this should happen");
 
+			// Giving the user a short time to focus on the Calibration Point target before starting adding the reference data
+			if (_calibPointTimeOut) {
+				Thread.Sleep (1000);
+				_calibPointTimeOut = false;
+			}
+
+			//Create reference data to pass on. _cPointFloatValues are storing the float values for the relevant current Calibration mode
+			var ref0=new Dictionary<string,object>(){{_cCalibDetails.positionKey,_cPointFloatValues},{"timestamp",t},{"id",0}};
+			var ref1=new Dictionary<string,object>(){{_cCalibDetails.positionKey,_cPointFloatValues},{"timestamp",t},{"id",1}};
+
+			//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
 			_calibrationData.Add (ref0);
 			_calibrationData.Add (ref1);
+
 			//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 			_currCalibSamples++;
 
-
-
-			//print ("Sampling at : " + _currCalibSamples);
+			//Debugging
+			if (printSampling) {
+				print ("Sampling at : " + _currCalibSamples);
+			}
 
 			//give a small timeout per sample.
 			Thread.Sleep (1000 / 60);
 
+			// SWITCHING CALIBRATION POINT
 			//If the current calibration sample is bigger or equal to the desired sampling (so we accomplished sampling for this calibration point),
 			//null the current sample and step to next calbration point.
 			//Also prepare calibration data for sending, and send it.
 			if (_currCalibSamples >= DefaultCalibrationCount) {
+				_calibPointTimeOut = true;
 				_currCalibSamples = 0;
 				_currCalibPoint++;
-
-				print ("Switching Calibration point to : " + _currCalibPoint);
-
 
 					
 				//reformat the calibration data for sending.
@@ -732,6 +782,7 @@ public class PupilGazeTracker:MonoBehaviour
 				int _index = 0;
 				foreach (var v in _calibrationData) {
 					pointsData += JsonUtility.ToJson (v);//String.Format("{'norm_pos':({0},{1}),'timestamp':{2},'id':{3}}",v.norm_pos[0],v.norm_pos[1],v.timestamp,v.id);
+					//print(pointsData);
 					++_index;
 					if (_index != _calibrationData.Count) {
 						pointsData += ",";
@@ -740,23 +791,14 @@ public class PupilGazeTracker:MonoBehaviour
 				pointsData += "]";
 
 			//	pointsData = JsonUtility.ToJson (_CalibrationPoints);
-				//Debug.Log (pointsData);
-				//print(_CalibrationPoints + " PointsData : " + pointsData);
-				Dictionary<string,object> _d = (Dictionary<string,object>)_CalibrationPoints.GetValue (0);
-				object _o = new object ();
-				_d.TryGetValue (_cCalibDetails.positionKey, out _o);
-				float[] _f = (float[])_o;
-				print ("Values for calib points : " + _f [0] + " : " + _f [1]);
-				//Send the current relevant calibration data for the current calibration point.
 
+				//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array.
 				_sendRequestMessage (new Dictionary<string,object> {{"subject","calibration.add_ref_data"},{"ref_data",_CalibrationPoints}});
 				//Clear the current calibration data, so we can proceed to the next point if there is any.
 				_calibrationData.Clear ();
 
-				print (_currCalibPoint + "  _cPoints.Lengt : " + _cPoints.Length);
-				//Stop calibration if we accomplished all required calibration target.
+				//Stop calibration if we accomplished all required calibration targets.
 				if (_currCalibPoint >= _cPoints.Length) {
-					//print ("We are out of calib points!");
 					StopCalibration ();
 				}
 				OnSwitchCalibPoint (this);
@@ -770,5 +812,8 @@ public class PupilGazeTracker:MonoBehaviour
 		str += "\nLeft Eye:" + LeftEyePos.ToString ();
 		str += "\nRight Eye:" + RightEyePos.ToString ();
 		GUI.TextArea (new Rect (0, 0, 200, 50), str);
+	}
+	void OnApplicationQuit(){
+
 	}
 }

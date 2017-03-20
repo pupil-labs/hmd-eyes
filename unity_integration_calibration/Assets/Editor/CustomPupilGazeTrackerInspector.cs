@@ -17,15 +17,18 @@ public class CustomPupilGazeTrackerInspector : Editor {
 	PupilGazeTracker pupilTracker;
 	bool isConnected = false;
 	bool isCalibrating = false;
-		
+
+	Camera CalibEditorCamera;
+
 	void OnEnable(){
 	
 		pupilTracker = (PupilGazeTracker)target;
 		pupilTracker.AdjustPath ();
 
+		EditorApplication.update += CheckConnection;
 
-		pupilTracker.OnConnected -= OnConnected;
-		pupilTracker.OnConnected += OnConnected;
+//		pupilTracker.OnConnected -= OnConnected;
+//		pupilTracker.OnConnected += OnConnected;
 
 		if (pupilTracker.DrawMenu == null) {
 			switch (pupilTracker.tab) {
@@ -45,7 +48,11 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		}
 
 	}
+	void OnSceneGUI(){
+		//CalibrationPointsEDitor.DrawCalibrationPointsEditor ();
 
+		//	.Popup (1, new string[]{ "asd", "asdfdg" });
+	}
 	public override void OnInspectorGUI(){
 		
 		pupilTracker.FoldOutStyle = GUI.skin.GetStyle ("Foldout");
@@ -63,6 +70,13 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		System.Object logo = Resources.Load("PupilLabsLogo") as Texture;
 		GUILayout.Label (logo as Texture, pupilTracker.LogoStyle);
 		////////LABEL WITH STYLE////////
+
+		if (pupilTracker.connectionMode == 0) {
+			GUILayout.Label ("Connecting to localHost", pupilTracker.LogoStyle);
+		} else {
+			GUILayout.Label ("Connecting to Remote : " + pupilTracker.ServerIP, pupilTracker.LogoStyle);
+		}
+
 
 		////////DRAW TAB MENU SYSTEM////////
 		EditorGUI.BeginChangeCheck();
@@ -117,6 +131,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		////////BUTTONS FOR DEBUGGING TO COMMENT IN PUBLIC VERSION////////
 		pupilTracker.isDebugFoldout = EditorGUILayout.Foldout (pupilTracker.isDebugFoldout, "Debug Buttons");
+		GUILayout.BeginHorizontal ();
+		pupilTracker.printSampling = GUILayout.Toggle (pupilTracker.printSampling, "Print At Sampling");
+		pupilTracker.printMessage = GUILayout.Toggle (pupilTracker.printMessage, "Print Messages");
+		pupilTracker.printMessageType = GUILayout.Toggle (pupilTracker.printMessageType, "Print Messages Type");
+		GUILayout.EndHorizontal ();
+
 		if (pupilTracker.isDebugFoldout) {
 			EditorGUILayout.BeginHorizontal ();
 			if (GUILayout.Button ("Start Pupil Service"))
@@ -124,6 +144,8 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			if (GUILayout.Button ("Stop Pupil Service"))
 				pupilTracker.StopService ();
 			EditorGUILayout.EndHorizontal ();
+			if (GUILayout.Button ("Draw Calibration Points Editor"))
+				CalibrationPointsEditor.DrawCalibrationPointsEditor (pupilTracker);
 		}
 		////////BUTTONS FOR DEBUGGING TO COMMENT IN PUBLIC VERSION////////
 
@@ -132,15 +154,15 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		// test for changes in exposed values
 		EditorGUI.BeginChangeCheck();
-
 		pupilTracker.SettingsTab = GUILayout.Toolbar (pupilTracker.SettingsTab, new string[]{ "Service", "Calibration" });
-		GUILayout.Space (30);
 		////////INPUT FIELDS////////
 		switch (pupilTracker.SettingsTab) {
 		case 0://SERVICE
 			if (isCalibrating) {
 				GUI.enabled = false;
 			}
+
+			GUILayout.Space (30);
 			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////BROWSE FOR PUPIL SERVICE PATH
 			GUILayout.Label ("Pupil Service App Path : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
 			pupilTracker.PupilServicePath = EditorGUILayout.TextArea (pupilTracker.PupilServicePath, pupilTracker.SettingsBrowseStyle, GUILayout.Width (150), GUILayout.Height (22));
@@ -155,7 +177,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			GUILayout.Label ("Server IP : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
 			pupilTracker.ServerIP = EditorGUILayout.TextArea (pupilTracker.ServerIP, pupilTracker.SettingsValuesStyle, GUILayout.Width (150), GUILayout.Height (22));
 			if (GUILayout.Button ("Default")) {
-				pupilTracker.ServerIP = pupilTracker.ServerIP = "127.0.0.1";
+				pupilTracker.ServerIP = "127.0.0.1";
 				Repaint ();
 				GUI.FocusControl ("");
 			}
@@ -163,14 +185,18 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			EditorGUILayout.Separator ();//------------------------------------------------------------//
 
-			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-			GUILayout.Label ("Service Port : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
-			pupilTracker.ServicePort = EditorGUILayout.IntField (pupilTracker.ServicePort, pupilTracker.SettingsValuesStyle, GUILayout.Width(150), GUILayout.Height(22));
+			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
+			GUILayout.Label ("Service Port : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
+			pupilTracker.ServicePort = EditorGUILayout.IntField (pupilTracker.ServicePort, pupilTracker.SettingsValuesStyle, GUILayout.Width (150), GUILayout.Height (22));
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 			GUILayout.Space (5);//------------------------------------------------------------//
 
 			GUI.enabled = true;
+
+			GUI.color = new Color (.7f, .7f, .7f, 1f);
+			pupilTracker.connectionMode = GUILayout.Toolbar (pupilTracker.connectionMode, new string[]{ "Local", "Remote" }, GUILayout.Height(50));
+			GUI.color = Color.white;
 
 			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
 			GUILayout.Label ("Show All : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
@@ -192,6 +218,8 @@ public class CustomPupilGazeTrackerInspector : Editor {
 //			pupilTracker.CalibrationGameObject2D = (GameObject)EditorGUILayout.ObjectField (pupilTracker.CalibrationGameObject2D, typeof(GameObject), true);
 //			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 //
+			GUILayout.Space (30);
+
 			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
 			GUILayout.Label ("Calibration Sample Count : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (175));
 			pupilTracker.DefaultCalibrationCount = EditorGUILayout.IntSlider (pupilTracker.DefaultCalibrationCount, 1, 120);
@@ -294,7 +322,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		////////INPUT FIELDS////////
 
 		//if change found set scene as dirty, so user will have to save changed values.
-		if (EditorGUI.EndChangeCheck())
+		if (EditorGUI.EndChangeCheck() && !Application.isPlaying)
 		{
 			EditorSceneManager.MarkSceneDirty (EditorSceneManager.GetActiveScene ());
 		}
@@ -321,14 +349,16 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			switch (pupilTracker.calibrationMode) {
 			case 0://On switched to 2D Calibration mode
-				pupilTracker.CalibrationGameObject2D.transform.FindChild("Calib").gameObject.GetComponent<PupilCalibMarker>().AssignDelegates();
+				pupilTracker.CalibrationGameObject2D.transform.FindChild ("Calib").gameObject.GetComponent<PupilCalibMarker> ().AssignDelegates ();
 				pupilTracker.CalibrationGameObject2D.SetActive (true);
 				pupilTracker.CalibrationGameObject3D.SetActive (false);
+				Camera.main.orthographic = true;
 				break;
 			case 1://On switched to 3D Calibration mode
-				pupilTracker.CalibrationGameObject3D.transform.FindChild("Calib Marker 3D").gameObject.GetComponent<PupilCalibMarker3D>().AssignDelegates();
+				pupilTracker.CalibrationGameObject3D.transform.FindChild ("Calib Marker 3D").gameObject.GetComponent<PupilCalibMarker3D> ().AssignDelegates ();
 				pupilTracker.CalibrationGameObject2D.SetActive (false);
 				pupilTracker.CalibrationGameObject3D.SetActive (true);
+				Camera.main.orthographic = false;
 				break;
 			}
 		}
@@ -358,6 +388,13 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		
 	}
 
+	public void CheckConnection(){
+		if (pupilTracker._isFullConnected) {
+			Debug.Log ("Connection Established");
+			isConnected = true;
+			EditorApplication.update = null;
+		}
+	}
 	public void CheckCalibration(){
 		Debug.Log ("Editor Update");
 		if (pupilTracker.m_status == PupilGazeTracker.EStatus.Calibration) {
@@ -368,9 +405,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		}
 	}
 
-	public void OnConnected(PupilGazeTracker manager){
-		isConnected = true;
-	}
+
 
 
 	public static Vector3 Vector3FieldEx(string label, Vector3 value, params GUILayoutOption[] options) {
@@ -424,4 +459,19 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		return result;
 	}
 
+	void DrawCalibPointsEditor(){
+
+		GUILayout.Box ("");
+		//Rect R = GUILayoutUtility.GetLastRect ();
+
+		if (Event.current.type == EventType.Repaint) {
+			Rect sceneRect = GUILayoutUtility.GetLastRect ();
+			sceneRect.y += 20;
+
+			CalibEditorCamera.pixelRect = sceneRect;
+			CalibEditorCamera.Render ();
+
+		}
+		Handles.SetCamera (CalibEditorCamera);
+	}
 }
