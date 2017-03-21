@@ -331,13 +331,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.Space (50);
 
 	}
-	//[DrawGizmo(GizmoType.Active,GizmoType.Selected)]
-	public void DrawCalibrationDebug(){
-		Debug.Log ("adasdasdas");
-		//Gizmos.DrawFrustum (new Vector3 (0, 0, 0), Camera.main.fieldOfView, 1000, .1f, 10f);
 
-
-	}
 	private void DrawCalibration(){
 		EditorGUI.BeginChangeCheck ();
 
@@ -358,10 +352,10 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			pupilTracker.calibrationDebugMode = GUILayout.Toggle (pupilTracker.calibrationDebugMode, "Calibration Debug Mode", "Button");
 			if (EditorGUI.EndChangeCheck ()) {
 				if (pupilTracker.calibrationDebugMode) {
-					pupilTracker.OnUpdate -= DrawCalibrationDebug;
-					pupilTracker.OnUpdate += DrawCalibrationDebug;
+					pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
+					pupilTracker.OnCalibDebug += pupilTracker.DrawCalibrationDebug;
 				} else {
-					pupilTracker.OnUpdate -= DrawCalibrationDebug;
+					pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
 				}
 			}
 			//GUILayout.Label ("Debug Mode ON");

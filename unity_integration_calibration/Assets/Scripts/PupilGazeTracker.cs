@@ -244,7 +244,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public delegate void DrawMenuDeleg ();
 //	public delegate void OnConnectedDeleg (PupilGazeTracker manager);
 	public delegate void OnSwitchCalibPointDeleg(PupilGazeTracker manager);
-	public delegate void OnUpdateDeleg();
+	public delegate void OnCalibDebugDeleg();
 
 	public event OnCalibrationStartedDeleg OnCalibrationStarted;
 	public event OnCalibrationDoneDeleg OnCalibrationDone;
@@ -254,7 +254,7 @@ public class PupilGazeTracker:MonoBehaviour
 //	public event OnConnectedDeleg OnConnected;
 	public event OnSwitchCalibPointDeleg OnSwitchCalibPoint;
 
-	public OnUpdateDeleg OnUpdate;
+	public OnCalibDebugDeleg OnCalibDebug;
 
 	bool _isconnected =false;
 	public bool _isFullConnected =false;
@@ -503,28 +503,30 @@ public class PupilGazeTracker:MonoBehaviour
 			lineMaterial.SetInt ("_ZWrite", 0);
 		}
 	}
-	public void OnRenderObject(){
-		
-		//print ("asdadw");
-		//Debug.Log("asdasdwafafaefdaw");
+	public void DrawCalibrationDebug(){
 		CreateLineMaterial ();
 		// Apply the line material
 		lineMaterial.SetPass (0);
 
-		DrawCameraFrustum (transform, fov, aspectRatios.FULLHD, 10, 50);
-
-		//Gizmos.DrawFrustum (new Vector3 (0, 0, 0), 60, 1000, 1, 10);
-
-
-
-		//		if (OnUpdate != null)
-		//			OnUpdate ();
+		DrawCameraFrustum (Camera.main.transform, fov, aspectRatios.FULLHD, MinViewDistance, MaxViewDistance);
+		GL.wireframe = true;
+		DrawDebugSphere (Camera.main.transform,  Vector3.zero, 0);//eye0
+		DrawDebugSphere (Camera.main.transform,  Vector3.zero, 1);//eye1
+		GL.wireframe = false;
+	}
+	public void OnRenderObject(){
+		if (OnCalibDebug != null)
+			OnCalibDebug ();
 	}
 	public float fov = 60;
-	public float zOffset = 20;
-	public float scale = 2;
+	public float MinViewDistance = 20;
+	public float MaxViewDistance = 200;
+	public float scale = 1;
+	public float cameraGizmoLength = 50;
+	public Mesh DebugEyeMesh;
 
 	public enum aspectRatios{FULLVIVE,HALFVIVE,FULLHD};
+
 	public class Rect3D
 	{
 		public float width;
@@ -556,11 +558,15 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 	}
 
+	public void DrawDebugSphere(Transform matrix, Vector3 origin, int eyeID){
+		CreateLineMaterial ();
+		Matrix4x4 _m = new Matrix4x4 ();
+		_m.SetTRS (new Vector3 (10, 0, 0), Quaternion.identity, new Vector3 (20, 20, 20));
+		//Graphics.DrawMeshNow(DebugEyeMesh, Matrix4x4.TRS(origin, Quaternion.identity, new Vector3(20,20,20)));
+		Graphics.DrawMeshNow(DebugEyeMesh, Camera.main.transform.localToWorldMatrix*_m);
 
-//	void OnDrawGizmosSelected(){
-//	
-//		Gizmos.DrawSphere (new Vector3 (0, 0, 0), 50);
-//	}
+		//Graphics.DrawMeshNow()
+	}
 
 	public void DrawCameraFrustum(Transform origin, float fov, aspectRatios aspect, float minViewDistance, float maxViewDistance){
 		GL.PushMatrix ();
@@ -579,9 +585,6 @@ public class PupilGazeTracker:MonoBehaviour
 			break;
 		}
 		Vector3 up = origin.up;
-		float width = aspectRatio;
-		float height = 1;
-
 		Rect3D farPlaneRect = new Rect3D ();
 		Rect3D nearPlaneRect = new Rect3D ();
 
@@ -590,29 +593,58 @@ public class PupilGazeTracker:MonoBehaviour
 		GL.MultMatrix (origin.localToWorldMatrix);
 
 		GL.Begin (GL.LINES);
-		//Vector2 _v2Norm = new Vector2(width)
-		nearPlaneRect.Draw (width, height, minViewDistance, minViewDistance);
-		farPlaneRect.Draw (width, height, maxViewDistance, maxViewDistance);
+		float ratio =  Mathf.Sin( ((fov/2)*Mathf.PI)/180 )/Mathf.Sin(  (   (  ((180-fov)/2)*Mathf.PI   )/180    ) );
 
+		float widthMinView = (ratio * minViewDistance * 2) * -1;
+		float heightMinView = widthMinView/aspectRatio;
+		float widthMaxView = (ratio * maxViewDistance * 2) * -1;
+		float heightMaxView = widthMaxView/aspectRatio;
+
+
+		nearPlaneRect.Draw (widthMinView, heightMinView, minViewDistance, 1);
+		farPlaneRect.Draw (widthMaxView, heightMaxView, maxViewDistance, 1);
+
+		//ConnectRectangles
+		for (int i = 0; i < nearPlaneRect.verticies.Count (); i++) {
+			GL.Vertex (nearPlaneRect.verticies[i]);
+			GL.Vertex (farPlaneRect.verticies[i]);
+		}
+
+		//Draw Gizmo
+		//X
+		GL.Color (Color.red);
+		GL.Vertex(Vector3.zero);
+		GL.Vertex(origin.right*cameraGizmoLength);
+		//Y
 		GL.Color (Color.green);
+		GL.Vertex(Vector3.zero);
+		GL.Vertex(-origin.up*cameraGizmoLength);
+		//Z
+		GL.Color (Color.blue);
+		GL.Vertex(Vector3.zero);
+		GL.Vertex(origin.forward*cameraGizmoLength);
+		//Draw Gizmo
 
 
 
-		Vector3 fovR = origin.forward;
-		fovR = Quaternion.AngleAxis ((fov / 2), up) * fovR;
-		
-		Vector3 fovL = origin.forward;
-		fovL = Quaternion.AngleAxis (-(fov / 2), up) * fovL;
 
 
-		//FOV right and left
-		GL.Vertex (new Vector3(0,0,0));
-		GL.Vertex (fovR*1000);
-
-		GL.Vertex (new Vector3(0,0,0));
-		GL.Vertex (fovL*1000);
-		//FOV right and left
-
+//
+//		Vector3 fovR = origin.forward;
+//		fovR = Quaternion.AngleAxis ((fov / 2), up) * fovR;
+//		
+//		Vector3 fovL = origin.forward;
+//		fovL = Quaternion.AngleAxis (-(fov / 2), up) * fovL;
+//
+//
+//		//FOV right and left
+//		GL.Vertex (new Vector3(0,0,0));
+//		GL.Vertex (fovR*1000);
+//
+//		GL.Vertex (new Vector3(0,0,0));
+//		GL.Vertex (fovL*1000);
+//		//FOV right and left
+//
 		GL.End ();
 
 		GL.PopMatrix ();
