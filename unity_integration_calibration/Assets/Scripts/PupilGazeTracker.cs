@@ -89,7 +89,78 @@ namespace Pupil
 	}
 
 }
+[Serializable]
+public struct floatArray{
+	public float[] axisValues;
+}
+	
+[Serializable]
+public class CalibPoints
+{
+	public List<floatArray> list3D;
+	public List<floatArray> list2D;
+	public void SetVector(List<floatArray> floatArrayList, Vector3 _v3, int index){
+		floatArrayList [index].axisValues [0] = _v3.x;
+		floatArrayList [index].axisValues [1] = _v3.y;
+		try{
+		floatArrayList [index].axisValues [2] = _v3.z;
+		}catch{}
+	}
+	public object GetVector(List<floatArray> floatArrayList, int index){
+		if (floatArrayList [index].axisValues.Count() == 3) 
+			return new Vector3 (floatArrayList [index].axisValues [0], floatArrayList [index].axisValues [1], floatArrayList [index].axisValues [2]);
+		if (floatArrayList [index].axisValues.Count() == 2) 
+			return new Vector3 (floatArrayList [index].axisValues [0], floatArrayList [index].axisValues [1], 0);
+		return new object ();
+	}
 
+	public List<floatArray> Get2DList(){
+		if (list2D == null)
+			list2D = new List<floatArray> ();
+		return list2D;
+	}
+	public List<floatArray> Get3DList(){
+		if (list3D == null)
+			list3D = new List<floatArray> ();
+		return list3D;
+	}
+	public List<floatArray> GetActiveList(PupilGazeTracker.CalibModes currentCalibMode){
+		if (currentCalibMode == PupilGazeTracker.CalibModes._2D)
+			return list2D;
+		if (currentCalibMode == PupilGazeTracker.CalibModes._3D)
+			return list3D;
+		return new List<floatArray> ();
+	}
+	public string[] GetPointNames(PupilGazeTracker.CalibModes currentCalibMode){
+		List<string> _s = new List<string> ();
+		int i = 0;
+		foreach (floatArray _fA in GetActiveList(currentCalibMode)) {
+			i++;
+			_s.Add (currentCalibMode.ToString ().Substring (1) + " Calibration Point " + i);
+		}
+		return _s.ToArray ();
+	}
+	public void Remove2DPoint(floatArray incoming){
+		if (list2D == null)
+			return;
+		list2D.Remove (incoming);
+	}
+	public void Remove3DPoint(floatArray incoming){
+		if (list3D == null)
+			return;
+		list3D.Remove (incoming);
+	}
+	public void Add3DPoint(floatArray incoming){
+		if (list3D == null)
+			list3D = new List<floatArray> ();
+		list3D.Add (incoming);
+	}
+	public void Add2DPoint(floatArray incoming){
+		if (list2D == null)
+			list2D = new List<floatArray> ();
+		list2D.Add (incoming);
+	}
+}
 public class PupilGazeTracker:MonoBehaviour
 {
 	static PupilGazeTracker _Instance;
@@ -173,6 +244,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public delegate void DrawMenuDeleg ();
 //	public delegate void OnConnectedDeleg (PupilGazeTracker manager);
 	public delegate void OnSwitchCalibPointDeleg(PupilGazeTracker manager);
+	public delegate void OnUpdateDeleg();
 
 	public event OnCalibrationStartedDeleg OnCalibrationStarted;
 	public event OnCalibrationDoneDeleg OnCalibrationDone;
@@ -181,6 +253,8 @@ public class PupilGazeTracker:MonoBehaviour
 	public DrawMenuDeleg DrawMenu;
 //	public event OnConnectedDeleg OnConnected;
 	public event OnSwitchCalibPointDeleg OnSwitchCalibPoint;
+
+	public OnUpdateDeleg OnUpdate;
 
 	bool _isconnected =false;
 	public bool _isFullConnected =false;
@@ -194,27 +268,39 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		get{ return _calibrationData.ToArray (); }
 	}
-
-
-	Vector2[] _calibPoints;
+		
+	//Vector2[] _calibPoints;
 	int _calibSamples;
 	int _currCalibPoint=0;
 	int _currCalibSamples=0;
 
-	[Serializable]
-	public struct floatArray{
-		public float[] axisValues;
-	}
-	public List<floatArray> CalibPoints2D;
-	public List<floatArray> CalibPoints3D;
+	//private static CalibPoints _cpoints;
+	//public List<floatArray> CalibPoints2D;
+	public CalibPoints _calibPoints = new CalibPoints();
 
+	//TODO: replace this
 	public floatArray[] GetCalibPoints{
 		get{ 
 			return CalibrationModes [CurrentCalibrationMode].calibrationPoints.ToArray ();
 		}
 	}
 
-	Dictionary<CalibModes,CalibModeDetails> CalibrationModes;
+	public Dictionary<CalibModes,CalibModeDetails> CalibrationModes{
+		get{
+			Dictionary<CalibModes, CalibModeDetails> _calibModes = new Dictionary<CalibModes, CalibModeDetails> ();
+			_calibModes.Add (CalibModes._2D, new CalibModeDetails () {
+				calibrationPoints = _calibPoints.Get2DList(),
+				calibPlugin = "HMD_Calibration",
+				positionKey = "norm_pos"
+			});
+			_calibModes.Add (CalibModes._3D, new CalibModeDetails () {
+				calibrationPoints = _calibPoints.Get3DList(),
+				calibPlugin = "HMD_Calibration_3D",
+				positionKey = "mm_pos"
+			});
+			return _calibModes;
+		}
+	}
 
 
 	public enum CalibModes{
@@ -260,7 +346,13 @@ public class PupilGazeTracker:MonoBehaviour
 	public int tab = 0;
 	public int SettingsTab;
 	public int calibrationMode = 0;
+	public bool calibrationDebugMode = false;
 	public int connectionMode = 0;
+	public CalibModeDetails CurrentCalibrationModeDetails{
+		get{
+			return CalibrationModes [CurrentCalibrationMode];
+		}
+	}
 	public CalibModes CurrentCalibrationMode{
 		get {
 			if (calibrationMode == 0) {
@@ -382,6 +474,149 @@ public class PupilGazeTracker:MonoBehaviour
 		_Instance = this;
 	}
 
+
+	void Update(){
+		//CalibrationDebugMode.Instantiate ();
+		//CalibrationDebugMode.OnRenderObject();
+	}
+	public static int lineCount = 100;
+	public static float radius = 3.0f;
+
+	static Material lineMaterial;
+
+	static void CreateLineMaterial ()
+	{
+		if (!lineMaterial)
+		{
+			// Unity has a built-in shader that is useful for drawing
+			// simple colored things.
+			Shader shader = Shader.Find ("Hidden/Internal-Colored");
+			lineMaterial = new Material (shader);
+			lineMaterial.hideFlags = HideFlags.HideAndDontSave;
+			// Turn on alpha blending
+			lineMaterial.SetInt ("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+			lineMaterial.SetInt ("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+			// Turn backface culling off
+			lineMaterial.SetInt ("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+			// Turn off depth writes
+			lineMaterial.SetInt ("_ZWrite", 0);
+		}
+	}
+	public void OnRenderObject(){
+		
+		//print ("asdadw");
+		//Debug.Log("asdasdwafafaefdaw");
+		CreateLineMaterial ();
+		// Apply the line material
+		lineMaterial.SetPass (0);
+
+		DrawCameraFrustum (transform, fov, aspectRatios.FULLHD, 10, 50);
+
+		//Gizmos.DrawFrustum (new Vector3 (0, 0, 0), 60, 1000, 1, 10);
+
+
+
+		//		if (OnUpdate != null)
+		//			OnUpdate ();
+	}
+	public float fov = 60;
+	public float zOffset = 20;
+	public float scale = 2;
+
+	public enum aspectRatios{FULLVIVE,HALFVIVE,FULLHD};
+	public class Rect3D
+	{
+		public float width;
+		public float height;
+		public float zOffset;
+		public float scale;
+		public Vector3[] verticies = new Vector3[4];
+
+		public void SetPosition(){
+			verticies [0] = new Vector3 (-(width / 2)*scale, -(height / 2)*scale, zOffset);
+			verticies [1] = new Vector3 ((width / 2)*scale, -(height / 2)*scale, zOffset);
+			verticies [2] = new Vector3 ((width / 2)*scale, (height / 2)*scale, zOffset);
+			verticies [3] = new Vector3 (-(width / 2)*scale, (height / 2)*scale, zOffset);
+		}
+		public void Draw(float _width, float _height, float _zOffset, float _scale){
+			width = _width;
+			height = _height;
+			zOffset = _zOffset;
+			scale = _scale;
+			SetPosition ();
+			for (int i = 0; i <= verticies.Count() - 1; i++) {
+				GL.Vertex (verticies [i]);
+				if (i != verticies.Count() - 1) {
+					GL.Vertex (verticies [i + 1]);
+				} else {
+					GL.Vertex (verticies [0]);
+				}
+			}
+		}
+	}
+
+
+//	void OnDrawGizmosSelected(){
+//	
+//		Gizmos.DrawSphere (new Vector3 (0, 0, 0), 50);
+//	}
+
+	public void DrawCameraFrustum(Transform origin, float fov, aspectRatios aspect, float minViewDistance, float maxViewDistance){
+		GL.PushMatrix ();
+
+		float aspectRatio = 1;
+
+		switch (aspect) {
+		case aspectRatios.FULLHD:
+			aspectRatio = 1.7777f;
+			break;
+		case aspectRatios.FULLVIVE:
+			aspectRatio = 1.8f;
+			break;
+		case aspectRatios.HALFVIVE:
+			aspectRatio = 0.9f;
+			break;
+		}
+		Vector3 up = origin.up;
+		float width = aspectRatio;
+		float height = 1;
+
+		Rect3D farPlaneRect = new Rect3D ();
+		Rect3D nearPlaneRect = new Rect3D ();
+
+
+
+		GL.MultMatrix (origin.localToWorldMatrix);
+
+		GL.Begin (GL.LINES);
+		//Vector2 _v2Norm = new Vector2(width)
+		nearPlaneRect.Draw (width, height, minViewDistance, minViewDistance);
+		farPlaneRect.Draw (width, height, maxViewDistance, maxViewDistance);
+
+		GL.Color (Color.green);
+
+
+
+		Vector3 fovR = origin.forward;
+		fovR = Quaternion.AngleAxis ((fov / 2), up) * fovR;
+		
+		Vector3 fovL = origin.forward;
+		fovL = Quaternion.AngleAxis (-(fov / 2), up) * fovL;
+
+
+		//FOV right and left
+		GL.Vertex (new Vector3(0,0,0));
+		GL.Vertex (fovR*1000);
+
+		GL.Vertex (new Vector3(0,0,0));
+		GL.Vertex (fovL*1000);
+		//FOV right and left
+
+		GL.End ();
+
+		GL.PopMatrix ();
+	}
+
 	void Start()
 	{
 		_pupilData = new Pupil.PupilData ();
@@ -393,16 +628,16 @@ public class PupilGazeTracker:MonoBehaviour
 
 		_dataLock = new object ();
 
-		CalibrationModes = new Dictionary<CalibModes, CalibModeDetails> { 
-			{
-				CalibModes._2D,
-				new CalibModeDetails (){ calibrationPoints = CalibPoints2D, calibPlugin = "HMD_Calibration", positionKey = "norm_pos" }
-			},
-			{
-				CalibModes._3D,
-				new CalibModeDetails (){ calibrationPoints = CalibPoints3D, calibPlugin = "HMD_Calibration_3D", positionKey = "mm_pos" }
-			}
-		};
+//		CalibrationModes = new Dictionary<CalibModes, CalibModeDetails> { 
+//			{
+//				CalibModes._2D,
+//				new CalibModeDetails (){ calibrationPoints = CalibPoints2D, calibPlugin = "HMD_Calibration", positionKey = "norm_pos" }
+//			},
+//			{
+//				CalibModes._3D,
+//				new CalibModeDetails (){ calibrationPoints = CalibPoints3D, calibPlugin = "HMD_Calibration_3D", positionKey = "mm_pos" }
+//			}
+//		};
 
 		//Run the service locally, only if under settings its set to local
 		if (connectionMode == 0)
@@ -735,6 +970,9 @@ public class PupilGazeTracker:MonoBehaviour
 			floatArray[] _cPoints = GetCalibPoints;
 			float[] _cPointFloatValues = _cPoints [_currCalibPoint].axisValues;
 
+//			print (_cPointFloatValues.Count());
+//			print (_cPointFloatValues [0] + " , " + _cPointFloatValues [1]);
+
 			CalibModeDetails _cCalibDetails = CalibrationModes[CurrentCalibrationMode];
 
 //			print ("Calibration points amount for calibration method " + CurrentCalibrationMode + " is : " + _cPoints.Length + ". Current Calibration sample is : " + _currCalibSamples);
@@ -792,7 +1030,13 @@ public class PupilGazeTracker:MonoBehaviour
 
 			//	pointsData = JsonUtility.ToJson (_CalibrationPoints);
 
-				//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array.
+//				foreach (Dictionary<string,object> _d in _calibrationData) {
+//					object _o = _d.ElementAt (0);
+//					float[] _f = (float[])_o;
+//					print (_f);
+//				}
+
+				//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
 				_sendRequestMessage (new Dictionary<string,object> {{"subject","calibration.add_ref_data"},{"ref_data",_CalibrationPoints}});
 				//Clear the current calibration data, so we can proceed to the next point if there is any.
 				_calibrationData.Clear ();
@@ -813,7 +1057,42 @@ public class PupilGazeTracker:MonoBehaviour
 		str += "\nRight Eye:" + RightEyePos.ToString ();
 		GUI.TextArea (new Rect (0, 0, 200, 50), str);
 	}
-	void OnApplicationQuit(){
-
+	public void Add3DCalibrationPoint(floatArray _f){
+		CalibrationPoints3DFoldout = true;
+		_calibPoints.Add3DPoint (_f);
 	}
+	public void Add2DCalibrationPoint(floatArray _f){
+		CalibrationPoints2DFoldout = true;
+		_calibPoints.Add2DPoint (_f);
+	}
+	public void AddCalibrationPoint(){
+		if (CurrentCalibrationMode == PupilGazeTracker.CalibModes._2D) {
+			Add2DCalibrationPoint (new floatArray (){ axisValues = new float[]{ 0f, 0f } });
+		} else {
+			Add3DCalibrationPoint (new floatArray (){ axisValues = new float[]{ 0f, 0f, 0f } });
+		}
+	}
+	public void RemoveCalibrationPoint(List<floatArray> _f, int index){
+		_f.RemoveAt (index);
+	}
+
+	public void SwitchCalibrationMode(){
+		switch (calibrationMode) {
+		case 0://On switched to 2D Calibration mode
+			CalibrationGameObject2D.transform.FindChild ("Calib").gameObject.GetComponent<PupilCalibMarker> ().AssignDelegates ();
+			CalibrationGameObject2D.SetActive (true);
+			CalibrationGameObject3D.SetActive (false);
+			Camera.main.orthographic = true;
+			//Debug.Log ("Check if this happens more than once");
+			break;
+		case 1://On switched to 3D Calibration mode
+			CalibrationGameObject3D.transform.FindChild ("Calib Marker 3D").gameObject.GetComponent<PupilCalibMarker3D> ().AssignDelegates ();
+			CalibrationGameObject2D.SetActive (false);
+			CalibrationGameObject3D.SetActive (true);
+			Camera.main.orthographic = false;
+			break;
+		}
+	
+	}
+
 }

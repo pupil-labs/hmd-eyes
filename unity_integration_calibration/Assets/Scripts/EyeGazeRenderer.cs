@@ -6,6 +6,7 @@ using System.Text;
 
 public class EyeGazeRenderer : MonoBehaviour
 {
+	
 	[System.Serializable]
 	public class Options3D{
 	[Range(-250,250)]
@@ -46,6 +47,7 @@ public class EyeGazeRenderer : MonoBehaviour
 
 	// Script initialization
 	void Start() {	
+		
 		if (gaze == null)
 			gaze = this.GetComponent<RectTransform> ();
 	}

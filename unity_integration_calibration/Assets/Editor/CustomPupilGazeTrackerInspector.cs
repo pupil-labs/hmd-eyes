@@ -20,11 +20,18 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	Camera CalibEditorCamera;
 
+
 	void OnEnable(){
 	
 		pupilTracker = (PupilGazeTracker)target;
 		pupilTracker.AdjustPath ();
 
+
+//		if (pupilTracker._calibPoints == null) {
+//			pupilTracker._calibPoints = new CalibPoints ();
+//			Debug.Log ("_calib Points are null");
+//		}
+			
 		EditorApplication.update += CheckConnection;
 
 //		pupilTracker.OnConnected -= OnConnected;
@@ -238,18 +245,14 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				GUILayout.BeginHorizontal ();
 				pupilTracker.CalibrationPoints2DFoldout = EditorGUILayout.Foldout (pupilTracker.CalibrationPoints2DFoldout, "2D", pupilTracker.FoldOutStyle);
 				if (GUILayout.Button ("Add 2D Calibration Point")) {
-					pupilTracker.CalibrationPoints2DFoldout = true;
-					PupilGazeTracker.floatArray _fa = new PupilGazeTracker.floatArray ();
-					_fa.axisValues = new float[]{ 0f, 0f };
-					pupilTracker.CalibPoints2D.Add (_fa);
-					Repaint ();
+					pupilTracker.Add2DCalibrationPoint (new floatArray(){axisValues = new float[]{0f,0f}});
 				}
 				GUILayout.EndHorizontal ();
 				GUILayout.Space (7);//------------------------------------------------------------//
 
 				if (pupilTracker.CalibrationPoints2DFoldout) {//////2D POINTS//////
-					foreach (PupilGazeTracker.floatArray _point in pupilTracker.CalibPoints2D) {
-						int index = pupilTracker.CalibPoints2D.IndexOf (_point);
+					foreach (floatArray _point in pupilTracker._calibPoints.Get2DList()) {
+						int index = pupilTracker._calibPoints.Get2DList().IndexOf (_point);
 						GUILayout.BeginHorizontal ();
 						//++EditorGUI.indentLevel;
 						Vector3 _v2 = new Vector2 (_point.axisValues [0], _point.axisValues [1]);
@@ -260,11 +263,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 						_point.axisValues [1] = _v2.y;
 
 						if (GUILayout.Button ("Remove")) {
-							pupilTracker.CalibPoints2D.Remove (_point);
+							pupilTracker._calibPoints.Remove2DPoint (_point);
 							Repaint ();
 							break;
 						}
 						if (GUILayout.Button ("Edit")) {
+							CalibrationPointsEditor.DrawCalibrationPointsEditor (pupilTracker, index, 0, new Vector3 (_v2.x, _v2.y, 0));
 						}
 
 						GUILayout.EndHorizontal ();
@@ -275,17 +279,13 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				GUILayout.BeginHorizontal ();
 				pupilTracker.CalibrationPoints3DFoldout = EditorGUILayout.Foldout (pupilTracker.CalibrationPoints3DFoldout, "3D", pupilTracker.FoldOutStyle);
 				if (GUILayout.Button ("Add 3D Calibration Point")) {
-					pupilTracker.CalibrationPoints3DFoldout = true;
-					PupilGazeTracker.floatArray _fa = new PupilGazeTracker.floatArray ();
-					_fa.axisValues = new float[]{ 0f, 0f, 0f };
-					pupilTracker.CalibPoints3D.Add (_fa);
-					Repaint ();
+					pupilTracker.Add3DCalibrationPoint (new floatArray(){axisValues = new float[]{0f,0f,0f}});
 				}
 				GUILayout.EndHorizontal ();
 				GUILayout.Space (7);//------------------------------------------------------------//
 				if (pupilTracker.CalibrationPoints3DFoldout) {//////3D POINTS//////
-					foreach (PupilGazeTracker.floatArray _point in pupilTracker.CalibPoints3D) {
-						int index = pupilTracker.CalibPoints3D.IndexOf (_point);
+					foreach (floatArray _point in pupilTracker._calibPoints.Get3DList()) {
+						int index = pupilTracker._calibPoints.Get3DList().IndexOf (_point);
 						GUILayout.BeginHorizontal ();
 
 						Vector3 _v3 = new Vector3 (_point.axisValues [0], _point.axisValues [1], _point.axisValues [2]);
@@ -300,11 +300,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 						_point.axisValues [2] = _v3.z;
 
 						if (GUILayout.Button ("Remove")) {
-							pupilTracker.CalibPoints3D.Remove (_point);
+							pupilTracker._calibPoints.Remove3DPoint (_point);
 							Repaint ();
 							break;
 						}
 						if (GUILayout.Button ("Edit")) {
+							CalibrationPointsEditor.DrawCalibrationPointsEditor (pupilTracker, index, 1, _v3);
 						}
 						GUILayout.EndHorizontal ();
 						GUILayout.Space (2);//------------------------------------------------------------//
@@ -330,8 +331,13 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.Space (50);
 
 	}
+	//[DrawGizmo(GizmoType.Active,GizmoType.Selected)]
+	public void DrawCalibrationDebug(){
+		Debug.Log ("adasdasdas");
+		//Gizmos.DrawFrustum (new Vector3 (0, 0, 0), Camera.main.fieldOfView, 1000, .1f, 10f);
 
-	//TODO: Create 3D calibration method, access 2D calibration method
+
+	}
 	private void DrawCalibration(){
 		EditorGUI.BeginChangeCheck ();
 
@@ -342,26 +348,27 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		}
 			
 		pupilTracker.calibrationMode = GUILayout.Toolbar (pupilTracker.calibrationMode, new string[]{ "2D", "3D" });
-
 		GUI.enabled = true;
-
 		if (EditorGUI.EndChangeCheck ()) {
-
-			switch (pupilTracker.calibrationMode) {
-			case 0://On switched to 2D Calibration mode
-				pupilTracker.CalibrationGameObject2D.transform.FindChild ("Calib").gameObject.GetComponent<PupilCalibMarker> ().AssignDelegates ();
-				pupilTracker.CalibrationGameObject2D.SetActive (true);
-				pupilTracker.CalibrationGameObject3D.SetActive (false);
-				Camera.main.orthographic = true;
-				break;
-			case 1://On switched to 3D Calibration mode
-				pupilTracker.CalibrationGameObject3D.transform.FindChild ("Calib Marker 3D").gameObject.GetComponent<PupilCalibMarker3D> ().AssignDelegates ();
-				pupilTracker.CalibrationGameObject2D.SetActive (false);
-				pupilTracker.CalibrationGameObject3D.SetActive (true);
-				Camera.main.orthographic = false;
-				break;
-			}
+			pupilTracker.SwitchCalibrationMode ();
 		}
+
+		if (pupilTracker.calibrationMode == 1) {
+			EditorGUI.BeginChangeCheck ();
+			pupilTracker.calibrationDebugMode = GUILayout.Toggle (pupilTracker.calibrationDebugMode, "Calibration Debug Mode", "Button");
+			if (EditorGUI.EndChangeCheck ()) {
+				if (pupilTracker.calibrationDebugMode) {
+					pupilTracker.OnUpdate -= DrawCalibrationDebug;
+					pupilTracker.OnUpdate += DrawCalibrationDebug;
+				} else {
+					pupilTracker.OnUpdate -= DrawCalibrationDebug;
+				}
+			}
+			//GUILayout.Label ("Debug Mode ON");
+		}
+
+
+
 
 		if (isConnected) {
 			if (!isCalibrating) {
@@ -404,7 +411,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			EditorApplication.update = null;
 		}
 	}
-
 
 
 
@@ -459,19 +465,26 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		return result;
 	}
 
-	void DrawCalibPointsEditor(){
+//	void DrawCalibPointsEditor(){
+//
+//		GUILayout.Box ("");
+//		//Rect R = GUILayoutUtility.GetLastRect ();
+//
+//		if (Event.current.type == EventType.Repaint) {
+//			Rect sceneRect = GUILayoutUtility.GetLastRect ();
+//			sceneRect.y += 20;
+//
+//			CalibEditorCamera.pixelRect = sceneRect;
+//			CalibEditorCamera.Render ();
+//
+//		}
+//		Handles.SetCamera (CalibEditorCamera);
+//	}
 
-		GUILayout.Box ("");
-		//Rect R = GUILayoutUtility.GetLastRect ();
 
-		if (Event.current.type == EventType.Repaint) {
-			Rect sceneRect = GUILayoutUtility.GetLastRect ();
-			sceneRect.y += 20;
 
-			CalibEditorCamera.pixelRect = sceneRect;
-			CalibEditorCamera.Render ();
 
-		}
-		Handles.SetCamera (CalibEditorCamera);
-	}
+
+
 }
+
