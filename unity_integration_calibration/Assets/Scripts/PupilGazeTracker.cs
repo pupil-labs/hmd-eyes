@@ -336,6 +336,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public bool printMessageType;
 	//CUSTOM EDITOR VARIABLES
 
+	public Vector2 Calibration2DScale;
 	public bool saved = false;
 
 	public int editedCalibIndex = 0;
