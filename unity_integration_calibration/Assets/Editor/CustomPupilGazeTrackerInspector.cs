@@ -136,10 +136,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	private void DrawMainMenu(){
 
-		if (GUILayout.Button ("Open Calibration Debug Mode")) {
-		
-		}
-
 		////////BUTTONS FOR DEBUGGING TO COMMENT IN PUBLIC VERSION////////
 		pupilTracker.isDebugFoldout = EditorGUILayout.Foldout (pupilTracker.isDebugFoldout, "Debug Buttons");
 		GUILayout.BeginHorizontal ();
@@ -335,8 +331,13 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.Space (50);
 
 	}
+	//[DrawGizmo(GizmoType.Active,GizmoType.Selected)]
+	public void DrawCalibrationDebug(){
+		Debug.Log ("adasdasdas");
+		//Gizmos.DrawFrustum (new Vector3 (0, 0, 0), Camera.main.fieldOfView, 1000, .1f, 10f);
 
-	//TODO: Create 3D calibration method, access 2D calibration method
+
+	}
 	private void DrawCalibration(){
 		EditorGUI.BeginChangeCheck ();
 
@@ -347,12 +348,27 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		}
 			
 		pupilTracker.calibrationMode = GUILayout.Toolbar (pupilTracker.calibrationMode, new string[]{ "2D", "3D" });
-
 		GUI.enabled = true;
-
 		if (EditorGUI.EndChangeCheck ()) {
 			pupilTracker.SwitchCalibrationMode ();
 		}
+
+		if (pupilTracker.calibrationMode == 1) {
+			EditorGUI.BeginChangeCheck ();
+			pupilTracker.calibrationDebugMode = GUILayout.Toggle (pupilTracker.calibrationDebugMode, "Calibration Debug Mode", "Button");
+			if (EditorGUI.EndChangeCheck ()) {
+				if (pupilTracker.calibrationDebugMode) {
+					pupilTracker.OnUpdate -= DrawCalibrationDebug;
+					pupilTracker.OnUpdate += DrawCalibrationDebug;
+				} else {
+					pupilTracker.OnUpdate -= DrawCalibrationDebug;
+				}
+			}
+			//GUILayout.Label ("Debug Mode ON");
+		}
+
+
+
 
 		if (isConnected) {
 			if (!isCalibrating) {

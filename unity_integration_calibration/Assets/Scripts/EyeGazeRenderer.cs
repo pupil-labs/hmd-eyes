@@ -36,7 +36,6 @@ public class EyeGazeRenderer : MonoBehaviour
 
 	public PupilGazeTracker.GazeSource Gaze;
 
-
 //	int FPSoffset = 0;
 //	int Updatecount = 0;
 //	public string errordata = "";

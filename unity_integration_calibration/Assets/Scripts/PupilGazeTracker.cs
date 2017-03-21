@@ -244,6 +244,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public delegate void DrawMenuDeleg ();
 //	public delegate void OnConnectedDeleg (PupilGazeTracker manager);
 	public delegate void OnSwitchCalibPointDeleg(PupilGazeTracker manager);
+	public delegate void OnUpdateDeleg();
 
 	public event OnCalibrationStartedDeleg OnCalibrationStarted;
 	public event OnCalibrationDoneDeleg OnCalibrationDone;
@@ -252,6 +253,8 @@ public class PupilGazeTracker:MonoBehaviour
 	public DrawMenuDeleg DrawMenu;
 //	public event OnConnectedDeleg OnConnected;
 	public event OnSwitchCalibPointDeleg OnSwitchCalibPoint;
+
+	public OnUpdateDeleg OnUpdate;
 
 	bool _isconnected =false;
 	public bool _isFullConnected =false;
@@ -343,6 +346,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public int tab = 0;
 	public int SettingsTab;
 	public int calibrationMode = 0;
+	public bool calibrationDebugMode = false;
 	public int connectionMode = 0;
 	public CalibModeDetails CurrentCalibrationModeDetails{
 		get{
@@ -471,6 +475,147 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 
 
+	void Update(){
+		//CalibrationDebugMode.Instantiate ();
+		//CalibrationDebugMode.OnRenderObject();
+	}
+	public static int lineCount = 100;
+	public static float radius = 3.0f;
+
+	static Material lineMaterial;
+
+	static void CreateLineMaterial ()
+	{
+		if (!lineMaterial)
+		{
+			// Unity has a built-in shader that is useful for drawing
+			// simple colored things.
+			Shader shader = Shader.Find ("Hidden/Internal-Colored");
+			lineMaterial = new Material (shader);
+			lineMaterial.hideFlags = HideFlags.HideAndDontSave;
+			// Turn on alpha blending
+			lineMaterial.SetInt ("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+			lineMaterial.SetInt ("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+			// Turn backface culling off
+			lineMaterial.SetInt ("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+			// Turn off depth writes
+			lineMaterial.SetInt ("_ZWrite", 0);
+		}
+	}
+	public void OnRenderObject(){
+		
+		//print ("asdadw");
+		//Debug.Log("asdasdwafafaefdaw");
+		CreateLineMaterial ();
+		// Apply the line material
+		lineMaterial.SetPass (0);
+
+		DrawCameraFrustum (transform, fov, aspectRatios.FULLHD, 10, 50);
+
+		//Gizmos.DrawFrustum (new Vector3 (0, 0, 0), 60, 1000, 1, 10);
+
+
+
+		//		if (OnUpdate != null)
+		//			OnUpdate ();
+	}
+	public float fov = 60;
+	public float zOffset = 20;
+	public float scale = 2;
+
+	public enum aspectRatios{FULLVIVE,HALFVIVE,FULLHD};
+	public class Rect3D
+	{
+		public float width;
+		public float height;
+		public float zOffset;
+		public float scale;
+		public Vector3[] verticies = new Vector3[4];
+
+		public void SetPosition(){
+			verticies [0] = new Vector3 (-(width / 2)*scale, -(height / 2)*scale, zOffset);
+			verticies [1] = new Vector3 ((width / 2)*scale, -(height / 2)*scale, zOffset);
+			verticies [2] = new Vector3 ((width / 2)*scale, (height / 2)*scale, zOffset);
+			verticies [3] = new Vector3 (-(width / 2)*scale, (height / 2)*scale, zOffset);
+		}
+		public void Draw(float _width, float _height, float _zOffset, float _scale){
+			width = _width;
+			height = _height;
+			zOffset = _zOffset;
+			scale = _scale;
+			SetPosition ();
+			for (int i = 0; i <= verticies.Count() - 1; i++) {
+				GL.Vertex (verticies [i]);
+				if (i != verticies.Count() - 1) {
+					GL.Vertex (verticies [i + 1]);
+				} else {
+					GL.Vertex (verticies [0]);
+				}
+			}
+		}
+	}
+
+
+//	void OnDrawGizmosSelected(){
+//	
+//		Gizmos.DrawSphere (new Vector3 (0, 0, 0), 50);
+//	}
+
+	public void DrawCameraFrustum(Transform origin, float fov, aspectRatios aspect, float minViewDistance, float maxViewDistance){
+		GL.PushMatrix ();
+
+		float aspectRatio = 1;
+
+		switch (aspect) {
+		case aspectRatios.FULLHD:
+			aspectRatio = 1.7777f;
+			break;
+		case aspectRatios.FULLVIVE:
+			aspectRatio = 1.8f;
+			break;
+		case aspectRatios.HALFVIVE:
+			aspectRatio = 0.9f;
+			break;
+		}
+		Vector3 up = origin.up;
+		float width = aspectRatio;
+		float height = 1;
+
+		Rect3D farPlaneRect = new Rect3D ();
+		Rect3D nearPlaneRect = new Rect3D ();
+
+
+
+		GL.MultMatrix (origin.localToWorldMatrix);
+
+		GL.Begin (GL.LINES);
+		//Vector2 _v2Norm = new Vector2(width)
+		nearPlaneRect.Draw (width, height, minViewDistance, minViewDistance);
+		farPlaneRect.Draw (width, height, maxViewDistance, maxViewDistance);
+
+		GL.Color (Color.green);
+
+
+
+		Vector3 fovR = origin.forward;
+		fovR = Quaternion.AngleAxis ((fov / 2), up) * fovR;
+		
+		Vector3 fovL = origin.forward;
+		fovL = Quaternion.AngleAxis (-(fov / 2), up) * fovL;
+
+
+		//FOV right and left
+		GL.Vertex (new Vector3(0,0,0));
+		GL.Vertex (fovR*1000);
+
+		GL.Vertex (new Vector3(0,0,0));
+		GL.Vertex (fovL*1000);
+		//FOV right and left
+
+		GL.End ();
+
+		GL.PopMatrix ();
+	}
 
 	void Start()
 	{
@@ -930,18 +1075,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public void RemoveCalibrationPoint(List<floatArray> _f, int index){
 		_f.RemoveAt (index);
 	}
-//	public void SwitchTo2D(){
-//		CalibrationGameObject2D.transform.FindChild ("Calib").gameObject.GetComponent<PupilCalibMarker> ().AssignDelegates ();
-//		CalibrationGameObject2D.SetActive (true);
-//		CalibrationGameObject3D.SetActive (false);
-//		Camera.main.orthographic = true;
-//	}
-//	public void SwitchTo3D(){
-//		CalibrationGameObject3D.transform.FindChild ("Calib Marker 3D").gameObject.GetComponent<PupilCalibMarker3D> ().AssignDelegates ();
-//		CalibrationGameObject2D.SetActive (false);
-//		CalibrationGameObject3D.SetActive (true);
-//		Camera.main.orthographic = false;
-//	}
+
 	public void SwitchCalibrationMode(){
 		switch (calibrationMode) {
 		case 0://On switched to 2D Calibration mode
@@ -960,4 +1094,5 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 	
 	}
+
 }
