@@ -18,6 +18,8 @@ public class CustomPupilGazeTrackerInspector : Editor {
 	bool isConnected = false;
 	bool isCalibrating = false;
 
+	string tempServerIP;
+
 	Camera CalibEditorCamera;
 
 
@@ -26,6 +28,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		pupilTracker = (PupilGazeTracker)target;
 		pupilTracker.AdjustPath ();
 
+		tempServerIP = pupilTracker.ServerIP;
 
 //		if (pupilTracker._calibPoints == null) {
 //			pupilTracker._calibPoints = new CalibPoints ();
@@ -181,13 +184,20 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			EditorGUILayout.Separator ();//------------------------------------------------------------//
 
 			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
-			GUILayout.Label ("Server IP : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
+			if (pupilTracker.connectionMode == 0) {
+				GUI.enabled = false;
+				GUILayout.Label ("localhost : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
+			} else {
+				GUILayout.Label ("Server IP : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (150));
+			}
+
 			pupilTracker.ServerIP = EditorGUILayout.TextArea (pupilTracker.ServerIP, pupilTracker.SettingsValuesStyle, GUILayout.Width (150), GUILayout.Height (22));
 			if (GUILayout.Button ("Default")) {
 				pupilTracker.ServerIP = "127.0.0.1";
 				Repaint ();
 				GUI.FocusControl ("");
 			}
+			GUI.enabled = true;
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 			EditorGUILayout.Separator ();//------------------------------------------------------------//
@@ -201,9 +211,18 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			GUI.enabled = true;
 
+			EditorGUI.BeginChangeCheck ();
 			GUI.color = new Color (.7f, .7f, .7f, 1f);
-			pupilTracker.connectionMode = GUILayout.Toolbar (pupilTracker.connectionMode, new string[]{ "Local", "Remote" }, GUILayout.Height(50));
+			pupilTracker.connectionMode = GUILayout.Toolbar (pupilTracker.connectionMode, new string[]{ "Local", "Remote" }, GUILayout.Height (50));
 			GUI.color = Color.white;
+			if (EditorGUI.EndChangeCheck ()) {
+				if (pupilTracker.connectionMode == 0) {
+					tempServerIP = pupilTracker.ServerIP;
+					pupilTracker.ServerIP = "127.0.0.1";
+				} else {
+					pupilTracker.ServerIP = tempServerIP;
+				}
+			}
 
 			GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
 			GUILayout.Label ("Show All : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width(150));
@@ -354,8 +373,10 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				if (pupilTracker.calibrationDebugMode) {
 					pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
 					pupilTracker.OnCalibDebug += pupilTracker.DrawCalibrationDebug;
+					pupilTracker.StartFramePublishing ();
 				} else {
 					pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
+					pupilTracker.StopFramePublishing ();
 				}
 			}
 			//GUILayout.Label ("Debug Mode ON");
