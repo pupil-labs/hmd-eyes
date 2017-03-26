@@ -139,6 +139,28 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	private void DrawMainMenu(){
 
+		EditorGUI.BeginChangeCheck ();
+		GUILayout.BeginHorizontal ();
+		//pupilTracker.targetEye = EditorGUILayout.EnumPopup ((pupilTracker.targetEye)as Enum);
+		//if (pupilTracker.OperatorCamera)
+		GUILayout.Label("Target Eye");
+		pupilTracker.targetMask = (StereoTargetEyeMask)EditorGUILayout.EnumPopup(pupilTracker.targetMask);
+		GUILayout.EndHorizontal ();
+		pupilTracker.isOperatorMonitor = GUILayout.Toggle (pupilTracker.isOperatorMonitor, "Operator Monitor", "Button");
+		if (EditorGUI.EndChangeCheck ()) {
+			if (pupilTracker.isOperatorMonitor) {
+				if (pupilTracker.OperatorCamera == null) {
+					GameObject _camGO = new GameObject ();
+					pupilTracker.OperatorCamera = _camGO.AddComponent<Camera> ();
+					_camGO.AddComponent<OperatorMonitor> ();
+					_camGO.name = "Operator Camera";
+					_camGO.GetComponent<OperatorMonitor> ().properties = pupilTracker.OperatorMonitorProperties;
+				}
+			} else {
+				Destroy (pupilTracker.OperatorCamera.gameObject);
+			}
+		}
+
 		////////BUTTONS FOR DEBUGGING TO COMMENT IN PUBLIC VERSION////////
 		pupilTracker.isDebugFoldout = EditorGUILayout.Foldout (pupilTracker.isDebugFoldout, "Debug Buttons");
 		GUILayout.BeginHorizontal ();
@@ -156,6 +178,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			EditorGUILayout.EndHorizontal ();
 			if (GUILayout.Button ("Draw Calibration Points Editor"))
 				CalibrationPointsEditor.DrawCalibrationPointsEditor (pupilTracker);
+			
 		}
 		////////BUTTONS FOR DEBUGGING TO COMMENT IN PUBLIC VERSION////////
 
@@ -247,8 +270,8 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			GUILayout.Space (30);
 
 			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
-			GUILayout.Label ("Calibration Sample Count : ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (175));
-			pupilTracker.DefaultCalibrationCount = EditorGUILayout.IntSlider (pupilTracker.DefaultCalibrationCount, 1, 120);
+			GUILayout.Label ("Calibration Sample Count: ", pupilTracker.SettingsLabelsStyle, GUILayout.Width (172));
+			pupilTracker.DefaultCalibrationCount = EditorGUILayout.IntSlider (pupilTracker.DefaultCalibrationCount, 1, 120, GUILayout.ExpandWidth(true));
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 			GUILayout.Space (10);//------------------------------------------------------------//
@@ -260,11 +283,13 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			pupilTracker.CalibrationPointsFoldout = EditorGUILayout.Foldout (pupilTracker.CalibrationPointsFoldout," Calibration Points", pupilTracker.FoldOutStyle);
 			GUILayout.Space (10);//------------------------------------------------------------//
 			if (pupilTracker.CalibrationPointsFoldout) {
+				//GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
 				GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
 				GUILayout.BeginHorizontal ();
 				pupilTracker.CalibrationPoints2DFoldout = EditorGUILayout.Foldout (pupilTracker.CalibrationPoints2DFoldout, "2D", pupilTracker.FoldOutStyle);
 				if (GUILayout.Button ("Add 2D Calibration Point")) {
 					pupilTracker.Add2DCalibrationPoint (new floatArray(){axisValues = new float[]{0f,0f}});
+					//CalibrationPointsEditor.DrawCalibrationPointsEditor (pupilTracker, pupilTracker._calibPoints.Get2DList().Count-1,0, new Vector3 (0, 0, 0));
 				}
 				GUILayout.EndHorizontal ();
 				GUILayout.Space (7);//------------------------------------------------------------//
@@ -272,16 +297,22 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				if (pupilTracker.CalibrationPoints2DFoldout) {//////2D POINTS//////
 					foreach (floatArray _point in pupilTracker._calibPoints.Get2DList()) {
 						int index = pupilTracker._calibPoints.Get2DList().IndexOf (_point);
-						GUILayout.BeginHorizontal ();
+
+						GUILayout.BeginHorizontal (pupilTracker.CalibRowStyle);
 						//++EditorGUI.indentLevel;
 						Vector3 _v2 = new Vector2 (_point.axisValues [0], _point.axisValues [1]);
 
-						_v2 = EditorGUILayout.Vector2Field ("2D Point " + (index + 1) + " : ", _v2);
+						GUILayout.Label ("2D Point " + (index + 1) + " : ", GUILayout.MinWidth (0f));
+						_v2 = EditorGUILayout.Vector2Field ("", _v2, GUILayout.MinWidth (20f));
 
 						_point.axisValues [0] = _v2.x;
 						_point.axisValues [1] = _v2.y;
 
 						if (GUILayout.Button ("Remove")) {
+							if (pupilTracker._calibPoints.Get2DList ().IndexOf (_point) == pupilTracker._calibPoints.Get2DList ().Count - 1) {
+								pupilTracker.editedCalibIndex = pupilTracker._calibPoints.Get2DList ().Count - 1;
+								//CalibrationPointsEditor.DrawCalibrationPointsEditor (pupilTracker);
+							}
 							pupilTracker._calibPoints.Remove2DPoint (_point);
 							Repaint ();
 							break;
@@ -305,15 +336,16 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				if (pupilTracker.CalibrationPoints3DFoldout) {//////3D POINTS//////
 					foreach (floatArray _point in pupilTracker._calibPoints.Get3DList()) {
 						int index = pupilTracker._calibPoints.Get3DList().IndexOf (_point);
-						GUILayout.BeginHorizontal ();
+						GUILayout.BeginHorizontal (pupilTracker.CalibRowStyle);
 
 						Vector3 _v3 = new Vector3 (_point.axisValues [0], _point.axisValues [1], _point.axisValues [2]);
 
 						//EditorGUI.InspectorTitlebar (Rect (0, 0, 200, 20), new UnityEngine.Object[]());
 
 
-						_v3 = EditorGUILayout.Vector3Field ("3D Point " + (index + 1) + " :", _v3);
-
+						//_v3 = EditorGUILayout.Vector3Field ("3D Point " + (index + 1) + " :", _v3);
+						GUILayout.Label("3D Point " + (index + 1) + " :", GUILayout.MinWidth (0f));
+						_v3 = EditorGUILayout.Vector3Field ("", _v3, GUILayout.MinWidth (35f));
 						_point.axisValues [0] = _v3.x;
 						_point.axisValues [1] = _v3.y;
 						_point.axisValues [2] = _v3.z;

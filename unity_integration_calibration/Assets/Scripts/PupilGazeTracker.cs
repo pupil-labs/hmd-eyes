@@ -101,6 +101,23 @@ namespace Pupil
 	}
 
 }
+namespace Operator{
+	[Serializable]
+	public class properties{
+		public Vector3 graphPositionOffset0 = new Vector3 ();
+		public Vector3 graphPositionOffset1 = new Vector3 ();
+		public int eye0GraphLength = 20;
+		public int eye1GraphLength = 20;
+		public float conf0 = 0.2f;
+		public float conf1 = 0.5f;
+		public float rotOffset = 0;
+		public Vector2 graphScale = new Vector2 (1, 1);
+		public float refreshD;
+		public long graphTime = DateTime.Now.Ticks;
+		public bool isUpdateGraph = false;
+	}
+}
+
 [Serializable]
 public struct floatArray{
 	public float[] axisValues;
@@ -246,7 +263,7 @@ public class PupilGazeTracker:MonoBehaviour
 	Thread _serviceThread;
 	bool _isDone=false;
 
-	Pupil.PupilData _pupilData;
+	public Pupil.PupilData _pupilData;
 
 	#region delegates
 
@@ -259,6 +276,8 @@ public class PupilGazeTracker:MonoBehaviour
 //	public delegate void OnConnectedDeleg (PupilGazeTracker manager);
 	public delegate void OnSwitchCalibPointDeleg(PupilGazeTracker manager);
 	public delegate void OnCalibDebugDeleg();
+	public delegate void OnOperatorMonitorDeleg();
+	public delegate void OnDrawGizmoDeleg ();
 	//TODO: confirm that this does not cause freezing
 	//public delegate void OnFramePublishingDeleg(Color[] _texture);
 
@@ -272,6 +291,8 @@ public class PupilGazeTracker:MonoBehaviour
 	//public event OnFramePublishingDeleg OnFramePublish;
 
 	public OnCalibDebugDeleg OnCalibDebug;
+	public OnOperatorMonitorDeleg OnOperatorMonitor;
+	public OnDrawGizmoDeleg OnDrawGizmo;
 
 	#endregion
 
@@ -285,16 +306,19 @@ public class PupilGazeTracker:MonoBehaviour
 	static Material eye1ImageMaterial;
 	static Material eyeSphereMaterial;
 
-
 	public string pluginName;
 
 	public int framePublishFramePerSecondLimit = 20;
 
-	//public Material eyeMaterial;
-
 	public Texture2D eye0Image;
 	public Texture2D eye1Image;
+	#endregion
 
+	#region operator_monitor_vars
+	public bool isOperatorMonitor;
+	public Camera OperatorCamera;
+	public StereoTargetEyeMask targetMask;
+	public Operator.properties OperatorMonitorProperties;
 	#endregion
 
 	//changed this
@@ -429,6 +453,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public GUIStyle FoldOutStyle = new GUIStyle ();
 	public GUIStyle ButtonStyle = new GUIStyle();
 	public GUIStyle TextField = new GUIStyle();
+	public GUIStyle CalibRowStyle = new GUIStyle();
 
 	[Serializable]
 	public struct Platform
@@ -530,11 +555,11 @@ public class PupilGazeTracker:MonoBehaviour
 	void Update(){
 		if (Input.GetKeyUp (KeyCode.A)) {
 
-			_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
-			_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name", "Frame_Publisher"}, {"args","{}"}});
+//			_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
+//			_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name", "Frame_Publisher"}, {"args","{}"}});
 			//_sendRequestMessage (new Dictionary<string,object> { { "subject","eye_process.started" }, { "eye_id",0 } });
 			//ToastMessage.Instance.DrawToastMessage (new ToastMessage.toastParameters(){delay = 2, fadeOutSpeed = 2, text = "toast message", ID = 0});
-			//ToastMessage.Instance.DrawToastMessageOnMainThread (new ToastMessage.toastParameters(){delay = 2, fadeOutSpeed = 2, text = "posted to Main Thread toast message", ID = 0});
+			ToastMessage.Instance.DrawToastMessageOnMainThread (new ToastMessage.toastParameters(){delay = 2, fadeOutSpeed = 2, text = "posted to Main Thread toast message", ID = 1});
 		}
 		if (Input.GetKeyUp (KeyCode.B)) {
 			_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name", "Frame_Publisher"}, {"args","{}"}});
@@ -583,7 +608,7 @@ public class PupilGazeTracker:MonoBehaviour
 		//print ("after drawing");
 
 	}
-	static void CreateLineMaterial ()
+	public Material CreateLineMaterial ()
 	{
 		if (!lineMaterial)
 		{
@@ -600,6 +625,7 @@ public class PupilGazeTracker:MonoBehaviour
 			// Turn off depth writes
 			lineMaterial.SetInt ("_ZWrite", 1);
 		}
+		return lineMaterial;
 	}
 	static void CreateEye0ImageMaterial ()
 	{
@@ -637,6 +663,10 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 	}
 
+	public virtual void OnDrawGizmos(){
+		if (OnDrawGizmo != null)
+			OnDrawGizmo ();
+	}
 	public void OnRenderObject(){
 		if (OnCalibDebug != null)
 			OnCalibDebug ();
@@ -839,9 +869,8 @@ public class PupilGazeTracker:MonoBehaviour
 	#region Start();
 	void Start()
 	{
-
-
-//		ToastMessage.Instance.DrawToastMessage (new ToastMessage.toastParameters (){ text = "" });
+		OperatorCamera = null;
+		ToastMessage.Instance.DrawToastMessage (new ToastMessage.toastParameters (){ text = "" });
 
 		_pupilData = new Pupil.PupilData () {gaze_point_3d = new double[]{ 10.0, 10.0, 10.0 },gaze_normals_3d = new Pupil.eyes3Ddata () {one = new double[] {1,0,0},zero = new double[] {
 					1,
@@ -872,6 +901,12 @@ public class PupilGazeTracker:MonoBehaviour
 
 		_dataLock = new object ();
 
+		//make sure that if the toggles are on it functions as the toggle requires it
+//		if (isOperatorMonitor && OnOperatorMonitor == null)
+//			OnOperatorMonitor += DrawOperatorMonitor;
+		if (calibrationDebugMode && OnCalibDebug == null)
+			OnCalibDebug += DrawCalibrationDebug;
+		
 		//OnFramePublish += AssignTexture;
 
 		//ToastMessage.Instance.DrawAthing ("my first toast message", 0, delay: 3f, fadeOutSpeed: 5f);
@@ -939,6 +974,9 @@ public class PupilGazeTracker:MonoBehaviour
 		NetMQMessage recievedMsg=_requestSocket.ReceiveMultipartMessage ();
 		return float.Parse(recievedMsg[0].ConvertToString());
 	}
+
+
+
 	#region frame_publishing.functions
 	public void StartFramePublishing(){
 		_sendRequestMessage (new Dictionary<string,object> {{"subject","start_plugin"},{"name", "Frame_Publisher"}, {"args","{}"}});
@@ -1032,8 +1070,14 @@ public class PupilGazeTracker:MonoBehaviour
 					try
 					{
 						string msgType=msg[0].ConvertToString();
+						if (printMessage){
+							var m = MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
+							MsgPack.MessagePackObject map = m.Value;
+							print(m);
+						}
 						if (printMessageType){
 							print(msgType);
+							ToastMessage.Instance.DrawToastMessageOnMainThread(new ToastMessage.toastParameters(){ID = 0,text = msgType});
 						}
 
 						elapsedTime = (float)TimeSpan.FromTicks(DateTime.Now.Ticks - lastTick).TotalSeconds;
@@ -1058,12 +1102,9 @@ public class PupilGazeTracker:MonoBehaviour
 								updateEye1=false;
 							}
 							break;
-//						case "frame_publishing.started":
-//							print("frame publishing started1");
-//							break;
-//						case "notify.frame_publishing.started":
-//							print("frame publishing started2");
-//							break;
+						case "notify.frame_publishing.started":
+							ToastMessage.Instance.DrawToastMessageOnMainThread(new ToastMessage.toastParameters(){ID = 0,text = "frame publishing has started"});
+							break;
 //						case "notify.meta.doc":
 //							var doc = MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
 //							print(doc);
@@ -1078,8 +1119,7 @@ public class PupilGazeTracker:MonoBehaviour
 							}
 							var message = MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
 							MsgPack.MessagePackObject mmap = message.Value;
-							if (printMessage)
-								print(message);
+
 							lock (_dataLock)
 							{
 								try{

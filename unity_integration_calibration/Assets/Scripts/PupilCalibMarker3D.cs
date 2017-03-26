@@ -25,7 +25,10 @@ public class PupilCalibMarker3D : MonoBehaviour {
 	private int ind = 0;
 	public  int tmp = 0;
 
-	private bool _started;
+	public bool _started;
+	public float minDistance;
+	public float maxDistance;
+	public Vector3 baseSize;
 
 	Vector3 _v3Position;
 
@@ -95,8 +98,11 @@ public class PupilCalibMarker3D : MonoBehaviour {
 			UpdateAnim(tmp);
 			//MainThread.Call (test);
 		}
-		if (_started)
+		if (_started) {
 			SetLocation (_v3Position);
+			//Check this in case of calibraiton issues!! (There where calinration issues before this still. so this might not be the only problem)
+			transform.localScale = baseSize * (Mathf.InverseLerp (minDistance, maxDistance, (Vector3.Distance (transform.position, Camera.main.transform.position))*0.75f));//Resizing with distance
+		}
 	}
 
 	void PulsateHalo(){

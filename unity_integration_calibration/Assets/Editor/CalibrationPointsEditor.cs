@@ -26,8 +26,15 @@ public class CalibrationPointsEditor : EditorWindow {
 		pupilTracker = _pupilTracker;
 		Debug.Log ("Calibration Points Editor Started !");
 		pupilTracker.editedCalibIndex = 0;
-	}
+		_pupilTracker.OnDrawGizmo -= DrawCameraFrustumGizmo;
+		_pupilTracker.OnDrawGizmo += DrawCameraFrustumGizmo;
+		//Handles.cam
 
+	}
+	public static void DrawCameraFrustumGizmo(){
+		Gizmos.DrawFrustum (new Vector3(0,0,0), 111, 900, 0, 1.8f);
+		Gizmos.DrawFrustum (new Vector3(0,0,0), 55.5f, 900, 0, 1.8f);
+	}
 	private static void OnScene(SceneView sceneView){
 		Tools.current = Tool.None;
 		bool updatePosition;
@@ -45,7 +52,10 @@ public class CalibrationPointsEditor : EditorWindow {
 			_v3 = _tmpV3;
 			updatePosition = true;
 		}
-		Debug.Log (_tmpV3);
+		//Debug.Log (_tmpV3);
+
+
+
 		///////////////////////////GUI///////////////////////////
 		Handles.BeginGUI ();
 
@@ -82,6 +92,7 @@ public class CalibrationPointsEditor : EditorWindow {
 		}
 		if (GUILayout.Button ("Exit Editor")) {
 			SceneView.onSceneGUIDelegate -= OnScene;
+			pupilTracker.OnDrawGizmo -= DrawCameraFrustumGizmo;
 			Tools.current = Tool.Move;
 		}
 		EditorGUILayout.EndHorizontal ();
@@ -108,10 +119,8 @@ public class CalibrationPointsEditor : EditorWindow {
 		} else {
 			pupilTracker.editedCalibIndex = _activeList.Count - 1;
 		}
-		
 		Handles.EndGUI ();
 		///////////////////////////GUI///////////////////////////
-
 	}
 	static Vector3 convertToNormalSpace(Vector3 _v3In, float xMax, float yMax){
 		float xAbs = _v3In.x + xMax;
