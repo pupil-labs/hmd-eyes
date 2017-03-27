@@ -101,7 +101,7 @@ public class PupilCalibMarker3D : MonoBehaviour {
 		if (_started) {
 			SetLocation (_v3Position);
 			//Check this in case of calibraiton issues!! (There where calinration issues before this still. so this might not be the only problem)
-			transform.localScale = baseSize * (Mathf.InverseLerp (minDistance, maxDistance, (Vector3.Distance (transform.position, Camera.main.transform.position))*0.75f));//Resizing with distance
+			//transform.localScale = baseSize * (Mathf.InverseLerp (minDistance, maxDistance, (Vector3.Distance (transform.position, Camera.main.transform.position))*0.75f));//Resizing with distance
 		}
 	}
 

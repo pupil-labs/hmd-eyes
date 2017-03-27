@@ -92,14 +92,14 @@ public class ToastMessage : MonoBehaviour {
 			_messagesList.Add (_message);
 		}
 		_message._params = new toastParameters ();
-		print (_p.delay);
+//		print (_p.delay);
 		_message._params.delay = _p.delay;
 		_message._params.fadeOutSpeed = _p.fadeOutSpeed;
 		_message._params.text = _p.text;
 		_message._params.ID = _p.ID;
 	}
 	public void DrawToastMessageOnMainThread(toastParameters _params){
-		print ("on main thread : " + _params);
+		//print ("on main thread : " + _params);
 		object _o = _params;
 		MainThread.Call (DrawToastMessage, _o);
 	}

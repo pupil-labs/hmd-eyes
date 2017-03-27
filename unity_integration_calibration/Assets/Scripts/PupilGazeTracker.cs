@@ -88,9 +88,9 @@ namespace Pupil
 		public double[] norm_pos = new double[]{ 0, 0, 0 };
 		public BaseData[] base_data;
 		//private static double[] defaultDoubleArray = new double[]{ 0, 0, 0 };
-		public Vector3 GetVector3(double[] _d3 = default(double[])){
+		public Vector3 GetVector3(double[] _d3 = default(double[]), float wScale = 1.0f){
 			if (_d3.Length > 0)
-				return new Vector3 ((float)_d3 [0], (float)_d3 [1], (float)_d3 [2]);
+				return new Vector3 ((float)_d3 [0]*wScale, (float)_d3 [1]*wScale, (float)_d3 [2]*wScale);
 			return Vector3.zero;
 		}
 		public Vector2 GetVector2(double[] _d2){
@@ -296,6 +296,10 @@ public class PupilGazeTracker:MonoBehaviour
 
 	#endregion
 
+	#region calibration_vars
+	//Use status!!!!!!!!!!!
+	public bool isCalibrating = false;
+	#endregion
 	//FRAME PUBLISHING VARIABLES
 	#region frame_publishing_vars
 	public static int lineCount = 100;
@@ -408,6 +412,9 @@ public class PupilGazeTracker:MonoBehaviour
 	public bool printSampling;
 	public bool printMessage;
 	public bool printMessageType;
+
+	public float WorldScaling; 
+
 	//CUSTOM EDITOR VARIABLES
 
 	public Vector2 Calibration2DScale;
@@ -553,13 +560,16 @@ public class PupilGazeTracker:MonoBehaviour
 	private int toastIndex = 0;
 	#region Update
 	void Update(){
+		if (Input.GetKeyUp (KeyCode.X)) {
+			subscriberSocket.Unsubscribe ("frame.");
+		}
 		if (Input.GetKeyUp (KeyCode.A)) {
-
+			StopFramePublishing();
 //			_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
 //			_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name", "Frame_Publisher"}, {"args","{}"}});
 			//_sendRequestMessage (new Dictionary<string,object> { { "subject","eye_process.started" }, { "eye_id",0 } });
 			//ToastMessage.Instance.DrawToastMessage (new ToastMessage.toastParameters(){delay = 2, fadeOutSpeed = 2, text = "toast message", ID = 0});
-			ToastMessage.Instance.DrawToastMessageOnMainThread (new ToastMessage.toastParameters(){delay = 2, fadeOutSpeed = 2, text = "posted to Main Thread toast message", ID = 1});
+			//ToastMessage.Instance.DrawToastMessageOnMainThread (new ToastMessage.toastParameters(){delay = 2, fadeOutSpeed = 2, text = "posted to Main Thread toast message", ID = 1});
 		}
 		if (Input.GetKeyUp (KeyCode.B)) {
 			_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name", "Frame_Publisher"}, {"args","{}"}});
@@ -571,12 +581,32 @@ public class PupilGazeTracker:MonoBehaviour
 			_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.stopped" } });
 		}
 
+		if (Input.GetKeyUp (KeyCode.C)) {
+			if (m_status == EStatus.Calibration)
+				StopCalibration ();
+			else {
+				StartCalibration ();	
+			}
+
+		}
+
 		//CalibrationDebugMode.Instantiate ();
 		//CalibrationDebugMode.OnRenderObject();
 	}
 	#endregion
 
 	#region DebugView
+	public Transform DebugViewTransform;
+	public bool StreamCameraImages = true;
+
+	public enum CalibrationDebugCamera
+	{
+		HMD,
+		PUPIL_CAMERA_0,
+		PUPIL_CAMERA_1,
+		PUPIL_CAMERA_BOTH
+	}
+	public CalibrationDebugCamera calibrationDebugCamera = CalibrationDebugCamera.PUPIL_CAMERA_0;
 	#endregion
 	public void DrawCalibrationDebug(){
 
@@ -586,24 +616,53 @@ public class PupilGazeTracker:MonoBehaviour
 		CreateEyeSphereMaterial ();
 
 
-		Vector3 eye0Pos = _pupilData.GetVector3(_pupilData.eye_centers_3d.zero);
-		Vector3 eye0Norm = _pupilData.GetVector3(_pupilData.gaze_normals_3d.zero);
 
-		Vector3 eye1Pos = _pupilData.GetVector3(_pupilData.eye_centers_3d.one);
-		Vector3 eye1Norm = _pupilData.GetVector3(_pupilData.gaze_normals_3d.one);
+		Vector3 eye0Pos = _pupilData.GetVector3(_pupilData.eye_centers_3d.zero, WorldScaling);
+		Vector3 eye0Norm = _pupilData.GetVector3(_pupilData.gaze_normals_3d.zero, 1);
 
-		Vector3 gazePoint = _pupilData.GetVector3 (_pupilData.gaze_point_3d);
+		Vector3 eye1Pos = _pupilData.GetVector3(_pupilData.eye_centers_3d.one, WorldScaling);
+		Vector3 eye1Norm = _pupilData.GetVector3(_pupilData.gaze_normals_3d.one, 1);
+
+		Vector3 gazePoint = _pupilData.GetVector3 (_pupilData.gaze_point_3d, WorldScaling);
 		//print ("before drawing : " + eye0Pos+eye0Norm);
-		float _fov = fov*Mathf.Deg2Rad;
-		var radianHFOV = 2 * Mathf.Atan (Mathf.Tan (_fov / 2) * Camera.main.aspect);
-		var hFOV = Mathf.Rad2Deg * radianHFOV;
 
-		DrawCameraFrustum (Camera.main.transform, hFOV, aspectRatios.FULLHD, MinViewDistance, MaxViewDistance, new Color(0f,0.64f,0f));
+		switch (calibrationDebugCamera) {
+		case CalibrationDebugCamera.HMD:
 
-		DrawDebugSphere (Camera.main.transform, eye0Pos, 0, eye0Norm, isEye: true, norm_length: viewDirectionLength, sphereColor: Color.cyan, norm_color: Color.red, size: EyeSize);//eye0
-		DrawDebugSphere (Camera.main.transform, eye1Pos, 1, eye1Norm, isEye: true, norm_length: viewDirectionLength, sphereColor: Color.cyan, norm_color: Color.red, size: EyeSize);//eye1
+			float _fov = fov*Mathf.Deg2Rad;
+			var radianHFOV = 2 * Mathf.Atan (Mathf.Tan (_fov / 2) * Camera.main.aspect);
+			var hFOV = Mathf.Rad2Deg * radianHFOV;
 
-		DrawDebugSphere (Camera.main.transform, gazePoint, 2, eye1Norm, isEye: false, norm_length: viewDirectionLength, sphereColor: Color.red, norm_color: Color.red, size: EyeSize/2);//gaze point 3D
+			DrawCameraFrustum (DebugViewTransform, hFOV, aspectRatios.FULLHD, MinViewDistance, MaxViewDistance, new Color(0f,0.64f,0f));
+
+			DrawDebugSphere (DebugViewTransform, eye0Pos, 0, eye0Norm, isEye: true, norm_length: viewDirectionLength, sphereColor: Color.cyan, norm_color: Color.red, size: EyeSize);//eye0
+			DrawDebugSphere (DebugViewTransform, eye1Pos, 1, eye1Norm, isEye: true, norm_length: viewDirectionLength, sphereColor: Color.cyan, norm_color: Color.red, size: EyeSize);//eye1
+
+			DrawDebugSphere (DebugViewTransform, gazePoint, 2, eye1Norm, isEye: false, norm_length: viewDirectionLength, sphereColor: Color.red, norm_color: Color.red, size: EyeSize/2);//gaze point 3D
+
+
+			break;
+		case CalibrationDebugCamera.PUPIL_CAMERA_0:
+			Pupil.Sphere _s;
+			//_pupilData.base_data
+			if (_pupilData.base_data != null) {
+				print ("inside pupil camera 0 with .base data");
+				_s = _pupilData.base_data [0].sphere;
+				print (_s.center [0] + " , " + _s.center [1] + " , " + _s.center [2]);
+			} else {
+				_s = new Pupil.Sphere ();
+			}
+			Vector3 _v3Pos = new Vector3 ((float)_s.center [0] * WorldScaling, (float)_s.center [1] * WorldScaling, (float)_s.center [2] * WorldScaling);
+			//DrawDebugSphere (DebugViewTransform, _v3Pos, 10, size: ((float)_s.radius) * WorldScaling, sphereColor: Color.green);
+			DrawDebugSphere (matrix: DebugViewTransform,forward: Vector3.one, eyeID: 10,position: _v3Pos, size: ((float)_s.radius) * WorldScaling, sphereColor: Color.green);
+			break;
+		case CalibrationDebugCamera.PUPIL_CAMERA_1:
+			break;
+		case CalibrationDebugCamera.PUPIL_CAMERA_BOTH:
+			break;
+		}
+
+
 
 		//print ("after drawing");
 
@@ -720,6 +779,9 @@ public class PupilGazeTracker:MonoBehaviour
 		eyeSphereMaterial.SetColor ("_Color", sphereColor);
 		eyeSphereMaterial.SetPass (0);
 
+		if (matrix == null)
+			matrix = Camera.main.transform;
+
 		Matrix4x4 _m = new Matrix4x4 ();
 
 		//print ("from : " + forward + " to :  " + Quaternion.LookRotation (forward, Vector3.up));
@@ -750,6 +812,9 @@ public class PupilGazeTracker:MonoBehaviour
 
 		lineMaterial.SetColor ("_Color", frustumColor);
 		lineMaterial.SetPass (0);
+
+		if (origin == null)
+			origin = Camera.main.transform;
 
 		GL.PushMatrix ();
 
@@ -872,6 +937,9 @@ public class PupilGazeTracker:MonoBehaviour
 		OperatorCamera = null;
 		ToastMessage.Instance.DrawToastMessage (new ToastMessage.toastParameters (){ text = "" });
 
+		eye0Image = new Texture2D (100,100);
+		eye1Image = new Texture2D (100,100);
+
 		_pupilData = new Pupil.PupilData () {gaze_point_3d = new double[]{ 10.0, 10.0, 10.0 },gaze_normals_3d = new Pupil.eyes3Ddata () {one = new double[] {1,0,0},zero = new double[] {
 					1,
 					0,
@@ -902,8 +970,10 @@ public class PupilGazeTracker:MonoBehaviour
 		_dataLock = new object ();
 
 		//make sure that if the toggles are on it functions as the toggle requires it
-//		if (isOperatorMonitor && OnOperatorMonitor == null)
-//			OnOperatorMonitor += DrawOperatorMonitor;
+		if (isOperatorMonitor && OnOperatorMonitor == null) {
+			OperatorMonitor.Instant ();
+		}
+			//OnOperatorMonitor += DrawOperatorMonitor;
 		if (calibrationDebugMode && OnCalibDebug == null)
 			OnCalibDebug += DrawCalibrationDebug;
 		
@@ -979,7 +1049,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	#region frame_publishing.functions
 	public void StartFramePublishing(){
-		_sendRequestMessage (new Dictionary<string,object> {{"subject","start_plugin"},{"name", "Frame_Publisher"}, {"args","{}"}});
+		//_sendRequestMessage (new Dictionary<string,object> {{"subject","start_plugin"},{"name", "Frame_Publisher"}});
 		_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
 	}
 	public void StopFramePublishing(){
@@ -993,7 +1063,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 		if (_dic.ContainsKey (0)) {
 			_dic.TryGetValue (0, out _bArray);
-			eye0Image = new Texture2D(100,100);
+			//eye0Image = new Texture2D(100,100);
 			eye0Image.LoadImage (_bArray);
 			try{
 				eye0ImageMaterial.mainTexture = eye0Image;
@@ -1001,7 +1071,7 @@ public class PupilGazeTracker:MonoBehaviour
 			}
 		} else {
 			_dic.TryGetValue (1, out _bArray);
-			eye1Image = new Texture2D(100,100);
+			//eye1Image = new Texture2D(100,100);
 			eye1Image.LoadImage (_bArray);
 			try{
 				eye1ImageMaterial.mainTexture = eye1Image;
@@ -1012,6 +1082,7 @@ public class PupilGazeTracker:MonoBehaviour
 	#endregion
 
 	#region NetMQ
+	private SubscriberSocket subscriberSocket;
 	void NetMQClient()
 	{
 		long lastTick = DateTime.Now.Ticks;
@@ -1045,20 +1116,26 @@ public class PupilGazeTracker:MonoBehaviour
 		{
 			
 			try{
+				Thread.Sleep(1000);
 				StartProcess ();
 			}
 			catch{
 				print ("Couldn't start process");
 			}
 				
-			var subscriberSocket = new SubscriberSocket( IPHeader + subport);
+			//var subscriberSocket = new SubscriberSocket( IPHeader + subport);
+			subscriberSocket = new SubscriberSocket( IPHeader + subport);
 
 			subscriberSocket.Subscribe("gaze"); //subscribe for gaze data
 			subscriberSocket.Subscribe("notify."); //subscribe for all notifications
 			subscriberSocket.Subscribe("frame."); //subscribe for all notifications
+			//subscriberSocket.Subscribe()
+			subscriberSocket.SubscribeToAnyTopic();
 
 			_setStatus(EStatus.ProcessingGaze);
 			var msg = new NetMQMessage();
+
+
 
 			while ( _isDone == false)
 			{
@@ -1069,6 +1146,9 @@ public class PupilGazeTracker:MonoBehaviour
 					_isFullConnected = true;
 					try
 					{
+//						if (!_serviceStarted){
+//							StopFramePublishing();
+//						}
 						string msgType=msg[0].ConvertToString();
 						if (printMessage){
 							var m = MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
@@ -1077,7 +1157,7 @@ public class PupilGazeTracker:MonoBehaviour
 						}
 						if (printMessageType){
 							print(msgType);
-							ToastMessage.Instance.DrawToastMessageOnMainThread(new ToastMessage.toastParameters(){ID = 0,text = msgType});
+							//ToastMessage.Instance.DrawToastMessageOnMainThread(new ToastMessage.toastParameters(){ID = 0,text = msgType});
 						}
 
 						elapsedTime = (float)TimeSpan.FromTicks(DateTime.Now.Ticks - lastTick).TotalSeconds;
@@ -1088,27 +1168,44 @@ public class PupilGazeTracker:MonoBehaviour
 						}
 						#region NetMQ.message_handling
 						switch(msgType){
-						case "frame.eye.0":
-							var eye0Data = msg[2].Buffer;
-							if (updateEye0){
-								MainThread.Call(AssignTexture, new Dictionary<int,byte[]>{{0,eye0Data}});
-								updateEye0=false;
+						case "pupil.0":
+//							var pupil0 =MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
+//							MsgPack.MessagePackObject pupil0_data = pupil0.Value;
+//							//print(pupil0_data);
+							_gazeFPS++;
+							var ct=DateTime.Now;
+							if((ct-_lastT).TotalSeconds>1)
+							{
+								_lastT=ct;
+								_currentFps=_gazeFPS;
+								_gazeFPS=0;
 							}
 							break;
-						case "frame.eye.1":
-							var eye1Data = msg[2].Buffer;
-							if (updateEye1){
-								MainThread.Call(AssignTexture, new Dictionary<int,byte[]>{{1,eye1Data}});
-								updateEye1=false;
-							}
-							break;
-						case "notify.frame_publishing.started":
-							ToastMessage.Instance.DrawToastMessageOnMainThread(new ToastMessage.toastParameters(){ID = 0,text = "frame publishing has started"});
-							break;
-//						case "notify.meta.doc":
-//							var doc = MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
-//							print(doc);
+//						case "frame.eye.0":
+//							if (calibrationDebugMode && StreamCameraImages){
+//								var eye0Data = msg[2].Buffer;
+//								if (updateEye0){
+//									MainThread.Call(AssignTexture, new Dictionary<int,byte[]>{{0,eye0Data}});
+//									updateEye0=false;
+//								}
+//							}
 //							break;
+//						case "frame.eye.1":
+//							if (calibrationDebugMode && StreamCameraImages){
+//								var eye1Data = msg[2].Buffer;
+//								if (updateEye1){
+//									MainThread.Call(AssignTexture, new Dictionary<int,byte[]>{{1,eye1Data}});
+//									updateEye1=false;
+//								}
+//							}
+//							break;
+//						case "notify.frame_publishing.started":
+//							ToastMessage.Instance.DrawToastMessageOnMainThread(new ToastMessage.toastParameters(){ID = 0,text = "frame publishing has started"});
+//							break;
+////						case "notify.meta.doc":
+////							var doc = MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
+////							print(doc);
+////							break;
 						}
 
 						if(msgType=="gaze")
@@ -1213,12 +1310,12 @@ public class PupilGazeTracker:MonoBehaviour
 	//Service is currently stored in Assets/Plugins/pupil_service_versionNumber . This path is hardcoded. See servicePath.
 	public void RunServiceAtPath(){
 		AdjustPath ();
-		string servicePath = PupilServicePath + "/";
-		if (Directory.Exists (servicePath) && PupilServiceFileName != "") {
+		string servicePath = PupilServicePath;
+		if (File.Exists (servicePath)) {
 			serviceProcess = new Process ();
 			serviceProcess.StartInfo.Arguments = servicePath;
-			serviceProcess.StartInfo.FileName = servicePath + PupilServiceFileName;
-			if (File.Exists (servicePath + PupilServiceFileName)) {
+			serviceProcess.StartInfo.FileName = servicePath;
+			if (File.Exists (servicePath)) {
 				serviceProcess.Start ();
 			} else {
 				print ("Pupil Service could not start! There is a problem with the file path. The file does not exist at given path");
@@ -1227,17 +1324,19 @@ public class PupilGazeTracker:MonoBehaviour
 			if (PupilServiceFileName == "") {
 				print ("Pupil Service filename is not specified, most likely you will have to check if you have it set for the current platform under settings Platforms(DEV opt.)");
 			}
-			if (!Directory.Exists (servicePath)){
-				print ("Pupil Service directory incorrect, please change under Settings");
-			}
+//			if (!Directory.Exists (servicePath)){
+//				print ("Pupil Service directory incorrect, please change under Settings");
+//			}
 		}
 	}
 
 	public void StartProcess()
 	{
 		try{
-		_sendRequestMessage (new Dictionary<string,object> {{"subject","eye_process.should_start.0"},{"eye_id",0}});
-		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_start.1"},{"eye_id",1}});
+			
+
+			_sendRequestMessage (new Dictionary<string,object> {{"subject","eye_process.should_start.0"},{"eye_id",0}});
+			_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_start.1"},{"eye_id",1}});
 		}
 		catch{
 			print ("cannot start process");
@@ -1296,14 +1395,7 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 
 		//add new frame
-		_gazeFPS++;
-		var ct=DateTime.Now;
-		if((ct-_lastT).TotalSeconds>1)
-		{
-			_lastT=ct;
-			_currentFps=_gazeFPS;
-			_gazeFPS=0;
-		}
+
 
 		if (m_status == EStatus.ProcessingGaze) { //gaze processing stage
 			float x,y,z;
@@ -1339,7 +1431,17 @@ public class PupilGazeTracker:MonoBehaviour
 			float t=GetPupilTimestamp();
 
 			floatArray[] _cPoints = GetCalibPoints;
-			float[] _cPointFloatValues = _cPoints [_currCalibPoint].axisValues;
+			float[] _tmp = _cPoints [_currCalibPoint].axisValues;
+
+			float[] _cPointFloatValues;
+			float[] _cPointFloatValuesBase = new float[]{_tmp[0], _tmp[1], _tmp[2]};
+
+			if (CurrentCalibrationMode == CalibModes._2D){
+				_cPointFloatValues = new float[]{_tmp[0], _tmp[1], _tmp[2]};
+			}else{
+				_cPointFloatValues = new float[]{_tmp[0]/WorldScaling, _tmp[1]/WorldScaling, _tmp[2]/WorldScaling};
+			}
+
 
 //			print (_cPointFloatValues.Count());
 //			print (_cPointFloatValues [0] + " , " + _cPointFloatValues [1]);
@@ -1348,7 +1450,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 //			print ("Calibration points amount for calibration method " + CurrentCalibrationMode + " is : " + _cPoints.Length + ". Current Calibration sample is : " + _currCalibSamples);
 			//If OnCalibData delegate has assigned function from the Calibration Marker, assign the current calibration position to it.
-			_CalibData (_cPointFloatValues);
+			_CalibData (_cPointFloatValuesBase);
 
 
 			// Giving the user a short time to focus on the Calibration Point target before starting adding the reference data
