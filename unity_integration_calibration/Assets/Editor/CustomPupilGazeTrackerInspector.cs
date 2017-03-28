@@ -141,6 +141,13 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		EditorGUI.BeginChangeCheck ();
 		GUILayout.BeginHorizontal ();
+		if (GUILayout.Button ("Draw Calib GL")) {
+			if (!isCalibrating) {
+				pupilTracker.StartCalibration ();
+			} else {
+				pupilTracker.StopCalibration ();
+			}
+		}
 		//pupilTracker.targetEye = EditorGUILayout.EnumPopup ((pupilTracker.targetEye)as Enum);
 		//if (pupilTracker.OperatorCamera)
 //		GUILayout.Label("Target Eye");
@@ -289,7 +296,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				GUILayout.BeginHorizontal ();
 				pupilTracker.CalibrationPoints2DFoldout = EditorGUILayout.Foldout (pupilTracker.CalibrationPoints2DFoldout, "2D", pupilTracker.FoldOutStyle);
 				if (GUILayout.Button ("Add 2D Calibration Point")) {
-					pupilTracker.Add2DCalibrationPoint (new floatArray(){axisValues = new float[]{0f,0f}});
+					pupilTracker.Add2DCalibrationPoint (new floatArray(){axisValues = new float[]{0f,0f,0f}});
 					//CalibrationPointsEditor.DrawCalibrationPointsEditor (pupilTracker, pupilTracker._calibPoints.Get2DList().Count-1,0, new Vector3 (0, 0, 0));
 				}
 				GUILayout.EndHorizontal ();
@@ -448,7 +455,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 	}
 
 	public void CheckConnection(){
-		if (pupilTracker._isFullConnected) {
+		if (pupilTracker.IsConnected) {
 			Debug.Log ("Connection Established");
 			isConnected = true;
 			EditorApplication.update = null;

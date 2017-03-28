@@ -41,9 +41,9 @@ public class PupilCalibMarker : MonoBehaviour {
 
 	public void OnCalibData(PupilGazeTracker m,object position)
 	{
-		Vector2 _v2 = (Vector2)position;
-		this.x = _v2.x;
-		this.y = _v2.y;
+		Vector3 _v3 = (Vector3)position;
+		this.x = _v3.x;
+		this.y = _v3.y;
 	}
 
 	void _SetLocation(float x,float y)
@@ -64,7 +64,7 @@ public class PupilCalibMarker : MonoBehaviour {
 		if(_started)
 			_SetLocation (x, y);
 
-		if (_started)
-			print ("2D calibration method is going on");
+//		if (_started)
+//			print ("2D calibration method is going on");
 	}
 }

@@ -117,6 +117,15 @@ namespace Operator{
 		public bool isUpdateGraph = false;
 	}
 }
+namespace Calibration{
+	[Serializable]
+	public class marker{
+		public string name;
+		public Rect shape;
+		public Color color;
+		public bool toggle;
+	}
+}
 
 [Serializable]
 public struct floatArray{
@@ -272,12 +281,15 @@ public class PupilGazeTracker:MonoBehaviour
 	public delegate void OnEyeGazeDeleg(PupilGazeTracker manager);
 	//public delegate void OnCalibDataDeleg(PupilGazeTracker manager,float x,float y);
 	public delegate void OnCalibDataDeleg(PupilGazeTracker manager,object position);
+	public delegate void OnCalibrationGLDeleg();
+
 	public delegate void DrawMenuDeleg ();
 //	public delegate void OnConnectedDeleg (PupilGazeTracker manager);
 	public delegate void OnSwitchCalibPointDeleg(PupilGazeTracker manager);
 	public delegate void OnCalibDebugDeleg();
 	public delegate void OnOperatorMonitorDeleg();
 	public delegate void OnDrawGizmoDeleg ();
+
 	//TODO: confirm that this does not cause freezing
 	//public delegate void OnFramePublishingDeleg(Color[] _texture);
 
@@ -286,6 +298,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public event OnEyeGazeDeleg OnEyeGaze;
 	public event OnCalibDataDeleg OnCalibData;
 	public DrawMenuDeleg DrawMenu;
+	public OnCalibrationGLDeleg OnCalibrationGL;
 //	public event OnConnectedDeleg OnConnected;
 	public event OnSwitchCalibPointDeleg OnSwitchCalibPoint;
 	//public event OnFramePublishingDeleg OnFramePublish;
@@ -299,6 +312,13 @@ public class PupilGazeTracker:MonoBehaviour
 	#region calibration_vars
 	//Use status!!!!!!!!!!!
 	public bool isCalibrating = false;
+
+	public float value0;
+	public float value1;
+	public float value2;
+	public float value3;
+	public Calibration.marker[] CalibrationMarkers;
+
 	#endregion
 	//FRAME PUBLISHING VARIABLES
 	#region frame_publishing_vars
@@ -561,6 +581,10 @@ public class PupilGazeTracker:MonoBehaviour
 	#region Update
 	void Update(){
 		if (Input.GetKeyUp (KeyCode.X)) {
+			subscriberSocket.Subscribe ("frame.");
+		}
+
+		if (Input.GetKeyUp (KeyCode.Z)) {
 			subscriberSocket.Unsubscribe ("frame.");
 		}
 		if (Input.GetKeyUp (KeyCode.A)) {
@@ -729,6 +753,9 @@ public class PupilGazeTracker:MonoBehaviour
 	public void OnRenderObject(){
 		if (OnCalibDebug != null)
 			OnCalibDebug ();
+
+		if (OnCalibrationGL != null)
+			OnCalibrationGL ();
 	}
 	public float fov = 60;
 	public float MinViewDistance = 20;
@@ -935,8 +962,11 @@ public class PupilGazeTracker:MonoBehaviour
 	void Start()
 	{
 		OperatorCamera = null;
-		ToastMessage.Instance.DrawToastMessage (new ToastMessage.toastParameters (){ text = "" });
+		ToastMessage.Instance.DrawToastMessage (new ToastMessage.toastParameters (){ text = "" });//Initialize toast messages;
 
+		CalibrationGL.GazeProcessingMode ();
+
+		float[] _cPointFloatValues = new float[]{0f,0f,0f};
 		eye0Image = new Texture2D (100,100);
 		eye1Image = new Texture2D (100,100);
 
@@ -1128,9 +1158,9 @@ public class PupilGazeTracker:MonoBehaviour
 
 			subscriberSocket.Subscribe("gaze"); //subscribe for gaze data
 			subscriberSocket.Subscribe("notify."); //subscribe for all notifications
-			subscriberSocket.Subscribe("frame."); //subscribe for all notifications
+			//subscriberSocket.Subscribe("frame."); //subscribe for all notifications
 			//subscriberSocket.Subscribe()
-			subscriberSocket.SubscribeToAnyTopic();
+			//subscriberSocket.SubscribeToAnyTopic();
 
 			_setStatus(EStatus.ProcessingGaze);
 			var msg = new NetMQMessage();
@@ -1140,10 +1170,11 @@ public class PupilGazeTracker:MonoBehaviour
 			while ( _isDone == false)
 			{
 				_isconnected = subscriberSocket.TryReceiveMultipartMessage(timeout,ref(msg));
-
 				if (_isconnected)
 				{
+					//print ("isconnected");
 					_isFullConnected = true;
+
 					try
 					{
 //						if (!_serviceStarted){
@@ -1210,10 +1241,10 @@ public class PupilGazeTracker:MonoBehaviour
 
 						if(msgType=="gaze")
 						{
-							if (!_serviceStarted){
-								_serviceStarted = true;
-								print("Service started ! ");
-							}
+//							if (!_serviceStarted){
+//								_serviceStarted = true;
+//								print("Service started ! ");
+//							}
 							var message = MsgPack.Unpacking.UnpackObject(msg[1].ToByteArray());
 							MsgPack.MessagePackObject mmap = message.Value;
 
@@ -1349,7 +1380,12 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 
 	public void StartCalibration(){
-		
+
+		CalibrationGL.CalibrationMode ();
+
+		//print (CalibrationMarkers.Where (p => p.name == "Marker") as Calibration.marker);
+		//print (CalibrationMarkers.Where (p => p.name == "Marker").ToList()[0]);
+
 		CalibModeDetails _currCalibModeDetails = CalibrationModes [CurrentCalibrationMode];
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name",_currCalibModeDetails.calibPlugin}});
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","calibration.should_start"},{"hmd_video_frame_size",new float[]{1000,1000}},{"outlier_threshold",35}});
@@ -1361,6 +1397,7 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 	public void StopCalibration()
 	{
+		CalibrationGL.GazeProcessingMode ();
 		_setStatus (EStatus.ProcessingGaze);
 		print ("Calibration Stopping !");
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","calibration.should_stop"}});
@@ -1393,7 +1430,8 @@ public class PupilGazeTracker:MonoBehaviour
 	#region packet
 	void OnPacket(Pupil.PupilData data)
 	{
-
+//		Application.logMessageReceivedThreaded ();
+		//print ("OnPacket begin");
 		//add new frame
 
 
@@ -1415,6 +1453,22 @@ public class PupilGazeTracker:MonoBehaviour
 					if (OnEyeGaze != null)
 						OnEyeGaze (this);
 				}
+
+				Calibration.marker _0 = CalibrationMarkers.Where (p => p.name == "leftEye").ToList () [0];
+				_0.shape.x = GetEyeGaze2D (GazeSource.LeftEye).x;
+				_0.shape.y = GetEyeGaze2D (GazeSource.LeftEye).y;
+				_0.toggle = true;
+
+				Calibration.marker _1 = CalibrationMarkers.Where (p => p.name == "rightEye").ToList () [0];
+				_1.shape.x = GetEyeGaze2D (GazeSource.RightEye).x;
+				_1.shape.y = GetEyeGaze2D (GazeSource.RightEye).y;
+				_1.toggle = true;
+
+				Calibration.marker _2 = CalibrationMarkers.Where (p => p.name == "gaze").ToList () [0];
+				_2.shape.x = GetEyeGaze2D (GazeSource.BothEyes).x;
+				_2.shape.y = GetEyeGaze2D (GazeSource.BothEyes).y;
+				_2.toggle = true;
+
 				break;
 			case CalibModes._3D:
 				x = (float)data.gaze_point_3d [0];
@@ -1430,18 +1484,22 @@ public class PupilGazeTracker:MonoBehaviour
 		} else if (m_status == EStatus.Calibration) {//gaze calibration stage
 			float t=GetPupilTimestamp();
 
+			//TODO: Call this once!
 			floatArray[] _cPoints = GetCalibPoints;
 			float[] _tmp = _cPoints [_currCalibPoint].axisValues;
 
-			float[] _cPointFloatValues;
-			float[] _cPointFloatValuesBase = new float[]{_tmp[0], _tmp[1], _tmp[2]};
+			//print("1 : " + _cPoints.Length + " , " + _cPoints[11].axisValues.Length);
 
+			float[] _cPointFloatValues = new float[]{0f,0f,0f};
+			float[] _cPointFloatValuesBase = new float[]{(float)_tmp[0], (float)_tmp[1], (float)_tmp[2]};
+			//print("2");
 			if (CurrentCalibrationMode == CalibModes._2D){
-				_cPointFloatValues = new float[]{_tmp[0], _tmp[1], _tmp[2]};
+				_cPointFloatValues = new float[]{_tmp[0], _tmp[1], -100};
+				//print("calib mode 2D on packet");
 			}else{
-				_cPointFloatValues = new float[]{_tmp[0]/WorldScaling, _tmp[1]/WorldScaling, _tmp[2]/WorldScaling};
+				print("calib mode 3D on packet");
+				//_cPointFloatValues = new float[]{_tmp[0]/WorldScaling, _tmp[1]/WorldScaling, _tmp[2]/WorldScaling};
 			}
-
 
 //			print (_cPointFloatValues.Count());
 //			print (_cPointFloatValues [0] + " , " + _cPointFloatValues [1]);
@@ -1450,6 +1508,13 @@ public class PupilGazeTracker:MonoBehaviour
 
 //			print ("Calibration points amount for calibration method " + CurrentCalibrationMode + " is : " + _cPoints.Length + ". Current Calibration sample is : " + _currCalibSamples);
 			//If OnCalibData delegate has assigned function from the Calibration Marker, assign the current calibration position to it.
+
+			if (CurrentCalibrationMode == CalibModes._2D){
+				Calibration.marker _m = CalibrationMarkers.Where (p => p.name == "Marker").ToList()[0];
+				_m.shape.x = _tmp[0];
+				_m.shape.y = _tmp[1];
+				_m.toggle = true;
+			}
 			_CalibData (_cPointFloatValuesBase);
 
 
@@ -1531,6 +1596,8 @@ public class PupilGazeTracker:MonoBehaviour
 		str += "\nRight Eye:" + RightEyePos.ToString ();
 		GUI.TextArea (new Rect (0, 0, 200, 50), str);
 
+//		if (OnCalibrationGL != null)
+//			OnCalibrationGL ();
 
 	}
 	public void Add3DCalibrationPoint(floatArray _f){
@@ -1543,7 +1610,7 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 	public void AddCalibrationPoint(){
 		if (CurrentCalibrationMode == PupilGazeTracker.CalibModes._2D) {
-			Add2DCalibrationPoint (new floatArray (){ axisValues = new float[]{ 0f, 0f } });
+			Add2DCalibrationPoint (new floatArray (){ axisValues = new float[]{ 0f, 0f, 0f } });
 		} else {
 			Add3DCalibrationPoint (new floatArray (){ axisValues = new float[]{ 0f, 0f, 0f } });
 		}
