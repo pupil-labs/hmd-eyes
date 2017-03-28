@@ -408,15 +408,21 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		if (pupilTracker.calibrationMode == 1) {
 			EditorGUI.BeginChangeCheck ();
+			if (!isConnected)
+				GUI.enabled = false;
 			pupilTracker.calibrationDebugMode = GUILayout.Toggle (pupilTracker.calibrationDebugMode, "Calibration Debug Mode", "Button");
+			GUI.enabled = true;
 			if (EditorGUI.EndChangeCheck ()) {
-				if (pupilTracker.calibrationDebugMode) {
-					pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
-					pupilTracker.OnCalibDebug += pupilTracker.DrawCalibrationDebug;
-					pupilTracker.StartFramePublishing ();
-				} else {
-					pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
-					pupilTracker.StopFramePublishing ();
+				if (Application.isPlaying) {
+					Debug.Log ("Calibration Debug mode on/off");
+					if (pupilTracker.calibrationDebugMode) {
+						pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
+						pupilTracker.OnCalibDebug += pupilTracker.DrawCalibrationDebug;
+						pupilTracker.StartFramePublishing ();
+					} else {
+						pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
+						pupilTracker.StopFramePublishing ();
+					}
 				}
 			}
 			if (pupilTracker.calibrationDebugMode) {

@@ -8,6 +8,7 @@ public static class CalibrationGL{
 	static PupilGazeTracker pupilTracker;
 	static bool isInitialized;
 	static Material markerMaterial;
+	public static PupilGazeTracker.CalibModes currentMode;
 
 	public static void Init(){
 		//return Draw;
@@ -16,6 +17,7 @@ public static class CalibrationGL{
 		isInitialized = true;
 		CreateEye1ImageMaterial ();
 		markerMaterial.mainTexture = _t;
+		currentMode = pupilTracker.CurrentCalibrationMode;
 	}
 
 	static void CreateEye1ImageMaterial ()
@@ -33,32 +35,27 @@ public static class CalibrationGL{
 			Init ();
 
 		GL.PushMatrix ();
-		//GL.LoadPixelMatrix (pupilTracker.value1, Screen.width, Screen.height, pupilTracker.value2);
-		//GL.LoadPixelMatrix (pupilTracker.value0, pupilTracker.value1, pupilTracker.value2, pupilTracker.value3);
 
-		Matrix4x4 _m = new Matrix4x4 ();
-		_m.SetTRS (new Vector3(-.5f,-.5f,.7f), Quaternion.identity, new Vector3(1,1,1));
-
-		GL.MultMatrix (Camera.main.transform.localToWorldMatrix*_m);
-
-		//GL.LoadProjectionMatrix (_m);
-		//GL.LoadPixelMatrix(
-		//GL.LoadPixelMatrix(0,1,1, 0);
-		//GL.LoadOrtho ();
-
-
-		foreach (Calibration.marker _marker in pupilTracker.CalibrationMarkers) {
-			if (_marker.toggle == true)
-				Marker (_marker);
+		switch(currentMode){
+		case PupilGazeTracker.CalibModes._2D:
+			Matrix4x4 _m = new Matrix4x4 ();
+			_m.SetTRS (new Vector3 (-.5f, -.5f, .7f), Quaternion.identity, new Vector3 (1, 1, 1));
+			GL.MultMatrix (Camera.main.transform.localToWorldMatrix * _m);
+			foreach (Calibration.marker _marker in pupilTracker.CalibrationMarkers) {
+				if (_marker.toggle == true)
+					Marker (_marker);
+			}
+			Marker (new Calibration.marker () {
+				shape = new Rect (pupilTracker.value0, pupilTracker.value1, .07f, pupilTracker.value2),
+				color = Color.blue
+			});
+			break;
+		case PupilGazeTracker.CalibModes._3D:
+			Debug.Log ("Drawing 3D GL");
+			break;
 		}
-
-		//Marker (pupilTracker.CalibrationMarkers [2]);
-		//Calibration.marker _cm = new Calibration.marker();
-		//_cm.shape
-		Marker (new Calibration.marker(){shape = new Rect(pupilTracker.value0,pupilTracker.value1,.07f,pupilTracker.value2), color = Color.blue});
-
-
 		GL.PopMatrix ();
+
 	}
 	public static void Marker(Calibration.marker _m){
 		Rect _r = _m.shape;
