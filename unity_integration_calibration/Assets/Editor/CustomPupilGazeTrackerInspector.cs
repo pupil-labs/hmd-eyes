@@ -157,11 +157,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		if (EditorGUI.EndChangeCheck ()) {
 			if (pupilTracker.isOperatorMonitor) {
 				if (pupilTracker.OperatorCamera == null) {
-					GameObject _camGO = new GameObject ();
-					pupilTracker.OperatorCamera = _camGO.AddComponent<Camera> ();
-					_camGO.AddComponent<OperatorMonitor> ();
-					_camGO.name = "Operator Camera";
-					_camGO.GetComponent<OperatorMonitor> ().properties = pupilTracker.OperatorMonitorProperties;
+					OperatorMonitor.Instantiate ();
+//					GameObject _camGO = new GameObject ();
+//					pupilTracker.OperatorCamera = _camGO.AddComponent<Camera> ();
+//					_camGO.AddComponent<OperatorMonitor> ();
+//					_camGO.name = "Operator Camera";
+//					_camGO.GetComponent<OperatorMonitor> ().properties = pupilTracker.OperatorMonitorProperties;
 				}
 			} else {
 				if (pupilTracker.OperatorCamera != null)
@@ -172,9 +173,45 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		////////BUTTONS FOR DEBUGGING TO COMMENT IN PUBLIC VERSION////////
 		pupilTracker.isDebugFoldout = EditorGUILayout.Foldout (pupilTracker.isDebugFoldout, "Debug Buttons");
 		GUILayout.BeginHorizontal ();
-		pupilTracker.printSampling = GUILayout.Toggle (pupilTracker.printSampling, "Print Sampling");
-		pupilTracker.printMessage = GUILayout.Toggle (pupilTracker.printMessage, "Print Msg");
-		pupilTracker.printMessageType = GUILayout.Toggle (pupilTracker.printMessageType, "Print Msg Types");
+		pupilTracker.DebugVariables.printSampling = GUILayout.Toggle (pupilTracker.DebugVariables.printSampling, "Print Sampling", "Button");
+		pupilTracker.DebugVariables.printMessage = GUILayout.Toggle (pupilTracker.DebugVariables.printMessage, "Print Msg", "Button");
+		pupilTracker.DebugVariables.printMessageType = GUILayout.Toggle (pupilTracker.DebugVariables.printMessageType, "Print Msg Types", "Button");
+		GUILayout.EndHorizontal ();
+
+		GUILayout.BeginHorizontal ();
+		EditorGUI.BeginChangeCheck ();
+		pupilTracker.DebugVariables.subscribeAll = GUILayout.Toggle (pupilTracker.DebugVariables.subscribeAll, "Subscribe to all", "Button");
+		if (EditorGUI.EndChangeCheck ()) {
+			if (pupilTracker.DebugVariables.subscribeAll) {
+				pupilTracker.subscriberSocket.SubscribeToAnyTopic ();
+			} else {
+				pupilTracker.subscriberSocket.Unsubscribe ("frame.");
+				pupilTracker.subscriberSocket.Unsubscribe ("pupil.");
+				pupilTracker.subscriberSocket.Unsubscribe ("gaze");
+			}
+		}
+		EditorGUI.BeginChangeCheck ();
+		pupilTracker.DebugVariables.subscribeFrame = GUILayout.Toggle (pupilTracker.DebugVariables.subscribeFrame, "Subscribe to frame.", "Button");
+		if (EditorGUI.EndChangeCheck ()) {
+			if (pupilTracker.DebugVariables.subscribeAll) {
+				pupilTracker.SubscribeTo("frame.");
+				//pupilTracker.subscriberSocket.Subscribe ("frame.");
+			} else {
+				pupilTracker.UnSubscribeFrom ("frame.");
+				pupilTracker.subscriberSocket.Unsubscribe("frame.");
+			}
+		}
+		EditorGUI.BeginChangeCheck ();
+		pupilTracker.DebugVariables.subscribeGaze = GUILayout.Toggle (pupilTracker.DebugVariables.subscribeGaze, "Subscribe to gaze.", "Button");
+		if (EditorGUI.EndChangeCheck ()) {
+			if (pupilTracker.DebugVariables.subscribeGaze) {
+				pupilTracker.subscriberSocket.Subscribe ("gaze");
+			} else {
+				pupilTracker.subscriberSocket.Unsubscribe("gaze");
+			}
+		}
+		//pupilTracker.printMessage = GUILayout.Toggle (pupilTracker.printMessage, "Print Msg");
+		//pupilTracker.printMessageType = GUILayout.Toggle (pupilTracker.printMessageType, "Print Msg Types");
 		GUILayout.EndHorizontal ();
 
 		if (pupilTracker.isDebugFoldout) {
@@ -408,8 +445,8 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		if (pupilTracker.calibrationMode == 1) {
 			EditorGUI.BeginChangeCheck ();
-			if (!isConnected)
-				GUI.enabled = false;
+			//if (!isConnected)
+
 			pupilTracker.calibrationDebugMode = GUILayout.Toggle (pupilTracker.calibrationDebugMode, "Calibration Debug Mode", "Button");
 			GUI.enabled = true;
 			if (EditorGUI.EndChangeCheck ()) {
