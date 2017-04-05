@@ -37,7 +37,7 @@ public class CalibrationPointsEditor : EditorWindow {
 	}
 	private static void OnScene(SceneView sceneView){
 		Tools.current = Tool.None;
-		bool updatePosition;
+//		bool updatePosition;
 		PupilGazeTracker.CalibModes _calibMode = pupilTracker.CurrentCalibrationMode;
 		string[] _calibPointNames = pupilTracker._calibPoints.GetPointNames (_calibMode);
 		PupilGazeTracker.CalibModeDetails _currCalibModeDetails = pupilTracker.CurrentCalibrationModeDetails;
@@ -46,11 +46,11 @@ public class CalibrationPointsEditor : EditorWindow {
 
 		Vector3 _tmpV3 = Handles.PositionHandle (_v3, Quaternion.identity);
 		if (_tmpV3 == _v3) {
-			updatePosition = false;
+		//	updatePosition = false;
 		} else {
 			_2DScale = pupilTracker.Calibration2DScale;
 			_v3 = _tmpV3;
-			updatePosition = true;
+		//	updatePosition = true;
 		}
 		//Debug.Log (_tmpV3);
 

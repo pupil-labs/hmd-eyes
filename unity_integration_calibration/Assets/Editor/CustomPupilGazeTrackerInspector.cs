@@ -16,6 +16,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	PupilGazeTracker pupilTracker;
 
+	private static bool isMouseDown = false;
 	bool isConnected = false;
 	bool isCalibrating = false;
 	string tempServerIP;
@@ -59,21 +60,24 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	}
 	void OnSceneGUI(){
-		//CalibrationPointsEDitor.DrawCalibrationPointsEditor ();
 
-		//	.Popup (1, new string[]{ "asd", "asdfdg" });
 	}
 	public override void OnInspectorGUI(){
-		
+		Event e = Event.current;
+		var controlID = GUIUtility.GetControlID (FocusType.Passive);
+
+		switch (e.type) {
+		case EventType.MouseUp:
+			isMouseDown = false;
+			break;
+		case EventType.MouseDown:
+			isMouseDown = true;
+			break;
+		}
+
+		Debug.Log (isMouseDown);
 		pupilTracker.FoldOutStyle = GUI.skin.GetStyle ("Foldout");
-		//pupilTracker.ButtonStyle = GUI.skin.button;
-		//pupilTracker.TextField = GUI.skin.textField;
 
-		//EditorGUI.Vector2Field
-
-
-		//GUI.skin.font = GUI.skin.button.font;
-		//EditorGUILayout.fo
 		GUILayout.Space (20);
 
 		////////LABEL WITH STYLE////////
@@ -81,18 +85,48 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.Label (logo as Texture, pupilTracker.LogoStyle);
 		////////LABEL WITH STYLE////////
 
-		if (pupilTracker.connectionMode == 0) {
-			GUILayout.Label ("Connecting to localHost", pupilTracker.LogoStyle);
-		} else {
-			GUILayout.Label ("Connecting to Remote : " + pupilTracker.ServerIP, pupilTracker.LogoStyle);
-		}
+		if (isConnected) {
+			GUI.color = Color.green;
+			if (pupilTracker.connectionMode == 0) {
+				GUILayout.Label ("Connected to localHost", pupilTracker.LogoStyle);
+			} else {
+				GUILayout.Label ("Connected to Remote : " + pupilTracker.ServerIP, pupilTracker.LogoStyle);
+			}
 
+		} else {
+			if (pupilTracker.connectionMode == 0) {
+				GUILayout.Label ("Connecting to localHost", pupilTracker.LogoStyle);
+			} else {
+				GUILayout.Label ("Connecting to Remote : " + pupilTracker.ServerIP, pupilTracker.LogoStyle);
+			}
+		}
+		GUI.color = Color.white;
 
 		////////DRAW TAB MENU SYSTEM////////
 		EditorGUI.BeginChangeCheck();
 
+		EditorGUILayout.BeginHorizontal ();
+
 		GUILayout.Label ("DEV", pupilTracker.SettingsLabelsStyle, GUILayout.Width(50));
 		pupilTracker.ShowBaseInspector = EditorGUILayout.Toggle (pupilTracker.ShowBaseInspector);
+
+		Texture2D eyeIcon = Resources.Load("eye") as Texture2D;
+		if (Pupil.processStatus.eyeProcess0) {
+			GUI.color = Color.green;
+		} else {
+			GUI.color = Color.gray;
+		}
+		GUILayout.Label (eyeIcon as Texture2D, pupilTracker.LogoStyle, GUILayout.Width (20), GUILayout.Height (20));
+		GUILayout.Space (5);
+		if (Pupil.processStatus.eyeProcess1) {
+			GUI.color = Color.green;
+		} else {
+			GUI.color = Color.gray;
+		}
+		GUILayout.Label (eyeIcon as Texture2D, pupilTracker.LogoStyle, GUILayout.Width (20), GUILayout.Height (20));
+		GUI.color = Color.white;
+
+		EditorGUILayout.EndHorizontal ();
 
 		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
 		pupilTracker.tab = GUILayout.Toolbar (pupilTracker.tab, new string[]{ "Main Menu", "Settings", "Calibration" });
@@ -111,13 +145,13 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				pupilTracker.DrawMenu = null;
 				pupilTracker.DrawMenu += DrawCalibration;
 
-				try{
-				pupilTracker.CalibrationGameObject2D = GameObject.Find ("Calibrator").gameObject.transform.FindChild ("2D Calibrator").gameObject;
-				pupilTracker.CalibrationGameObject3D = GameObject.Find ("Calibrator").gameObject.transform.FindChild ("3D Calibrator").gameObject;
-				}
-				catch{
-					EditorUtility.DisplayDialog ("Pupil Service Warning", "Calibrator prefab cannot be found, or not complete, please add under main camera ! ", "Will Do");
-				}
+//				try{
+//				pupilTracker.CalibrationGameObject2D = GameObject.Find ("Calibrator").gameObject.transform.FindChild ("2D Calibrator").gameObject;
+//				pupilTracker.CalibrationGameObject3D = GameObject.Find ("Calibrator").gameObject.transform.FindChild ("3D Calibrator").gameObject;
+//				}
+//				catch{
+//					EditorUtility.DisplayDialog ("Pupil Service Warning", "Calibrator prefab cannot be found, or not complete, please add under main camera ! ", "Will Do");
+//				}
 
 
 				break;
@@ -135,9 +169,91 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			base.OnInspectorGUI ();
 
 
-	}
 
+	}
+	public float y;
 	private void DrawMainMenu(){
+
+		Event e = Event.current;
+
+		////////////////////////////RECORDING////////////////////////////
+	
+		string RecLabel = "RECORD";
+		string fixedLengthLabel = "Fixed Length";
+		bool recorderButtonsEnabled = true;
+		if (!Application.isPlaying) {
+			GUI.enabled = false;
+			RecLabel = "Recording is only available in Play mode !";
+		}
+		Rect _r = GUILayoutUtility.GetLastRect();
+		GUI.DrawTexture(new Rect(15,_r.y+10,_r.size.x, 120 ), Resources.Load("recorder_bck") as Texture2D);
+		GUI.backgroundColor = default(Color);
+		Rect R = new Rect (40, 400, 90, 90);
+
+		if (Recording.variables.isRecording) {
+			recorderButtonsEnabled = false;
+			RecLabel = "Recording !";
+			R = new Rect (45, 405, 82, 82);
+			GUI.color = new Color(.75f,.79f,.75f,1);
+		}
+		if (R.Contains(e.mousePosition) && isMouseDown) {
+			Debug.Log ("contains and down");
+			R = new Rect (47, 406, 80, 80);
+			GUI.color = new Color(.72f,.7f,.7f,1);
+		}
+		EditorGUI.BeginChangeCheck ();
+		Recording.variables.isRecording = GUI.Toggle ( R,Recording.variables.isRecording, Resources.Load ("rec") as Texture2D, pupilTracker.Styles[3]);
+		GUI.backgroundColor = Color.white;
+		if (EditorGUI.EndChangeCheck ()) {
+			if (Recording.variables.isRecording) {
+				pupilTracker.StartRecording ();
+				EditorApplication.update += CheckRecording;
+			} else {
+				pupilTracker.StopRecording ();
+			}
+		}
+		GUILayout.Space (20);
+		GUI.Label (new Rect(167,425,200,20), RecLabel, pupilTracker.LogoStyle);
+
+		//////////////BUTTONS//////////////
+		if (!recorderButtonsEnabled)
+			GUI.enabled = false;
+		GUI.skin.button.fontSize = 7;
+		if (GUI.Button (new Rect (135, 382, 60, 20), "Browse")) {
+			Recording.variables.FilePath = EditorUtility.SaveFilePanel("Please give your desired filename and path", Recording.variables.pathDirectory, Recording.variables.pathFileName, "mov");
+		}
+
+		//GUI.color = Color.white;
+
+		//GUI.contentColor = Color.white;
+		if (!Recording.variables.fixLength)
+			fixedLengthLabel = "Manual Length";
+		Recording.variables.fixLength = GUI.Toggle (new Rect (194, 382, 70, 20), Recording.variables.fixLength, fixedLengthLabel, "Button");
+		if (Recording.variables.fixLength) {
+			//GUI.skin.FindStyle ("FloatField").alignment = TextAnchor.MiddleCenter;
+			Recording.variables.length = EditorGUI.FloatField(new Rect (197, 402, 64, 10),Recording.variables.length, pupilTracker.Styles[4]);
+		}
+
+//		if (GUI.Button (new Rect (150, 400, 200, 20), "Browse", pupilTracker.Styles[4])) {
+//			Recording.variables.FilePath = EditorUtility.OpenFilePanel ("Please give your desired filename and path", Recording.variables.FilePath, "mov");
+//		}
+
+		GUI.skin.button.fontSize = 10;
+		GUI.enabled = true;
+		GUILayout.Space (120);
+		////////////////////////////RECORDING////////////////////////////
+		GUI.skin = default(GUISkin);
+		y =EditorGUILayout.FloatField(y);
+		//GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
+		GUI.depth = 0;
+		GUI.color = Color.white;
+		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
+		GUI.depth = 1;
+		GUI.color = Color.white;
+
+		//GUILayout.EndHorizontal ();
+		GUI.backgroundColor = Color.white;
+		GUILayout.Space (10);
 
 		EditorGUI.BeginChangeCheck ();
 		GUILayout.BeginHorizontal ();
@@ -152,67 +268,48 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		//if (pupilTracker.OperatorCamera)
 //		GUILayout.Label("Target Eye");
 //		pupilTracker.targetMask = (StereoTargetEyeMask)EditorGUILayout.EnumPopup(pupilTracker.targetMask);
+		GUILayout.BeginHorizontal();
+		if (GUILayout.Button ("3D")) {
+			pupilTracker.To3DMethod ();
+		}
+		if (GUILayout.Button ("2D")) {
+			pupilTracker.To2DMethod ();
+		}
+		GUILayout.EndHorizontal ();
+
 		GUILayout.EndHorizontal ();
 		pupilTracker.isOperatorMonitor = GUILayout.Toggle (pupilTracker.isOperatorMonitor, "Operator Monitor", "Button", GUILayout.MinWidth(100));
+		pupilTracker.DebugVariables.packetsOnMainThread = GUILayout.Toggle (pupilTracker.DebugVariables.packetsOnMainThread, "Process Packets on Main Thread", "Button", GUILayout.MinWidth(100));
 		if (EditorGUI.EndChangeCheck ()) {
 			if (pupilTracker.isOperatorMonitor) {
-				if (pupilTracker.OperatorCamera == null) {
+				//if () {
+				pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
+				pupilTracker.calibrationDebugMode = false;
+				Debug.Log("instantiate operator monitor");
 					OperatorMonitor.Instantiate ();
-//					GameObject _camGO = new GameObject ();
-//					pupilTracker.OperatorCamera = _camGO.AddComponent<Camera> ();
-//					_camGO.AddComponent<OperatorMonitor> ();
-//					_camGO.name = "Operator Camera";
-//					_camGO.GetComponent<OperatorMonitor> ().properties = pupilTracker.OperatorMonitorProperties;
-				}
+				//}
 			} else {
-				if (pupilTracker.OperatorCamera != null)
-					Destroy (pupilTracker.OperatorCamera.gameObject);
+				if (pupilTracker.OperatorMonitorProperties[0].OperatorCamera != null)
+					OperatorMonitor.Instance.ExitOperatorMonitor ();
+				
+				//	Destroy (pupilTracker.OperatorMonitorProperties[0].OperatorCamera.gameObject);
 			}
 		}
 
 		////////BUTTONS FOR DEBUGGING TO COMMENT IN PUBLIC VERSION////////
-		pupilTracker.isDebugFoldout = EditorGUILayout.Foldout (pupilTracker.isDebugFoldout, "Debug Buttons");
-		GUILayout.BeginHorizontal ();
+
 		pupilTracker.DebugVariables.printSampling = GUILayout.Toggle (pupilTracker.DebugVariables.printSampling, "Print Sampling", "Button");
 		pupilTracker.DebugVariables.printMessage = GUILayout.Toggle (pupilTracker.DebugVariables.printMessage, "Print Msg", "Button");
 		pupilTracker.DebugVariables.printMessageType = GUILayout.Toggle (pupilTracker.DebugVariables.printMessageType, "Print Msg Types", "Button");
-		GUILayout.EndHorizontal ();
 
-		GUILayout.BeginHorizontal ();
-		EditorGUI.BeginChangeCheck ();
 		pupilTracker.DebugVariables.subscribeAll = GUILayout.Toggle (pupilTracker.DebugVariables.subscribeAll, "Subscribe to all", "Button");
-		if (EditorGUI.EndChangeCheck ()) {
-			if (pupilTracker.DebugVariables.subscribeAll) {
-				pupilTracker.subscriberSocket.SubscribeToAnyTopic ();
-			} else {
-				pupilTracker.subscriberSocket.Unsubscribe ("frame.");
-				pupilTracker.subscriberSocket.Unsubscribe ("pupil.");
-				pupilTracker.subscriberSocket.Unsubscribe ("gaze");
-			}
-		}
-		EditorGUI.BeginChangeCheck ();
+
 		pupilTracker.DebugVariables.subscribeFrame = GUILayout.Toggle (pupilTracker.DebugVariables.subscribeFrame, "Subscribe to frame.", "Button");
-		if (EditorGUI.EndChangeCheck ()) {
-			if (pupilTracker.DebugVariables.subscribeAll) {
-				pupilTracker.SubscribeTo("frame.");
-				//pupilTracker.subscriberSocket.Subscribe ("frame.");
-			} else {
-				pupilTracker.UnSubscribeFrom ("frame.");
-				pupilTracker.subscriberSocket.Unsubscribe("frame.");
-			}
-		}
-		EditorGUI.BeginChangeCheck ();
+
 		pupilTracker.DebugVariables.subscribeGaze = GUILayout.Toggle (pupilTracker.DebugVariables.subscribeGaze, "Subscribe to gaze.", "Button");
-		if (EditorGUI.EndChangeCheck ()) {
-			if (pupilTracker.DebugVariables.subscribeGaze) {
-				pupilTracker.subscriberSocket.Subscribe ("gaze");
-			} else {
-				pupilTracker.subscriberSocket.Unsubscribe("gaze");
-			}
-		}
-		//pupilTracker.printMessage = GUILayout.Toggle (pupilTracker.printMessage, "Print Msg");
-		//pupilTracker.printMessageType = GUILayout.Toggle (pupilTracker.printMessageType, "Print Msg Types");
-		GUILayout.EndHorizontal ();
+
+		pupilTracker.DebugVariables.subscribeNotify = GUILayout.Toggle (pupilTracker.DebugVariables.subscribeNotify, "Subscribe to notifications.", "Button");
+
 
 		if (pupilTracker.isDebugFoldout) {
 			EditorGUILayout.BeginHorizontal ();
@@ -245,7 +342,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			GUILayout.Label ("Pupil App Path : ", pupilTracker.SettingsLabelsStyle, GUILayout.MinWidth (100));
 			pupilTracker.PupilServicePath = EditorGUILayout.TextArea (pupilTracker.PupilServicePath, pupilTracker.SettingsBrowseStyle, GUILayout.MinWidth (100), GUILayout.Height (22));
 			if (GUILayout.Button ("Browse")) {
-				pupilTracker.PupilServicePath = EditorUtility.OpenFilePanel ("TITLE", pupilTracker.PupilServicePath, "exe");
+				pupilTracker.PupilServicePath = EditorUtility.OpenFilePanel ("Select Pupil service application file", pupilTracker.PupilServicePath, "exe");
 			}
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
@@ -443,29 +540,51 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			pupilTracker.SwitchCalibrationMode ();
 		}
 
-		if (pupilTracker.calibrationMode == 1) {
-			EditorGUI.BeginChangeCheck ();
-			//if (!isConnected)
+		if (isConnected) {
 
+			EditorGUI.BeginChangeCheck ();
 			pupilTracker.calibrationDebugMode = GUILayout.Toggle (pupilTracker.calibrationDebugMode, "Calibration Debug Mode", "Button");
 			GUI.enabled = true;
 			if (EditorGUI.EndChangeCheck ()) {
-				if (Application.isPlaying) {
+				//if (Application.isPlaying) {
 					Debug.Log ("Calibration Debug mode on/off");
 					if (pupilTracker.calibrationDebugMode) {
+					if (pupilTracker.OperatorMonitorProperties [0].OperatorCamera != null)
+						OperatorMonitor.Instance.ExitOperatorMonitor ();
+
+						pupilTracker.isOperatorMonitor = false;
 						pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
 						pupilTracker.OnCalibDebug += pupilTracker.DrawCalibrationDebug;
+						pupilTracker.InitializeFramePublishing ();
 						pupilTracker.StartFramePublishing ();
+						//pupilTracker.FramePublishingVariables.StreamCameraImages = true;
 					} else {
 						pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
 						pupilTracker.StopFramePublishing ();
+						//pupilTracker.FramePublishingVariables.StreamCameraImages = false;
 					}
+				//}
+			}
+
+			EditorGUI.BeginChangeCheck ();
+			pupilTracker.FramePublishingVariables.StreamCameraImages = GUILayout.Toggle (pupilTracker.FramePublishingVariables.StreamCameraImages, " Stream Camera Image", "Button");
+			if (EditorGUI.EndChangeCheck ()) {
+				Pupil.connectionParameters.update = true;
+				if (!pupilTracker.FramePublishingVariables.StreamCameraImages) {
+					Pupil.connectionParameters.toSubscribe.Remove ("frame.");
+				} else {
+					Pupil.connectionParameters.toSubscribe.Add ("frame.");
 				}
 			}
+
 			if (pupilTracker.calibrationDebugMode) {
-				pupilTracker.StreamCameraImages = GUILayout.Toggle (pupilTracker.StreamCameraImages, " Stream Camera Image", "Button");
 				pupilTracker.calibrationDebugCamera = (PupilGazeTracker.CalibrationDebugCamera) EditorGUILayout.EnumPopup (pupilTracker.calibrationDebugCamera);
 			}
+
+		}
+		if (pupilTracker.calibrationMode == 1) {
+
+
 			//GUILayout.Label ("Debug Mode ON");
 		}
 
@@ -500,17 +619,26 @@ public class CustomPupilGazeTrackerInspector : Editor {
 	public void CheckConnection(){
 		if (pupilTracker.IsConnected) {
 			Debug.Log ("Connection Established");
-			isConnected = true;
-			EditorApplication.update = null;
+			if (Pupil.processStatus.eyeProcess0 && Pupil.processStatus.eyeProcess1) {
+				Repaint ();
+				EditorApplication.update -= CheckConnection;
+				isConnected = true;
+			}
 		}
 	}
 	public void CheckCalibration(){
-		//Debug.Log ("Editor Update");
+		Debug.Log ("Editor Update : Check Calibration");
 		if (pupilTracker.m_status == PupilGazeTracker.EStatus.Calibration) {
 			isCalibrating = true;
 		} else {
 			isCalibrating = false;
-			EditorApplication.update = null;
+			EditorApplication.update -= CheckCalibration;
+		}
+	}
+	public void CheckRecording(){
+		if (!Recording.variables.isRecording) {
+			EditorApplication.update -= CheckRecording;
+			Repaint ();
 		}
 	}
 
@@ -566,7 +694,9 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		return result;
 	}
-
+	void OnApplicationQuit(){
+		EditorApplication.update = null;
+	}
 //	void DrawCalibPointsEditor(){
 //
 //		GUILayout.Box ("");

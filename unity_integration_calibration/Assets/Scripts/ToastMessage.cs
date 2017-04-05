@@ -78,7 +78,7 @@ public class ToastMessage : MonoBehaviour {
 //		print (_tp.delay);
 //		//DrawToastMessage (_tp);
 //	}
-	public void DrawToastMessage(object _params){
+	public void DrawToastMessage(toastParameters _params){
 		toastMessage _message;
 		toastParameters _p = _params as toastParameters;
 		//_message._params = new toastParameters ();
@@ -98,10 +98,10 @@ public class ToastMessage : MonoBehaviour {
 		_message._params.text = _p.text;
 		_message._params.ID = _p.ID;
 	}
-	public void DrawToastMessageOnMainThread(toastParameters _params){
-		//print ("on main thread : " + _params);
-		object _o = _params;
-		MainThread.Call (DrawToastMessage, _o);
-	}
+//	public void DrawToastMessageOnMainThread(toastParameters _params){
+//		//print ("on main thread : " + _params);
+//		object _o = _params;
+//		MainThread.Call (DrawToastMessage, _o);
+//	}
 }
 
