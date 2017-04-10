@@ -8,8 +8,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VR;
+using UnityEngine.VR.WSA;
+using UnityEngine.VR.WSA.Input;
+using UnityEngine.VR.WSA.Persistence;
+using UnityEngine.VR.WSA.Sharing;
+using UnityEngine.VR.WSA.WebCam;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+
 
 [CustomEditor(typeof(PupilGazeTracker))]
 public class CustomPupilGazeTrackerInspector : Editor {
@@ -25,7 +32,8 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 
 	void OnEnable(){
-	
+
+
 		pupilTracker = (PupilGazeTracker)target;
 		pupilTracker.AdjustPath ();
 
@@ -75,7 +83,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			break;
 		}
 
-		Debug.Log (isMouseDown);
+//		Debug.Log (isMouseDown);
 		pupilTracker.FoldOutStyle = GUI.skin.GetStyle ("Foldout");
 
 		GUILayout.Space (20);
@@ -197,7 +205,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			GUI.color = new Color(.75f,.79f,.75f,1);
 		}
 		if (R.Contains(e.mousePosition) && isMouseDown) {
-			Debug.Log ("contains and down");
+			//Debug.Log ("contains and down");
 			R = new Rect (47, 406, 80, 80);
 			GUI.color = new Color(.72f,.7f,.7f,1);
 		}
@@ -231,9 +239,17 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		Recording.variables.fixLength = GUI.Toggle (new Rect (194, 382, 70, 20), Recording.variables.fixLength, fixedLengthLabel, "Button");
 		if (Recording.variables.fixLength) {
 			//GUI.skin.FindStyle ("FloatField").alignment = TextAnchor.MiddleCenter;
-			Recording.variables.length = EditorGUI.FloatField(new Rect (197, 402, 64, 10),Recording.variables.length, pupilTracker.Styles[4]);
+			Recording.variables.length = EditorGUI.FloatField (new Rect (197, 402, 64, 10), Recording.variables.length, pupilTracker.Styles [4]);
+		} else {
+			Recording.variables.length = 10;
 		}
 
+		//if ())
+		GUI.skin.textField.alignment = TextAnchor.MiddleCenter;
+		Recording.variables.width = EditorGUI.IntField(new Rect (135, 475, 50, 15), Recording.variables.width);
+		Recording.variables.height = EditorGUI.IntField(new Rect (190, 475, 50, 15), Recording.variables.height);
+		//Recording.variables.height = EditorGUI.IntField(new Rect (190, 475, 50, 15), Recording.variables.height);
+		GUI.skin.textField.alignment = TextAnchor.MiddleLeft;
 //		if (GUI.Button (new Rect (150, 400, 200, 20), "Browse", pupilTracker.Styles[4])) {
 //			Recording.variables.FilePath = EditorUtility.OpenFilePanel ("Please give your desired filename and path", Recording.variables.FilePath, "mov");
 //		}
@@ -243,13 +259,17 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.Space (120);
 		////////////////////////////RECORDING////////////////////////////
 		GUI.skin = default(GUISkin);
-		y =EditorGUILayout.FloatField(y);
+		//y =EditorGUILayout.FloatField(y);
 		//GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
 		GUI.depth = 0;
 		GUI.color = Color.white;
 		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
 		GUI.depth = 1;
 		GUI.color = Color.white;
+
+		if (GUILayout.Button ("IsConnected")) {
+			isConnected = true;
+		}
 
 		//GUILayout.EndHorizontal ();
 		GUI.backgroundColor = Color.white;
@@ -278,12 +298,21 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.EndHorizontal ();
 
 		GUILayout.EndHorizontal ();
+		if (GUILayout.Button ("start binocular vector gaze mapper", GUILayout.MinWidth (100))) {
+			pupilTracker.StartBinocularVectorGazeMapper ();
+		}
+		if (GUILayout.Button ("Save string to Byte, File", GUILayout.MinWidth (100))) {
+			pupilTracker.WriteStringToFile ("ez az adata tomeg jeee", "dataStringFileName");
+		}
+		if (GUILayout.Button ("Load string from Byte, File", GUILayout.MinWidth (100))) {
+			Debug.Log (pupilTracker.ReadStringFromFile ("dataStringFileName"));
+		}
 		pupilTracker.isOperatorMonitor = GUILayout.Toggle (pupilTracker.isOperatorMonitor, "Operator Monitor", "Button", GUILayout.MinWidth(100));
 		pupilTracker.DebugVariables.packetsOnMainThread = GUILayout.Toggle (pupilTracker.DebugVariables.packetsOnMainThread, "Process Packets on Main Thread", "Button", GUILayout.MinWidth(100));
 		if (EditorGUI.EndChangeCheck ()) {
 			if (pupilTracker.isOperatorMonitor) {
 				//if () {
-				pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
+				pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebugView;
 				pupilTracker.calibrationDebugMode = false;
 				Debug.Log("instantiate operator monitor");
 					OperatorMonitor.Instantiate ();
@@ -552,14 +581,15 @@ public class CustomPupilGazeTrackerInspector : Editor {
 					if (pupilTracker.OperatorMonitorProperties [0].OperatorCamera != null)
 						OperatorMonitor.Instance.ExitOperatorMonitor ();
 
-						pupilTracker.isOperatorMonitor = false;
-						pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
-						pupilTracker.OnCalibDebug += pupilTracker.DrawCalibrationDebug;
-						pupilTracker.InitializeFramePublishing ();
-						pupilTracker.StartFramePublishing ();
+					pupilTracker.isOperatorMonitor = false;
+					pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebugView;
+					pupilTracker.OnCalibDebug += pupilTracker.DrawCalibrationDebugView;
+					pupilTracker.InitializeFramePublishing ();
+					pupilTracker.StartFramePublishing ();
 						//pupilTracker.FramePublishingVariables.StreamCameraImages = true;
 					} else {
-						pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebug;
+					pupilTracker.OnCalibDebug -= pupilTracker.DrawCalibrationDebugView;
+					pupilTracker.OnUpdate -= pupilTracker.CalibrationDebugInteraction;
 						pupilTracker.StopFramePublishing ();
 						//pupilTracker.FramePublishingVariables.StreamCameraImages = false;
 					}
@@ -618,12 +648,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	public void CheckConnection(){
 		if (pupilTracker.IsConnected) {
-			Debug.Log ("Connection Established");
-			if (Pupil.processStatus.eyeProcess0 && Pupil.processStatus.eyeProcess1) {
+			//Debug.Log ("Connection Established");
+			//if (Pupil.processStatus.eyeProcess0 && Pupil.processStatus.eyeProcess1) {
 				Repaint ();
 				EditorApplication.update -= CheckConnection;
 				isConnected = true;
-			}
+			//}
 		}
 	}
 	public void CheckCalibration(){

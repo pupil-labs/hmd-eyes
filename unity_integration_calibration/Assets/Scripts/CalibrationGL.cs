@@ -8,7 +8,7 @@ public static class CalibrationGL{
 	static PupilGazeTracker pupilTracker;
 	static bool isInitialized;
 	static Material markerMaterial;
-	public static PupilGazeTracker.CalibModes currentMode;
+	//public static PupilGazeTracker.CalibModes currentMode;
 
 	public static void Init(){
 		//return Draw;
@@ -17,14 +17,17 @@ public static class CalibrationGL{
 		isInitialized = true;
 		CreateEye1ImageMaterial ();
 		markerMaterial.mainTexture = _t;
-		currentMode = pupilTracker.CurrentCalibrationMode;
+		//currentMode = pupilTracker.CurrentCalibrationMode;
 	}
 
 	static void CreateEye1ImageMaterial ()
 	{
 		if (!markerMaterial)
 		{
-			Shader shader = Shader.Find ("Sprites/Default");
+//			Shader shader = Shader.Find ("Sprites/Default");
+//			markerMaterial = new Material (shader);
+//			markerMaterial.hideFlags = HideFlags.HideAndDontSave;
+			Shader shader = Shader.Find ("Particles/Alpha Blended");
 			markerMaterial = new Material (shader);
 			markerMaterial.hideFlags = HideFlags.HideAndDontSave;
 		}
@@ -45,10 +48,12 @@ public static class CalibrationGL{
 		_m.SetTRS (new Vector3 (-.5f, -.5f, .7f), Quaternion.identity , new Vector3 (1, 1, 1));
 
 			GL.MultMatrix (Camera.main.transform.localToWorldMatrix * _m);
-			foreach (Calibration.marker _marker in pupilTracker.CalibrationMarkers) {
-				if (_marker.toggle == true)
-					Marker (_marker);
+		foreach (Calibration.marker _marker in pupilTracker.CalibrationMarkers) {
+			if (_marker.toggle == true) {
+				Marker (_marker);
+//				Debug.Log ("Drawing marker on CalibrationGL");
 			}
+		}
 //			break;
 //		case PupilGazeTracker.CalibModes._3D:
 //			Debug.Log ("Drawing 3D GL");
@@ -62,23 +67,53 @@ public static class CalibrationGL{
 		if (_m.material != null) {
 			_m.material.SetPass (0);
 		} else {
-			_m.color.a = 1;
-			markerMaterial.SetColor ("_Color", _m.color);
+			//_m.color.a = 1;
+			markerMaterial.SetColor ("_TintColor", _m.color);
 			markerMaterial.SetPass (0);
 		}
 //		if (_m.offsetMatrix != default(Matrix4x4)) {
 //			GL.MultMatrix (_m.offsetMatrix);
 //		}
+
+		//markerMaterial.SetColor ("_Color", Color.red);
+//		GL.Color(Color.red);
+		//GL.Color(_m.color);
 		GL.Begin (GL.QUADS);
 		GL.TexCoord2 (0,1);
-		GL.Vertex (new Vector3 (_r.x-((_r.width/2)), _r.y-_r.width/2, _r.height));//BL
+		GL.Vertex (new Vector3 (_r.x-((_r.width/2)), _r.y-_r.width/2, _m.depth));//BL
 		GL.TexCoord2 (1,1);
-		GL.Vertex (new Vector3 (_r.x-((_r.width/2)), _r.y+_r.width/2, _r.height));//TL
+		GL.Vertex (new Vector3 (_r.x-((_r.width/2)), _r.y+_r.width/2, _m.depth));//TL
 		GL.TexCoord2 (1,0);
-		GL.Vertex (new Vector3 (_r.x+((_r.width/2)), _r.y+_r.width/2, _r.height));//TR
+		GL.Vertex (new Vector3 (_r.x+((_r.width/2)), _r.y+_r.width/2, _m.depth));//TR
 		GL.TexCoord2 (0,0);
-		GL.Vertex (new Vector3 (_r.x+((_r.width/2)), _r.y-_r.width/2, _r.height));//BR
+		GL.Vertex (new Vector3 (_r.x+((_r.width/2)), _r.y-_r.width/2, _m.depth));//BR
 		GL.End();
+
+//		if (_m.debugCross) {
+			GL.Begin (GL.QUADS);
+			GL.TexCoord2 (0, 1);
+			GL.Vertex (new Vector3 (_r.x - 1, _r.y - 0.001f, _m.depth));//BL
+			GL.TexCoord2 (1, 1);
+			GL.Vertex (new Vector3 (_r.x - 1, _r.y + 0.001f, _m.depth));//TL
+			GL.TexCoord2 (1, 0);
+			GL.Vertex (new Vector3 (_r.x + 1, _r.y + 0.001f, _m.depth));//TR
+			GL.TexCoord2 (0, 0);
+			GL.Vertex (new Vector3 (_r.x + 1, _r.y - 0.001f, _m.depth));//BR
+			GL.End ();
+			GL.Begin (GL.QUADS);
+			GL.TexCoord2 (0, 1);
+			GL.Vertex (new Vector3 (_r.x - 0.001f, _r.y - 1, _m.depth));//BL
+			GL.TexCoord2 (1, 1);
+			GL.Vertex (new Vector3 (_r.x - 0.001f, _r.y + 1, _m.depth));//TL
+			GL.TexCoord2 (1, 0);
+			GL.Vertex (new Vector3 (_r.x + 0.001f, _r.y + 1, _m.depth));//TR
+			GL.TexCoord2 (0, 0);
+			GL.Vertex (new Vector3 (_r.x + 0.001f, _r.y - 1, _m.depth));//BR
+			GL.End ();
+//		}
+
+
+
 	}
 
 	public static void SetMode(PupilGazeTracker.EStatus status){

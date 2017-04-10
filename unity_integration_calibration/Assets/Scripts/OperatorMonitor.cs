@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+[RequireComponent(typeof(Camera))]
 public class OperatorMonitor : MonoBehaviour {
 
 	private static PupilGazeTracker pupilTracker;
@@ -17,6 +17,7 @@ public class OperatorMonitor : MonoBehaviour {
 	public Vector3 _r3 = Vector3.one;
 
 	//public static OperatorMonitor Instance;
+
 
 
 	static OperatorMonitor _Instance;
@@ -46,20 +47,20 @@ public class OperatorMonitor : MonoBehaviour {
 		GameObject _camGO = new GameObject ();
 		_camGO.name = "Operator Camera";
 		OperatorMonitor _opscript = _camGO.AddComponent<OperatorMonitor> ();
-		Camera _cam = _camGO.AddComponent<Camera> ();
+		Camera _cam = _camGO.GetComponent<Camera> ();
 		pupilTracker = PupilGazeTracker.Instance;
 
 		Operator.properties.Properties = pupilTracker.OperatorMonitorProperties;
 
 		Operator.properties.Properties [0].OperatorCamera = _cam;
 		_cam.stereoTargetEye = StereoTargetEyeMask.None;
-		_cam.backgroundColor = Color.gray;
+//		_cam.backgroundColor = Color.gray;
 		_cam.transform.parent = Camera.main.transform;
 		_cam.fieldOfView = Camera.main.fieldOfView;
 		_cam.clearFlags = CameraClearFlags.Depth;
 
 		_opscript.MainCameraTargetDisplay = Camera.main.targetDisplay;
-		Camera.main.targetDisplay = 1;
+//		Camera.main.targetDisplay = 1;
 
 
 		Operator.properties.Properties [0].confidenceList.Capacity = Operator.properties.Properties [0].graphLength + 1;
@@ -99,8 +100,8 @@ public class OperatorMonitor : MonoBehaviour {
 	{
 		string str;
 
-		Operator.properties.Properties [0].confidence = Pupil.values.Confidences [0] + UnityEngine.Random.Range (0.05f, 0.1f) + 0.2f;
-		Operator.properties.Properties [1].confidence = Pupil.values.Confidences [1] + UnityEngine.Random.Range (0.05f, 0.1f) + 0.2f;
+		Operator.properties.Properties [0].confidence = Pupil.values.Confidences [0] + UnityEngine.Random.Range (0.02f, 0.05f) + 0.5f;
+		Operator.properties.Properties [1].confidence = Pupil.values.Confidences [1] + UnityEngine.Random.Range (0.02f, 0.05f) + 0.5f;
 
 		GUI.color = new Color (1, 1, 1, .5f);
 		GUI.DrawTexture (new Rect (0, 0, Screen.width / 2, Screen.height), pupilTracker.FramePublishingVariables.eye0Image);
