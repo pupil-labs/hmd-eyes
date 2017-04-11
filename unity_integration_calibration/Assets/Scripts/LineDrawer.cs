@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -9,6 +8,12 @@ public class LineDrawer : MonoBehaviour {
 	private Mesh mesh;
 	private MeshRenderer mRenderer;
 	private Material lineMaterial;
+
+	private int lineID = -1;
+
+	private List<Vector3> verticies = new List<Vector3>();
+	private List<Color> colors = new List<Color>();
+	private List<int> indicies = new List<int>();
 
 	PupilGazeTracker pupilTracker;
 
@@ -20,14 +25,19 @@ public class LineDrawer : MonoBehaviour {
 		}
 	}
 
+	public class param{
+		public Vector3[] points;
+		public Color color;
+	}
+
+
 	void Start () {
-		mesh = new Mesh();
 		pupilTracker = PupilGazeTracker.Instance;
 
 		mRenderer = GetComponent<MeshRenderer> ();
 		mRenderer.material = Resources.Load ("Material/Pupil", typeof(Material)) as Material;
 
-		Invoke ("InitializeLineDrawer", 1f);
+		Invoke ("InitializeLineDrawer", .2f);
 
 		_Instance = this;
 	}
@@ -38,29 +48,36 @@ public class LineDrawer : MonoBehaviour {
 		mesh.name = "LineDrawerMesh";
 	}
 
-	public void AddLineToMesh(Vector3[] points, Color color) {
-		int[] oldIndices = mesh.GetIndices (0);
-		int[] indecies = new int[points.Length];
-		Color[] colors = new Color[points.Length];
-
-		for(int i=0;i<points.Length;++i) {
-			indecies [i] = i + oldIndices.Length;
-			colors[i] = color;
-		}
-
-		Vector3[] newPoints = mesh.vertices.Concat (points).ToArray ();
-		Color[] newColors = mesh.colors.Concat(colors).ToArray();
-		mesh.vertices = newPoints;
-		mesh.colors = newColors;
-		mesh.SetIndices(oldIndices.Concat(indecies).ToArray(), MeshTopology.Lines,0);
+	public void Draw(){
+		
+		addLinesToMesh ();
 
 	}
-//	void Update(){
-//		if (Input.GetKeyUp (KeyCode.L)) {
-//			AddLineToMesh (new Vector3[] {
-//				new Vector3 (Random.Range (-100, 100), Random.Range (-100, 100), Random.Range (-100, 100)),
-//				new Vector3 (Random.Range (-100, 100), Random.Range (-100, 100), Random.Range (-100, 100))
-//			}, new Color (Random.Range (0f, 1f), Random.Range (0f, 1f), Random.Range (0f, 1f), Random.Range (0f, 1f)));
-//		}
-//	}
+
+	public void Clear(){
+		
+		verticies.Clear ();
+		colors.Clear ();
+		indicies.Clear ();
+		lineID = -1;
+
+	}
+
+	public void AddLineToMesh(param _params) {
+		verticies.Add(_params.points[0]);
+		verticies.Add(_params.points[1]);
+		colors.Add (_params.color);
+		colors.Add (_params.color);
+		lineID++;
+		indicies.Add (lineID);
+		lineID++;
+		indicies.Add (lineID);
+	}
+
+	private void addLinesToMesh() {
+		mesh.vertices = verticies.ToArray();
+		mesh.colors = colors.ToArray ();
+		mesh.SetIndices (indicies.ToArray (), MeshTopology.Lines, 0);
+	}
+
 }

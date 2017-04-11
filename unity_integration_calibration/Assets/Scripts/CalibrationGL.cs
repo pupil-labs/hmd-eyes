@@ -90,26 +90,26 @@ public static class CalibrationGL{
 		GL.End();
 
 //		if (_m.debugCross) {
-			GL.Begin (GL.QUADS);
-			GL.TexCoord2 (0, 1);
-			GL.Vertex (new Vector3 (_r.x - 1, _r.y - 0.001f, _m.depth));//BL
-			GL.TexCoord2 (1, 1);
-			GL.Vertex (new Vector3 (_r.x - 1, _r.y + 0.001f, _m.depth));//TL
-			GL.TexCoord2 (1, 0);
-			GL.Vertex (new Vector3 (_r.x + 1, _r.y + 0.001f, _m.depth));//TR
-			GL.TexCoord2 (0, 0);
-			GL.Vertex (new Vector3 (_r.x + 1, _r.y - 0.001f, _m.depth));//BR
-			GL.End ();
-			GL.Begin (GL.QUADS);
-			GL.TexCoord2 (0, 1);
-			GL.Vertex (new Vector3 (_r.x - 0.001f, _r.y - 1, _m.depth));//BL
-			GL.TexCoord2 (1, 1);
-			GL.Vertex (new Vector3 (_r.x - 0.001f, _r.y + 1, _m.depth));//TL
-			GL.TexCoord2 (1, 0);
-			GL.Vertex (new Vector3 (_r.x + 0.001f, _r.y + 1, _m.depth));//TR
-			GL.TexCoord2 (0, 0);
-			GL.Vertex (new Vector3 (_r.x + 0.001f, _r.y - 1, _m.depth));//BR
-			GL.End ();
+//			GL.Begin (GL.QUADS);
+//			GL.TexCoord2 (0, 1);
+//			GL.Vertex (new Vector3 (_r.x - 1, _r.y - 0.001f, _m.depth));//BL
+//			GL.TexCoord2 (1, 1);
+//			GL.Vertex (new Vector3 (_r.x - 1, _r.y + 0.001f, _m.depth));//TL
+//			GL.TexCoord2 (1, 0);
+//			GL.Vertex (new Vector3 (_r.x + 1, _r.y + 0.001f, _m.depth));//TR
+//			GL.TexCoord2 (0, 0);
+//			GL.Vertex (new Vector3 (_r.x + 1, _r.y - 0.001f, _m.depth));//BR
+//			GL.End ();
+//			GL.Begin (GL.QUADS);
+//			GL.TexCoord2 (0, 1);
+//			GL.Vertex (new Vector3 (_r.x - 0.001f, _r.y - 1, _m.depth));//BL
+//			GL.TexCoord2 (1, 1);
+//			GL.Vertex (new Vector3 (_r.x - 0.001f, _r.y + 1, _m.depth));//TL
+//			GL.TexCoord2 (1, 0);
+//			GL.Vertex (new Vector3 (_r.x + 0.001f, _r.y + 1, _m.depth));//TR
+//			GL.TexCoord2 (0, 0);
+//			GL.Vertex (new Vector3 (_r.x + 0.001f, _r.y - 1, _m.depth));//BR
+//			GL.End ();
 //		}
 
 

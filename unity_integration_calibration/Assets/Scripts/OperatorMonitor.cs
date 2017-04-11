@@ -16,9 +16,7 @@ public class OperatorMonitor : MonoBehaviour {
 	public Vector3 _s3 = Vector3.one;
 	public Vector3 _r3 = Vector3.one;
 
-	//public static OperatorMonitor Instance;
-
-
+	public float[] confidences = new float[]{ 0f, 0f };
 
 	static OperatorMonitor _Instance;
 	public static OperatorMonitor Instance
@@ -27,11 +25,6 @@ public class OperatorMonitor : MonoBehaviour {
 			return _Instance;
 		}
 	}
-
-//	public OperatorMonitor()
-//	{
-//		_Instance = this;
-//	}
 
 	public static void Instantiate(){
 
@@ -100,12 +93,19 @@ public class OperatorMonitor : MonoBehaviour {
 	{
 		string str;
 
-		Operator.properties.Properties [0].confidence = Pupil.values.Confidences [0] + UnityEngine.Random.Range (0.02f, 0.05f) + 0.5f;
-		Operator.properties.Properties [1].confidence = Pupil.values.Confidences [1] + UnityEngine.Random.Range (0.02f, 0.05f) + 0.5f;
+
+		Operator.properties.Properties [0].confidence = Pupil.values.Confidences [0] + confidences[0];
+		Operator.properties.Properties [1].confidence = Pupil.values.Confidences [1];
+
+
 
 		GUI.color = new Color (1, 1, 1, .5f);
-		GUI.DrawTexture (new Rect (0, 0, Screen.width / 2, Screen.height), pupilTracker.FramePublishingVariables.eye0Image);
-		GUI.DrawTexture (new Rect (Screen.width / 2, 0, Screen.width / 2, Screen.height), pupilTracker.FramePublishingVariables.eye1Image);
+
+		float imageHeight = (Screen.width / 2) / 1.333f; //for 4:3 ratio
+		float imageVerticalPosition = (Screen.height-imageHeight)/2;	
+
+		GUI.DrawTexture (new Rect (0, imageVerticalPosition, Screen.width / 2, imageHeight), pupilTracker.FramePublishingVariables.eye0Image);
+		GUI.DrawTexture (new Rect (Screen.width / 2, imageVerticalPosition, Screen.width / 2, imageHeight), pupilTracker.FramePublishingVariables.eye1Image);
 
 		Operator.properties.Properties [0].OperatorCamera.Render ();
 

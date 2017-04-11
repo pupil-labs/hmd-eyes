@@ -37,7 +37,7 @@ public class PointCloudDrawer : MonoBehaviour {
 		GetComponent<MeshFilter>().mesh = mesh;
 		mesh.name = "PointCloudMesh";
 		AddToMesh(pupilTracker.CalibrationData.cal_ref_points_3d, Color.blue, ref mesh);
-		AddToMesh(pupilTracker.CalibrationData.cal_gaze_points0_3d, Color.green, ref mesh);
+		AddToMesh(pupilTracker.CalibrationData.cal_gaze_points0_3d, new Color(1f, 0.6f, 0f, 1f), ref mesh);
 		AddToMesh(pupilTracker.CalibrationData.cal_gaze_points1_3d, Color.yellow, ref mesh);
 		AddToMesh(pupilTracker.CalibrationData.cal_points_3d, Color.red, ref mesh);
 	}

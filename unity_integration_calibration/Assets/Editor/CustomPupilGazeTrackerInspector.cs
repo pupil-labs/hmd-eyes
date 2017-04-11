@@ -609,6 +609,15 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			if (pupilTracker.calibrationDebugMode) {
 				pupilTracker.calibrationDebugCamera = (PupilGazeTracker.CalibrationDebugCamera) EditorGUILayout.EnumPopup (pupilTracker.calibrationDebugCamera);
+				GUILayout.BeginHorizontal ();
+				EditorGUI.BeginChangeCheck ();
+				pupilTracker.DebugViewVariables.isDrawLines = GUILayout.Toggle (pupilTracker.DebugViewVariables.isDrawLines, " Draw Debug Lines ", "Button");
+				pupilTracker.DebugViewVariables.isDrawPoints = GUILayout.Toggle (pupilTracker.DebugViewVariables.isDrawPoints, " Draw Debug Points ", "Button");
+				if (EditorGUI.EndChangeCheck ()) {
+					pupilTracker.SetDrawCalibrationPointCloud (pupilTracker.DebugViewVariables.isDrawPoints);
+					pupilTracker.SetDrawCalibrationLines (pupilTracker.DebugViewVariables.isDrawLines);
+				}
+				GUILayout.EndHorizontal ();
 			}
 
 		}
