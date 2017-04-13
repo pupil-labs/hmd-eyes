@@ -89,8 +89,8 @@ public class OperatorMonitor : MonoBehaviour {
 		Destroy (gameObject);
 	}
 
-	bool requestUpdate = false;
-	bool isMouseDown = false;
+//	bool requestUpdate = false;
+//	bool isMouseDown = false;
 	public Shader CameraShader;
 	void OnGUI()
 	{

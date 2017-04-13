@@ -15,7 +15,7 @@ public class LineDrawer : MonoBehaviour {
 	private List<Color> colors = new List<Color>();
 	private List<int> indicies = new List<int>();
 
-	PupilGazeTracker pupilTracker;
+//	PupilGazeTracker pupilTracker;
 
 	static LineDrawer _Instance;
 	public static LineDrawer Instance
@@ -32,7 +32,7 @@ public class LineDrawer : MonoBehaviour {
 
 
 	void Start () {
-		pupilTracker = PupilGazeTracker.Instance;
+//		pupilTracker = PupilGazeTracker.Instance;
 
 		mRenderer = GetComponent<MeshRenderer> ();
 		mRenderer.material = Resources.Load ("Material/Pupil", typeof(Material)) as Material;
