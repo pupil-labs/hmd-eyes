@@ -61,6 +61,8 @@ public class OperatorMonitor : MonoBehaviour {
 
 		_offsetMatrix = new Matrix4x4 ();
 
+		pupilTracker.SubscribeTo ("pupil.");
+
 		pupilTracker.CreateEye0ImageMaterial ();
 		pupilTracker.CreateEye1ImageMaterial ();
 		pupilTracker.InitializeFramePublishing ();
@@ -80,6 +82,7 @@ public class OperatorMonitor : MonoBehaviour {
 	}
 
 	public void ExitOperatorMonitor(){
+		pupilTracker.UnSubscribeFrom ("pupil.");
 		pupilTracker.StopFramePublishing ();
 		pupilTracker.isOperatorMonitor = false;
 		Camera.main.targetDisplay = MainCameraTargetDisplay;
@@ -93,11 +96,11 @@ public class OperatorMonitor : MonoBehaviour {
 	{
 		string str;
 
-
-		Operator.properties.Properties [0].confidence = Pupil.values.Confidences [0] + confidences[0];
+//		print ("confidence 0 in op mon : " + Pupil.values.Confidences [0]);
+		Operator.properties.Properties [0].confidence = Pupil.values.Confidences [0];
 		Operator.properties.Properties [1].confidence = Pupil.values.Confidences [1];
 
-
+//		print (Pupil.values.Confidences [0]);
 
 		GUI.color = new Color (1, 1, 1, .5f);
 
@@ -128,6 +131,8 @@ public class OperatorMonitor : MonoBehaviour {
 		
 	#region operator_monitor.functions
 
+//	private int similarIndex = 0;
+//	private float lastConfidence = 0f;
 	public void DrawGraph( Operator.properties _props ){
 
 		//Enabling the graph data to update with a certain delay, definec under the static Operator.properties
@@ -140,6 +145,7 @@ public class OperatorMonitor : MonoBehaviour {
 		if (_props.update) {
 			_props.update = false;
 			_props.confidenceList.Insert (0, _props.confidence);
+
 			if (_props.confidenceList.Count > _props.graphLength)//limit the confidence level list to the graph length variable. If exceeded cut the last one.
 				_props.confidenceList.RemoveAt (_props.confidenceList.Count - 1);
 		}

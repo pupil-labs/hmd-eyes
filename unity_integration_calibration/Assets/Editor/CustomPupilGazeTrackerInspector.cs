@@ -656,14 +656,13 @@ public class CustomPupilGazeTrackerInspector : Editor {
 	}
 
 	public void CheckConnection(){
-		if (pupilTracker.IsConnected) {
-			//Debug.Log ("Connection Established");
-			//if (Pupil.processStatus.eyeProcess0 && Pupil.processStatus.eyeProcess1) {
-				Repaint ();
+		if (Pupil.processStatus.eyeProcess0 || Pupil.processStatus.eyeProcess1) {
+			if (Pupil.processStatus.initialized) {
 				EditorApplication.update -= CheckConnection;
-				isConnected = true;
-			//}
+			}
+			isConnected = true;
 		}
+		Repaint ();
 	}
 	public void CheckCalibration(){
 		Debug.Log ("Editor Update : Check Calibration");
