@@ -183,18 +183,29 @@ namespace Operator{
 	[Serializable]
 	public class properties{
 		public int id;
+		[HideInInspector]
 		public Vector3 positionOffset = new Vector3 ();
+		[HideInInspector]
 		public Vector3 rotationOffset = new Vector3 ();
+		[HideInInspector]
 		public Vector3 scaleOffset = Vector3.one;
+		[HideInInspector]
 		public Vector2 graphScale = new Vector2 (1, 1);
+		[HideInInspector]
 		public float gapSize = 1;
+		[HideInInspector]
 		public int graphLength = 20;
 		public float confidence = 0.2f;
 		public float refreshDelay;
+		[HideInInspector]
 		public long graphTime = DateTime.Now.Ticks;
+		[HideInInspector]
 		public bool update = false;
+		[HideInInspector]
 		public List<float> confidenceList = new List<float> ();
+		[HideInInspector]
 		public Camera OperatorCamera;
+		[HideInInspector]
 		public static properties[] Properties = default(Operator.properties[]);
 	}
 }
@@ -287,23 +298,30 @@ namespace DebugView{
 	[Serializable]
 	public class variables{
 		public float EyeSize = 24.2f;//official approximation of the size of an avarage human eye(mm). However it may vary from 21 to 27 millimeters.
+		[HideInInspector]
 		public Calibration.marker Circle;
 		public bool isDrawPoints = false;
 		public bool isDrawLines = false;
+		[HideInInspector]
 		public GameObject PointCloudGO;
+		[HideInInspector]
 		public GameObject LineDrawerGO;
+		public Mesh DebugEyeMesh;
 	}
 	[Serializable]
 	public class framePublishingVariables{
 		public int targetFPS = 20;
 		public Texture2D eye0Image;
 		public Texture2D eye1Image;
-		public bool drawImage0 = false;
-		public bool drawImage1 = false;
-		public bool updateData0 = false;
-		public bool updateData1 = false;
+//		public bool drawImage0 = false;
+//		public bool drawImage1 = false;
+//		public bool updateData0 = false;
+//		public bool updateData1 = false;
+		[HideInInspector]
 		public byte[] raw0;
+		[HideInInspector]
 		public byte[] raw1;
+		[HideInInspector]
 		public bool StreamCameraImages = false;
 		public Material eye0ImageMaterial;
 		public Material eye1ImageMaterial;
@@ -338,81 +356,42 @@ public struct floatArray{
 [Serializable]
 public class CalibPoints
 {
-	//TODO: rework this!
-	public List<floatArray> list3D;
-	public List<floatArray> list2D;
-	public void SetVector(List<floatArray> floatArrayList, Vector3 _v3, int index){
-		floatArrayList [index].axisValues [0] = _v3.x;
-		floatArrayList [index].axisValues [1] = _v3.y;
-		try{
-		floatArrayList [index].axisValues [2] = _v3.z;
-		}catch{}
-	}
-	public object GetVector(List<floatArray> floatArrayList, int index){
-		if (floatArrayList [index].axisValues.Count() == 3) 
-			return new Vector3 (floatArrayList [index].axisValues [0], floatArrayList [index].axisValues [1], floatArrayList [index].axisValues [2]);
-		if (floatArrayList [index].axisValues.Count() == 2) 
-			return new Vector3 (floatArrayList [index].axisValues [0], floatArrayList [index].axisValues [1], 0);
-		return new object ();
-	}
+	public List<float[]> list3D{
+		get{ 
+			return new List<float []>(){
 
-	public List<floatArray> Get2DList(){
-		if (list2D == null)
-			list2D = new List<floatArray> ();
-		List<floatArray> ret = new List<floatArray> ();
-		foreach (floatArray _fa in list2D) {
-			ret.Add (new floatArray (){ axisValues = new float[]{ _fa.axisValues [0], _fa.axisValues [1] } });
-		}
-		return ret;
-	}
-	public List<floatArray> Get3DList(bool _convert = false){
-		List<floatArray> _tmpList = new List<floatArray> ();
-		if (list3D == null)
-			list3D = new List<floatArray> ();
-		if (_convert) {
-			foreach (floatArray _fa in list3D) {
-				_tmpList.Add (new floatArray (){ axisValues = new float[]{ _fa.axisValues [0], _fa.axisValues [1], _fa.axisValues [2] } });
+				new float[]{0f,0f, 100f},
+				new float[]{-50,-50f, 100f},
+				new float[]{-50,-0f, 100f},
+				new float[]{50,-0f, 100f},
+				new float[]{-25,-25f, 100f},
+				new float[]{-50f,50f, 100f},
+				new float[]{0f,50f, 100f},
+				new float[]{0f,-50f, 100f},
+				new float[]{-25f,25f, 100f},
+				new float[]{50f,50f, 100f},
+				new float[]{25f,25f, 100f},
+				new float[]{50f,-50f, 100f},
+				new float[]{25f,-25f, 100f},
+				new float[]{0f,0f, 100f}
+
 			}
-		} else {
-			_tmpList = list3D;
-		}
-		return _tmpList;
+			;}
 	}
-	public List<floatArray> GetActiveList(PupilGazeTracker.CalibModes currentCalibMode){
-		if (currentCalibMode == PupilGazeTracker.CalibModes._2D)
-			return list2D;
-		if (currentCalibMode == PupilGazeTracker.CalibModes._3D)
-			return list3D;
-		return new List<floatArray> ();
-	}
-	public string[] GetPointNames(PupilGazeTracker.CalibModes currentCalibMode){
-		List<string> _s = new List<string> ();
-		int i = 0;
-		foreach (floatArray _fA in GetActiveList(currentCalibMode)) {
-			i++;
-			_s.Add (currentCalibMode.ToString ().Substring (1) + " Calibration Point " + i);
-		}
-		return _s.ToArray ();
-	}
-	public void Remove2DPoint(floatArray incoming){
-		if (list2D == null)
-			return;
-		list2D.Remove (incoming);
-	}
-	public void Remove3DPoint(floatArray incoming){
-		if (list3D == null)
-			return;
-		list3D.Remove (incoming);
-	}
-	public void Add3DPoint(floatArray incoming){
-		if (list3D == null)
-			list3D = new List<floatArray> ();
-		list3D.Add (incoming);
-	}
-	public void Add2DPoint(floatArray incoming){
-		if (list2D == null)
-			list2D = new List<floatArray> ();
-		list2D.Add (incoming);
+	public List<float[]> list2D{
+		get{ 
+			return new List<float []>(){
+				new float[]{0.1f,0.1f},
+				new float[]{0.1f,0.5f},
+				new float[]{0.1f,0.9f},
+				new float[]{0.5f,0.9f},
+				new float[]{0.9f,0.9f},
+				new float[]{0.9f,0.5f},
+				new float[]{0.9f,0.1f},
+				new float[]{0.5f,0.1f},
+				new float[]{0.5f,0.5f}
+			}
+			;}
 	}
 }
 public class PupilGazeTracker:MonoBehaviour
@@ -484,12 +463,10 @@ public class PupilGazeTracker:MonoBehaviour
 	EyeData rightEye;
 
 	Vector2 _eyeGazePos2D;
-	Vector3 _eyeGazePos3D;
 
 	Thread _serviceThread;
 	bool _isDone=false;
 
-	//public Pupil.PupilData _pupilData;
 	public pupilDataDictionary _pupilDataDict = new pupilDataDictionary();
 	public class pupilDataDictionary
 	{
@@ -548,10 +525,13 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 
 	}
-	public int graphstyle = 0;
+
+	//[HideInInspector]
 	public _Debug.Debug_Vars DebugVariables;
 	public DebugView.variables DebugViewVariables;
+	[HideInInspector]
 	public Calibration.data CalibrationData;
+	[HideInInspector]
 	public Pupil.BaseData[] DefaultBaseData;
 	//public Pupil.
 //	public Calibration.da CalibraionVariables;
@@ -561,14 +541,14 @@ public class PupilGazeTracker:MonoBehaviour
 	public delegate void OnCalibrationStartedDeleg(PupilGazeTracker manager);
 	public delegate void OnCalibrationDoneDeleg(PupilGazeTracker manager);
 	public delegate void OnEyeGazeDeleg(PupilGazeTracker manager);
-	public delegate void OnCalibDataDeleg(PupilGazeTracker manager,object position);
+//	public delegate void OnCalibDataDeleg(PupilGazeTracker manager,object position);
 	public delegate void OnCalibrationGLDeleg();
 	//public delegate void OnUpdateDeleg(ref Texture2D _eyeImage, ref Material _mat, object data);
 	public delegate void OnUpdateDeleg();
 
 
 	public delegate void DrawMenuDeleg ();
-	public delegate void OnSwitchCalibPointDeleg(PupilGazeTracker manager);
+//	public delegate void OnSwitchCalibPointDeleg(PupilGazeTracker manager);
 	public delegate void OnCalibDebugDeleg();
 	public delegate void OnOperatorMonitorDeleg();
 	public delegate void OnDrawGizmoDeleg ();
@@ -576,10 +556,10 @@ public class PupilGazeTracker:MonoBehaviour
 	public event OnCalibrationStartedDeleg OnCalibrationStarted;
 	public event OnCalibrationDoneDeleg OnCalibrationDone;
 	public event OnEyeGazeDeleg OnEyeGaze;
-	public event OnCalibDataDeleg OnCalibData;
+//	public event OnCalibDataDeleg OnCalibData;
 	public DrawMenuDeleg DrawMenu;
 	public OnCalibrationGLDeleg OnCalibrationGL;
-	public event OnSwitchCalibPointDeleg OnSwitchCalibPoint;
+//	public event OnSwitchCalibPointDeleg OnSwitchCalibPoint;
 
 	public OnCalibDebugDeleg OnCalibDebug;
 	public OnOperatorMonitorDeleg OnOperatorMonitor;
@@ -640,12 +620,13 @@ public class PupilGazeTracker:MonoBehaviour
 	int _currCalibPoint=0;
 	int _currCalibSamples=0;
 
-	public CalibPoints _calibPoints = new CalibPoints();
+	[HideInInspector]
+	public CalibPoints _calibPoints;
 
 	//TODO: replace this
-	public floatArray[] GetCalibPoints{
+	public List<float[]> GetCalibPoints{
 		get{ 
-			return CalibrationModes [CurrentCalibrationMode].calibrationPoints.ToArray ();
+			return CalibrationModes [CurrentCalibrationMode].calibrationPoints;
 		}
 	}
 
@@ -654,7 +635,7 @@ public class PupilGazeTracker:MonoBehaviour
 			Dictionary<CalibModes, CalibModeDetails> _calibModes = new Dictionary<CalibModes, CalibModeDetails> ();
 			_calibModes.Add (CalibModes._2D, new CalibModeDetails () {
 				name = "2D",
-				calibrationPoints = _calibPoints.Get2DList(),
+				calibrationPoints = _calibPoints.list2D,
 				calibPlugin = "HMD_Calibration",
 				positionKey = "norm_pos",
 				ref_data = new double[]{0.0,0.0},
@@ -662,7 +643,7 @@ public class PupilGazeTracker:MonoBehaviour
 			});
 			_calibModes.Add (CalibModes._3D, new CalibModeDetails () {
 				name = "3D",
-				calibrationPoints = _calibPoints.Get3DList(_convert: true),
+				calibrationPoints = _calibPoints.list3D, //Get3DList(_convert: true),
 				calibPlugin = "HMD_Calibration_3D",
 				positionKey = "mm_pos",
 				ref_data = new double[]{0.0,0.0,0.0},
@@ -680,7 +661,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public struct CalibModeDetails
 	{
 		public string name;
-		public List<floatArray> calibrationPoints;
+		public List<float[]> calibrationPoints;
 		public string positionKey;//A string that refers to a value in the ref_data in 2D its norm_pos in 3D its mm_pos
 		public string calibPlugin;//Currently containing HMD_CALIBRATION and HMD_CALIBRATION_3D
 		public Type type;
@@ -708,38 +689,25 @@ public class PupilGazeTracker:MonoBehaviour
 	//CUSTOM EDITOR VARIABLES
 
 	[HideInInspector]
-	public Vector2 Calibration2DScale;
-	[HideInInspector]
 	public bool saved = false;
-	[HideInInspector]
-	public int editedCalibIndex = 0;
-	[HideInInspector]
-	public bool CalibrationPointsFoldout;
-	[HideInInspector]
-	public bool CalibrationPoints2DFoldout;
-	[HideInInspector]
-	public bool CalibrationPoints3DFoldout;
 	[HideInInspector]
 	public int tab = 0;
 	[HideInInspector]
 	public int SettingsTab;
-	private int _cMode;
-	public int calibrationMode{
-		get{ return _cMode; }
-		set{
-			_cMode = value;
-			//CalibrationGL.currentMode = CurrentCalibrationMode;
-		}
-	}
+
+	public int calibrationMode;
+
 	[HideInInspector]
 	public bool calibrationDebugMode = false;
 	[HideInInspector]
 	public int connectionMode = 0;
+
 	public CalibModeDetails CurrentCalibrationModeDetails{
 		get{
 			return CalibrationModes [CurrentCalibrationMode];
 		}
 	}
+
 	public CalibModes CurrentCalibrationMode{
 		get {
 			if (calibrationMode == 0) {
@@ -751,30 +719,23 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 
 	[HideInInspector]
-	public GameObject CalibrationGameObject3D;
-	[HideInInspector]
-	public GameObject CalibrationGameObject2D;
-
-	[HideInInspector]
-	public bool isDebugFoldout;
-	[HideInInspector]
-	public bool ShowBaseInspector;
+	public bool AdvancedSettings;
 	[HideInInspector]
 	public string PupilServicePath = "";
 	[HideInInspector]
 	public string PupilServiceFileName = "";
 
+	[HideInInspector]
 	public List<GUIStyle> Styles = new List<GUIStyle>();
-
-	public GUIStyle MainTabsStyle = new GUIStyle ();
-	public GUIStyle SettingsLabelsStyle = new GUIStyle ();
-	public GUIStyle SettingsValuesStyle = new GUIStyle ();
-	public GUIStyle SettingsBrowseStyle = new GUIStyle ();
-	public GUIStyle LogoStyle = new GUIStyle ();
+	[HideInInspector]
 	public GUIStyle FoldOutStyle = new GUIStyle ();
+	[HideInInspector]
 	public GUIStyle ButtonStyle = new GUIStyle();
+	[HideInInspector]
 	public GUIStyle TextField = new GUIStyle();
+	[HideInInspector]
 	public GUIStyle CalibRowStyle = new GUIStyle();
+
 
 	[Serializable]
 	public struct Platform
@@ -783,17 +744,17 @@ public class PupilGazeTracker:MonoBehaviour
 		public string DefaultPath;
 		public string FileName;
 	}
+
+	[HideInInspector]
 	public Platform[] Platforms;
+	[HideInInspector]
 	public Dictionary<RuntimePlatform, string[]> PlatformsDictionary;
-	//CUSTOM EDITOR VARIABLES
 
 	Process serviceProcess;
 
 	int _gazeFPS = 0;
 	int _currentFps = 0;
 	DateTime _lastT;
-
-	object _dataLock;
 
 	public int FPS
 	{
@@ -822,18 +783,6 @@ public class PupilGazeTracker:MonoBehaviour
 		get{ return _eyeGazePos2D; }
 	}
 
-	public Vector2 NormalizedEyePos3D
-	{
-		get{ return _eyeGazePos3D; }
-	}
-//	public Vector2 EyePos2D
-//	{
-//		get{ return new Vector2((_eyeGazePos2D.x-0.5f)*CanvasWidth,(_eyeGazePos2D.y-0.5f)*CanvasHeight); }
-//	}
-//	public Vector2 EyePos3D
-//	{
-//		get{ return new Vector3 (_eyeGazePos3D.x, _eyeGazePos3D.y, _eyeGazePos3D.z); }
-//	}
 	public Vector2 LeftEyePos
 	{
 		get{ return leftEye.gaze2D; }
@@ -853,28 +802,11 @@ public class PupilGazeTracker:MonoBehaviour
 		return NormalizedEyePos2D;
 	}
 
-
-
-
-//	public Vector3 GetEyeGaze3D(GazeSource s){
-//		return _eyeGazePos3D;
-//	}
-
-//	public double Confidence
-//	{
-//		get
-//		{
-//			if (_pupilData == null){return 0;}
-//			return _pupilData.confidence;
-//		}
-//	}
-
 	public PupilGazeTracker()
 	{
 		_Instance = this;
 	}
 
-	//private int toastIndex = 0;
 	private Queue<Task> TaskQueue = new Queue<Task> ();
 	private object _queueLock = new object ();
 
@@ -885,29 +817,15 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 	}
 
+
 	#region Update
 	void Update(){
-		if (Input.GetKeyUp (KeyCode.R)) {
-			LineDrawer.Instance.Clear ();
-			foreach (Vector3 _v3 in CalibrationData.cal_gaze_points0_3d) {
-				LineDrawer.Instance.AddLineToMesh (new LineDrawer.param () {points = new Vector3[] {Pupil.values.EyeCenters3D [0],_v3},color = new Color (1f, 0.6f, 0f, 0.1f)});
-			}
-			foreach (Vector3 _v3 in CalibrationData.cal_gaze_points1_3d) {
-				LineDrawer.Instance.AddLineToMesh (new LineDrawer.param(){points = new Vector3[] { Pupil.values.EyeCenters3D [1], _v3 }, color = new Color(1f, 1f, 0f, 0.1f)}   );
-			}
-			LineDrawer.Instance.Draw ();
-		}
-//		if (Input.GetKeyUp (KeyCode.L)) {
-//			LineDrawer.Instance.AddLineToMesh (new Vector3[] {
-//				new Vector3 (UnityEngine.Random.Range (-100, 100), UnityEngine.Random.Range (-100, 100), UnityEngine.Random.Range (-100, 100)),
-//				new Vector3 (UnityEngine.Random.Range (-100, 100), UnityEngine.Random.Range (-100, 100), UnityEngine.Random.Range (-100, 100))
-//			}, new Color (UnityEngine.Random.Range (0f, 1f), UnityEngine.Random.Range (0f, 1f), UnityEngine.Random.Range (0f, 1f),UnityEngine.Random.Range (0f, .1f)));
-//		}
+
 		if (FramePublishingVariables.StreamCameraImages) {//Put this in a function and delegate it to the OnUpdate delegate
 			elapsedTime = (float)TimeSpan.FromTicks (DateTime.Now.Ticks - lastTick).TotalSeconds;
 			if (elapsedTime >= (1f / FramePublishingVariables.targetFPS)) {//Limiting the MainThread calls to framePublishFramePerSecondLimit to avoid issues. 20-30 ideal.
-				AssignTexture (ref FramePublishingVariables.eye0Image, ref FramePublishingVariables.eye0ImageMaterial,  FramePublishingVariables.raw0);
-				AssignTexture (ref FramePublishingVariables.eye1Image, ref FramePublishingVariables.eye1ImageMaterial,  FramePublishingVariables.raw1);
+				AssignTexture (ref FramePublishingVariables.eye0Image, ref FramePublishingVariables.eye0ImageMaterial, FramePublishingVariables.raw0);
+				AssignTexture (ref FramePublishingVariables.eye1Image, ref FramePublishingVariables.eye1ImageMaterial, FramePublishingVariables.raw1);
 				lastTick = DateTime.Now.Ticks;
 			}
 		}
@@ -921,21 +839,27 @@ public class PupilGazeTracker:MonoBehaviour
 				TaskQueue.Dequeue () ();
 		}
 
+		if (Input.GetKeyUp (KeyCode.C)) {
+			if (m_status == EStatus.Calibration) {
+				StopCalibration ();
+			} else {
+				StartCalibration();
+			}
+		}
+//		if (Input.GetKey (KeyCode.A)) {
+//			OperatorWindow.Initialize ();
+//		}
+//		if (Input.GetKey (KeyCode.X)) {
+//			OperatorWindow.Instance.Close ();
+//		}
 	}
 	#endregion
 
 	#region DebugView
+	[HideInInspector]
 	public DebugView._Transform[] OffsetTransforms;
 
 
-	public enum CalibrationDebugCamera
-	{
-		HMD,
-		PUPIL_CAMERA_0,
-		PUPIL_CAMERA_1,
-		PUPIL_CAMERA_BOTH
-	}
-	public CalibrationDebugCamera calibrationDebugCamera = CalibrationDebugCamera.PUPIL_CAMERA_0;
 	[HideInInspector]
 	public bool isDrawCalibrationDebugInitialized = false;
 	#endregion
@@ -1004,20 +928,14 @@ public class PupilGazeTracker:MonoBehaviour
 			DebugViewVariables.LineDrawerGO.transform.localRotation = Quaternion.identity;
 			DebugViewVariables.LineDrawerGO.AddComponent<LineDrawer> ();
 
-			//TODO: make this work with Linq
 			Invoke("InitViewLines", .7f);
 			DebugViewVariables.isDrawLines = true;
 			DebugViewVariables.isDrawPoints = true;
-			//from p in CalibrationData.cal_gaze_points0_3d where p!=null select
-			//CalibrationData.cal_gaze_points0_3d.ToList().ForEach(p=>Invo DrawLineLater());
-			//Select (p =>new Func<T>());//{ LineDrawer.Instance.AddLineToMesh (new Vector3[] { Pupil.values.EyeCenters3D [0], p}, new Color (1, 1, 1, .2f)) });
 		}
 		OnUpdate += CalibrationDebugInteraction;
 		isDrawCalibrationDebugInitialized = true;
 	}
-//	public static void DrawLineLater(){
-//		//Invoke( LineDrawer.Instance.AddLineToMesh (new Vector3[] { Pupil.values.EyeCenters3D [0], p}, new Color (1, 1, 1, .2f)),1f) 
-//	}
+
 	public void CalibrationDebugInteraction(){
 		#region DebugView.Interactions
 		if (Input.anyKey){
@@ -1065,9 +983,17 @@ public class PupilGazeTracker:MonoBehaviour
 					SetDrawCalibrationLinesNPoints(true);
 				}
 			}
+			if (Input.GetKeyUp (KeyCode.R)) {
+				LineDrawer.Instance.Clear ();
+				foreach (Vector3 _v3 in CalibrationData.cal_gaze_points0_3d) {
+					LineDrawer.Instance.AddLineToMesh (new LineDrawer.param () {points = new Vector3[] {Pupil.values.EyeCenters3D [0],_v3},color = new Color (1f, 0.6f, 0f, 0.1f)});
+				}
+				foreach (Vector3 _v3 in CalibrationData.cal_gaze_points1_3d) {
+					LineDrawer.Instance.AddLineToMesh (new LineDrawer.param(){points = new Vector3[] { Pupil.values.EyeCenters3D [1], _v3 }, color = new Color(1f, 1f, 0f, 0.1f)}   );
+				}
+				LineDrawer.Instance.Draw ();
+			}
 
-			if (Input.GetMouseButton(0))
-				print("mouse is any key too");
 		}
 		if (Input.GetMouseButton(1)){
 			var a = (from tr in OffsetTransforms where tr.name == "Debug View Origin Matrix" select tr).FirstOrDefault() as DebugView._Transform;
@@ -1081,15 +1007,47 @@ public class PupilGazeTracker:MonoBehaviour
 		SetDrawCalibrationLines (toggle);
 		SetDrawCalibrationPointCloud (toggle);
 	}
+
 	public void SetDrawCalibrationLines(bool toggle){
 		DebugViewVariables.isDrawLines = toggle;
 		DebugViewVariables.LineDrawerGO.GetComponent<MeshRenderer> ().enabled = toggle;
 	}
+
 	public void SetDrawCalibrationPointCloud(bool toggle){
 		DebugViewVariables.isDrawPoints = toggle;
 		DebugViewVariables.PointCloudGO.GetComponent<MeshRenderer> ().enabled = toggle;
 	}
 
+	public void CloseCalibrationDebugView(){
+		var a = (from tr in OffsetTransforms where tr.name == "Debug View Origin Matrix" select tr).FirstOrDefault() as DebugView._Transform;
+		if (a.GO != null)
+			a.GO.SetActive (false);
+		StopFramePublishing ();
+		OnUpdate -= CalibrationDebugInteraction;
+		OnCalibDebug -= DrawCalibrationDebugView;
+		calibrationDebugMode = false;
+	}
+
+	public void StartCalibrationDebugView(){
+		if (DebugViewVariables.DebugEyeMesh != null) {
+			var a = (from tr in OffsetTransforms
+			         where tr.name == "Debug View Origin Matrix"
+			         select tr).FirstOrDefault () as DebugView._Transform;
+			if (a.GO != null)
+				a.GO.SetActive (true);
+
+			if (OnCalibDebug == null)
+				OnCalibDebug += DrawCalibrationDebugView;
+//			OnCalibDebug -= DrawCalibrationDebugView;
+			OnUpdate -= CalibrationDebugInteraction;
+			OnUpdate += CalibrationDebugInteraction;
+			InitializeFramePublishing ();
+			StartFramePublishing ();
+		} else {
+			UnityEngine.Debug.LogWarning ("Please assign a Debug Eye Mesh under the Settings Debug View Variables. Accessable in Developer Mode!");
+			calibrationDebugMode = false;
+		}
+	}
 	public void DrawCalibrationDebugView(){
 
 		debugViewFrameIndex++;
@@ -1104,87 +1062,42 @@ public class PupilGazeTracker:MonoBehaviour
 
 
 
-		Vector3 eye0Pos =  Pupil.values.EyeCenters3D [0];
+		Vector3 eye0Pos = Pupil.values.EyeCenters3D [0];
 		Vector3 eye0Norm = Pupil.values.GazeNormals3D [0];
 
 		Vector3 eye1Pos = Pupil.values.EyeCenters3D [1];
 		Vector3 eye1Norm = Pupil.values.GazeNormals3D [1];
 
 		Vector3 gazePoint = Pupil.values.GazePoint3D;
-		//print ("before drawing : " + eye0Pos+eye0Norm);
 
-		switch (calibrationDebugCamera) {
+		////////////////Draw 3D pupils////////////////
+		Vector3 _pupil0Center = new Vector3 ((float)Pupil.values.BaseData [0].circle_3d.center [0], (float)Pupil.values.BaseData [0].circle_3d.center [1], (float)Pupil.values.BaseData [0].circle_3d.center [2]);
+		Vector3 _pupil1Center = new Vector3 ((float)Pupil.values.BaseData [1].circle_3d.center [0], (float)Pupil.values.BaseData [1].circle_3d.center [1], (float)Pupil.values.BaseData [1].circle_3d.center [2]);
+		float _pupil0Radius = (float)Pupil.values.BaseData [0].circle_3d.radius;
+		float _pupil1Radius = (float)Pupil.values.BaseData [1].circle_3d.radius;
+		Vector3 _pupil0Normal = new Vector3 ((float)Pupil.values.BaseData [0].circle_3d.normal [0], (float)Pupil.values.BaseData [0].circle_3d.normal [1], (float)Pupil.values.BaseData [0].circle_3d.normal [2]);
+		DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix1, position: _pupil0Center, size: _pupil0Radius, sphereColor: Color.black, forward: _pupil0Normal, wired: false);
+		DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix0, position: _pupil1Center, size: _pupil1Radius, sphereColor: Color.black, forward: eye0Norm, wired: false);
+		////////////////Draw 3D pupils////////////////
 
-		case CalibrationDebugCamera.PUPIL_CAMERA_BOTH:
+		////////////////Draw eye camera frustums////////////////
+		DrawCameraFrustum (origin: CalibrationData.eye_camera_to_world_matrix0, fieldOfView: 90, aspect: aspectRatios.FOURBYTHREE, minViewDistance: 0.001f, maxViewDistance: 30, frustumColor: Color.black, drawEye: true, eyeID: 1, transformOffset: OffsetTransforms [1].GO.transform, drawCameraImage: true, eyeMaterial: FramePublishingVariables.eye1ImageMaterial, eyeImageRotation: 0);
+		DrawCameraFrustum (origin: CalibrationData.eye_camera_to_world_matrix1, fieldOfView: 90, aspect: aspectRatios.FOURBYTHREE, minViewDistance: 0.001f, maxViewDistance: 30, frustumColor: Color.white, drawEye: true, eyeID: 0, transformOffset: OffsetTransforms [1].GO.transform, drawCameraImage: true, eyeMaterial: FramePublishingVariables.eye0ImageMaterial, eyeImageRotation: 0);
+		////////////////Draw eye camera frustums/////////////////// 
 
-//			print (Pupil.values.BaseData.Length);
-			object o;
-//			if (_pupilDataDict.dictionary.TryGetValue ("base_data", out o)) {
-//				if (Pupil.values.BaseData.Length > 1) {
-			//		DebugViewVariables.isDrawLines = true;
-//			DebugViewVariables.isDrawPoints = true;
+		////////////////Draw 3D eyeballs////////////////
+		DrawDebugSphere (position: eye0Pos, eyeID: 0, forward: transform.TransformDirection (eye0Norm), isEye: true, norm_length: gazePoint.magnitude * DebugVariables.value0, sphereColor: Color.white, norm_color: Color.red, size: DebugViewVariables.EyeSize, originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, wired: false);//eye0
+		DrawDebugSphere (position: eye1Pos, eyeID: 1, forward: transform.TransformDirection (eye1Norm), isEye: true, norm_length: gazePoint.magnitude * DebugVariables.value0, sphereColor: Color.white, norm_color: Color.red, size: DebugViewVariables.EyeSize, originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, wired: false);//eye1
+		////////////////Draw 3D eyeballs////////////////
 
-			//if (DebugViewVariables.isDrawLines)
+		////////////////Draw HMD camera frustum//////////////// fov 137.7274f
+		DrawCameraFrustum (origin: OffsetTransforms [1].GO.transform.localToWorldMatrix, fieldOfView: 111, aspect: aspectRatios.FULLVIVE, minViewDistance: 0.001f, maxViewDistance: 100f, frustumColor: Color.gray, drawEye: false, eyeID: 0);
+		////////////////Draw HMD camera frustum////////////////
 
+		////////////////Draw gaze point 3D////////////////
+		DrawDebugSphere (position: gazePoint, eyeID: 10, forward: eye1Norm, isEye: false, norm_length: 20, sphereColor: Color.red, norm_color: Color.clear, size: 10, originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix);//eye1
+		////////////////Draw gaze point 3D////////////////
 
-				
-					////////////////Draw 3D pupils////////////////
-			Vector3 _pupil0Center = new Vector3 ((float)Pupil.values.BaseData [0].circle_3d.center [0], (float)Pupil.values.BaseData [0].circle_3d.center [1], (float)Pupil.values.BaseData [0].circle_3d.center [2]);
-			Vector3 _pupil1Center = new Vector3 ((float)Pupil.values.BaseData [1].circle_3d.center [0], (float)Pupil.values.BaseData [1].circle_3d.center [1], (float)Pupil.values.BaseData [1].circle_3d.center [2]);
-			float _pupil0Radius = (float)Pupil.values.BaseData [0].circle_3d.radius;
-			float _pupil1Radius = (float)Pupil.values.BaseData [1].circle_3d.radius;
-			Vector3 _pupil0Normal = new Vector3 ((float)Pupil.values.BaseData [0].circle_3d.normal [0], (float)Pupil.values.BaseData [0].circle_3d.normal [1], (float)Pupil.values.BaseData [0].circle_3d.normal [2]);
-			DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix1, position: _pupil0Center, size: _pupil0Radius, sphereColor: Color.black, forward: _pupil0Normal, wired: false);
-			DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix0, position: _pupil1Center, size: _pupil1Radius, sphereColor: Color.black, forward: eye0Norm, wired: false);
-
-//			eyeSphereMaterial.SetColor ("_Color", Color.blue);
-//			eyeSphereMaterial.SetPass (0);
-			Graphics.DrawMeshNow (DebugEyeMesh, OffsetTransforms [1].GO.transform.localToWorldMatrix * CalibrationData.eye_camera_to_world_matrix1 * Matrix4x4.Translate (_pupil0Center) * Matrix4x4.TRS (OffsetTransforms [2].position, Quaternion.Euler (OffsetTransforms [2].rotation), OffsetTransforms [2].localScale));
-
-			////////////////Draw 3D pupils////////////////
-
-			////////////////Draw 3D Iris////////////////
-//			DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix0, position: _pupil0Center-(eye0Norm*DebugVariables.value0), size: 12, sphereColor: Color.black, forward: Vector3.one, wired: false);
-//			DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix1, position: _pupil1Center-(eye1Norm*DebugVariables.value1), size: 12, sphereColor: Color.black, forward: Vector3.one, wired: false);
-			////////////////Draw 3D Iris////////////////
-
-
-					////////////////Draw 3D eyeballs from base_data////////////////
-//					DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix0, position: new Vector3 (0.6f, -7.74f, 22.74f), size: 12, sphereColor: Color.black, forward: Vector3.one);
-//					DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix1, position: new Vector3 (-1.292f, 6.73f, 18.447f), size: 12, sphereColor: Color.black, forward: Vector3.one);
-					////////////////Draw 3D eyeballs from base_data////////////////
-
-				////////////////Draw eye camera frustums////////////////
-			DrawCameraFrustum (origin: CalibrationData.eye_camera_to_world_matrix0, fieldOfView: fov, aspect: aspectRatios.FOURBYTHREE, minViewDistance: 0.001f, maxViewDistance: 30, frustumColor: Color.black, drawEye: true, eyeID: 1, transformOffset: OffsetTransforms [1].GO.transform, drawCameraImage: true, eyeMaterial: FramePublishingVariables.eye1ImageMaterial, eyeImageRotation: 0);
-			DrawCameraFrustum (origin: CalibrationData.eye_camera_to_world_matrix1, fieldOfView: fov, aspect: aspectRatios.FOURBYTHREE, minViewDistance: 0.001f, maxViewDistance: 30, frustumColor: Color.white, drawEye: true, eyeID: 0, transformOffset: OffsetTransforms [1].GO.transform, drawCameraImage: true, eyeMaterial: FramePublishingVariables.eye0ImageMaterial, eyeImageRotation: 0);
-				////////////////Draw eye camera frustums/////////////////// 
-
-//				}
-//			}
-
-
-		//	Matrix4x4 m = new Matrix4x4 ();// Matrix4x4.Translate(eye0Norm).
-			////////////////Draw 3D eyeballs////////////////
-			DrawDebugSphere (position: eye0Pos, eyeID: 0, forward: transform.TransformDirection (eye0Norm), isEye: true, norm_length: gazePoint.magnitude*DebugVariables.value0, sphereColor: Color.white, norm_color: Color.red, size: DebugViewVariables.EyeSize, originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, wired: false);//eye0
-			DrawDebugSphere (position: eye1Pos, eyeID: 1, forward: eye1Norm, isEye: true, norm_length: gazePoint.magnitude, sphereColor: Color.white, norm_color: Color.red, size: DebugViewVariables.EyeSize, originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, wired: false);//eye1
-			////////////////Draw 3D eyeballs////////////////
-
-
-			////////////////Draw HMD camera frustum//////////////// fov 137.7274f
-			DrawCameraFrustum (origin: OffsetTransforms [1].GO.transform.localToWorldMatrix, fieldOfView: 111, aspect: aspectRatios.FULLVIVE, minViewDistance: 0.001f, maxViewDistance: 100f, frustumColor: Color.gray, drawEye: false, eyeID: 0);
-			////////////////Draw HMD camera frustum////////////////
-
-//			if (debugViewFrameIndex % 30 == 0) {
-//				LineDrawer.Instance.AddLineToMesh (new Vector3[]{ eye0Pos, gazePoint }, new Color (1, 1, 1, .2f));//(eye1Pos + (eye1Norm * viewDirectionLength * 100))
-//				LineDrawer.Instance.AddLineToMesh (new Vector3[]{ eye1Pos, gazePoint }, new Color (1, 1, 1, .2f));
-//			}
-
-			////////////////Draw gaze point 3D////////////////
-			DrawDebugSphere (position: gazePoint, eyeID: 10, forward: eye1Norm, isEye: false, norm_length: viewDirectionLength, sphereColor: Color.red, norm_color: Color.clear, size: 10, originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix);//eye1
-			////////////////Draw gaze point 3D////////////////
-
-			break;
-		}
 
 	}
 
@@ -1196,7 +1109,7 @@ public class PupilGazeTracker:MonoBehaviour
 		GL.MultMatrix (originMatrix * offsetMatrix);
 		CalibrationGL.Marker (_circle);
 	}
-	public Texture2D circleTexture;
+//	public Texture2D circleTexture;
 
 	public Material CreateLineMaterial ()
 	{
@@ -1264,13 +1177,8 @@ public class PupilGazeTracker:MonoBehaviour
 		if (OnCalibrationGL != null)
 			OnCalibrationGL ();
 	}
-	public float fov = 60;
-	public float MinViewDistance = 20;
-	public float MaxViewDistance = 200;
-	public float scale = 1;
-	public float viewDirectionLength = 20;
-	public float cameraGizmoLength = 20;
-	public Mesh DebugEyeMesh;
+		
+
 
 	public enum aspectRatios{FULLVIVE,HALFVIVE,FULLHD,ONEOONE,FOURBYTHREE};
 
@@ -1334,17 +1242,15 @@ public class PupilGazeTracker:MonoBehaviour
 			_m = offsetMatrix*_m;
 		if (wired)
 			GL.wireframe = true;
-		Graphics.DrawMeshNow(DebugEyeMesh, originMatrix*_m);
+		Graphics.DrawMeshNow(DebugViewVariables.DebugEyeMesh, originMatrix*_m);
 		GL.wireframe = false;
 
 		if (isEye) {
 
-
-			//_m.SetTRS (new Vector3(100*eyeID,0,0), Quaternion.identity, new Vector3 (size, size, size));
 			eyeSphereMaterial.SetColor ("_Color", new Color(0,1f,0,.5f));
 			eyeSphereMaterial.SetPass (0);
 		
-			Graphics.DrawMeshNow(DebugEyeMesh, originMatrix*Matrix4x4.TRS (position + (forward * 10.5f), Quaternion.LookRotation (forward, Vector3.up), new Vector3 (10, 10, 3.7f)));
+			Graphics.DrawMeshNow(DebugViewVariables.DebugEyeMesh, originMatrix*Matrix4x4.TRS (position + (forward * 10.5f), Quaternion.LookRotation (forward, Vector3.up), new Vector3 (10, 10, 3.7f)));
 
 
 		eyeSphereMaterial.SetColor ("_Color", norm_color);
@@ -1435,15 +1341,15 @@ public class PupilGazeTracker:MonoBehaviour
 		//X
 		GL.Color (Color.red);
 		GL.Vertex(Vector3.zero);
-		GL.Vertex(Vector3.right*cameraGizmoLength);
+		GL.Vertex(Vector3.right*30);
 		//Y
 		GL.Color (Color.green);
 		GL.Vertex(Vector3.zero);
-		GL.Vertex(Vector3.up*cameraGizmoLength);
+		GL.Vertex(Vector3.up*30);
 		//Z
 		GL.Color (Color.blue);
 		GL.Vertex(Vector3.zero);
-		GL.Vertex(Vector3.forward*cameraGizmoLength);
+		GL.Vertex(Vector3.forward*30);
 		//Draw Gizmo
 		GL.End ();
 		#endregion
@@ -1466,7 +1372,7 @@ public class PupilGazeTracker:MonoBehaviour
 //			}
 			//print ("projected eye center : width : " + eye0Center + " height : " + eye1Center);
 			GL.wireframe = true;
-			Graphics.DrawMeshNow (DebugEyeMesh, _imageSpaceMatrix * Matrix4x4.Translate (  new Vector3 (-flipper*eyeCenterX* scaler, flipper*eyeCenterY* scaler, 0)   ));
+			Graphics.DrawMeshNow (DebugViewVariables.DebugEyeMesh, _imageSpaceMatrix * Matrix4x4.Translate (  new Vector3 (-flipper*eyeCenterX* scaler, flipper*eyeCenterY* scaler, 0)   ));
 			GL.wireframe = false;
 		}
 
@@ -1494,7 +1400,7 @@ public class PupilGazeTracker:MonoBehaviour
 			eyeProcess = true;
 			if (Pupil.processStatus.eyeProcess0 && Pupil.processStatus.eyeProcess1) {
 				Pupil.processStatus.initialized = true;
-				UnSubscribeFrom ("pupil.");
+				//UnSubscribeFrom ("pupil.");
 			}
 		}
 	}
@@ -1527,19 +1433,13 @@ public class PupilGazeTracker:MonoBehaviour
 
 		switch((string)messageType){
 		case "notify.calibration.started":
-			ScheduleTask(new Task(delegate {
-				ToastMessage.Instance.DrawToastMessage(new ToastMessage.toastParameters(){text = CurrentCalibrationMode.ToString().Substring(1) + " Calibration started"});
-			}));
+
 			break;
 		case "notify.calibration.failed":
-			ScheduleTask(new Task(delegate {
-				ToastMessage.Instance.DrawToastMessage(new ToastMessage.toastParameters(){text = CurrentCalibrationMode.ToString().Substring(1) + " Calibration failed"});
-			}));
+
 			break;
 		case "notify.calibration.success":
-			ScheduleTask(new Task(delegate {
-				ToastMessage.Instance.DrawToastMessage(new ToastMessage.toastParameters(){text = CurrentCalibrationMode.ToString().Substring(1) + " Calibration successful"});
-			}));
+
 			break;
 
 
@@ -1584,17 +1484,17 @@ public class PupilGazeTracker:MonoBehaviour
 			if (pluginName != null) {
 				print ("Plugin " + pluginName + " has started ! ");
 				if (pluginName == "Binocular_Vector_Gaze_Mapper") {
-					print("it is binocular vector gaze mapper");
+//					print("it is binocular vector gaze mapper");
 
 					string _strData = _pupilDataDict.GetValueAsString ("args");
 					if (_strData != null) {
 //						//_pupilDataDict
-						print("camera intrinsics data found ! length : " + _strData.Length);
+//						print("camera intrinsics data found ! length : " + _strData.Length);
 //
 						ScheduleTask (new Task (delegate {
 							CalibrationData.camera_intrinsics_str = _strData;
 							//JsonUtility.FromJson<Calibration.variables> (_strData);
-							print ("camera intrinsics data found ! length : " + _strData.Length);
+//							print ("camera intrinsics data found ! length : " + _strData.Length);
 							WriteStringToFile (_strData, "camera_intrinsics");
 						}));
 //
@@ -1605,28 +1505,25 @@ public class PupilGazeTracker:MonoBehaviour
 			break;
 
 //		case "notify.frame_publishing.started":
-//			ToastMessage.Instance.DrawToastMessageOnMainThread (new ToastMessage.toastParameters () {
-//				ID = 0,
-//				text = "frame publishing has started"
-//			});
 //			break;
-		case "notify.meta.doc":
-			//var doc = MsgPack.Unpacking.UnpackObject (msg [1].ToByteArray ());
-			//print (doc);
-			print("doc");
-			break;
+
+//		case "notify.meta.doc":
+//			var doc = MsgPack.Unpacking.UnpackObject (msg [1].ToByteArray ());
+//			print("doc");
+//			break;
+
 		}
 
 	}
 
-	public Vector3 Vector3FromString(string v3String){
-		Vector3 _v3 = new Vector3 ();
-		string[] _v3Str = v3String.Substring (1, v3String.Length - 2).Split (",".ToCharArray (), 3);
-		_v3.x = float.Parse (_v3Str [0]);
-		_v3.y = float.Parse (_v3Str [1]);
-		_v3.z = float.Parse (_v3Str [2]);
-		return _v3;
-	}
+//	public Vector3 Vector3FromString(string v3String){
+//		Vector3 _v3 = new Vector3 ();
+//		string[] _v3Str = v3String.Substring (1, v3String.Length - 2).Split (",".ToCharArray (), 3);
+//		_v3.x = float.Parse (_v3Str [0]);
+//		_v3.y = float.Parse (_v3Str [1]);
+//		_v3.z = float.Parse (_v3Str [2]);
+//		return _v3;
+//	}
 	public Vector3[] Vector3ArrayFromString(string v3StringArray){
 		List<Vector3> _v3List = new List<Vector3> ();
 		List<float> _v3TempList = new List<float> ();
@@ -1639,7 +1536,7 @@ public class PupilGazeTracker:MonoBehaviour
 				_v3List.Add (new Vector3 (_v3TempList [0], _v3TempList [1], _v3TempList [2]));
 				_v3TempList.Clear ();
 			}
-				//print ("string is empty");
+
 		}
 		return _v3List.ToArray ();
 	}
@@ -1734,39 +1631,31 @@ public class PupilGazeTracker:MonoBehaviour
 			},
 			new Pupil.BaseData (){ }
 		};
-		//print ((2 * (Mathf.Atan (320f / 6.20f))).ToString());
+
 		string str = ReadStringFromFile ("camera_intrinsics");
 		ReadCalibrationData (str);
 
 		lastTick = DateTime.Now.Ticks;
 		elapsedTime = 0f;
-		//_pupilDataDict = new pupilDataDictionary ();
-		//OnAllPackets += ProcessPackets;
-		//OperatorMonitorProperties.OperatorCamera = null;
-		ToastMessage.Instance.DrawToastMessage (new ToastMessage.toastParameters (){ text = "" });//Initialize toast messages;
 
-		//CalibrationGL.GazeProcessingMode ();
 		CalibrationGL.SetMode(EStatus.ProcessingGaze);
-
-//		float[] _cPointFloatValues = new float[]{0f,0f,0f};
 
 		if (FramePublishingVariables.StreamCameraImages)
 			InitializeFramePublishing ();
 
 		if (PupilGazeTracker._Instance == null)
 			PupilGazeTracker._Instance = this;
+		
 		leftEye = new EyeData (SamplesCount);
 		rightEye= new EyeData (SamplesCount);
-
-		_dataLock = new object ();
 
 		//make sure that if the toggles are on it functions as the toggle requires it
 		if (isOperatorMonitor && OnOperatorMonitor == null) {
 			OperatorMonitor.Instantiate ();
 		}
 			//OnOperatorMonitor += DrawOperatorMonitor;
-		if (calibrationDebugMode && OnCalibDebug == null)
-			OnCalibDebug += DrawCalibrationDebugView;
+		if (calibrationDebugMode)
+			StartCalibrationDebugView ();
 
 		//Run the service locally, only if under settings its set to local
 		if (connectionMode == 0)
@@ -1782,7 +1671,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public void SubscribeTo(string topic){
 		if (!Pupil.connectionParameters.toSubscribe.Contains (topic)) {
 			Pupil.connectionParameters.toSubscribe.Add (topic);
-			print ("adding : " + topic + " to Subscribe ! ");
+//			print ("adding : " + topic + " to Subscribe ! ");
 		}
 		
 		Pupil.connectionParameters.update = true;
@@ -1790,7 +1679,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public void UnSubscribeFrom(string topic){
 		if (Pupil.connectionParameters.toSubscribe.Contains (topic)) {
 			Pupil.connectionParameters.toSubscribe.Remove (topic);
-			print ("removing : " + topic + " from Subscribe ! ");
+//			print ("removing : " + topic + " from Subscribe ! ");
 		}
 		Pupil.connectionParameters.update = true;
 	}
@@ -1803,13 +1692,6 @@ public class PupilGazeTracker:MonoBehaviour
 		_isDone = true;
 		_serviceThread.Join();
 
-	}
-
-	public void NullDelegates(){
-		OnCalibrationStarted = null;
-		OnCalibrationDone = null;
-		OnCalibData = null;
-		OnSwitchCalibPoint = null;
 	}
 
 	NetMQMessage _sendRequestMessage(Dictionary<string,object> data)
@@ -1856,7 +1738,7 @@ public class PupilGazeTracker:MonoBehaviour
 		FramePublishingVariables.StreamCameraImages = true;
 		_sendRequestMessage (new Dictionary<string,object> {{"subject","plugin_started"},{"name", "Frame_Publisher"}});
 		SubscribeTo ("frame.");
-		print ("frame publish start");
+//		print ("frame publish start");
 		//_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
 	}
 	public void StopFramePublishing(){
@@ -1866,14 +1748,14 @@ public class PupilGazeTracker:MonoBehaviour
 			//_sendRequestMessage (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
 		}
 	}
+
 	public void AssignTexture(ref Texture2D _eyeImage, ref Material _mat, byte[] data){
-//		print (_eyeImage);
-//		print (_mat);
-//		byte[] _bArray;
-//		_bArray = (byte[])data;
+		
 		_eyeImage.LoadImage (data);
 		_mat.mainTexture = _eyeImage;
+	
 	}
+
 	#endregion
 
 	#region NetMQ
@@ -1908,11 +1790,11 @@ public class PupilGazeTracker:MonoBehaviour
 		{
 			
 			try{
-				Thread.Sleep(1000);
+				Thread.Sleep(1500);
 				StartProcess ();
 			}
 			catch{
-				print ("Couldn't start process");
+//				print ("Couldn't start process");
 			}
 				
 			//var subscriberSocket = new SubscriberSocket( IPHeader + subport);
@@ -1959,7 +1841,7 @@ public class PupilGazeTracker:MonoBehaviour
 						if (Pupil.connectionParameters.update == true && !DebugVariables.subscribeAll){
 						//ScheduleTask(new Task(delegate {
 							//_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name","Frame_Publisher"}});
-							print("net frame subscriptions updated");
+//							print("net frame subscriptions updated");
 
 							subscriberSocket.Close();
 							subscriberSocket = new SubscriberSocket(IPHeader + subport);
@@ -2004,12 +1886,12 @@ public class PupilGazeTracker:MonoBehaviour
 					}
 					catch
 					{
-						print("Failed to unpack.");
+//						print("Failed to unpack.");
 					}
 				}
 				else
 				{
-					print("Failed to receive a message.");
+//					print("Failed to receive a message.");
 					Thread.Sleep(500);
 				}
 			}
@@ -2051,14 +1933,8 @@ public class PupilGazeTracker:MonoBehaviour
 		CalibrationGL.SetMode (st);
 		m_status = st;
 	}
-	public void To3DMethod(){
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","set_detection_mapping_mode" }, { "mode","3d" } });
-	}
-	public void To2DMethod(){
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","set_detection_mapping_mode" }, { "mode","2d" } });
-	}
+
 	public void StopService(){
-		print ("Stopping service");
 		_sendRequestMessage (new Dictionary<string,object> { { "subject","service_process.should_stop" }, { "eye_id",1 } });
 		_sendRequestMessage (new Dictionary<string,object> { { "subject","service_process.should_stop" }, { "eye_id",0 } });
 	}
@@ -2105,6 +1981,7 @@ public class PupilGazeTracker:MonoBehaviour
 			_sendRequestMessage (new Dictionary<string,object> {{"subject","eye_process.should_start.0"},{"eye_id",0}});
 			_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_start.1"},{"eye_id",1}});
 	}
+
 	public void StopProcess()
 	{
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",0}});
@@ -2113,7 +1990,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void StartCalibration(){
 
-		CalibrationGL.CalibrationMode ();
+		CalibrationGL.SetMode (EStatus.Calibration);
 
 		CalibModeDetails _currCalibModeDetails = CalibrationModes [CurrentCalibrationMode];
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name",_currCalibModeDetails.calibPlugin}});
@@ -2149,21 +2026,13 @@ public class PupilGazeTracker:MonoBehaviour
 		public Vector3 convertedV3{get{ return new Vector3 (-(float)value [0], (float)value [1], (float)value [2]); }}
 	}
 
-	void OnUpdateEyeCenter(){
+	void OnUpdateEyeCenter(){//This happens on MainThread
 		ScheduleTask (new Task (delegate {
 			InitViewLines ();
 		}));
-		print ("updating eye centers");
 	}
 
 	void OnGazePacket(){
-		//print ("base data count : " + _pupilDataDict.GetValueAsString ("base_data"));
-		//Pupil.BaseDataArray baseData = JsonUtility.FromJson<Pupil.BaseDataArray> ("{ \"base_data_array\" :" + _pupilDataDict.GetValueAsString ("base_data") + "}");
-		//print (baseData.base_data_array[0].id);
-		//print (_pupilDataDict.GetValue ("eye_centers_3d"));
-//		print("on gaze");
-
-
 
 
 		if (m_status == EStatus.ProcessingGaze) {
@@ -2175,7 +2044,6 @@ public class PupilGazeTracker:MonoBehaviour
 				Calibration.marker _markerGazeCenter = CalibrationMarkers.Where (p => p.name == "gaze").ToList () [0];
 
 				string eyeIDStr = eyeID.ToString ();
-				print ("current 2D eye ID : eye " + eyeIDStr);
 
 				if (CurrentCalibrationMode == CalibModes._2D) {
 					Vector2 pos_v2 = _pupilDataDict.GetValueAsVector ("norm_pos").v2;
@@ -2193,47 +2061,22 @@ public class PupilGazeTracker:MonoBehaviour
 							OnEyeGaze (this);
 					}
 
-					//print ("gazepacket" + x + " , " + y + " , " + leftEye.gaze2D.ToString("F5"));
-					//print ("gazepacket");
-
-
 					_markerLeftEye.shape.x = GetEyeGaze2D (GazeSource.LeftEye).x;
 					_markerLeftEye.shape.y = GetEyeGaze2D (GazeSource.LeftEye).y;
-					//_0.toggle = true;
 
 					_markerRightEye.shape.x = GetEyeGaze2D (GazeSource.RightEye).x;
 					_markerRightEye.shape.y = GetEyeGaze2D (GazeSource.RightEye).y;
-					//_1.toggle = true;
 
 					_markerGazeCenter.shape.x = GetEyeGaze2D (GazeSource.BothEyes).x;
 					_markerGazeCenter.shape.y = GetEyeGaze2D (GazeSource.BothEyes).y;
-					//_markerGazeCenter.
 				}
 			}
 			if (CurrentCalibrationMode == CalibModes._3D) {
 
-//				print (_pupilDataDict.GetValueAsVectorArray ("eye_centers_3d", 1f) [0]);
 				_pupilDataDict.GetValueAsVectorArray ("eye_centers_3d",ref Pupil.values.EyeCenters3D, -1f, OnUpdateEyeCenter);
-
-//				print (Pupil.values.EyeCenters3D [0].ToString ());
-//				if (_pupilDataDict.GetValueAsVectorArray ("eye_centers_3d", -1f) [1] == default(Vector3))
-//					print ("default Vector3 array found!");
-//				
-//
-//				if (_pupilDataDict.GetValueAsVectorArray ("eye_centers_3d", -1f) == default(Vector3[]))
-//					print ("default Vector3 array found");
-//
-//				if (Pupil.values.EyeCenters3D [0] == default(Vector3))
-//					print ("default found at assignment");
 				
 				_pupilDataDict.GetValueAsVectorArray ("gaze_normals_3d", ref Pupil.values.GazeNormals3D, -1f);
 				Pupil.values.GazePoint3D = _pupilDataDict.GetValueAsVector ("gaze_point_3d").convertedV3;
-
-//				print ("eye centers : " + Pupil.values.EyeCenters3D [0].ToString ("F5") + " , " + Pupil.values.EyeCenters3D [1].ToString ("F5"));
-//				print ("gaze normals : " + Pupil.values.GazeNormals3D [0].ToString ("F5") + " , " + Pupil.values.GazeNormals3D [1].ToString ("F5"));
-//				print ("gaze point : " + Pupil.values.GazePoint3D.ToString ("F5"));
-				//Vector3 pos_v3 = _pupilDataDict.GetValueAsVector ("mm_pos").v3;
-				//var a = JsonUtility.FromJson<_double> ("{\"value\": " + _pupilDataDict.GetValueAsString ("gaze_point_3d") + "}");
 
 				Calibration.marker gaze3D = CalibrationMarkers.Where (p => p.calibMode == CalibModes._3D && !p.calibrationPoint).ToList () [0];
 
@@ -2244,22 +2087,9 @@ public class PupilGazeTracker:MonoBehaviour
 		} else if (m_status == EStatus.Calibration) {
 			CalibModeDetails _cCalibDetails = CalibrationModes[CurrentCalibrationMode];
 			float t = GetPupilTimestamp ();
-			floatArray[] _cPoints = GetCalibPoints;
-			float[] _currentCalibPointPosition = _cPoints [_currCalibPoint].axisValues;
+			List<float[]> _cPoints = GetCalibPoints;
+			float[] _currentCalibPointPosition = _cPoints [_currCalibPoint];
 
-//			if (CurrentCalibrationMode == CalibModes._3D) {
-//				_currentCalibPointPosition = new float[] {
-//					-_cPoints [_currCalibPoint].axisValues [0],
-//					-_cPoints [_currCalibPoint].axisValues [1],
-//					_cPoints [_currCalibPoint].axisValues [2]
-//				};
-//			} else {
-//				_currentCalibPointPosition = new float[] {
-//					_cPoints [_currCalibPoint].axisValues [0],
-//					_cPoints [_currCalibPoint].axisValues [1],
-//					_cPoints [_currCalibPoint].axisValues [2]
-//				};
-//			}
 
 			Calibration.marker _m = CalibrationMarkers.Where (p => p.calibrationPoint && p.calibMode == CurrentCalibrationMode).ToList()[0];
 			_m.shape.width = Mathf.InverseLerp (DefaultCalibrationCount, 0f, _currCalibSamples)*_m.baseSize;//size hardcoded, change this
@@ -2268,26 +2098,22 @@ public class PupilGazeTracker:MonoBehaviour
 			_m.depth = _cCalibDetails.depth;//using the height az depth offset
 			_m.toggle = true;
 
-			print ("is toggle : " + _m.toggle);
 			if (_calibPointTimeOut) {
-				print (" is Timing out? : " + _calibPointTimeOut);
-				//_m.color = new Color (.5f, .5f, .5f, .1f);
 				Thread.Sleep (2000);
 				_m.color = Color.white;
 				_calibPointTimeOut = false;
 			}
-			print ("is toggle after: " + _m.toggle);
 
 
 			// Giving the user a short time to focus on the Calibration Point target before starting adding the reference data
 
 
-			float[] aa = new float[]{ _currentCalibPointPosition [0], _currentCalibPointPosition [1] };
-			if (_currentCalibPointPosition.Length > 2) {
-				print ("this goes in : X : " + _currentCalibPointPosition [0] + " Y: " + _currentCalibPointPosition [1] + " Z: " + _currentCalibPointPosition [2] + " count : " + _currentCalibPointPosition.Length + " | " + aa [0] + " , " + aa [1]);
-			} else {
-				print ("this goes in : X : " + _currentCalibPointPosition [0] + " Y: " + _currentCalibPointPosition [1] + " count : " + _currentCalibPointPosition.Length + " | " + aa [0] + " , " + aa [1]);
-			}
+//			float[] aa = new float[]{ _currentCalibPointPosition [0], _currentCalibPointPosition [1] };
+//			if (_currentCalibPointPosition.Length > 2) {
+////				print ("this goes in : X : " + _currentCalibPointPosition [0] + " Y: " + _currentCalibPointPosition [1] + " Z: " + _currentCalibPointPosition [2] + " count : " + _currentCalibPointPosition.Length + " | " + aa [0] + " , " + aa [1]);
+//			} else {
+////				print ("this goes in : X : " + _currentCalibPointPosition [0] + " Y: " + _currentCalibPointPosition [1] + " count : " + _currentCalibPointPosition.Length + " | " + aa [0] + " , " + aa [1]);
+//			}
 			//Create reference data to pass on. _cPointFloatValues are storing the float values for the relevant current Calibration mode
 			var ref0=new Dictionary<string,object>(){{_cCalibDetails.positionKey,_currentCalibPointPosition},{"timestamp",t},{"id",0}};
 			var ref1=new Dictionary<string,object>(){{_cCalibDetails.positionKey,_currentCalibPointPosition},{"timestamp",t},{"id",1}};
@@ -2325,7 +2151,7 @@ public class PupilGazeTracker:MonoBehaviour
 				_calibrationData.Clear ();
 
 				//Stop calibration if we accomplished all required calibration targets.
-				if (_currCalibPoint >= _cPoints.Length) {
+				if (_currCalibPoint >= _cPoints.Count) {
 					StopCalibration ();
 				}
 			}
@@ -2344,25 +2170,6 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 
 	}
-	public void Add3DCalibrationPoint(floatArray _f){
-		CalibrationPoints3DFoldout = true;
-		_calibPoints.Add3DPoint (_f);
-	}
-	public void Add2DCalibrationPoint(floatArray _f){
-		CalibrationPoints2DFoldout = true;
-		_calibPoints.Add2DPoint (_f);
-	}
-	public void AddCalibrationPoint(){
-		if (CurrentCalibrationMode == PupilGazeTracker.CalibModes._2D) {
-			Add2DCalibrationPoint (new floatArray (){ axisValues = new float[]{ 0f, 0f, 0f } });
-		} else {
-			Add3DCalibrationPoint (new floatArray (){ axisValues = new float[]{ 0f, 0f, 0f } });
-		}
-	}
-	public void RemoveCalibrationPoint(List<floatArray> _f, int index){
-		_f.RemoveAt (index);
-	}
-
 
 	public void SwitchCalibrationMode(){
 
@@ -2405,6 +2212,8 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 
 	void OnApplicationQuit(){
+		if (OperatorWindow.Instance != null)
+			OperatorWindow.Instance.Close ();
 		Pupil.processStatus.eyeProcess0 = false;
 		Pupil.processStatus.eyeProcess1 = false;
 		if (serviceProcess != null) {

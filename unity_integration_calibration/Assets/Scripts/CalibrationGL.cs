@@ -24,9 +24,6 @@ public static class CalibrationGL{
 	{
 		if (!markerMaterial)
 		{
-//			Shader shader = Shader.Find ("Sprites/Default");
-//			markerMaterial = new Material (shader);
-//			markerMaterial.hideFlags = HideFlags.HideAndDontSave;
 			Shader shader = Shader.Find ("Particles/Alpha Blended");
 			markerMaterial = new Material (shader);
 			markerMaterial.hideFlags = HideFlags.HideAndDontSave;
@@ -39,9 +36,6 @@ public static class CalibrationGL{
 
 		GL.PushMatrix ();
 
-//		switch(currentMode){
-//		case PupilGazeTracker.CalibModes._2D:
-
 		//TODO : set this matrix once only!!!
 			Matrix4x4 _m = new Matrix4x4 ();
 			//_m.SetTRS (new Vector3 (-.5f, -.5f, .7f), Quaternion.identity, new Vector3 (1, 1, 1));
@@ -51,14 +45,9 @@ public static class CalibrationGL{
 		foreach (Calibration.marker _marker in pupilTracker.CalibrationMarkers) {
 			if (_marker.toggle == true) {
 				Marker (_marker);
-//				Debug.Log ("Drawing marker on CalibrationGL");
 			}
 		}
-//			break;
-//		case PupilGazeTracker.CalibModes._3D:
-//			Debug.Log ("Drawing 3D GL");
-//			break;
-//		}
+
 		GL.PopMatrix ();
 
 	}
@@ -71,13 +60,7 @@ public static class CalibrationGL{
 			markerMaterial.SetColor ("_TintColor", _m.color);
 			markerMaterial.SetPass (0);
 		}
-//		if (_m.offsetMatrix != default(Matrix4x4)) {
-//			GL.MultMatrix (_m.offsetMatrix);
-//		}
 
-		//markerMaterial.SetColor ("_Color", Color.red);
-//		GL.Color(Color.red);
-		//GL.Color(_m.color);
 		GL.Begin (GL.QUADS);
 		GL.TexCoord2 (0,1);
 		GL.Vertex (new Vector3 (_r.x-((_r.width/2)), _r.y-_r.width/2, _m.depth));//BL
@@ -88,31 +71,6 @@ public static class CalibrationGL{
 		GL.TexCoord2 (0,0);
 		GL.Vertex (new Vector3 (_r.x+((_r.width/2)), _r.y-_r.width/2, _m.depth));//BR
 		GL.End();
-
-//		if (_m.debugCross) {
-//			GL.Begin (GL.QUADS);
-//			GL.TexCoord2 (0, 1);
-//			GL.Vertex (new Vector3 (_r.x - 1, _r.y - 0.001f, _m.depth));//BL
-//			GL.TexCoord2 (1, 1);
-//			GL.Vertex (new Vector3 (_r.x - 1, _r.y + 0.001f, _m.depth));//TL
-//			GL.TexCoord2 (1, 0);
-//			GL.Vertex (new Vector3 (_r.x + 1, _r.y + 0.001f, _m.depth));//TR
-//			GL.TexCoord2 (0, 0);
-//			GL.Vertex (new Vector3 (_r.x + 1, _r.y - 0.001f, _m.depth));//BR
-//			GL.End ();
-//			GL.Begin (GL.QUADS);
-//			GL.TexCoord2 (0, 1);
-//			GL.Vertex (new Vector3 (_r.x - 0.001f, _r.y - 1, _m.depth));//BL
-//			GL.TexCoord2 (1, 1);
-//			GL.Vertex (new Vector3 (_r.x - 0.001f, _r.y + 1, _m.depth));//TL
-//			GL.TexCoord2 (1, 0);
-//			GL.Vertex (new Vector3 (_r.x + 0.001f, _r.y + 1, _m.depth));//TR
-//			GL.TexCoord2 (0, 0);
-//			GL.Vertex (new Vector3 (_r.x + 0.001f, _r.y - 1, _m.depth));//BR
-//			GL.End ();
-//		}
-
-
 
 	}
 
@@ -135,32 +93,33 @@ public static class CalibrationGL{
 			pupilTracker.OnCalibrationGL += Draw;
 	}
 	//TODO: Merge these functions (CalibrationMode & GazeProcessingMode)
-	public static void CalibrationMode(){
-		if (!isInitialized)
-			Init ();
-		foreach (Calibration.marker _m in pupilTracker.CalibrationMarkers) {
-			if (_m.name != ("Marker"+pupilTracker.CurrentCalibrationModeDetails.name)) {
-				_m.toggle = false;
-			} else {
-				_m.toggle = true;
-			}
-		}
-		if (pupilTracker.OnCalibrationGL == null)
-			pupilTracker.OnCalibrationGL += Draw;
-	}
+//	public static void CalibrationMode(){
+//		if (!isInitialized)
+//			Init ();
+//		foreach (Calibration.marker _m in pupilTracker.CalibrationMarkers) {
+//			if (_m.name != ("Marker"+pupilTracker.CurrentCalibrationModeDetails.name)) {
+//				_m.toggle = false;
+//			} else {
+//				_m.toggle = true;
+//			}
+//		}
+//		if (pupilTracker.OnCalibrationGL == null)
+//			pupilTracker.OnCalibrationGL += Draw;
+//	}
+//
+//
+//	public static void GazeProcessingMode(PupilGazeTracker.CalibModes _mode){
+//		if (!isInitialized)
+//			Init ();
+//		foreach (Calibration.marker _m in pupilTracker.CalibrationMarkers) {
+//			if (_m.name != "Marker") {
+//				_m.toggle = true;
+//			} else {
+//				_m.toggle = false;
+//			}
+//		}
+//		if (pupilTracker.OnCalibrationGL == null)
+//			pupilTracker.OnCalibrationGL += Draw;
+//	}
 
-
-	public static void GazeProcessingMode(PupilGazeTracker.CalibModes _mode){
-		if (!isInitialized)
-			Init ();
-		foreach (Calibration.marker _m in pupilTracker.CalibrationMarkers) {
-			if (_m.name != "Marker") {
-				_m.toggle = true;
-			} else {
-				_m.toggle = false;
-			}
-		}
-		if (pupilTracker.OnCalibrationGL == null)
-			pupilTracker.OnCalibrationGL += Draw;
-	}
 }
