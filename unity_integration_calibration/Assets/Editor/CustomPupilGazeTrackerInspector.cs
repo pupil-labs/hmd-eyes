@@ -75,11 +75,11 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.Space (20);
 
 		////////LABEL WITH STYLE////////
-		System.Object logo = Resources.Load("PupilLabsLogo") as Texture;
+		System.Object logo = Resources.Load("pupil_labs_logotype") as Texture;
 		GUILayout.Label (logo as Texture, pupilTracker.Styles[9]);
 		////////LABEL WITH STYLE////////
 
-		GUILayout.Space (20);
+		GUILayout.Space (50);
 
 		////////DRAW TAB MENU SYSTEM////////
 		EditorGUI.BeginChangeCheck();
@@ -125,10 +125,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		//////////////////////////////////////DEVELOPER MODE TOGGLE//////////////////////////////////////
 		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
-		GUI.skin.label.fontSize = 10;
-		GUILayout.Label ("developer mode", GUILayout.Width(75));
-		GUI.skin.label = null;
-		pupilTracker.AdvancedSettings = EditorGUILayout.Toggle (pupilTracker.AdvancedSettings);
+
+		GUI.skin.button.fontSize = 9;
+		pupilTracker.AdvancedSettings = GUILayout.Toggle (pupilTracker.AdvancedSettings, "developer mode", "Button", GUILayout.Width(90));
+		//GUI.skin.button.fontSize = 13;
+		GUI.skin.button.fontSize = 12;
+
 		GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 		//////////////////////////////////////DEVELOPER MODE TOGGLE\//////////////////////////////////////
 		//base.OnInspectorGUI ();
