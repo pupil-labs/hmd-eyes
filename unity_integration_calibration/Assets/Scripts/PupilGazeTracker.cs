@@ -58,23 +58,31 @@ public class JsonHelper{
 }
 
 
+public static class Recorder {
+	
+	public static GameObject RecorderGO;
+	public static bool isRecording;
+	public static string FilePath;
 
-namespace Recording{
-	[Serializable]
-	public class variables : MonoBehaviour{
-		public static bool fixLength;
-		public static float length;
-		public static bool isRecording;
-		public static int FPS;
-		public static string FilePath;
-		public static string pathDirectory;
-		public static string pathFileName = "MyRecording";
-		public static string pathFileExtension = "mov";
-		public static int width = 1280;
-		public static int height = 720;
-		public static FFmpegOut.CameraCapture CaptureScript;
+	public static void Start(){
+		RecorderGO = new GameObject ("RecorderCamera");
+		RecorderGO.transform.parent = Camera.main.gameObject.transform;
+
+		RecorderGO.AddComponent<FFmpegOut.CameraCapture> ();
+		Camera c = RecorderGO.GetComponent<Camera> ();
+		c.targetDisplay = 1;
+		c.stereoTargetEye = StereoTargetEyeMask.None;
+		c.allowHDR = false;
+		c.allowMSAA = false;
+		c.fieldOfView = 111;
+	}
+	public static void Stop(){
+		UnityEngine.Debug.Log ("recording stopped");
+		isRecording = false;
+		GameObject.Destroy (RecorderGO);
 	}
 }
+
 namespace Pupil
 {
 	[Serializable]
@@ -161,16 +169,17 @@ namespace Pupil
 		public double[] norm_pos = new double[]{ 0, 0, 0 };
 		public BaseData[] base_data;
 		//private static double[] defaultDoubleArray = new double[]{ 0, 0, 0 };
-		public Vector3 GetVector3(double[] _d3 = default(double[]), float wScale = 1.0f){
-			if (_d3.Length > 0)
-				return new Vector3 ((float)_d3 [0]*wScale, (float)_d3 [1]*wScale, (float)_d3 [2]*wScale);
-			return Vector3.zero;
-		}
-		public Vector2 GetVector2(double[] _d2){
-			if (_d2.Length > 0)
-				return new Vector2 ((float)_d2 [0], (float)_d2 [1]);
-			return Vector2.zero;
-		}
+		//TODO: UNTESTED!!!!!
+//		public Vector3 GetVector3(double[] _d3 = default(double[]), float wScale = 1.0f){
+//			if (_d3.Length > 0)
+//				return new Vector3 ((float)_d3 [0]*wScale, (float)_d3 [1]*wScale, (float)_d3 [2]*wScale);
+//			return Vector3.zero;
+//		}
+//		public Vector2 GetVector2(double[] _d2){
+//			if (_d2.Length > 0)
+//				return new Vector2 ((float)_d2 [0], (float)_d2 [1]);
+//			return Vector2.zero;
+//		}
 	}
 	public struct  processStatus{
 		public static bool initialized;
@@ -413,6 +422,20 @@ public class PupilGazeTracker:MonoBehaviour
 			return _Instance;
 		}
 	}
+
+	[Serializable]
+	public class CustomInspector{
+		public int connectionMode;
+		public bool isAutorunService;
+		public string ServerIP = "127.0.0.1";
+		public int mainTab;
+		public bool AdvancedSettings;
+		public int calibrationMode;
+		public bool calibrationDebugMode;
+	}
+
+	public CustomInspector customInspector = new CustomInspector();
+
 	class MovingAverage
 	{
 		List<float> samples=new List<float>();
@@ -473,6 +496,8 @@ public class PupilGazeTracker:MonoBehaviour
 
 	Thread _serviceThread;
 	bool _isDone=false;
+
+
 
 	public pupilDataDictionary _pupilDataDict = new pupilDataDictionary();
 	public class pupilDataDictionary
@@ -676,8 +701,8 @@ public class PupilGazeTracker:MonoBehaviour
 		public float depth;
 	}
 
-	[HideInInspector]
-	public string ServerIP = "127.0.0.1";
+//	[HideInInspector]
+
 	[HideInInspector]
 	public int ServicePort=50020;
 	[HideInInspector]
@@ -697,17 +722,16 @@ public class PupilGazeTracker:MonoBehaviour
 
 	[HideInInspector]
 	public bool saved = false;
-	[HideInInspector]
-	public int tab = 0;
+
 	[HideInInspector]
 	public int SettingsTab;
 
-	public int calibrationMode;
+//	public int calibrationMode;
 
-	[HideInInspector]
-	public bool calibrationDebugMode = false;
-	[HideInInspector]
-	public int connectionMode = 0;
+//	[HideInInspector]
+//	public bool calibrationDebugMode = false;
+//	[HideInInspector]
+//	public int connectionMode = 0;
 
 	public CalibModeDetails CurrentCalibrationModeDetails{
 		get{
@@ -717,7 +741,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public CalibModes CurrentCalibrationMode{
 		get {
-			if (calibrationMode == 0) {
+			if (customInspector.calibrationMode == 0) {
 				return CalibModes._2D;
 			} else {
 				return CalibModes._3D;
@@ -725,8 +749,8 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 	}
 
-	[HideInInspector]
-	public bool AdvancedSettings;
+	//[HideInInspector]
+	//public bool AdvancedSettings;
 	[HideInInspector]
 	public string PupilServicePath = "";
 	[HideInInspector]
@@ -1032,7 +1056,7 @@ public class PupilGazeTracker:MonoBehaviour
 		StopFramePublishing ();
 		OnUpdate -= CalibrationDebugInteraction;
 		OnCalibDebug -= DrawCalibrationDebugView;
-		calibrationDebugMode = false;
+		customInspector.calibrationDebugMode = false;
 	}
 
 	public void StartCalibrationDebugView(){
@@ -1052,7 +1076,7 @@ public class PupilGazeTracker:MonoBehaviour
 			StartFramePublishing ();
 		} else {
 			UnityEngine.Debug.LogWarning ("Please assign a Debug Eye Mesh under the Settings Debug View Variables. Accessable in Developer Mode!");
-			calibrationDebugMode = false;
+			customInspector.calibrationDebugMode = false;
 		}
 	}
 	public void DrawCalibrationDebugView(){
@@ -1650,32 +1674,45 @@ public class PupilGazeTracker:MonoBehaviour
 			OperatorMonitor.Instantiate ();
 		}
 			//OnOperatorMonitor += DrawOperatorMonitor;
-		if (calibrationDebugMode)
+		if (customInspector.calibrationDebugMode)
 			StartCalibrationDebugView ();
 
 		//Run the service locally, only if under settings its set to local
-		if (connectionMode == 0)
+		if (customInspector.connectionMode == 0 && customInspector.isAutorunService)
 			RunServiceAtPath ();
 
-		_serviceThread = new Thread(NetMQClient);
-		_serviceThread.Start();
+		if (customInspector.isAutorunService) {
+			CreateAndRunServiceThread ();
+		}
 
 	}
 	#endregion
 
 	#region DebugFunctions
+
+	public void CreateAndRunServiceThread(){
+		if (_serviceThread == null) {
+			_serviceThread = new Thread (NetMQClient);
+			_serviceThread.Start ();
+		} else {
+			_serviceThread.Join ();
+			_serviceThread.Abort ();
+			_serviceThread = new Thread (NetMQClient);
+			_serviceThread.Start ();
+		}
+	}
+
 	public void SubscribeTo(string topic){
 		if (!Pupil.connectionParameters.toSubscribe.Contains (topic)) {
 			Pupil.connectionParameters.toSubscribe.Add (topic);
-//			print ("adding : " + topic + " to Subscribe ! ");
 		}
 		
 		Pupil.connectionParameters.update = true;
 	}
+
 	public void UnSubscribeFrom(string topic){
 		if (Pupil.connectionParameters.toSubscribe.Contains (topic)) {
 			Pupil.connectionParameters.toSubscribe.Remove (topic);
-//			print ("removing : " + topic + " from Subscribe ! ");
 		}
 		Pupil.connectionParameters.update = true;
 	}
@@ -1738,7 +1775,7 @@ public class PupilGazeTracker:MonoBehaviour
 		//_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
 	}
 	public void StopFramePublishing(){
-		if (!calibrationDebugMode && !isOperatorMonitor) {
+		if (!customInspector.calibrationDebugMode && !isOperatorMonitor) {
 			UnSubscribeFrom ("frame.");
 			FramePublishingVariables.StreamCameraImages = false;
 			//_sendRequestMessage (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
@@ -1763,7 +1800,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 		//ToastMessage.Instance.DrawToastMessageOnMainThread (new ToastMessage.toastParameters(){delay = 2, fadeOutSpeed = 2, text = "posted to Main Thread toast message", ID = 0});
 		//thanks for Yuta Itoh sample code to connect via NetMQ with Pupil Service
-		string IPHeader = ">tcp://" + ServerIP + ":";
+		string IPHeader = ">tcp://" + customInspector.ServerIP + ":";
 		var timeout = new System.TimeSpan(0, 0, 1); //1sec
 
 		// Necessary to handle this NetMQ issue on Unity editor
@@ -1897,7 +1934,15 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 		else
 		{
-			print ("Failed to connect the server.");
+			//print ("Failed to connect the server.");
+			UnityEngine.Debug.LogWarning("Failed to connect with the Server. Trying again in 5 seconds");
+			Thread.Sleep (1000);
+
+			ScheduleTask (new Task (delegate {
+				CreateAndRunServiceThread ();
+			}));
+
+			//Thread()
 			//If needed here could come a retry connection.
 		}
 
@@ -2185,18 +2230,7 @@ public class PupilGazeTracker:MonoBehaviour
 	#region Recording
 	public void OnRecording(){
 	}
-	public void StartRecording(){
-		Recording.variables.CaptureScript = Camera.main.gameObject.AddComponent<FFmpegOut.CameraCapture> ();
-		Recording.variables.CaptureScript._width = Recording.variables.width;
-		Recording.variables.CaptureScript._height = Recording.variables.height;
-		Recording.variables.CaptureScript._recordLength = Recording.variables.length;
-		//OnUpdate += OnRecording;
-	}
-	public void StopRecording(){
-		Recording.variables.isRecording = false;
-		Destroy (Camera.main.gameObject.GetComponent<FFmpegOut.CameraCapture> ());
-		Recording.variables.CaptureScript = null;
-	}
+
 	#endregion
 
 	public static T ByteArrayToObject<T>(byte[] arrayOfBytes){

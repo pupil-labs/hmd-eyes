@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿
+using System.Threading;
+using System.Collections.Generic;
+using UnityEngine;
+
 
 namespace FFmpegOut
 {
@@ -28,6 +32,11 @@ namespace FFmpegOut
         RenderTexture _tempTarget;
         GameObject _tempBlitter;
 
+		Thread RecorderThread;
+
+		List<byte[]> renderPipeQueue = new List<byte[]>();
+		object datalock = new object();
+
         #endregion
 
         #region MonoBehavior functions
@@ -48,11 +57,15 @@ namespace FFmpegOut
                 );
                 enabled = false;
             }
+			//if (!RecorderThread.IsAlive)
+			RecorderThread = new Thread (RecorderThreadMethod);
+			RecorderThread.Start ();
         }
 
         void OnDisable()
         {
             if (_pipe != null) ClosePipe();
+			RecorderThread.Join ();
         }
 
         void OnDestroy()
@@ -79,6 +92,16 @@ namespace FFmpegOut
             }
         }
 
+		void RecorderThreadMethod(){
+			while (true){
+				Thread.Sleep (10);
+				if (renderPipeQueue.Count > 0) {
+					_pipe.Write (renderPipeQueue [0]);
+					renderPipeQueue.RemoveAt (0);
+				}
+			}
+		}
+
         void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
             if (_pipe != null)
@@ -90,7 +113,8 @@ namespace FFmpegOut
                 tempTex.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0, false);
                 tempTex.Apply();
 
-                _pipe.Write(tempTex.GetRawTextureData());
+				renderPipeQueue.Add (tempTex.GetRawTextureData ());
+                //_pipe.Write(tempTex.GetRawTextureData());
 
                 Destroy(tempTex);
                 RenderTexture.ReleaseTemporary(tempRT);
@@ -125,7 +149,7 @@ namespace FFmpegOut
             }
 
             // Open an output stream.
-			_pipe = new FFmpegPipe(Recording.variables.FilePath, width, height, _frameRate, _codec);
+			_pipe = new FFmpegPipe(Recorder.FilePath, width, height, _frameRate, _codec);
 
             // Change the application frame rate.
             if (Time.captureFramerate == 0)
@@ -180,7 +204,8 @@ namespace FFmpegOut
 
                 _pipe = null;
             }
-			PupilGazeTracker.Instance.StopRecording ();
+			//PupilGazeTracker.Instance.StopRecording ();
+			Recorder.Stop();
         }
 
         #endregion

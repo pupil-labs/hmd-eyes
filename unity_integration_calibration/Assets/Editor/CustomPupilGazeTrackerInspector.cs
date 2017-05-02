@@ -8,12 +8,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.VR;
-using UnityEngine.VR.WSA;
-using UnityEngine.VR.WSA.Input;
-using UnityEngine.VR.WSA.Persistence;
-using UnityEngine.VR.WSA.Sharing;
-using UnityEngine.VR.WSA.WebCam;
+//using UnityEngine.VR;
+//using UnityEngine.VR.WSA;
+//using UnityEngine.VR.WSA.Input;
+//using UnityEngine.VR.WSA.Persistence;
+//using UnityEngine.VR.WSA.Sharing;
+//using UnityEngine.VR.WSA.WebCam;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
@@ -25,11 +25,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 //	private static bool isMouseDown = false;
 	bool isConnected = false;
+	bool isEyeProcessConnected = false;
 	bool isCalibrating = false;
 	string tempServerIP;
 
 	Camera CalibEditorCamera;
-
+	PupilGazeTracker.CustomInspector cInspector;
 
 	void OnEnable(){
 
@@ -37,12 +38,14 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		pupilTracker = (PupilGazeTracker)target;
 		pupilTracker.AdjustPath ();
 
-		tempServerIP = pupilTracker.ServerIP;
+		cInspector = pupilTracker.customInspector;
+
+		tempServerIP = pupilTracker.customInspector.ServerIP;
 			
 		EditorApplication.update += CheckConnection;
 
 		if (pupilTracker.DrawMenu == null) {
-			switch (pupilTracker.tab) {
+			switch (cInspector.mainTab) {
 			case 0:////////MAIN MENU////////
 				pupilTracker.DrawMenu = null;
 				pupilTracker.DrawMenu += DrawMainMenu;
@@ -69,8 +72,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 //			isMouseDown = true;
 //			break;
 //		}
-			
-//		pupilTracker.FoldOutStyle = GUI.skin.GetStyle ("Foldout");
 
 		GUILayout.Space (20);
 
@@ -89,17 +90,17 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		//////////////////////////////////////STATUS FIELD//////////////////////////////////////
 		if (isConnected) {
 			GUI.color = Color.green;
-			if (pupilTracker.connectionMode == 0) {
-				GUILayout.Label ("Connected to localHost", pupilTracker.Styles[11]);
+			if (pupilTracker.customInspector.connectionMode == 0) {
+				GUILayout.Label ("localHost ( Connected )", pupilTracker.Styles[11]);
 			} else {
-				GUILayout.Label ("Connected to Remote : " + pupilTracker.ServerIP, pupilTracker.Styles[11]);
+				GUILayout.Label ("remote " + pupilTracker.customInspector.ServerIP + " ( Connected )" , pupilTracker.Styles[11]);
 			}
 
 		} else {
-			if (pupilTracker.connectionMode == 0) {
-				GUILayout.Label ("Connecting to localHost", pupilTracker.Styles[11]);
+			if (pupilTracker.customInspector.connectionMode == 0) {
+				GUILayout.Label ("localHost ( Not Connected )", pupilTracker.Styles[11]);
 			} else {
-				GUILayout.Label ("Connecting to Remote : " + pupilTracker.ServerIP, pupilTracker.Styles[11]);
+				GUILayout.Label ("remote " + pupilTracker.customInspector.ServerIP + " ( Not Connected )" , pupilTracker.Styles[11]);
 			}
 		}
 		GUI.color = Color.white;
@@ -127,7 +128,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.BeginHorizontal();////////////////////HORIZONTAL////////////////////
 
 		GUI.skin.button.fontSize = 9;
-		pupilTracker.AdvancedSettings = GUILayout.Toggle (pupilTracker.AdvancedSettings, "developer mode", "Button", GUILayout.Width(90));
+		cInspector.AdvancedSettings = GUILayout.Toggle (cInspector.AdvancedSettings, "developer mode", "Button", GUILayout.Width(90));
 		//GUI.skin.button.fontSize = 13;
 		GUI.skin.button.fontSize = 12;
 
@@ -135,10 +136,10 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		//////////////////////////////////////DEVELOPER MODE TOGGLE\//////////////////////////////////////
 		//base.OnInspectorGUI ();
 		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
-		pupilTracker.tab = GUILayout.Toolbar (pupilTracker.tab, new string[]{ "Main", "Settings"}, GUILayout.Height(35));
+		cInspector.mainTab = GUILayout.Toolbar (cInspector.mainTab, new string[]{ "Main", "Settings"}, GUILayout.Height(35));
 		GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
 		if (EditorGUI.EndChangeCheck ()) {//I delegates are used to assign the relevant menu to be drawn. This way I can fire off something on tab change.
-			switch (pupilTracker.tab) {
+			switch (cInspector.mainTab) {
 			case 0:////////MAIN MENU////////
 				pupilTracker.DrawMenu = null;
 				pupilTracker.DrawMenu += DrawMainMenu;
@@ -192,18 +193,18 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		////////////////////////////RECORDING BUTTON////////////////////////////
 		EditorGUI.BeginChangeCheck ();
-		Recording.variables.isRecording = GUILayout.Toggle (Recording.variables.isRecording, "Recording", "Button", GUILayout.Height(50));
+		Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, "Recording", "Button", GUILayout.Height(50));
 		GUI.backgroundColor = Color.white;
 		if (EditorGUI.EndChangeCheck ()) {
-			if (Recording.variables.isRecording) {
-				pupilTracker.StartRecording ();
+			if (Recorder.isRecording) {
+				Recorder.Start ();
 				EditorApplication.update += CheckRecording;
 			} else {
-				pupilTracker.StopRecording ();
+				Recorder.Stop ();
 			}
 		}
 		////////////////////////////RECORDING BUTTON////////////////////////////
-
+		/// 
 		GUILayout.Space (5);
 
 		////////////////////////////OPERATOR MONITOR BUTTON////////////////////////////
@@ -233,7 +234,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUI.depth = 1;
 		GUI.color = Color.white;
 
-		if (pupilTracker.AdvancedSettings) {
+		if (cInspector.AdvancedSettings) {
 			if (GUILayout.Button ("IsConnected")) {
 				isConnected = true;
 			}
@@ -280,22 +281,42 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			GUILayout.Space (10);
 
+			////////////////////////////TOGGLE AUTO MODE////////////////////////////
+			cInspector.isAutorunService = GUILayout.Toggle (cInspector.isAutorunService, "Autorun Pupil Service", "Button");
+			if (!cInspector.isAutorunService && Application.isPlaying) {
+				GUILayout.BeginHorizontal ();
+				if (GUILayout.Button ("Start")) {
+					if (!isConnected) {
+						pupilTracker.CreateAndRunServiceThread ();
+						pupilTracker.RunServiceAtPath ();
+					} else {
+						pupilTracker.StartProcess ();
+					}
+				}
+				if (GUILayout.Button ("Stop"))
+					pupilTracker.StopProcess ();
+				GUILayout.EndHorizontal ();
+			}
+			////////////////////////////TOGGLE AUTO MODE////////////////////////////
+
+			GUILayout.Space (20);
+
 			////////////////////////////CONNECTION MODE////////////////////////////
 			EditorGUI.BeginChangeCheck ();
 			//GUI.color = new Color (.7f, .7f, .7f, 1f);
-			pupilTracker.connectionMode = GUILayout.Toolbar (pupilTracker.connectionMode, new string[]{ "Local", "Remote" }, GUILayout.Height (30), GUILayout.MinWidth (25));
+			pupilTracker.customInspector.connectionMode = GUILayout.Toolbar (pupilTracker.customInspector.connectionMode, new string[]{ "Local", "Remote" }, GUILayout.Height (30), GUILayout.MinWidth (25));
 			GUI.color = Color.white;
 			if (EditorGUI.EndChangeCheck ()) {
-				if (pupilTracker.connectionMode == 0) {
-					tempServerIP = pupilTracker.ServerIP;
-					pupilTracker.ServerIP = "127.0.0.1";
+				if (pupilTracker.customInspector.connectionMode == 0) {
+					tempServerIP = pupilTracker.customInspector.ServerIP;
+					pupilTracker.customInspector.ServerIP = "127.0.0.1";
 				} else {
-					pupilTracker.ServerIP = tempServerIP;
+					pupilTracker.customInspector.ServerIP = tempServerIP;
 				}
 			}
 			////////////////////////////CONNECTION MODE////////////////////////////
 			GUILayout.Space (5);
-			if (pupilTracker.connectionMode == 0) {//LOCAL CONNECTION MODE//
+			if (pupilTracker.customInspector.connectionMode == 0) {//LOCAL CONNECTION MODE//
 				////////////////////////////PUPIL APP PATH////////////////////////////
 				GUILayout.BeginHorizontal ();
 				GUILayout.Label ("path : ", pupilTracker.Styles [6], GUILayout.MinWidth (50));
@@ -307,24 +328,26 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				////////////////////////////PUPIL APP PATH////////////////////////////
 			}
 
-			if (pupilTracker.connectionMode == 1) {//---------REMOTE CONNECTION MODE---------//
+			if (cInspector.AdvancedSettings){//ADVANCED SETTING
 
-				if (pupilTracker.AdvancedSettings){//ADVANCED SETTING
-					
-					////////////////////////////SERVICE PORT////////////////////////////
-					/// 
-					GUILayout.BeginHorizontal ();//---------HORIZONTAL GROUP---------//
-					//
-					GUILayout.Label ("Service Port : ", pupilTracker.Styles[6], GUILayout.MinWidth (50));
-					pupilTracker.ServicePort = EditorGUILayout.IntField (pupilTracker.ServicePort, pupilTracker.Styles[8], GUILayout.MinWidth (100), GUILayout.Height (22));
-					//
-					GUILayout.EndHorizontal ();//---------HORIZONTAL GROUP\---------//
-					///
-					////////////////////////////SERVICE PORT\////////////////////////////
-					base.OnInspectorGUI ();
-					GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
+				////////////////////////////SERVICE PORT////////////////////////////
+				/// 
+				GUILayout.BeginHorizontal ();//---------HORIZONTAL GROUP---------//
+				//
+				GUILayout.Label ("Service Port : ", pupilTracker.Styles[6], GUILayout.MinWidth (50));
+				pupilTracker.ServicePort = EditorGUILayout.IntField (pupilTracker.ServicePort, pupilTracker.Styles[8], GUILayout.MinWidth (100), GUILayout.Height (22));
+				//
+				GUILayout.EndHorizontal ();//---------HORIZONTAL GROUP\---------//
+				///
+				////////////////////////////SERVICE PORT\////////////////////////////
+				base.OnInspectorGUI ();
+				GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));//Separator Line
 
-				}//ADVANCED SETTING\
+			}//ADVANCED SETTING\
+
+			if (pupilTracker.customInspector.connectionMode == 1) {//---------REMOTE CONNECTION MODE---------//
+
+
 
 				GUILayout.Space (5);
 
@@ -334,9 +357,9 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				//
 				GUILayout.Label ("IP : ", pupilTracker.Styles [6], GUILayout.MinWidth (50));
 				//
-				pupilTracker.ServerIP = EditorGUILayout.TextArea (pupilTracker.ServerIP, pupilTracker.Styles[8], GUILayout.MinWidth (50), GUILayout.Height (22));
+				pupilTracker.customInspector.ServerIP = EditorGUILayout.TextArea (pupilTracker.customInspector.ServerIP, pupilTracker.Styles[8], GUILayout.MinWidth (50), GUILayout.Height (22));
 				if (GUILayout.Button ("Default")) {
-					pupilTracker.ServerIP = "127.0.0.1";
+					pupilTracker.customInspector.ServerIP = "127.0.0.1";
 					Repaint ();
 					GUI.FocusControl ("");
 				}
@@ -361,7 +384,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			////////////////////////////2D-3D TOGGLE BAR////////////////////////////
 			EditorGUI.BeginChangeCheck ();
-			pupilTracker.calibrationMode = GUILayout.Toolbar (pupilTracker.calibrationMode, new string[]{ "2D", "3D" });
+			cInspector.calibrationMode = GUILayout.Toolbar (cInspector.calibrationMode, new string[]{ "2D", "3D" });
 			GUI.enabled = true;
 			if (EditorGUI.EndChangeCheck ()) {
 				pupilTracker.SwitchCalibrationMode ();
@@ -369,24 +392,27 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			////////////////////////////2D-3D TOGGLE BAR////////////////////////////
 
 			////////////////////////////CALIBRATION DEBUG MODE////////////////////////////
-			if (isCalibrating || !isConnected || pupilTracker.calibrationMode != 1)
-				GUI.enabled = false;
+			if (isCalibrating || !isEyeProcessConnected || cInspector.calibrationMode != 1) {
+			} else {
+				
+				//GUI.enabled = false;
 
-			EditorGUI.BeginChangeCheck ();
-			pupilTracker.calibrationDebugMode = GUILayout.Toggle (pupilTracker.calibrationDebugMode, "Calibration Debug Mode", "Button");
-			GUI.enabled = true;
-			if (EditorGUI.EndChangeCheck ()) {
-				if (pupilTracker.calibrationDebugMode) {
-					if (pupilTracker.OperatorMonitorProperties [0].OperatorCamera != null)
-						OperatorMonitor.Instance.ExitOperatorMonitor ();
-					pupilTracker.StartCalibrationDebugView ();
+				EditorGUI.BeginChangeCheck ();
+				cInspector.calibrationDebugMode = GUILayout.Toggle (cInspector.calibrationDebugMode, "Calibration Debug Mode", "Button");
+				GUI.enabled = true;
+				if (EditorGUI.EndChangeCheck ()) {
+					if (cInspector.calibrationDebugMode) {
+						if (pupilTracker.OperatorMonitorProperties [0].OperatorCamera != null)
+							OperatorMonitor.Instance.ExitOperatorMonitor ();
+						pupilTracker.StartCalibrationDebugView ();
 
-				} else {
-					pupilTracker.CloseCalibrationDebugView ();
+					} else {
+						pupilTracker.CloseCalibrationDebugView ();
+					}
 				}
 			}
 
-			if (pupilTracker.calibrationDebugMode) {
+			if (cInspector.calibrationDebugMode) {
 				//				pupilTracker.calibrationDebugCamera = (PupilGazeTracker.CalibrationDebugCamera) EditorGUILayout.EnumPopup (pupilTracker.calibrationDebugCamera);
 				GUILayout.BeginHorizontal ();
 				EditorGUI.BeginChangeCheck ();
@@ -411,7 +437,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			GUILayout.Space (10);//------------------------------------------------------------//
 
-			if (pupilTracker.AdvancedSettings){
+			if (cInspector.AdvancedSettings){
 
 				base.OnInspectorGUI ();
 			}
@@ -434,8 +460,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			if (Pupil.processStatus.initialized) {
 				EditorApplication.update -= CheckConnection;
 			}
-			isConnected = true;
+			isEyeProcessConnected = true;
 		}
+
+		if (pupilTracker.IsConnected)
+			isConnected = true;
+		
 		Repaint ();
 	}
 	public void CheckCalibration(){
@@ -448,7 +478,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		}
 	}
 	public void CheckRecording(){
-		if (!Recording.variables.isRecording) {
+		if (!Recorder.isRecording) {
 			EditorApplication.update -= CheckRecording;
 			Repaint ();
 		}
