@@ -13,6 +13,7 @@ namespace FFmpegOut
         #region Public properties
 
         public enum Codec { ProRes, H264, VP8 }
+		public enum Resolution { _1080p, _720p, Preview }
 
         public string Filename { get; private set; }
         public string Error { get; private set; }

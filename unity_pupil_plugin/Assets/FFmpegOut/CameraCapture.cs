@@ -16,8 +16,8 @@ namespace FFmpegOut
         #region Editable properties
 
 		[SerializeField] bool _setResolution = true;
-		[SerializeField] public int _width = 1280;
-        [SerializeField] public int _height = 720;
+//		[SerializeField] public int _width = 1280;
+//        [SerializeField] public int _height = 720;
         [SerializeField] int _frameRate = 30;
         [SerializeField] FFmpegPipe.Codec _codec;
         [SerializeField] public float _recordLength = 5;
@@ -49,7 +49,8 @@ namespace FFmpegOut
 		int renderedFrameCount = 0;
 		int writtenFrameCount = 0;
 
-		StringBuilder strBuilder;
+		List<float> timeStampList = new List<float>();
+//		StringBuilder strBuilder;
 
 		public Camera RecordedMainCamera;
 
@@ -113,17 +114,14 @@ namespace FFmpegOut
 
 			if (_recorderState == RecorderState.STOPPING) {
 				
-				print("stopping state on update !");
 				pupilTracker.RepaintGUI ();
 				GameObject.Destroy (this.gameObject);
 
 			}
-//			print (_recorderState);
-//			print (renderPipeQueue.Count);
+
         }
 
 		public void Stop(){
-//			print ("stop triggered on Camera Capture");
 			Recorder.isRecording = false;
 			PupilGazeTracker.Instance.StopPupilServiceRecording ();
 			_recorderState = RecorderState.PROCESSING;
@@ -133,7 +131,6 @@ namespace FFmpegOut
 		void RecorderThreadMethod(){
 			renderPipeQueue.Clear();
 			while (true){
-				print ("Recorder thread ! ");
 				Thread.Sleep (1);
 
 				if (renderPipeQueue.Count > 0) {
@@ -143,7 +140,6 @@ namespace FFmpegOut
 //					print ("writing data. Remaining : " + renderPipeQueue.Count);
 				} else {
 					if (_recorderState == RecorderState.PROCESSING) {
-						print ("finishing");
 						Recorder.isProcessing = false;
 						_recorderState = RecorderState.STOPPING;
 						RecorderThread.Join ();
@@ -179,7 +175,7 @@ namespace FFmpegOut
 				renderPipeQueue.Add (tempTex.GetRawTextureData ());
 				renderedFrameCount++;
 
-				strBuilder.AppendLine (renderedFrameCount.ToString () + "," + pupilTimeStamp);
+				timeStampList.Add (pupilTimeStamp);
                 //_pipe.Write(tempTex.GetRawTextureData());
 
                 Destroy(tempTex);
@@ -198,11 +194,11 @@ namespace FFmpegOut
             if (_pipe != null) return;
 
 			renderPipeQueue.Clear ();
-			strBuilder = new StringBuilder ();
+			timeStampList = new List<float> ();
 
             var camera = GetComponent<Camera>();
-            var width = _width;
-            var height = _height;
+			var width = pupilTracker.recorder.resolutions [(int)pupilTracker.recorder.resolution] [0];
+			var height = pupilTracker.recorder.resolutions [(int)pupilTracker.recorder.resolution] [1];
             // Apply the screen resolution settings.
             if (_setResolution)
             {
@@ -261,9 +257,13 @@ namespace FFmpegOut
             {
 				Debug.Log ("Capture ended (" + _pipe.Filename + ")" + ". Rendered frame count on MainThread : " + renderedFrameCount + ". Written out frame count on SecondaryThread : " + writtenFrameCount + ". Leftover : " + renderPipeQueue.Count);
 
-				string csvFileName = "Unity_" + Camera.main.name;
 
-				File.WriteAllText (_pipe.FilePath + "/" + csvFileName + ".time", strBuilder.ToString ());
+				string timeStampFileName = "Unity_" + Camera.main.name;
+				byte[] timeStampByteArray = pupilTracker.floatArrayToByteArray (timeStampList.ToArray ());
+				File.WriteAllBytes(_pipe.FilePath + "/" + timeStampFileName + ".time", timeStampByteArray);
+
+				//File.WriteAllText (_pipe.FilePath + "/" + csvFileName + ".time", strBuilder.ToString ());
+
                
 				_pipe.Close();
 
@@ -277,20 +277,15 @@ namespace FFmpegOut
 
                 _pipe = null;
             }
-			//PupilGazeTracker.Instance.StopRecording ();
-
-//			print (strBuilder.ToString ());
-
-
 
 
         }
-		private string SingleToBinaryString(float f)
-		{
-			byte[] b = BitConverter.GetBytes(f);
-			int i = BitConverter.ToInt32(b, 0);
-			return Convert.ToString(i, 2);
-		}
+//		private string SingleToBinaryString(float f)
+//		{
+//			byte[] b = BitConverter.GetBytes(f);
+//			int i = BitConverter.ToInt32(b, 0);
+//			return Convert.ToString(i, 2);
+//		}
         #endregion
     }
 }

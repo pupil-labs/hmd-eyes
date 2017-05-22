@@ -370,6 +370,8 @@ public class Recorder{
 	public static bool isProcessing;
 
 	public FFmpegOut.FFmpegPipe.Codec codec;
+	public FFmpegOut.FFmpegPipe.Resolution resolution;
+	public List<int[]> resolutions = new List<int[]> (){ new int[]{ 1920, 1080 }, new int[]{ 1280, 720 }, new int[]{ 640, 480 } };
 	public string filePath;
 	public bool isFixedRecordingLength;
 	public float recordingLength = 10f;
@@ -391,7 +393,6 @@ public class Recorder{
 		PupilGazeTracker.Instance.RepaintGUI ();
 	}
 	public static void Stop(){
-		UnityEngine.Debug.Log ("recording stopped");
 		RecorderGO.GetComponent<FFmpegOut.CameraCapture> ().Stop ();
 		PupilGazeTracker.Instance.RepaintGUI ();
 	}
@@ -1635,10 +1636,52 @@ public class PupilGazeTracker:MonoBehaviour
 	long lastTick;
 	float elapsedTime;
 
+	public byte[] floatArrayToByteArray(float[] floatArray){
+		
+		List<byte> aBytesList = new List<byte> ();
+		byte[] brOpen = System.Text.Encoding.UTF8.GetBytes ("[");
+		byte[] brClose = System.Text.Encoding.UTF8.GetBytes ("]");
+		byte[] comma = System.Text.Encoding.UTF8.GetBytes (",");
+
+		foreach (float b in floatArray) {
+			byte[] bytes = BitConverter.GetBytes (b);
+			aBytesList.AddRange (bytes);
+			aBytesList.AddRange (comma);
+		}
+
+//		foreach (float b in floatArray) {
+//			long longFloat = BitConverter.DoubleToInt64Bits ((double)b);
+//			byte[] bytes = BitConverter.GetBytes (longFloat);
+//			aBytesList.AddRange (bytes);
+//			aBytesList.AddRange (comma);
+//		}
+
+		aBytesList.AddRange (brClose);
+
+		if (!BitConverter.IsLittleEndian)
+			aBytesList.Reverse ();
+
+		byte[] aBytesArray = aBytesList.ToArray ();
+
+		return aBytesArray;
+//		File.WriteAllBytes ("C:/lin/non64Converted.time", aBytesArray);
+	}
+
 	#region Start();
 	void Start()
 	{
-		
+
+
+//		float[] a = new float[]{ 1.22f, 3.22f, 5.22f };
+;
+
+
+//		aBytesList.AddRange (brOpen);
+
+
+
+//		BitConverter.GetBytes (1.22222);
+
 		DefaultBaseData = new Pupil.BaseData[] {
 			new Pupil.BaseData () { circle_3d = new Pupil.Circle3d () { center = new double[] {
 						1.73,

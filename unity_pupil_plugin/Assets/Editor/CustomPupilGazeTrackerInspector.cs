@@ -203,7 +203,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUI.enabled = true;
 		GUI.backgroundColor = Color.white;
 		if (EditorGUI.EndChangeCheck ()) {
-			Debug.Log ("printing recording");
 			if (Recorder.isRecording) {
 				Recorder.Start ();
 				EditorApplication.update += CheckRecording;
@@ -212,9 +211,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				Recorder.Stop ();
 			}
 		}
-//		SerializedObject obj = new SerializedObject (target);
-//		SerializedProperty prop = obj.FindProperty ("refresh");
-//		Debug.Log (prop.boolValue);
 
 		////////////////////////////RECORDING BUTTON////////////////////////////
 		/// 
@@ -459,7 +455,10 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			GUILayout.Space (20);
 
+			GUILayout.BeginHorizontal ();
+			pupilTracker.recorder.resolution = (FFmpegOut.FFmpegPipe.Resolution)EditorGUILayout.EnumPopup (pupilTracker.recorder.resolution);
 			pupilTracker.recorder.codec = (FFmpegOut.FFmpegPipe.Codec)EditorGUILayout.EnumPopup (pupilTracker.recorder.codec);//  GUILayout.Toolbar (pupilTracker.Codec, new string[] {
+			GUILayout.EndHorizontal();
 
 //			GUILayout.BeginHorizontal ();
 //			pupilTracker.recorder.isFixedRecordingLength = GUILayout.Toggle (pupilTracker.recorder.isFixedRecordingLength, "fixed length", "Button", GUILayout.Width (90));
