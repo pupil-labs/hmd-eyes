@@ -4,24 +4,41 @@ Building blocks for eye tracking in Augmented Reality `AR` and Virtual Reality `
 
 ## Setup
 
-1. Make sure that you have [Pupil Capture or Pupil Service](https://github.com/pupil-labs/pupil/releases/latest) on a Linux or macOS machine.
-2. Open `Assets/scene/Calibration.unity` with the Unity3d Editor.
-3. In Unity3d - configure the `PupilGaze` property `Server IP` to point to the machine running Pupil Remote and set the port based on what is shown in Pupil Remote (default port is: 50020) under the Settings tab.
-4. (Windows)Set the Pupil Service App Path to the path where your pupil_service.exe is stored by clicking on the Browse button.
-5. _[HMD Hardware Dependent]_ Some headsets like the HTC Vive require the Open VR SDK. This SDK is is not enabled in the project by default. You can add it by going to `Edit > Project Settings > Player > Other Settings` and selecting it using the `+` symbol. Make sure that `Virtual Reality Supported` is also checked
-6. Plugin your HMD and start it up.
-7. Press the `Play` button in the Unity Editor. (This starts Pupil Eye Processes; check to make sure that the pupil is well detected).
-8. Choose the calibration method under 'PupilGaze' GameObject >> Calibration >>2D/3D
-9. To calibrate press the `C` key, or click on the Calibrate button
+1. Make sure that you have [Pupil Capture or Pupil Service](https://github.com/pupil-labs/pupil/releases/latest) on a Linux, macOS, or Windows 10 machine.
+2. Open `Assets/scene/Calibration.unity` with the Unity3d Editor (Unity 5.5 and above).
+3. Select the PupilGaze GameObject in Unity Hierarchy.
 
-## Develeoper Setup
+4. Connection
+	* **Local** - use this setting if your HMD and your Pupil add-on are connected to the same computer.
+		1. In Unity's Inspector select `Settings>Pupil App>Local`
+		2. Click on the Browse button. Navigate to Pupil Service - pupil_service.exe - **or** Pupil Capture - pupil_capture.exe.
+		3. If you're using Pupil Capture make sure your Service Port matches the Port in Pupil Capture. See the Pupil Remote plugin in Pupil Capture to check.
+	* **Remote** - Use the remote mode if your HMD and pupil eye tracking add-on are connected to different computers, but on the same wifi or wired network.
+		1. In Unity's Inspector select `Settings>Pupil App>Remote`
+		2. Make sure that your Pupil Capture application is running on the remote machine.
+		3. Take note of the IP address of the active communication device in your remote machine. (Please keep in mind that in some cases the IP address stated in Pupil Capture may not be correct, check the IP address of your system!).
+		4. Copy this IP address to the IP address field in Unity.
+		
+5. Auto-run Pupil App settings - If auto-run is enabled, Pupil Service will run automatically when your Unity3d scene is in play mode. You can disable this behavior by turning off auto-run in `Settings>Pupil App` and manually Start or Stop Pupil Service.
+6. Confirm connection - Make sure that the plugin status (below the Pupil Labs logotype) displays the word "connected" and that both of the eye icons are green. The green eye icons signify that the eye processes are running.
 
-1. Open `Assets/scene/Calibration.unity` with the Unity3d Editor.
-2. Select the GameObject called 'PupilGaze'
-3. Under Settings, tick the ShowAll checkbox, this will enable you to see all exposed variables.
-4. There are 5 Syles that can be adjusted. Main Tabs, Settings Labels, Settings Values, Settings Browse, Logo.
-5. The Default paths and file names for the Pupil Service App are stored under the Platforms variable for each platform. You can add one manually if your current platform is not listed.
-6. In the current version the 2D and 3D calibration points are not exposed in the final GUI, but you can find and edit them here until the interface comes out. Relevant variables : Calib Points 2D, Calib Points 3D.
+## Calibration
+
+1. Choose your desired calibration method under `Settings>Calibration`. You can chose 2D or 3D.
+2. Press Play in Unity and wait until you have established a working connection with your Pupil App.
+3. Calibrate - Give focus to the main Unity3d window and press c on the keyboard or the `Calibrate` button in the plugin GUI.
+4. Put your headset on and look at the center of each marker shown in your HMD. The number of markers varies depending on your calibration mode.
+
+Note: The ideal setup for calibration may vary using different headsets. For optimal calibration results I suggest some experimenting with the hardware settings of your HMD device such as the eye distance from the lens, inter eye distance, a steady mount position.
+
+## Data access
+
+1. 2D
+	1. You can access the 2d gaze point in Unity3d with `GetEyeGaze2D (GazeSource.BothEyes)`.
+2. 3D
+	1. `Pupil.values.GazePoint3D`
+	2. `Pupil.values.GazeNormals3D`
+	3. `Pupil.values.EyeCenters3D`
 
 ## Connect
 
