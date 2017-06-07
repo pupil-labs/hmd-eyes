@@ -4,16 +4,16 @@ Building blocks for eye tracking in Augmented Reality `AR` and Virtual Reality `
 
 ## Setup
 
-1. Make sure that you have [Pupil Capture or Pupil Service](https://github.com/pupil-labs/pupil/releases/latest) on a Linux or macOS machine.
-2. Open `Assets/scene/Calibration.unity` with the Unity3d Editor.
+1. Make sure that you have [Pupil Capture or Pupil Service](https://github.com/pupil-labs/pupil/releases/latest) on a Linux, macOS, or Windows 10 machine.
+2. Open `Assets/scene/Calibration.unity` with the Unity3d Editor (Unity 5.5 and above).
 3. Select the PupilGaze GameObject in Unity Hierarchy.
 
 4. Connection
-	* **Local - use this setting if your HMD and your Pupil add-on are connected to the same computer.**
+	* **Local** - use this setting if your HMD and your Pupil add-on are connected to the same computer.
 		1. In Unity's Inspector select `Settings>Pupil App>Local`
 		2. Click on the Browse button. Navigate to Pupil Service - pupil_service.exe - **or** Pupil Capture - pupil_capture.exe.
 		3. If you're using Pupil Capture make sure your Service Port matches the Port in Pupil Capture. See the Pupil Remote plugin in Pupil Capture to check.
-	* **Remote - Use the remote mode if your HMD and pupil eye tracking add-on are connected to different computers, but on the same wifi or wired network.**
+	* **Remote** - Use the remote mode if your HMD and pupil eye tracking add-on are connected to different computers, but on the same wifi or wired network.
 		1. In Unity's Inspector select `Settings>Pupil App>Remote`
 		2. Make sure that your Pupil Capture application is running on the remote machine.
 		3. Take note of the IP address of the active communication device in your remote machine. (Please keep in mind that in some cases the IP address stated in Pupil Capture may not be correct, check the IP address of your system!).
