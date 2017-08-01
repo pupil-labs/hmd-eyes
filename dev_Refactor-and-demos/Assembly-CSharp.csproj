@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <LangVersion>4</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <RootNamespace></RootNamespace>
+    <ProjectGuid>{AEAE9B5D-1EDB-C643-8F1D-DB39BE846625}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <AssemblyName>Assembly-CSharp</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <BaseDirectory>Assets</BaseDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_1_0;UNITY_2017_1;UNITY_2017;PLATFORM_ARCH_64;UNITY_64;UNITY_ANALYTICS;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_GENERICS;ENABLE_PVR_GI;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_RUNTIME_NAVMESH_BUILDING;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_DIRECTOR;ENABLE_UNET;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_DIRECTOR_AUDIO;ENABLE_TIMELINE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;ENABLE_NATIVE_ARRAY;ENABLE_SPRITE_MASKING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;ENABLE_MONO_BDWGC;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_PLAYMODE_TESTS_RUNNER;ENABLE_VIDEO;ENABLE_RMGUI;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_STYLE_SHEETS;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_EVENT_QUEUE;ENABLE_CLUSTERINPUT;ENABLE_VR;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;NET_2_0;ENABLE_PROFILER;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_NATIVE_ARRAY_CHECKS;UNITY_TEAM_LICENSE;UNITY_POST_PROCESSING_STACK_V2</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0169</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Temp\bin\Release\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0169</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="UnityEngine">
+      <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+     <Compile Include="Assets\Blindness Demo\Scripts\AnimateTextSheet.cs" />
+     <Compile Include="Assets\Blindness Demo\Scripts\ColliderController.cs" />
+     <Compile Include="Assets\Blindness Demo\Scripts\ParticleController.cs" />
+     <Compile Include="Assets\Heatmap Demo\Scripts\Heatmap.cs" />
+     <Compile Include="Assets\MarchingCubes Demo\Scripts\MarchingCubes.cs" />
+     <Compile Include="Assets\MarchingCubes Demo\Scripts\VoxelLevel.cs" />
+     <Compile Include="Assets\pupil_plugin\cubeController.cs" />
+     <Compile Include="Assets\pupil_plugin\FFmpegOut\CameraCapture.cs" />
+     <Compile Include="Assets\pupil_plugin\FFmpegOut\FFmpegConfig.cs" />
+     <Compile Include="Assets\pupil_plugin\FFmpegOut\FFmpegPipe.cs" />
+     <Compile Include="Assets\pupil_plugin\FFmpegOut\Internal\Blitter.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\CalibrationGL.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\LineDrawer.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\New\PupilDataReceiver.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\New\PupilSettings.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\New\PupilTools.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\New\Scriptable.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\New\TestAccess.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\NewPupilGaze.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\OperatorMonitor.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\OperatorWindow.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\PointCloudDrawer.cs" />
+     <Compile Include="Assets\pupil_plugin\scene\Scripts\PupilGazeTracker.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Attributes.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\FloatBits.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\CollectionFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\DictionaryFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\EnumAsStringFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\IMessagePackFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\MultiDimentionalArrayFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\NullableFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\OldSpecFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\PrimitiveFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\PrimitiveObjectFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\StandardClassLibraryFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\TupleFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Formatters\ValueTupleFormatter.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\IFormatterResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\IMessagePackSerializationCallbackReceiver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Internal\DynamicAssembly.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Internal\ILGeneratorExtensions.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Internal\ReflectionExtensions.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\Codec\LZ4Codec.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Helper.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Safe.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Safe32.Dirty.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Safe64.Dirty.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Unsafe.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Unsafe32.Dirty.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\Codec\LZ4Codec.Unsafe64.Dirty.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\LZ4MessagePackSerializer.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\LZ4MessagePackSerializer.JSON.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\LZ4\LZ4MessagePackSerializer.NonGeneric.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\MessagePackBinary.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\MessagePackCode.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\MessagePackSerializer.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\MessagePackSerializer.Json.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\MessagePackSerializer.NonGeneric.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Nil.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\AttributeFormatterResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\BuiltinResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\CompositeResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\DynamicEnumAsStringResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\DynamicEnumResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\DynamicGenericResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\DynamicObjectResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\DynamicUnionResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\NativeDateTimeResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\OldSpecResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\PrimitiveObjectResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Resolvers\StandardResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Shims\Reflection.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\StringEncoding.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Unity\Formatters.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\Unity\UnityResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\UnsafeExtensions\UnityBlitResolver.cs" />
+     <Compile Include="Assets\pupil_plugin\Scripts\MessagePack\UnsafeExtensions\UnsafeBlitFormatter.cs" />
+     <Compile Include="Assets\Script\PupilDemoManager.cs" />
+     <Compile Include="Assets\Script\SimpleSmoothMouseLook.cs" />
+     <Compile Include="Assets\tiltShift Demo\Scripts\ObjectInteractionController.cs" />
+     <Compile Include="Assets\tiltShift Demo\Scripts\TiltShift.cs" />
+     <Compile Include="Assets\tiltShift Demo\Scripts\TiltShiftController.cs" />
+     <None Include="Assets\pupil_plugin\FFmpegOut\Shader\CameraCapture.shader" />
+     <None Include="Assets\pupil_plugin\Resources\NewUnlitShader.shader" />
+     <None Include="Assets\MarchingCubes Demo\Shaders\VoxelTerrain.shader" />
+     <None Include="Assets\tiltShift Demo\Shaders\TiltShift.shader" />
+     <None Include="Assets\pupil_plugin\FFmpegOut\Internal\Shader\CameraCapture.shader" />
+     <None Include="Assets\MarchingCubes Demo\Textures\textures-license.txt" />
+     <None Include="Assets\Heatmap Demo\Shaders\Heatmap.shader" />
+ <Reference Include="Facebook.Unity.Settings">
+ <HintPath>C:/00 PUPIL/REFACTOR/PupilRefactroWithDemos310717/PUPILDEMOTESTS/Library/FacebookSDK/Facebook.Unity.Settings.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.UI">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Networking">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.TestRunner">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/TestRunner/UnityEngine.TestRunner.dll</HintPath>
+ </Reference>
+ <Reference Include="nunit.framework">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/TestRunner/net35/unity-custom/nunit.framework.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Timeline">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Timeline/RuntimeEditor/UnityEngine.Timeline.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Analytics">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.HoloLens">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityHoloLens/RuntimeEditor/UnityEngine.HoloLens.dll</HintPath>
+ </Reference>
+ <Reference Include="AsyncIO">
+ <HintPath>C:/00 PUPIL/REFACTOR/PupilRefactroWithDemos310717/PUPILDEMOTESTS/Assets/pupil_plugin/Plugins/x86_64/AsyncIO.dll</HintPath>
+ </Reference>
+ <Reference Include="JetBrains.Annotations">
+ <HintPath>C:/00 PUPIL/REFACTOR/PupilRefactroWithDemos310717/PUPILDEMOTESTS/Assets/pupil_plugin/Plugins/x86_64/JetBrains.Annotations.dll</HintPath>
+ </Reference>
+ <Reference Include="NetMQ">
+ <HintPath>C:/00 PUPIL/REFACTOR/PupilRefactroWithDemos310717/PUPILDEMOTESTS/Assets/pupil_plugin/Plugins/x86_64/NetMQ.dll</HintPath>
+ </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  
+</Project>

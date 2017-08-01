@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: VoxelMat
+  m_Shader: {fileID: 4800000, guid: 9aa15cc615e05d04a914c4c0da36f935, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 5
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Level1Tex:
+        m_Texture: {fileID: 2800000, guid: 346b2d72e5fe8084e89301885cdae8af, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Level2Tex:
+        m_Texture: {fileID: 2800000, guid: 5e8e17be120bcbf409dbef148d2b354f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Level3Tex:
+        m_Texture: {fileID: 2800000, guid: 3134cd75a90ed1240a2e006d1cac073d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PeakTex:
+        m_Texture: {fileID: 2800000, guid: ae0ac1bdf08ca2e45830bb62c2e56cde, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WaterTex:
+        m_Texture: {fileID: 2800000, guid: 15841cd150fa2e445830773de92966d4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _Glossiness: 0.077
+    - _Level1: 35.6
+    - _Level2: 40.6
+    - _Level3: 51.6
+    - _Metallic: 0.308
+    - _PeakLevel: 54.87
+    - _Slope: 1
+    - _WaterLevel: 36.1
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
