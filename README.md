@@ -7,17 +7,16 @@ Building blocks for eye tracking in Augmented Reality `AR` and Virtual Reality `
 1. Make sure that you have [Pupil Service](https://github.com/pupil-labs/pupil/releases/latest) on a Linux, macOS, or Windows 10 machine.
 2. Open `Assets/scene/Calibration.unity` with the Unity3d Editor (Unity 5.5 and above).
 3. Select the PupilGaze GameObject in Unity Hierarchy.
-
 4. Connection
 	* **Local** - use this setting if your HMD and your Pupil add-on are connected to the same computer.
 		1. In Unity's Inspector select `Settings>Pupil App>Local`
 		2. Click on the Browse button. Navigate to Pupil Service - pupil_service.exe.
-		
+		3. Choose port 50020
+5. Enable `Autorun Pupil Service`, which will automatically start Pupil Service when you your Unity3d scene is in play mode.
 6. Confirm connection - Make sure that the plugin status (below the Pupil Labs logotype) displays the word "connected" and that both of the eye icons are green. The green eye icons signify that the eye processes are running.
 
 ## Calibration
-
-
+1. Choose `2D` calibration under `Settings>Calibration`.
 2. Press Play in Unity and wait until you have established a working connection with your Pupil App.
 3. Calibrate - Give focus to the main Unity3d window and press c on the keyboard or the `Calibrate` button in the plugin GUI.
 4. Put your headset on and look at the center of each marker shown in your HMD. #The number of markers varies depending on your calibration #mode.
