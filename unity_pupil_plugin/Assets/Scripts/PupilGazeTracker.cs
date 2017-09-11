@@ -340,22 +340,14 @@ public class CalibPoints
 	public List<float[]> list2D{
 		get{ 
 			return new List<float []>(){
-				new float[]{0.2f,0.2f},
-				new float[]{0.35f,0.35f},
-				new float[]{0.2f,0.5f},
-				new float[]{0.35f,0.5f},
-				new float[]{0.2f,0.8f},
-				new float[]{0.35f,0.65f},
-				new float[]{0.5f,0.8f},
-				new float[]{0.5f,0.65f},
-				new float[]{0.8f,0.8f},
-				new float[]{0.65f,0.65f},
-				new float[]{0.8f,0.5f},
-				new float[]{0.65f,0.5f},
-				new float[]{0.8f,0.2f},
-				new float[]{0.65f,0.35f},
-				new float[]{0.5f,0.2f},
-				new float[]{0.5f,0.35f},
+				new float[]{00.3f,00.3f},
+				new float[]{00.3f,0.5f},
+				new float[]{00.3f,0.7f},
+				new float[]{0.5f,0.7f},
+				new float[]{0.7f,0.7f},
+				new float[]{0.7f,0.5f},
+				new float[]{0.7f,00.3f},
+				new float[]{0.5f,00.3f},
 				new float[]{0.5f,0.5f}
 			}
 			;}
@@ -699,7 +691,7 @@ public class PupilGazeTracker:MonoBehaviour
 	[HideInInspector]
 	public int ServicePort=50020;
 	[HideInInspector]
-	public int DefaultCalibrationCount=120;
+	public int DefaultCalibrationCount=60;
 	[HideInInspector]
 	public int SamplesCount=4;
 	[HideInInspector]
@@ -2201,7 +2193,7 @@ public class PupilGazeTracker:MonoBehaviour
 			_m.toggle = true;
 
 			if (_calibPointTimeOut) {
-				Thread.Sleep (2000);
+				Thread.Sleep (500);
 				//_m.color = Color.white;
 				_calibPointTimeOut = false;
 			}
