@@ -341,21 +341,13 @@ public class CalibPoints
 		get{ 
 			return new List<float []>(){
 				new float[]{00.3f,00.3f},
-				new float[]{0.4f,0.4f},
 				new float[]{00.3f,0.5f},
-				new float[]{0.4f,0.5f},
 				new float[]{00.3f,0.7f},
-				new float[]{0.4f,0.6f},
 				new float[]{0.5f,0.7f},
-				new float[]{0.5f,0.6f},
 				new float[]{0.7f,0.7f},
-				new float[]{0.6f,0.6f},
 				new float[]{0.7f,0.5f},
-				new float[]{0.6f,0.5f},
 				new float[]{0.7f,00.3f},
-				new float[]{0.6f,0.4f},
 				new float[]{0.5f,00.3f},
-				new float[]{0.5f,0.4f},
 				new float[]{0.5f,0.5f}
 			}
 			;}
