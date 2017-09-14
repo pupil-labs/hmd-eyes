@@ -1,0 +1,22 @@
+﻿<Properties StartupItem="Assembly-CSharp.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\pupil_plugin\scene\Scripts\New\PupilSettings.cs">
+    <Files>
+      <File FileName="Assets\pupil_plugin\Editor\CustomPupilGazeTrackerInspector.cs" Line="102" Column="43" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\New\TestAccess.cs" Line="19" Column="68" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\CalibrationGL.cs" Line="1" Column="1" />
+      <File FileName="Assets\Script\PupilDemoManager.cs" Line="20" Column="25" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\PupilGazeTracker.cs" Line="1478" Column="15" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\New\PupilDataReceiver.cs" Line="190" Column="27" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\New\PupilTools.cs" Line="154" Column="38" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\New\PupilSettings.cs" Line="87" Column="1" />
+      <File FileName="Assets\Blindness Demo\Scripts\ParticleController.cs" Line="59" Column="114" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\OperatorMonitor.cs" Line="114" Column="132" />
+      <File FileName="Assets\Blindness Demo\Scripts\ColliderController.cs" Line="46" Column="55" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

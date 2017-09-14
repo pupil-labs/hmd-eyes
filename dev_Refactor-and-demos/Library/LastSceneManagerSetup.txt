@@ -1,0 +1,4 @@
+sceneSetups:
+- path: Assets/Blindness Demo/Scenes/Bilndness.unity
+  isLoaded: 1
+  isActive: 1
