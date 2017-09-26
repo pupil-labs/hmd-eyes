@@ -33,21 +33,20 @@ public class ColliderController : MonoBehaviour {
 
 	private Vector3 screenPoint;
 
-	void Update () {
-
+	void Update () 
+	{
 		if (Mathf.Abs (coll.radius - targetRadius) > threshold)
 			coll.radius = Mathf.Lerp (coll.radius, targetRadius, lerpSpeed);
 
-		if (PupilSettings.Instance.connection.isConnected){
-			
-			if (PupilData._2D.ID() == "0"){
-
+		if (PupilSettings.Instance.connection.isConnected)
+		{	
+			if (PupilData.eyeID () == PupilData.GazeSource.LeftEye)
+			{
 				screenPoint = new Vector3 ((cam.pixelWidth * PupilData._2D.Norm_Pos ().x) - (cam.pixelWidth / 2), (cam.pixelHeight * PupilData._2D.Norm_Pos ().y) - (cam.pixelHeight / 2), .5f);
 
 				transform.localPosition = cam.ScreenToViewportPoint (screenPoint);
 
 			}
-
 		}
 
 	}

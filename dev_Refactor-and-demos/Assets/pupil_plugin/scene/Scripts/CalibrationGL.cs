@@ -106,8 +106,8 @@ public static class CalibrationGL{
 				
 				}
 
-				if (!_m.calibrationPoint && status == PupilSettings.EStatus.ProcessingGaze) {
-				
+				if (!_m.calibrationPoint && status == PupilSettings.EStatus.ProcessingGaze) 
+				{
 					_m.toggle = true;
 				
 				}

@@ -61,6 +61,9 @@ public class PupilTools : MonoBehaviour {
 
 		SubscriberSocket _subscriberSocket = new SubscriberSocket (PupilSettings.Instance.connection.IPHeader + PupilSettings.Instance.connection.subport);
 
+		//André: Is this necessary??
+		_subscriberSocket.Options.SendHighWatermark = PupilSettings.Instance.numberOfMessages;// 6;
+
 		PupilSettings.Instance.connection.topicList.ForEach(p=>_subscriberSocket.Subscribe(p));
 
 		return _subscriberSocket;
@@ -96,7 +99,12 @@ public class PupilTools : MonoBehaviour {
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name",pupilSettings.calibration.currentCalibrationType.pluginName}});
 		_sendRequestMessage ( new Dictionary<string,object> {{"subject","calibration.should_start"},{"hmd_video_frame_size",new float[]{1000,1000}},{"outlier_threshold",35}});
 
-		OnCalibrationStarted();
+		if (OnCalibrationStarted != null)
+			OnCalibrationStarted ();
+		else
+		{
+			print ("No 'calibration started' delegate set");
+		}
 
 	}
 
@@ -113,7 +121,12 @@ public class PupilTools : MonoBehaviour {
 			CalibrationGL.InitializeVisuals (PupilSettings.EStatus.Idle);
 		}
 
-		OnCalibrationEnded ();
+		if ( OnCalibrationEnded != null )
+			OnCalibrationEnded ();
+		else
+		{
+			print ("No 'calibration ended' delegate set");
+		}
 
 	}
 
@@ -144,14 +157,14 @@ public class PupilTools : MonoBehaviour {
 
 	public static void StartEyeProcesses()
 	{
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","eye_process.should_start.0" }, { "eye_id",0 } });
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","eye_process.should_start.1" }, { "eye_id",1 } });
+		_sendRequestMessage (new Dictionary<string,object> { { "subject","eye_process.should_start.0" }, { "eye_id",PupilSettings.leftEyeID } });
+		_sendRequestMessage (new Dictionary<string,object> { { "subject","eye_process.should_start.1" }, { "eye_id",PupilSettings.rightEyeID } });
 	}
 
 	public static void StopEyeProcesses()
 	{
-		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",0}});
-		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",1}});
+		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",PupilSettings.leftEyeID}});
+		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",PupilSettings.rightEyeID}});
 	}
 
 	public static void SavePupilSettings(ref PupilSettings pupilSettings){
@@ -209,6 +222,10 @@ public class PupilTools : MonoBehaviour {
 				Process serviceProcess = new Process ();
 				serviceProcess.StartInfo.Arguments = servicePath;
 				serviceProcess.StartInfo.FileName = servicePath;
+//				serviceProcess.StartInfo.CreateNoWindow = true;
+//				serviceProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+//				serviceProcess.StartInfo.UseShellExecute = false;
+//				serviceProcess.StartInfo.RedirectStandardOutput = true;     
 
 				if (File.Exists (servicePath)) {
 				

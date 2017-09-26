@@ -100,8 +100,8 @@ public class OperatorMonitor : MonoBehaviour {
 		string str;
 
 //		print ("confidence 0 in op mon : " + Pupil.values.Confidences [0]);
-		Operator.properties.Properties [0].confidence = (float)PupilData.Confidence(0);
-		Operator.properties.Properties [1].confidence = (float)PupilData.Confidence(1);
+		Operator.properties.Properties [0].confidence = (float)PupilData.Confidence(PupilData.GazeSource.LeftEye);
+		Operator.properties.Properties [1].confidence = (float)PupilData.Confidence (PupilData.GazeSource.RightEye);
 
 //		print (Pupil.values.Confidences [0]);
 

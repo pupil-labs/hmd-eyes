@@ -1892,29 +1892,51 @@ namespace MessagePack
         }
     }
 
-    public struct ExtensionResult
-    {
-        public sbyte TypeCode { get; private set; }
-        public byte[] Data { get; private set; }
+	public struct ExtensionResult
+	{
+		sbyte _typeCode;
+		public sbyte TypeCode 
+		{ 
+			get 
+			{
+				return _typeCode;
+			}
+			private set 
+			{
+				_typeCode = value;
+			}
+		}
+		public byte[] Data { get; private set; }
 
-        public ExtensionResult(sbyte typeCode, byte[] data)
-        {
-            TypeCode = typeCode;
-            Data = data;
-        }
-    }
+		public ExtensionResult(sbyte typeCode, byte[] data) : this()
+		{
+			_typeCode = typeCode;
+			Data = data;
+		}
+	}
 
-    public struct ExtensionHeader
-    {
-        public sbyte TypeCode { get; private set; }
-        public uint Length { get; private set; }
+	public struct ExtensionHeader
+	{
+		sbyte _typeCode;
+		public sbyte TypeCode 
+		{ 
+			get 
+			{
+				return _typeCode;
+			}
+			private set 
+			{
+				_typeCode = value;
+			}
+		}
+		public uint Length { get; private set; }
 
-        public ExtensionHeader(sbyte typeCode, uint length)
-        {
-            TypeCode = typeCode;
-            Length = length;
-        }
-    }
+		public ExtensionHeader (sbyte typeCode, uint length) : this()
+		{
+			_typeCode = typeCode;
+			Length = length;
+		}
+	}
 }
 
 namespace MessagePack.Internal

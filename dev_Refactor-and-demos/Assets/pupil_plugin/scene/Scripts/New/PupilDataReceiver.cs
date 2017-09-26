@@ -110,7 +110,8 @@ public class PupilDataReceiver : MonoBehaviour {
 
 	#region Custom Methods
 
-	public void RunOnConnected(){//Happens once on successful connection
+	public void RunOnConnected()
+	{//Happens once on successful connection
 
 		Debug.Log (" Succesfully connected to Pupil Service ! ");
 
@@ -126,12 +127,10 @@ public class PupilDataReceiver : MonoBehaviour {
 
 			int i = 0;
 
-
 			NetMQMessage m = new NetMQMessage();
 
-			while(a.Socket.TryReceiveMultipartMessage(ref m) && i<= 6){
-			
-
+			while(a.Socket.TryReceiveMultipartMessage(ref m) && i<= PupilSettings.Instance.numberOfMessages) // 6){
+			{
 				mStream = new MemoryStream(m[1].ToByteArray());
 
 				string msgType = m[0].ConvertToString();
@@ -146,10 +145,10 @@ public class PupilDataReceiver : MonoBehaviour {
 
 				case "gaze":
 
-					if (PupilData.Confidence (0) > 0.4f) {
-
-						switch (pupilSettings.dataProcess.state) {
-
+					if (PupilData.Confidence(PupilData.GazeSource.LeftEye) > 0.4f) 
+					{
+						switch (pupilSettings.dataProcess.state) 
+						{
 						case PupilSettings.EStatus.ProcessingGaze:
 
 							PupilData.gazeDictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
@@ -180,14 +179,8 @@ public class PupilDataReceiver : MonoBehaviour {
 				}
 
 				i++;
-
-
 			}
-				
-
 		};
-			
-
 	}
 
 	public void RunConnect(){

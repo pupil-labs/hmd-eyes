@@ -24,7 +24,7 @@ public class PupilDemoManager : MonoBehaviour {
 
 		PupilTools.OnCalibrationEnded += OnCalibtaionEnded;
 	
-		PupilTools.Connect ();
+//		PupilTools.Connect ();
 
 	}
 
