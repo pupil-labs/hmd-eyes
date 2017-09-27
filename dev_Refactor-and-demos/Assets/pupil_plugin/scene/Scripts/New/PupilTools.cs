@@ -11,13 +11,16 @@ using MessagePack;
 using UnityEditor;
 #endif
 
-public class PupilTools : MonoBehaviour {
+public class PupilTools : MonoBehaviour
+{
 
 	public static PupilSettings pupilSettings = null;
 
-	public delegate void GUIRepaintAction();//InspectorGUI repaint
-	public delegate void OnCalibrationStartDeleg();
-	public delegate void OnCalibrationEndDeleg();
+	public delegate void GUIRepaintAction ();
+//InspectorGUI repaint
+	public delegate void OnCalibrationStartDeleg ();
+
+	public delegate void OnCalibrationEndDeleg ();
 
 	public static event GUIRepaintAction WantRepaint;
 
@@ -27,18 +30,23 @@ public class PupilTools : MonoBehaviour {
 
 	#region Recording
 
-	public static void StartPupilServiceRecording (string path){
-
+	public static void StartPupilServiceRecording (string path)
+	{
 		var _p = path.Substring (2);
 
-		PupilTools._sendRequestMessage (new Dictionary<string,object> {{"subject","recording.should_start"},{"session_name",_p}});
+		_sendRequestMessage (new Dictionary<string,object> {
+			{ "subject","recording.should_start" },
+			 {
+				"session_name",
+				_p
+			}
+		});
 
 	}
 
-	public static void StopPupilServiceRecording (){
-
-		PupilTools._sendRequestMessage (new Dictionary<string,object> {{"subject","recording.should_stop"}});
-
+	public static void StopPupilServiceRecording ()
+	{
+		_sendRequestMessage (new Dictionary<string,object> { { "subject","recording.should_stop" } });
 	}
 
 	#endregion
@@ -46,14 +54,16 @@ public class PupilTools : MonoBehaviour {
 
 	#region Calibration
 
-	public static void RepaintGUI(){
+	public static void RepaintGUI ()
+	{
 		if (WantRepaint != null)
 			WantRepaint ();
 	}
 
-	public static SubscriberSocket ClearAndInitiateSubscribe(){
-
-		if (PupilSettings.Instance.connection.subscribeSocket != null) {
+	public static SubscriberSocket ClearAndInitiateSubscribe ()
+	{
+		if (PupilSettings.Instance.connection.subscribeSocket != null)
+		{
 			
 			PupilSettings.Instance.connection.subscribeSocket.Close ();
 
@@ -64,27 +74,29 @@ public class PupilTools : MonoBehaviour {
 		//André: Is this necessary??
 		_subscriberSocket.Options.SendHighWatermark = PupilSettings.Instance.numberOfMessages;// 6;
 
-		PupilSettings.Instance.connection.topicList.ForEach(p=>_subscriberSocket.Subscribe(p));
+		PupilSettings.Instance.connection.topicList.ForEach (p => _subscriberSocket.Subscribe (p));
 
 		return _subscriberSocket;
 
 	}
 
-	public static void SubscribeTo(string topic){
-
-		if (!PupilSettings.Instance.connection.topicList.Contains (topic)) {
+	public static void SubscribeTo (string topic)
+	{
+		if (!PupilSettings.Instance.connection.topicList.Contains (topic))
+		{
 			
 			PupilSettings.Instance.connection.topicList.Add (topic);
 
 		}
 
 		PupilSettings.Instance.connection.subscribeSocket = ClearAndInitiateSubscribe ();
-
 	}
 
-	public static void UnSubscribeFrom(string topic){
+	public static void UnSubscribeFrom (string topic)
+	{
 
-		if (PupilSettings.Instance.connection.topicList.Contains (topic)) {
+		if (PupilSettings.Instance.connection.topicList.Contains (topic))
+		{
 			PupilSettings.Instance.connection.topicList.Remove (topic);
 		}
 
@@ -92,12 +104,31 @@ public class PupilTools : MonoBehaviour {
 
 	}
 
-	public static void StartCalibration(){
-
+	public static void StartCalibration ()
+	{
 		PupilGazeTracker.Instance.StartCoroutine ("InitializeCalibration");
 
-		_sendRequestMessage ( new Dictionary<string,object> {{"subject","start_plugin"},{"name",pupilSettings.calibration.currentCalibrationType.pluginName}});
-		_sendRequestMessage ( new Dictionary<string,object> {{"subject","calibration.should_start"},{"hmd_video_frame_size",new float[]{1000,1000}},{"outlier_threshold",35}});
+		_sendRequestMessage (new Dictionary<string,object> {
+			{ "subject","start_plugin" },
+			 {
+				"name",
+				pupilSettings.calibration.currentCalibrationType.pluginName
+			}
+		});
+		_sendRequestMessage (new Dictionary<string,object> {
+			{ "subject","calibration.should_start" },
+			 {
+				"hmd_video_frame_size",
+				new float[] {
+					1000,
+					1000
+				}
+			},
+			 {
+				"outlier_threshold",
+				35
+			}
+		});
 
 		if (OnCalibrationStarted != null)
 			OnCalibrationStarted ();
@@ -106,22 +137,24 @@ public class PupilTools : MonoBehaviour {
 			print ("No 'calibration started' delegate set");
 		}
 
+		_calibrationData.Clear ();
 	}
 
-	public static void StopCalibration()
+	public static void StopCalibration ()
 	{
-		
 		pupilSettings.calibration.initialized = false;
 		pupilSettings.dataProcess.state = PupilSettings.EStatus.ProcessingGaze;
-		_sendRequestMessage ( new Dictionary<string,object> {{"subject","calibration.should_stop"}});
+		_sendRequestMessage (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
 
-		if (pupilSettings.visualizeGaze) {
+		if (pupilSettings.visualizeGaze)
+		{
 			CalibrationGL.InitializeVisuals (PupilSettings.EStatus.ProcessingGaze);
-		} else {
+		} else
+		{
 			CalibrationGL.InitializeVisuals (PupilSettings.EStatus.Idle);
 		}
 
-		if ( OnCalibrationEnded != null )
+		if (OnCalibrationEnded != null)
 			OnCalibrationEnded ();
 		else
 		{
@@ -130,10 +163,60 @@ public class PupilTools : MonoBehaviour {
 
 	}
 
+	private static List<Dictionary<string,object>> _calibrationData = new List<Dictionary<string,object>> ();
+
+	public static void AddCalibrationReferenceData ()
+	{
+		_sendRequestMessage (new Dictionary<string,object> {
+			{ "subject","calibration.add_ref_data" },
+			{
+				"ref_data",
+				_calibrationData.ToArray ()
+			}
+		});
+
+		if (pupilSettings.debug.printSampling)
+		{
+			print ("Sending ref_data");
+
+			string str = "";
+
+			foreach (var element in _calibrationData)
+			{
+				foreach (var i in element)
+				{
+					if (i.Key == "norm_pos")
+					{
+						str += "|| " + i.Key + " | " + ((System.Single[])i.Value) [0] + " , " + ((System.Single[])i.Value) [1];
+					} else
+					{
+						str += "|| " + i.Key + " | " + i.Value.ToString ();
+					}
+				}
+				str += "\n";
+
+			}
+
+			print (str);
+		}
+
+		//Clear the current calibration data, so we can proceed to the next point if there is any.
+		_calibrationData.Clear ();
+	}
+
+	public static void AddCalibrationPointReferencePosition (string calibrationType, float[] position, float timestamp, int id)
+	{
+		_calibrationData.Add ( new Dictionary<string,object> () {
+			{ calibrationType, position }, 
+			{ "timestamp", timestamp },
+			{ "id", id }
+		});
+	}
+
 	#endregion
 
 
-	public static NetMQMessage _sendRequestMessage(Dictionary<string,object> data)
+	public static NetMQMessage _sendRequestMessage (Dictionary<string,object> data)
 	{
 		NetMQMessage m = new NetMQMessage ();
 
@@ -148,26 +231,77 @@ public class PupilTools : MonoBehaviour {
 		return recievedMsg;
 	}
 
-	public static float GetPupilTimestamp()
+	public static float GetPupilTimestamp ()
 	{
 		PupilDataReceiver.Instance._requestSocket.SendFrame ("t");
 		NetMQMessage recievedMsg = PupilDataReceiver.Instance._requestSocket.ReceiveMultipartMessage ();
 		return float.Parse (recievedMsg [0].ConvertToString ());
 	}
 
-	public static void StartEyeProcesses()
+	public static void StartEyeProcesses ()
 	{
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","eye_process.should_start.0" }, { "eye_id",PupilSettings.leftEyeID } });
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","eye_process.should_start.1" }, { "eye_id",PupilSettings.rightEyeID } });
+		_sendRequestMessage (new Dictionary<string,object> {
+			{ "subject","eye_process.should_start.0" },
+			{
+				"eye_id",
+				PupilSettings.leftEyeID
+			}
+		});
+		_sendRequestMessage (new Dictionary<string,object> {
+			{ "subject","eye_process.should_start.1" },
+			{
+				"eye_id",
+				PupilSettings.rightEyeID
+			}
+		});
 	}
 
-	public static void StopEyeProcesses()
+	public static void StopEyeProcesses ()
 	{
-		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",PupilSettings.leftEyeID}});
-		_sendRequestMessage ( new Dictionary<string,object> {{"subject","eye_process.should_stop"},{"eye_id",PupilSettings.rightEyeID}});
+		_sendRequestMessage (new Dictionary<string,object> {
+			{ "subject","eye_process.should_stop" },
+			 {
+				"eye_id",
+				PupilSettings.leftEyeID
+			}
+		});
+		_sendRequestMessage (new Dictionary<string,object> {
+			{ "subject","eye_process.should_stop" },
+			 {
+				"eye_id",
+				PupilSettings.rightEyeID
+			}
+		});
 	}
 
-	public static void SavePupilSettings(ref PupilSettings pupilSettings){
+	public static void StartBinocularVectorGazeMapper ()
+	{
+		_sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
+	}
+
+	public static void StartFramePublishing ()
+	{
+		pupilSettings.framePublishing.StreamCameraImages = true;
+
+		_sendRequestMessage (new Dictionary<string,object> { { "subject","plugin_started" }, { "name","Frame_Publisher" } });
+
+		SubscribeTo ("frame.");
+		//		print ("frame publish start");
+		//_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
+	}
+
+	public static void StopFramePublishing ()
+	{
+		UnSubscribeFrom ("frame.");
+
+		pupilSettings.framePublishing.StreamCameraImages = false;
+
+		//Andre: No sendRequest??
+		//_sendRequestMessage (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
+	}
+
+	public static void SavePupilSettings (ref PupilSettings pupilSettings)
+	{
 	
 		#if UNITY_EDITOR
 		AssetDatabase.Refresh ();
@@ -177,9 +311,11 @@ public class PupilTools : MonoBehaviour {
 
 	}
 
-	public static PupilSettings GetPupilSettings(){
+	public static PupilSettings GetPupilSettings ()
+	{
 
-		if (pupilSettings == null) {
+		if (pupilSettings == null)
+		{
 			pupilSettings = Resources.LoadAll<PupilSettings> ("") [0];
 //			print (pupilSettings);	
 		}
@@ -188,36 +324,43 @@ public class PupilTools : MonoBehaviour {
 	
 	}
 
-	public static bool PupilGazeTrackerExists(){//this could/should be done with .Instance of the singleton type, but for Unity Editor update a FindObjectOfType seems more effective.
+	public static bool PupilGazeTrackerExists ()
+	{//this could/should be done with .Instance of the singleton type, but for Unity Editor update a FindObjectOfType seems more effective.
 	
-		if (FindObjectOfType<PupilGazeTracker> () == null) {
+		if (FindObjectOfType<PupilGazeTracker> () == null)
+		{
 			return false;
-		} else {
+		} else
+		{
 			return true;
 		}
 
 	}
 
-	public static void Connect(){
-	
+	public static void Connect ()
+	{
 		if (PupilSettings.Instance.connection.isLocal)
-			PupilTools.RunServiceAtPath ();
+			RunServiceAtPath ();
 
 		PupilDataReceiver.Instance.RunConnect ();
 
 	}
 
-	public static void RunServiceAtPath(bool runEyeProcess = false){
+	public static void RunServiceAtPath (bool runEyeProcess = false)
+	{
 
 		string servicePath = PupilSettings.Instance.pupilServiceApp.servicePath;
 
-		if (File.Exists (servicePath)) {
+		if (File.Exists (servicePath))
+		{
 		
-			if (Process.GetProcessesByName ("pupil_capture").Length > 0) {
+			if (Process.GetProcessesByName ("pupil_capture").Length > 0)
+			{
 			
 				UnityEngine.Debug.LogWarning (" Pupil Capture is already running ! ");
 			
-			} else {
+			} else
+			{
 			
 				Process serviceProcess = new Process ();
 				serviceProcess.StartInfo.Arguments = servicePath;
@@ -227,20 +370,24 @@ public class PupilTools : MonoBehaviour {
 //				serviceProcess.StartInfo.UseShellExecute = false;
 //				serviceProcess.StartInfo.RedirectStandardOutput = true;     
 
-				if (File.Exists (servicePath)) {
+				if (File.Exists (servicePath))
+				{
 				
 					serviceProcess.Start ();
 				
-				} else {
+				} else
+				{
 				
 					UnityEngine.Debug.LogWarning ("Pupil Service could not start! There is a problem with the file path. The file does not exist at given path");
 			
 				}
 			}
 
-		} else{
+		} else
+		{
 
-			if (servicePath == "") {
+			if (servicePath == "")
+			{
 			
 				UnityEngine.Debug.LogWarning ("Pupil Service filename is not specified ! Please configure it under the Pupil plugin settings");
 			

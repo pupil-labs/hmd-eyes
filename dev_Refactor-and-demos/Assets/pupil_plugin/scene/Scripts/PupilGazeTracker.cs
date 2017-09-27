@@ -461,18 +461,6 @@ public class PupilGazeTracker:MonoBehaviour
 	//	public bool _isFullConnected =false;
 	//	RequestSocket _requestSocket ;
 
-	List<Dictionary<string,object>> _calibrationData = new List<Dictionary<string,object>> ();
-	public Dictionary<string,object> dict = new Dictionary<string, object> ();
-
-	[SerializeField]
-	Dictionary<string,object>[] _CalibrationPoints
-	{
-		get{ return _calibrationData.ToArray (); }
-	}
-		
-
-
-
 	//	[HideInInspector]
 	//	public int ServicePort=50020;
 	[HideInInspector]
@@ -855,7 +843,10 @@ public class PupilGazeTracker:MonoBehaviour
 		         select tr).FirstOrDefault () as DebugView._Transform;
 		if (a.GO != null)
 			a.GO.SetActive (false);
-		StopFramePublishing ();
+		if (!PupilSettings.Instance.debugView.active && !isOperatorMonitor)
+		{	
+			PupilTools.StopFramePublishing ();
+		}
 		OnUpdate -= CalibrationDebugInteraction;
 		OnCalibDebug -= DrawCalibrationDebugView;
 		PupilSettings.Instance.debugView.active = false;
@@ -877,7 +868,7 @@ public class PupilGazeTracker:MonoBehaviour
 			OnUpdate -= CalibrationDebugInteraction;
 			OnUpdate += CalibrationDebugInteraction;
 			InitializeFramePublishing ();
-			StartFramePublishing ();
+			PupilTools.StartFramePublishing ();
 		} else
 		{
 			UnityEngine.Debug.LogWarning ("Please assign a Debug Eye Mesh under the Settings Debug View Variables. Accessable in Developer Mode!");
@@ -1481,30 +1472,6 @@ public class PupilGazeTracker:MonoBehaviour
 		Settings.framePublishing.eye1Image = new Texture2D (100, 100);
 	}
 
-	public void StartFramePublishing ()
-	{
-		Settings.framePublishing.StreamCameraImages = true;
-		PupilTools._sendRequestMessage (new Dictionary<string,object> {
-			{ "subject","plugin_started" }, {
-				"name",
-				"Frame_Publisher"
-			}
-		});
-		PupilTools.SubscribeTo ("frame.");
-//		print ("frame publish start");
-		//_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
-	}
-
-	public void StopFramePublishing ()
-	{
-		if (!PupilSettings.Instance.debugView.active && !isOperatorMonitor)
-		{
-			PupilTools.UnSubscribeFrom ("frame.");
-			Settings.framePublishing.StreamCameraImages = false;
-			//_sendRequestMessage (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
-		}
-	}
-
 	public void AssignTexture (ref Texture2D _eyeImage, ref Material _mat, byte[] data)
 	{
 		
@@ -1615,10 +1582,10 @@ public class PupilGazeTracker:MonoBehaviour
 
 			if (PupilSettings.Instance.calibration.currentCalibrationMode == PupilSettings.Calibration.CalibMode._2D)
 			{
-				var eyeID = PupilData.eyeID();
-				if ( eyeID == PupilData.GazeSource.LeftEye || eyeID == PupilData.GazeSource.RightEye )
+				var eyeID = PupilData.eyeID;
+				if (eyeID == PupilData.GazeSource.LeftEye || eyeID == PupilData.GazeSource.RightEye)
 				{
-					if ( OnEyeGaze != null )
+					if (OnEyeGaze != null)
 						OnEyeGaze (this);
 				}
 
@@ -1648,7 +1615,6 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public IEnumerator InitializeCalibration ()
 	{
-	
 		print ("Initializing Calibration");
 
 //		StartVisualizingGaze ();
@@ -1672,23 +1638,18 @@ public class PupilGazeTracker:MonoBehaviour
 		pupilSettings.dataProcess.state = PupilSettings.EStatus.Calibration;
 
 		PupilTools.RepaintGUI ();
-
 	}
 
 	float lastTimeStamp = 0;
 
 	public void Calibrate ()
 	{
-
 		PupilSettings pupilSettings = PupilSettings.Instance;
 
 		// Get the current calibration information from the PupilSettings class
 		PupilSettings.CalibrationType currentCalibrationType = pupilSettings.calibration.currentCalibrationType;
 
 		float[] _currentCalibPointPosition = pupilSettings.calibration.currentCalibrationType.calibPoints [pupilSettings.calibration.currCalibPoint];
-
-
-
 
 		float alphaRatio = Mathf.InverseLerp (DefaultCalibrationCount, 0f, pupilSettings.calibration.currCalibSamples);//*_m.baseSize;//size hardcoded, change this
 		PupilSettings.Calibration.Marker marker = pupilSettings.calibration.CalibrationMarkers.Where (p => p.calibrationPoint && p.calibMode == PupilSettings.Instance.calibration.currentCalibrationMode).ToList () [0];
@@ -1707,78 +1668,25 @@ public class PupilGazeTracker:MonoBehaviour
 			print ("its okay to go on");
 
 			//Create reference data to pass on. _cPointFloatValues are storing the float values for the relevant current Calibration mode
-
-			var ref0 = new Dictionary<string,object> () {
-				{ currentCalibrationType.positionKey,_currentCalibPointPosition }, {
-					"timestamp",
-					t
-				}, {
-					"id",
-					0
-				}
-			};
-			var ref1 = new Dictionary<string,object> () {
-				{ currentCalibrationType.positionKey,_currentCalibPointPosition }, {
-					"timestamp",
-					t
-				},
-				 {
-					"id",
-					1
-				}
-			};
-
-
-			_calibrationData.Add (ref0);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
-			_calibrationData.Add (ref1);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+			PupilTools.AddCalibrationPointReferencePosition (currentCalibrationType.positionKey, _currentCalibPointPosition, t, 0);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+			PupilTools.AddCalibrationPointReferencePosition (currentCalibrationType.positionKey, _currentCalibPointPosition, t, 1);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
 
 			if (pupilSettings.debug.printSampling)
 				print ("Sampling at : " + pupilSettings.calibration.currCalibSamples + ". On the position : " + _currentCalibPointPosition [0] + " | " + _currentCalibPointPosition [1]);
 
 			pupilSettings.calibration.currCalibSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 
-			if (pupilSettings.calibration.currCalibSamples >= DefaultCalibrationCount) {
-			
+			if (pupilSettings.calibration.currCalibSamples >= DefaultCalibrationCount)
+			{
 				pupilSettings.calibration.currCalibSamples = 0;
 				pupilSettings.calibration.currCalibPoint++;
 
 				//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
-				PupilTools._sendRequestMessage (new Dictionary<string,object> {
-					{ "subject","calibration.add_ref_data" }, {
-					"ref_data",
-					_CalibrationPoints
-				}
-			});
-
-
-
-				if(	pupilSettings.debug.printSampling){
-					print("Sending ref_data");
-
-					string str = "";
-
-					foreach(var element in _CalibrationPoints){
-
-						foreach(var i in element){
-							if (i.Key == "norm_pos"){
-								str += "|| " + i.Key + " | " + ((Single[])i.Value)[0] + " , " + ((Single[])i.Value)[1];
-							}else{
-								str += "|| " + i.Key + " | " + i.Value.ToString();
-							}
-						}
-						str += "\n";
-
-					}
-
-					print(str);
-				}
-
-			//Clear the current calibration data, so we can proceed to the next point if there is any.
-				_calibrationData.Clear ();
+				PupilTools.AddCalibrationReferenceData ();
 
 				if (pupilSettings.calibration.currCalibPoint >= currentCalibrationType.calibPoints.Count)
 				{
-					PupilTools.StopCalibration();
+					PupilTools.StopCalibration ();
 //					StartVisualizingGaze();
 //					UnityEngine.SceneManagement.SceneManager.LoadScene(1);
 				}
@@ -1789,9 +1697,10 @@ public class PupilGazeTracker:MonoBehaviour
 
 	}
 
-	void OnGUI()
+	void OnGUI ()
 	{
-		if (!isOperatorMonitor) {
+		if (!isOperatorMonitor)
+		{
 			string str = "Capture Rate=" + FPS;
 			str += "\nLeft Eye:" + PupilData._2D.LeftEyePos.ToString ();
 			str += "\nRight Eye:" + PupilData._2D.RightEyePos.ToString ();
@@ -1800,25 +1709,23 @@ public class PupilGazeTracker:MonoBehaviour
 
 	}
 
-	public void SwitchCalibrationMode(){
+	public void SwitchCalibrationMode ()
+	{
 
 		CalibrationGL.InitializeVisuals (PupilSettings.Instance.dataProcess.state);
 	
 	}
 
-	#region Plugin Control
-	public void StartBinocularVectorGazeMapper(){
-		PupilTools._sendRequestMessage (new Dictionary<string,object> {{"subject",""},{"name", "Binocular_Vector_Gaze_Mapper"}});
-	}
-	#endregion
-
 	#region Recording
-	public void OnRecording(){
+
+	public void OnRecording ()
+	{
 	}
 
 	#endregion
 
-	public static T ByteArrayToObject<T>(byte[] arrayOfBytes){
+	public static T ByteArrayToObject<T> (byte[] arrayOfBytes)
+	{
 		if (arrayOfBytes == null || arrayOfBytes.Length < 1)
 			return default(T);
 
@@ -1829,7 +1736,8 @@ public class PupilGazeTracker:MonoBehaviour
 		return obj;
 	}
 
-	void OnApplicationQuit(){
+	void OnApplicationQuit ()
+	{
 
 		#if UNITY_EDITOR // Operator window will only be available in Editor mode
 		if (OperatorWindow.Instance != null)

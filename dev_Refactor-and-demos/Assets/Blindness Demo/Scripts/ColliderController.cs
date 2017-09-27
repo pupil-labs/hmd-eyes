@@ -40,7 +40,7 @@ public class ColliderController : MonoBehaviour {
 
 		if (PupilSettings.Instance.connection.isConnected)
 		{	
-			if (PupilData.eyeID () == PupilData.GazeSource.LeftEye)
+			if (PupilData.eyeID == PupilData.GazeSource.LeftEye)
 			{
 				screenPoint = new Vector3 ((cam.pixelWidth * PupilData._2D.Norm_Pos ().x) - (cam.pixelWidth / 2), (cam.pixelHeight * PupilData._2D.Norm_Pos ().y) - (cam.pixelHeight / 2), .5f);
 

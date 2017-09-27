@@ -162,7 +162,7 @@ public static class PupilData
 			if (calculateMovingAverage)
 			{
 				Vector2 position2D = _2D.Norm_Pos ();
-				switch (eyeID())
+				switch (eyeID)
 				{
 				case GazeSource.LeftEye:
 					leftEye.AddGaze (position2D);
@@ -362,20 +362,22 @@ public static class PupilData
 		}
 	}
 
-	public static GazeSource eyeID ()
+	public static GazeSource eyeID
 	{
-		object IDo;
-		bool isID = gazeDictionary.TryGetValue ("id", out IDo);
-
-		if (isID)
+		get
 		{
-			return gazeSourceForString(IDo.ToString ());
+			object IDo;
+			bool isID = gazeDictionary.TryGetValue ("id", out IDo);
 
-		} else
-		{
-			return GazeSource.NoEye;
+			if (isID)
+			{
+				return gazeSourceForString(IDo.ToString ());
+
+			} else
+			{
+				return GazeSource.NoEye;
+			}
 		}
-
 	}
 
 	public static double Confidence (int eyeID)
@@ -383,10 +385,10 @@ public static class PupilData
 		object confO;
 		if (eyeID == 0)
 		{
-			PupilData.pupil0Dictionary.TryGetValue ("confidence", out confO);
+			pupil0Dictionary.TryGetValue ("confidence", out confO);
 		} else
 		{
-			PupilData.pupil1Dictionary.TryGetValue ("confidence", out confO);
+			pupil1Dictionary.TryGetValue ("confidence", out confO);
 		}
 		return (double)confO;
 	}
@@ -396,10 +398,10 @@ public static class PupilData
 		switch (s)
 		{
 		case GazeSource.LeftEye:
-			PupilData.pupil0Dictionary.TryGetValue ("confidence", out confO);
+			pupil0Dictionary.TryGetValue ("confidence", out confO);
 			break;
 		default:
-			PupilData.pupil1Dictionary.TryGetValue ("confidence", out confO);
+			pupil1Dictionary.TryGetValue ("confidence", out confO);
 			break;
 		}
 		return (double)confO;

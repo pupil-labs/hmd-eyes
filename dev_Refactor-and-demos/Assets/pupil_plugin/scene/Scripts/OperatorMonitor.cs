@@ -68,7 +68,7 @@ public class OperatorMonitor : MonoBehaviour {
 		pupilTracker.CreateEye0ImageMaterial ();
 		pupilTracker.CreateEye1ImageMaterial ();
 		pupilTracker.InitializeFramePublishing ();
-		pupilTracker.StartFramePublishing ();
+		PupilTools.StartFramePublishing ();
 
 	}
 //	void OnDestroy(){
@@ -84,9 +84,14 @@ public class OperatorMonitor : MonoBehaviour {
 		_Instance = this;
 	}
 
-	public void ExitOperatorMonitor(){
+	public void ExitOperatorMonitor()
+	{
 		PupilTools.UnSubscribeFrom ("pupil.");
-		pupilTracker.StopFramePublishing ();
+
+		if (!PupilSettings.Instance.debugView.active && !pupilTracker.isOperatorMonitor)
+		{	
+			PupilTools.StopFramePublishing ();
+		}
 		pupilTracker.isOperatorMonitor = false;
 		Camera.main.targetDisplay = MainCameraTargetDisplay;
 		Destroy (gameObject);

@@ -70,7 +70,7 @@ public class OperatorWindow : EditorWindow {
 		pupilTracker.CreateEye0ImageMaterial ();
 		pupilTracker.CreateEye1ImageMaterial ();
 		pupilTracker.InitializeFramePublishing ();
-		pupilTracker.StartFramePublishing ();
+		PupilTools.StartFramePublishing ();
 
 	}
 
