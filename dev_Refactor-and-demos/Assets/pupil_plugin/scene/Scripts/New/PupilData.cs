@@ -320,6 +320,11 @@ public static class PupilData
 			get{ return rightEye.gaze2D; }
 		}
 
+		public static Vector2 GazePosition
+		{
+			get { return 0.5f * (LeftEyePos + RightEyePos); }
+		}
+
 		public static Vector2 GetEyeGaze (GazeSource s)
 		{
 			switch (s)
