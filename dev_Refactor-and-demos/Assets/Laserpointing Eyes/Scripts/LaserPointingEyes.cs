@@ -20,17 +20,7 @@ public class LaserPointingEyes : MonoBehaviour
 		{	
 			Vector3 gazeIntoWorld = Camera.main.ViewportToWorldPoint(new Vector3(PupilData._2D.GazePosition.x, PupilData._2D.GazePosition.y, 10));
 			laserpointerLeftEye.transform.LookAt(gazeIntoWorld);
-//			Vector3 r = Camera.main.ViewportToWorldPoint(new Vector3(PupilData._2D.RightEyePos.x, PupilData._2D.RightEyePos.y, 10));
 			laserpointerRightEye.transform.LookAt(gazeIntoWorld);
-//			switch (PupilData.eyeID)
-//			{
-//			case PupilData.GazeSource.LeftEye:
-//				break;
-//			case PupilData.GazeSource.RightEye:
-//				break;
-//			default:
-//				break;
-//			}
 		}
 	}
 }

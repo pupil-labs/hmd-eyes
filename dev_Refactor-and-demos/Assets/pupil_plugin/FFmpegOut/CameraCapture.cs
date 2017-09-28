@@ -257,7 +257,7 @@ namespace FFmpegOut
 
 				// Write pupil timestamps to a file
 				string timeStampFileName = "Unity_" + Camera.main.name;
-				byte[] timeStampByteArray = pupilTracker.doubleArrayToByteArray (timeStampList.ToArray ());
+				byte[] timeStampByteArray = PupilConversions.doubleArrayToByteArray (timeStampList.ToArray ());
 				File.WriteAllBytes(_pipe.FilePath + "/" + timeStampFileName + ".time", timeStampByteArray);
 
 				_pipe.Close();

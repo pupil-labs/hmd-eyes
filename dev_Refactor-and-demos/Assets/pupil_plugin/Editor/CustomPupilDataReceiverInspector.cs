@@ -12,7 +12,7 @@ public class CustomPupilDataReceiverInspector : Editor {
 
 	void OnEnable(){
 		
-		pupilSettings = PupilTools.GetPupilSettings ();
+		pupilSettings = PupilTools.pupilSettings;
 
 		_pupilTrackerExists = PupilTools.PupilGazeTrackerExists ();
 

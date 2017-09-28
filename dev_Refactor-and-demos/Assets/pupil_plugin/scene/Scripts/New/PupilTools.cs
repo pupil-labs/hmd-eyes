@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Diagnostics;
 using UnityEngine;
 using NetMQ;
@@ -13,8 +14,20 @@ using UnityEditor;
 
 public class PupilTools : MonoBehaviour
 {
+	static PupilSettings _pupilSettings;
+	public static PupilSettings pupilSettings
+	{
+		get
+		{
+			if (_pupilSettings == null)
+			{
+				_pupilSettings = Resources.LoadAll<PupilSettings> ("") [0];
+				//			print (pupilSettings);	
+			}
 
-	public static PupilSettings pupilSettings = null;
+			return _pupilSettings;
+		}
+	}
 
 	public delegate void GUIRepaintAction ();
 //InspectorGUI repaint
@@ -62,19 +75,19 @@ public class PupilTools : MonoBehaviour
 
 	public static SubscriberSocket ClearAndInitiateSubscribe ()
 	{
-		if (PupilSettings.Instance.connection.subscribeSocket != null)
+		if (pupilSettings.connection.subscribeSocket != null)
 		{
 			
-			PupilSettings.Instance.connection.subscribeSocket.Close ();
+			pupilSettings.connection.subscribeSocket.Close ();
 
 		}
 
-		SubscriberSocket _subscriberSocket = new SubscriberSocket (PupilSettings.Instance.connection.IPHeader + PupilSettings.Instance.connection.subport);
+		SubscriberSocket _subscriberSocket = new SubscriberSocket (pupilSettings.connection.IPHeader + pupilSettings.connection.subport);
 
 		//André: Is this necessary??
-		_subscriberSocket.Options.SendHighWatermark = PupilSettings.Instance.numberOfMessages;// 6;
+		_subscriberSocket.Options.SendHighWatermark = pupilSettings.numberOfMessages;// 6;
 
-		PupilSettings.Instance.connection.topicList.ForEach (p => _subscriberSocket.Subscribe (p));
+		pupilSettings.connection.topicList.ForEach (p => _subscriberSocket.Subscribe (p));
 
 		return _subscriberSocket;
 
@@ -82,31 +95,59 @@ public class PupilTools : MonoBehaviour
 
 	public static void SubscribeTo (string topic)
 	{
-		if (!PupilSettings.Instance.connection.topicList.Contains (topic))
+		if (!pupilSettings.connection.topicList.Contains (topic))
 		{
 			
-			PupilSettings.Instance.connection.topicList.Add (topic);
+			pupilSettings.connection.topicList.Add (topic);
 
 		}
 
-		PupilSettings.Instance.connection.subscribeSocket = ClearAndInitiateSubscribe ();
+		pupilSettings.connection.subscribeSocket = ClearAndInitiateSubscribe ();
 	}
 
 	public static void UnSubscribeFrom (string topic)
 	{
 
-		if (PupilSettings.Instance.connection.topicList.Contains (topic))
+		if (pupilSettings.connection.topicList.Contains (topic))
 		{
-			PupilSettings.Instance.connection.topicList.Remove (topic);
+			pupilSettings.connection.topicList.Remove (topic);
 		}
 
-		PupilSettings.Instance.connection.subscribeSocket = ClearAndInitiateSubscribe ();
+		pupilSettings.connection.subscribeSocket = ClearAndInitiateSubscribe ();
 
+	}
+
+
+	static int currCalibPoint;
+	static int currCalibSamples;
+	public static int defaultCalibrationCount = 120;
+	static float lastTimeStamp = 0;
+	public static void InitializeCalibration ()
+	{
+		print ("Initializing Calibration");
+
+		currCalibPoint = 0;
+		currCalibSamples = 0;
+
+		pupilSettings.calibration.marker.position.x = pupilSettings.calibration.currentCalibrationType.calibPoints [0] [0];
+		pupilSettings.calibration.marker.position.y = pupilSettings.calibration.currentCalibrationType.calibPoints [0] [1];
+		pupilSettings.calibration.marker.position.z = pupilSettings.calibration.currentCalibrationType.depth;
+
+		CalibrationGL.InitializeVisuals (PupilSettings.EStatus.Calibration);
+
+//		yield return new WaitForSeconds (2f);
+
+		print ("Starting Calibration");
+
+		pupilSettings.calibration.initialized = true;
+		pupilSettings.dataProcess.state = PupilSettings.EStatus.Calibration;
+
+		PupilTools.RepaintGUI ();
 	}
 
 	public static void StartCalibration ()
 	{
-		PupilGazeTracker.Instance.StartCoroutine ("InitializeCalibration");
+		InitializeCalibration ();
 
 		_sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","start_plugin" },
@@ -138,6 +179,55 @@ public class PupilTools : MonoBehaviour
 		}
 
 		_calibrationData.Clear ();
+	}
+
+	public static void Calibrate ()
+	{
+		// Get the current calibration information from the PupilSettings class
+		PupilSettings.CalibrationType currentCalibrationType = pupilSettings.calibration.currentCalibrationType;
+
+		float[] _currentCalibPointPosition = pupilSettings.calibration.currentCalibrationType.calibPoints [currCalibPoint];
+
+		float alphaRatio = Mathf.InverseLerp (defaultCalibrationCount, 0f, currCalibSamples);//*_m.baseSize;//size hardcoded, change this
+		PupilSettings.Calibration.Marker marker = pupilSettings.calibration.CalibrationMarkers.Where (p => p.calibrationPoint && p.calibMode == pupilSettings.calibration.currentCalibrationMode).ToList () [0];
+		marker.color = new Color (1f, 1f, 1f, alphaRatio);
+		marker.position.x = _currentCalibPointPosition [0];
+		marker.position.y = _currentCalibPointPosition [1];
+		marker.position.z = currentCalibrationType.depth;//using the height az depth offset
+		marker.toggle = true;
+
+		float t = GetPupilTimestamp ();
+
+		if (t - lastTimeStamp > 0.02f) // was 0.1, 1000/60 ms wait in old version
+		{
+			lastTimeStamp = t;
+
+			print ("its okay to go on");
+
+			//Create reference data to pass on. _cPointFloatValues are storing the float values for the relevant current Calibration mode
+			AddCalibrationPointReferencePosition (currentCalibrationType.positionKey, _currentCalibPointPosition, t, 0);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+			AddCalibrationPointReferencePosition (currentCalibrationType.positionKey, _currentCalibPointPosition, t, 1);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+
+			if (pupilSettings.debug.printSampling)
+				print ("Sampling at : " + currCalibSamples + ". On the position : " + _currentCalibPointPosition [0] + " | " + _currentCalibPointPosition [1]);
+
+			currCalibSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
+
+			if (currCalibSamples >= defaultCalibrationCount)
+			{
+				currCalibSamples = 0;
+				currCalibPoint++;
+
+				//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
+				AddCalibrationReferenceData ();
+
+				if (currCalibPoint >= currentCalibrationType.calibPoints.Count)
+				{
+					StopCalibration ();
+				}
+
+			}
+		}
 	}
 
 	public static void StopCalibration ()
@@ -311,19 +401,6 @@ public class PupilTools : MonoBehaviour
 
 	}
 
-	public static PupilSettings GetPupilSettings ()
-	{
-
-		if (pupilSettings == null)
-		{
-			pupilSettings = Resources.LoadAll<PupilSettings> ("") [0];
-//			print (pupilSettings);	
-		}
-		
-		return pupilSettings;
-	
-	}
-
 	public static bool PupilGazeTrackerExists ()
 	{//this could/should be done with .Instance of the singleton type, but for Unity Editor update a FindObjectOfType seems more effective.
 	
@@ -339,7 +416,7 @@ public class PupilTools : MonoBehaviour
 
 	public static void Connect ()
 	{
-		if (PupilSettings.Instance.connection.isLocal)
+		if (pupilSettings.connection.isLocal)
 			RunServiceAtPath ();
 
 		PupilDataReceiver.Instance.RunConnect ();
@@ -349,7 +426,7 @@ public class PupilTools : MonoBehaviour
 	public static void RunServiceAtPath (bool runEyeProcess = false)
 	{
 
-		string servicePath = PupilSettings.Instance.pupilServiceApp.servicePath;
+		string servicePath = pupilSettings.pupilServiceApp.servicePath;
 
 		if (File.Exists (servicePath))
 		{

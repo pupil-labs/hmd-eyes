@@ -157,7 +157,7 @@ public class PupilDataReceiver : MonoBehaviour {
 						case PupilSettings.EStatus.Calibration:
 
 							if (pupilSettings.calibration.initialized)
-								PupilGazeTracker.Instance.Calibrate ();
+								PupilTools.Calibrate ();
 							break;
 
 						}

@@ -9,7 +9,6 @@ using NetMQ.Sockets;
 [CreateAssetMenu (fileName = "PupilSettings")]
 public class PupilSettings:ScriptableObject
 {
-
 	static PupilSettings _instance = null;
 
 	public static PupilSettings Instance
@@ -17,7 +16,7 @@ public class PupilSettings:ScriptableObject
 		get
 		{
 			if (_instance == null)
-				_instance = PupilTools.GetPupilSettings ();
+				_instance = PupilTools.pupilSettings;
 			return _instance;
 		}
 	}
@@ -147,9 +146,6 @@ public class PupilSettings:ScriptableObject
 
 		}
 
-		public int currCalibPoint;
-		public int currCalibSamples;
-
 		Marker _marker = null;
 
 		public Marker marker
@@ -277,6 +273,5 @@ public class PupilSettings:ScriptableObject
 	public const string stringForLeftEyeID = "0";
 	public const int rightEyeID = 1;
 	public const string stringForRightEyeID = "1";
-
 }
 

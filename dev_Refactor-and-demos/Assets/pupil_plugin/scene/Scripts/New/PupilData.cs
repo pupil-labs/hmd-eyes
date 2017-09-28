@@ -4,6 +4,8 @@ using UnityEngine;
 
 public static class PupilData
 {
+	public static Calibration.data CalibrationData;
+
 	private static int SamplesCount = 4;
 
 	class MovingAverage

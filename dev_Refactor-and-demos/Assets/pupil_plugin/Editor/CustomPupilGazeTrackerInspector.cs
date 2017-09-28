@@ -38,7 +38,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 	public static void AutoRunLayout(){
 
-		PupilSettings pupilSettings = PupilTools.GetPupilSettings ();
+		PupilSettings pupilSettings = PupilTools.pupilSettings;
 
 		////////////////////////////TOGGLE AUTO MODE////////////////////////////
 
@@ -281,7 +281,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		pupilTracker.isOperatorMonitor = GUILayout.Toggle (pupilTracker.isOperatorMonitor, "Operator Monitor", "Button", GUILayout.MinWidth (100), GUILayout.Height (50));
 		if (EditorGUI.EndChangeCheck ()) {
 			if (pupilTracker.isOperatorMonitor) {
-				pupilTracker.CloseCalibrationDebugView();
+				pupilTracker.debugInstance.CloseCalibrationDebugView();
 				//				Debug.Log("instantiate operator monitor");
 				OperatorMonitor.Instantiate ();
 			} else {
@@ -307,7 +307,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			if (GUILayout.Button ("IsConnected")) {
 				PupilSettings.Instance.connection.isConnected = true;
 			}
-			pupilTracker.DebugVariables.packetsOnMainThread = GUILayout.Toggle (pupilTracker.DebugVariables.packetsOnMainThread, "Process Packets on Main Thread", "Button", GUILayout.MinWidth (100));
+			pupilTracker.debugInstance.DebugVariables.packetsOnMainThread = GUILayout.Toggle (pupilTracker.debugInstance.DebugVariables.packetsOnMainThread, "Process Packets on Main Thread", "Button", GUILayout.MinWidth (100));
 
 			GUI.backgroundColor = Color.white;
 			GUILayout.Space (10);
@@ -382,9 +382,9 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				GUILayout.BeginHorizontal ();
 				GUILayout.Label ("path : ", pupilSettings.GUIStyles[5], GUILayout.MinWidth (50));
 
-				PupilTools.GetPupilSettings ().pupilServiceApp.servicePath = EditorGUILayout.TextArea (PupilTools.GetPupilSettings ().pupilServiceApp.servicePath, pupilSettings.GUIStyles[6], GUILayout.MinWidth (100), GUILayout.Height (22));
+				PupilTools.pupilSettings.pupilServiceApp.servicePath = EditorGUILayout.TextArea (PupilTools.pupilSettings.pupilServiceApp.servicePath, pupilSettings.GUIStyles[6], GUILayout.MinWidth (100), GUILayout.Height (22));
 				if (GUILayout.Button ("Browse")) {
-					PupilTools.GetPupilSettings ().pupilServiceApp.servicePath = EditorUtility.OpenFilePanel ("Select Pupil service application file", PupilTools.GetPupilSettings ().pupilServiceApp.servicePath, "exe");
+					PupilTools.pupilSettings.pupilServiceApp.servicePath = EditorUtility.OpenFilePanel ("Select Pupil service application file", PupilTools.pupilSettings.pupilServiceApp.servicePath, "exe");
 				}
 				GUILayout.EndHorizontal ();
 				////////////////////////////PUPIL APP PATH////////////////////////////
@@ -471,10 +471,10 @@ public class CustomPupilGazeTrackerInspector : Editor {
 					if (pupilSettings.debugView.active) {
 						if (pupilTracker.OperatorMonitorProperties [0].OperatorCamera != null)
 							OperatorMonitor.Instance.ExitOperatorMonitor ();
-						pupilTracker.StartCalibrationDebugView ();
+						pupilTracker.debugInstance.StartCalibrationDebugView ();
 
 					} else {
-						pupilTracker.CloseCalibrationDebugView ();
+						pupilTracker.debugInstance.CloseCalibrationDebugView ();
 					}
 				}
 			}
@@ -483,11 +483,11 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				//				pupilTracker.calibrationDebugCamera = (PupilGazeTracker.CalibrationDebugCamera) EditorGUILayout.EnumPopup (pupilTracker.calibrationDebugCamera);
 				GUILayout.BeginHorizontal ();
 				EditorGUI.BeginChangeCheck ();
-				pupilTracker.DebugViewVariables.isDrawLines = GUILayout.Toggle (pupilTracker.DebugViewVariables.isDrawLines, " Draw Debug Lines ", "Button");
-				pupilTracker.DebugViewVariables.isDrawPoints = GUILayout.Toggle (pupilTracker.DebugViewVariables.isDrawPoints, " Draw Debug Points ", "Button");
+				pupilTracker.debugInstance.DebugViewVariables.isDrawLines = GUILayout.Toggle (pupilTracker.debugInstance.DebugViewVariables.isDrawLines, " Draw Debug Lines ", "Button");
+				pupilTracker.debugInstance.DebugViewVariables.isDrawPoints = GUILayout.Toggle (pupilTracker.debugInstance.DebugViewVariables.isDrawPoints, " Draw Debug Points ", "Button");
 				if (EditorGUI.EndChangeCheck ()) {
-					pupilTracker.SetDrawCalibrationPointCloud (pupilTracker.DebugViewVariables.isDrawPoints);
-					pupilTracker.SetDrawCalibrationLines (pupilTracker.DebugViewVariables.isDrawLines);
+					pupilTracker.debugInstance.SetDrawCalibrationPointCloud (pupilTracker.debugInstance.DebugViewVariables.isDrawPoints);
+					pupilTracker.debugInstance.SetDrawCalibrationLines (pupilTracker.debugInstance.DebugViewVariables.isDrawLines);
 				}
 				GUILayout.EndHorizontal ();
 			}
@@ -499,7 +499,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
 			GUILayout.Label ("Samples ", pupilSettings.GUIStyles[3], GUILayout.MinWidth (35));
-			pupilTracker.DefaultCalibrationCount = EditorGUILayout.IntSlider (pupilTracker.DefaultCalibrationCount, 1, 120, GUILayout.ExpandWidth(true));
+			PupilTools.defaultCalibrationCount = EditorGUILayout.IntSlider (PupilTools.defaultCalibrationCount, 1, 120, GUILayout.ExpandWidth(true));
 			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 			GUILayout.Space (10);//------------------------------------------------------------//
