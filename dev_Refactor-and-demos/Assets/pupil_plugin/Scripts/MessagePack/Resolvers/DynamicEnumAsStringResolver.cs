@@ -1,11 +1,13 @@
-﻿using MessagePack.Formatters;
+﻿#if !UNITY_METRO
+
+using MessagePack.Formatters;
 using MessagePack.Internal;
 using System;
 using System.Reflection;
 
 namespace MessagePack.Resolvers
 {
-    public class DynamicEnumAsStringResolver : IFormatterResolver
+    public sealed class DynamicEnumAsStringResolver : IFormatterResolver
     {
         public static readonly IFormatterResolver Instance = new DynamicEnumAsStringResolver();
 
@@ -54,3 +56,5 @@ namespace MessagePack.Resolvers
         }
     }
 }
+
+#endif

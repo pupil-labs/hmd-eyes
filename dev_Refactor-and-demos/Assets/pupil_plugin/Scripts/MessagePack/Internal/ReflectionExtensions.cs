@@ -1,6 +1,9 @@
-﻿using System;
+﻿#if !UNITY_METRO
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace MessagePack.Internal
@@ -15,6 +18,14 @@ namespace MessagePack.Internal
         public static bool IsPublic(this System.Reflection.TypeInfo type)
         {
             return type.IsPublic;
+        }
+
+        public static bool IsAnonymous(this System.Reflection.TypeInfo type)
+        {
+            return type.GetCustomAttribute<CompilerGeneratedAttribute>() != null
+                && type.IsGenericType && type.Name.Contains("AnonymousType")
+                && (type.Name.StartsWith("<>") || type.Name.StartsWith("VB$"))
+                && (type.Attributes & TypeAttributes.NotPublic) == TypeAttributes.NotPublic;
         }
 
 #if NETSTANDARD1_4
@@ -37,3 +48,5 @@ namespace MessagePack.Internal
 #endif
     }
 }
+
+#endif

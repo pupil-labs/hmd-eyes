@@ -1,13 +1,98 @@
 ﻿using MessagePack.Formatters;
+using MessagePack.Internal;
+using MessagePack.Resolvers;
 
 namespace MessagePack.Resolvers
 {
     /// <summary>
     /// Default composited resolver, builtin -> attribute -> dynamic enum -> dynamic generic -> dynamic union -> dynamic object -> primitive.
     /// </summary>
-    public class StandardResolver : IFormatterResolver
+    public sealed class StandardResolver : IFormatterResolver
     {
         public static readonly IFormatterResolver Instance = new StandardResolver();
+
+#if NETSTANDARD1_4
+        public static readonly IMessagePackFormatter<object> ObjectFallbackFormatter = new DynamicObjectTypeFallbackFormatter(StandardResolverCore.Instance);
+#endif
+
+        StandardResolver()
+        {
+        }
+
+        public IMessagePackFormatter<T> GetFormatter<T>()
+        {
+            return FormatterCache<T>.formatter;
+        }
+
+        static class FormatterCache<T>
+        {
+            public static readonly IMessagePackFormatter<T> formatter;
+
+            static FormatterCache()
+            {
+                if (typeof(T) == typeof(object))
+                {
+                    // final fallback
+#if NETSTANDARD1_4
+                    formatter = (IMessagePackFormatter<T>)ObjectFallbackFormatter;
+#else
+                    formatter = PrimitiveObjectResolver.Instance.GetFormatter<T>();
+#endif
+                }
+                else
+                {
+                    formatter = StandardResolverCore.Instance.GetFormatter<T>();
+                }
+            }
+        }
+    }
+
+    public sealed class ContractlessStandardResolver : IFormatterResolver
+    {
+        public static readonly IFormatterResolver Instance = new ContractlessStandardResolver();
+
+#if NETSTANDARD1_4
+        public static readonly IMessagePackFormatter<object> ObjectFallbackFormatter = new DynamicObjectTypeFallbackFormatter(ContractlessStandardResolverCore.Instance);
+#endif
+
+        ContractlessStandardResolver()
+        {
+        }
+
+        public IMessagePackFormatter<T> GetFormatter<T>()
+        {
+            return FormatterCache<T>.formatter;
+        }
+
+        static class FormatterCache<T>
+        {
+            public static readonly IMessagePackFormatter<T> formatter;
+
+            static FormatterCache()
+            {
+                if (typeof(T) == typeof(object))
+                {
+                    // final fallback
+#if NETSTANDARD1_4
+                    formatter = (IMessagePackFormatter<T>)ObjectFallbackFormatter;
+#else
+                    formatter = PrimitiveObjectResolver.Instance.GetFormatter<T>();
+#endif
+                }
+                else
+                {
+                    formatter = ContractlessStandardResolverCore.Instance.GetFormatter<T>();
+                }
+            }
+        }
+    }
+}
+
+namespace MessagePack.Internal
+{
+    internal sealed class StandardResolverCore : IFormatterResolver
+    {
+        public static readonly IFormatterResolver Instance = new StandardResolverCore();
 
         static readonly IFormatterResolver[] resolvers = new[]
         {
@@ -19,19 +104,16 @@ namespace MessagePack.Resolvers
             MessagePack.Unity.UnityResolver.Instance,
 #endif
 
-#if !ENABLE_IL2CPP
+#if !ENABLE_IL2CPP && !UNITY_METRO
 
             DynamicEnumResolver.Instance, // Try Enum
             DynamicGenericResolver.Instance, // Try Array, Tuple, Collection
             DynamicUnionResolver.Instance, // Try Union(Interface)
             DynamicObjectResolver.Instance, // Try Object
 #endif
-
-            // finally, try primitive resolver
-            PrimitiveObjectResolver.Instance
         };
 
-        StandardResolver()
+        StandardResolverCore()
         {
         }
 
@@ -59,17 +141,31 @@ namespace MessagePack.Resolvers
         }
     }
 
-    public class ContractlessStandardResolver : IFormatterResolver
+    internal sealed class ContractlessStandardResolverCore : IFormatterResolver
     {
-        public static readonly IFormatterResolver Instance = new ContractlessStandardResolver();
+        public static readonly IFormatterResolver Instance = new ContractlessStandardResolverCore();
 
         static readonly IFormatterResolver[] resolvers = new[]
         {
-            StandardResolver.Instance,
-            DynamicContractlessObjectResolver.Instance,
+            BuiltinResolver.Instance, // Try Builtin
+
+            AttributeFormatterResolver.Instance, // Try use [MessagePackFormatter]
+
+#if !NETSTANDARD1_4
+            MessagePack.Unity.UnityResolver.Instance,
+#endif
+
+#if !ENABLE_IL2CPP && !UNITY_METRO
+
+            DynamicEnumResolver.Instance, // Try Enum
+            DynamicGenericResolver.Instance, // Try Array, Tuple, Collection
+            DynamicUnionResolver.Instance, // Try Union(Interface)
+            DynamicObjectResolver.Instance, // Try Object
+            DynamicContractlessObjectResolver.Instance, // Serializes keys as strings
+#endif
         };
 
-        ContractlessStandardResolver()
+        ContractlessStandardResolverCore()
         {
         }
 

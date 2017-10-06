@@ -133,6 +133,20 @@ namespace MessagePack
             return formatter.Deserialize(bytes, 0, resolver, out readSize);
         }
 
+        public static T Deserialize<T>(ArraySegment<byte> bytes)
+        {
+            return Deserialize<T>(bytes, defaultResolver);
+        }
+
+        public static T Deserialize<T>(ArraySegment<byte> bytes, IFormatterResolver resolver)
+        {
+            if (resolver == null) resolver = DefaultResolver;
+            var formatter = resolver.GetFormatterWithVerify<T>();
+
+            int readSize;
+            return formatter.Deserialize(bytes.Array, bytes.Offset, resolver, out readSize);
+        }
+
         public static T Deserialize<T>(Stream stream)
         {
             return Deserialize<T>(stream, defaultResolver);
@@ -140,32 +154,52 @@ namespace MessagePack
 
         public static T Deserialize<T>(Stream stream, IFormatterResolver resolver)
         {
+            return Deserialize<T>(stream, resolver, false);
+        }
+
+        public static T Deserialize<T>(Stream stream, bool readStrict)
+        {
+            return Deserialize<T>(stream, defaultResolver, readStrict);
+        }
+
+        public static T Deserialize<T>(Stream stream, IFormatterResolver resolver, bool readStrict)
+        {
             if (resolver == null) resolver = DefaultResolver;
             var formatter = resolver.GetFormatterWithVerify<T>();
 
+            if (!readStrict)
+            {
 #if NETSTANDARD1_4 && !NET45
 
-            var ms = stream as MemoryStream;
-            if (ms != null)
-            {
-                // optimize for MemoryStream
-                ArraySegment<byte> buffer;
-                if (ms.TryGetBuffer(out buffer))
+                var ms = stream as MemoryStream;
+                if (ms != null)
                 {
-                    int readSize;
-                    return formatter.Deserialize(buffer.Array, buffer.Offset, resolver, out readSize);
+                    // optimize for MemoryStream
+                    ArraySegment<byte> buffer;
+                    if (ms.TryGetBuffer(out buffer))
+                    {
+                        int readSize;
+                        return formatter.Deserialize(buffer.Array, buffer.Offset, resolver, out readSize);
+                    }
                 }
-            }
 #endif
 
-            // no else.
+                // no else.
+                {
+                    var buffer = InternalMemoryPool.GetBuffer();
+
+                    FillFromStream(stream, ref buffer);
+
+                    int readSize;
+                    return formatter.Deserialize(buffer, 0, resolver, out readSize);
+                }
+            }
+            else
             {
-                var buffer = InternalMemoryPool.GetBuffer();
-
-                FillFromStream(stream, ref buffer);
-
+                int _;
+                var bytes = MessagePackBinary.ReadMessageBlockFromStreamUnsafe(stream, false, out _);
                 int readSize;
-                return formatter.Deserialize(buffer, 0, resolver, out readSize);
+                return formatter.Deserialize(bytes, 0, resolver, out readSize);
             }
         }
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MessagePack.Formatters
 {
-    public class PrimitiveObjectFormatter : IMessagePackFormatter<object>
+    public sealed class PrimitiveObjectFormatter : IMessagePackFormatter<object>
     {
         public static readonly IMessagePackFormatter<object> Instance = new PrimitiveObjectFormatter();
 
@@ -31,6 +31,22 @@ namespace MessagePack.Formatters
         {
 
         }
+
+#if !UNITY_METRO
+
+        public static bool IsSupportedType(Type type, TypeInfo typeInfo, object value)
+        {
+            if (value == null) return true;
+            if (typeToJumpCode.ContainsKey(type)) return true;
+            if (typeInfo.IsEnum) return true;
+
+            if (value is System.Collections.IDictionary) return true;
+            if (value is System.Collections.ICollection) return true;
+
+            return false;
+        }
+
+#endif
 
         public int Serialize(ref byte[] bytes, int offset, object value, IFormatterResolver formatterResolver)
         {
@@ -82,7 +98,11 @@ namespace MessagePack.Formatters
             }
             else
             {
+#if UNITY_METRO && !NETFX_CORE
+                if (t.IsEnum)
+#else
                 if (t.GetTypeInfo().IsEnum)
+#endif
                 {
                     var underlyingType = Enum.GetUnderlyingType(t);
                     var code2 = typeToJumpCode[underlyingType];
@@ -170,7 +190,7 @@ namespace MessagePack.Formatters
                 case MessagePackType.Binary:
                     return MessagePackBinary.ReadBytes(bytes, offset, out readSize);
                 case MessagePackType.Extension:
-                    var ext = MessagePackBinary.ReadExtensionFormat(bytes, offset, out readSize);
+                    var ext = MessagePackBinary.ReadExtensionFormatHeader(bytes, offset, out readSize);
                     if (ext.TypeCode == ReservedMessagePackExtensionTypeCode.DateTime)
                     {
                         return MessagePackBinary.ReadDateTime(bytes, offset, out readSize);
@@ -182,10 +202,11 @@ namespace MessagePack.Formatters
                         var startOffset = offset;
                         offset += readSize;
 
+                        var objectFormatter = formatterResolver.GetFormatter<object>();
                         var array = new object[length];
                         for (int i = 0; i < length; i++)
                         {
-                            array[i] = Deserialize(bytes, offset, formatterResolver, out readSize);
+                            array[i] = objectFormatter.Deserialize(bytes, offset, formatterResolver, out readSize);
                             offset += readSize;
                         }
 
@@ -198,13 +219,14 @@ namespace MessagePack.Formatters
                         var startOffset = offset;
                         offset += readSize;
 
+                        var objectFormatter = formatterResolver.GetFormatter<object>();
                         var hash = new Dictionary<object, object>(length);
                         for (int i = 0; i < length; i++)
                         {
-                            var key = Deserialize(bytes, offset, formatterResolver, out readSize);
+                            var key = objectFormatter.Deserialize(bytes, offset, formatterResolver, out readSize);
                             offset += readSize;
 
-                            var value = Deserialize(bytes, offset, formatterResolver, out readSize);
+                            var value = objectFormatter.Deserialize(bytes, offset, formatterResolver, out readSize);
                             offset += readSize;
 
                             hash.Add(key, value);

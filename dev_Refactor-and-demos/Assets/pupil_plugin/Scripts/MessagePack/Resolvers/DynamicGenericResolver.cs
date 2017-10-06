@@ -1,10 +1,13 @@
-﻿using MessagePack.Formatters;
+﻿#if !UNITY_METRO
+
+using MessagePack.Formatters;
 using System.Linq;
 using MessagePack.Internal;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Collections.ObjectModel;
+using System.Collections;
 
 #if NETSTANDARD1_4
 using System.Threading.Tasks;
@@ -12,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace MessagePack.Resolvers
 {
-    public class DynamicGenericResolver : IFormatterResolver
+    public sealed class DynamicGenericResolver : IFormatterResolver
     {
         public static readonly IFormatterResolver Instance = new DynamicGenericResolver();
 
@@ -266,6 +269,26 @@ namespace MessagePack.Internal
                     }
                 }
             }
+            else
+            {
+                // NonGeneric Collection
+                if (t == typeof(IList))
+                {
+                    return NonGenericInterfaceListFormatter.Instance;
+                }
+                else if (t == typeof(IDictionary))
+                {
+                    return NonGenericInterfaceDictionaryFormatter.Instance;
+                }
+                if (typeof(IList).GetTypeInfo().IsAssignableFrom(ti) && ti.DeclaredConstructors.Any(x => x.GetParameters().Length == 0))
+                {
+                    return Activator.CreateInstance(typeof(NonGenericListFormatter<>).MakeGenericType(t));
+                }
+                else if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(ti) && ti.DeclaredConstructors.Any(x => x.GetParameters().Length == 0))
+                {
+                    return Activator.CreateInstance(typeof(NonGenericDictionaryFormatter<>).MakeGenericType(t));
+                }
+            }
 
             return null;
         }
@@ -276,3 +299,5 @@ namespace MessagePack.Internal
         }
     }
 }
+
+#endif

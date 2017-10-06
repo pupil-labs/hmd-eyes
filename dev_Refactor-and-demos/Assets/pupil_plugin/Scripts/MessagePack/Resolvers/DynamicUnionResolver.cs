@@ -6,13 +6,16 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace MessagePack.Resolvers
 {
+#if !UNITY_METRO
+
     /// <summary>
     /// UnionResolver by dynamic code generation.
     /// </summary>
-    public class DynamicUnionResolver : IFormatterResolver
+    public sealed class DynamicUnionResolver : IFormatterResolver
     {
         public static readonly DynamicUnionResolver Instance = new DynamicUnionResolver();
 
@@ -24,6 +27,8 @@ namespace MessagePack.Resolvers
 #else
         static readonly Regex SubtractFullNameRegex = new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+");
 #endif
+
+        static int nameSequence = 0;
 
         DynamicUnionResolver()
         {
@@ -81,6 +86,10 @@ namespace MessagePack.Resolvers
             var unionAttrs = ti.GetCustomAttributes<UnionAttribute>().OrderBy(x => x.Key).ToArray();
 
             if (unionAttrs.Length == 0) return null;
+            if (!ti.IsInterface && !ti.IsAbstract)
+            {
+                throw new MessagePackDynamicUnionResolverException("Union can only be interface or abstract class. Type:" + type.Name);
+            }
 
             var checker1 = new HashSet<int>();
             var checker2 = new HashSet<Type>();
@@ -91,7 +100,7 @@ namespace MessagePack.Resolvers
             }
 
             var formatterType = typeof(IMessagePackFormatter<>).MakeGenericType(type);
-            var typeBuilder = assembly.ModuleBuilder.DefineType("MessagePack.Formatters." + SubtractFullNameRegex.Replace(type.FullName, "").Replace(".", "_") + "Formatter", TypeAttributes.Public | TypeAttributes.Sealed, null, new[] { formatterType });
+            var typeBuilder = assembly.ModuleBuilder.DefineType("MessagePack.Formatters." + SubtractFullNameRegex.Replace(type.FullName, "").Replace(".", "_") + "Formatter" + +Interlocked.Increment(ref nameSequence), TypeAttributes.Public | TypeAttributes.Sealed, null, new[] { formatterType });
 
             FieldBuilder typeToKeyAndJumpMap = null; // Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>
             FieldBuilder keyToJumpMap = null; // Dictionary<int, int>
@@ -467,6 +476,8 @@ namespace MessagePack.Resolvers
             }
         }
     }
+
+#endif
 }
 
 namespace MessagePack.Internal
