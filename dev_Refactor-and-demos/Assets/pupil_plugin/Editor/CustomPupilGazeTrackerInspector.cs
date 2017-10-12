@@ -229,7 +229,8 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		if (PupilSettings.Instance.connection.isConnected) {
 			if (PupilSettings.Instance.dataProcess.state != PupilSettings.EStatus.Calibration) {
 				if (GUILayout.Button ("Calibrate", GUILayout.Height (50))) {
-					if (Application.isPlaying) {
+					if (Application.isPlaying) 
+					{
 						PupilTools.StartCalibration ();
 						//EditorApplication.update += CheckCalibration;
 					} else {

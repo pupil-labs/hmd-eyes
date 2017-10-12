@@ -75,24 +75,17 @@ public class PupilSettings:ScriptableObject
 			positionKey = "norm_pos",
 			ref_data = new double[]{ 0.0, 0.0 },
 			depth = 0.1f,
-			calibPoints = new List<float[]> () {
-				new float[]{ 0.2f, 0.2f },
-				new float[]{ 0.35f, 0.35f },
-				new float[]{ 0.2f, 0.5f },
-				new float[]{ 0.35f, 0.5f },
-				new float[]{ 0.2f, 0.8f },
-				new float[]{ 0.35f, 0.65f },
-				new float[]{ 0.5f, 0.8f },
-				new float[]{ 0.5f, 0.65f },
-				new float[]{ 0.8f, 0.8f },
-				new float[]{ 0.65f, 0.65f },
-				new float[]{ 0.8f, 0.5f },
-				new float[]{ 0.65f, 0.5f },
-				new float[]{ 0.8f, 0.2f },
-				new float[]{ 0.65f, 0.35f },
-				new float[]{ 0.5f, 0.2f },
-				new float[]{ 0.5f, 0.35f },
-				new float[]{ 0.5f, 0.5f }
+			calibPoints = new List<float[]>() {
+				new float[]{0.5f,0.5f},
+				new float[]{0.25f,0.7f},
+				new float[]{0.5f,0.7f},
+				new float[]{0.75f,0.7f},
+				new float[]{0.75f,0.5f},
+				new float[]{0.75f,0.3f},
+				new float[]{0.5f,0.3f},
+				new float[]{0.25f,0.3f},
+				new float[]{0.25f,0.5f},
+				new float[]{0.5f,0.5f},
 			}
 		};
 
@@ -267,11 +260,11 @@ public class PupilSettings:ScriptableObject
 
 	public List<GUIStyle> GUIStyles;
 
-	public int numberOfMessages = 6;
+	public static int numberOfMessages = 6;
 
-	public const int leftEyeID = 0;
-	public const string stringForLeftEyeID = "0";
-	public const int rightEyeID = 1;
-	public const string stringForRightEyeID = "1";
+	public const int leftEyeID = 1;
+	public const string stringForLeftEyeID = "1";
+	public const int rightEyeID = 0;
+	public const string stringForRightEyeID = "0";
 }
 

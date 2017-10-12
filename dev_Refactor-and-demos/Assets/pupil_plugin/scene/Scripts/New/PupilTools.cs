@@ -21,7 +21,10 @@ public class PupilTools : MonoBehaviour
 		{
 			if (_pupilSettings == null)
 			{
-				_pupilSettings = Resources.LoadAll<PupilSettings> ("") [0];
+				foreach (var item in Resources.LoadAll<PupilSettings> (""))
+				{
+					_pupilSettings = item;
+				}
 				//			print (pupilSettings);	
 			}
 
@@ -85,9 +88,16 @@ public class PupilTools : MonoBehaviour
 		SubscriberSocket _subscriberSocket = new SubscriberSocket (pupilSettings.connection.IPHeader + pupilSettings.connection.subport);
 
 		//André: Is this necessary??
-		_subscriberSocket.Options.SendHighWatermark = pupilSettings.numberOfMessages;// 6;
+		_subscriberSocket.Options.SendHighWatermark = PupilSettings.numberOfMessages;// 6;
 
-		pupilSettings.connection.topicList.ForEach (p => _subscriberSocket.Subscribe (p));
+		//André: PupilSettings got overwritten every time, adding "pupil." after I removed it..
+		foreach (var topic in pupilSettings.connection.topicList)
+		{
+			if (topic != "pupil.")
+				_subscriberSocket.Subscribe (topic);
+			else
+				print ("Pupil");
+		}
 
 		return _subscriberSocket;
 
@@ -236,13 +246,7 @@ public class PupilTools : MonoBehaviour
 		pupilSettings.dataProcess.state = PupilSettings.EStatus.ProcessingGaze;
 		_sendRequestMessage (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
 
-		if (pupilSettings.visualizeGaze)
-		{
-			CalibrationGL.InitializeVisuals (PupilSettings.EStatus.ProcessingGaze);
-		} else
-		{
-			CalibrationGL.InitializeVisuals (PupilSettings.EStatus.Idle);
-		}
+		CalibrationGL.InitializeVisuals (PupilSettings.EStatus.Idle);
 
 		if (OnCalibrationEnded != null)
 			OnCalibrationEnded ();

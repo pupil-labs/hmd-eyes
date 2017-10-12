@@ -327,6 +327,67 @@ public static class PupilData
 			get { return 0.5f * (LeftEyePos + RightEyePos); }
 		}
 
+		static Camera _sceneCamera;
+		static Vector2 frustumOffsetsLeftEye = Vector2.zero;
+		static Vector2 frustumOffsetsRightEye = Vector2.zero;
+		static Vector2 correctionFactor = Vector2.one * 0.5f;
+		static Vector2 standardFrustumCenter = Vector2.one * 0.5f;
+		static void InitializeFrustumEyeOffset()
+		{
+			Vector3[] frustumCornersMono = new Vector3[4];
+			_sceneCamera.CalculateFrustumCorners(new Rect(0, 0, 1, 1), _sceneCamera.nearClipPlane, Camera.MonoOrStereoscopicEye.Mono, frustumCornersMono);
+			Vector2 frustumWidthHeight = frustumCornersMono [2] - frustumCornersMono [0];
+
+			Vector3[] frustumCornersLeft = new Vector3[4];
+			_sceneCamera.CalculateFrustumCorners(new Rect(0, 0, 1, 1), _sceneCamera.nearClipPlane, Camera.MonoOrStereoscopicEye.Left, frustumCornersLeft);
+
+			// Step by step example for x
+			//		float leftEyeFrustumLeftOffset = (frustumCornersLeft [0].x - frustumCornersMono [0].x) / frustumWidth;
+			//		float leftEyeFrustumRightOffset = (frustumCornersLeft [3].x - frustumCornersMono [0].x) / frustumWidth;
+			//		float frustumOffsetLeftEye = leftEyeFrustumLeftOffset + 0.5f * (leftEyeFrustumRightOffset + leftEyeFrustumLeftOffset) - 0.5f;
+			// Combined
+			frustumOffsetsLeftEye = 1.5f * frustumCornersLeft [0] + 0.5f * frustumCornersLeft [2] - 2f * frustumCornersMono [0];
+			frustumOffsetsLeftEye.x /= frustumWidthHeight.x;
+			frustumOffsetsLeftEye.y /= frustumWidthHeight.y;
+
+			Vector3[] frustumCornersRight = new Vector3[4];
+			_sceneCamera.CalculateFrustumCorners(new Rect(0, 0, 1, 1), _sceneCamera.nearClipPlane, Camera.MonoOrStereoscopicEye.Right, frustumCornersRight);
+			frustumOffsetsRightEye = 1.5f * frustumCornersRight [0] + 0.5f * frustumCornersRight [2] - 2f * frustumCornersMono [0];
+			frustumOffsetsRightEye.x /= frustumWidthHeight.x;
+			frustumOffsetsRightEye.y /= frustumWidthHeight.y;
+
+			correctionFactor.y /= _sceneCamera.aspect;
+		}
+
+		static Vector2 ApplyFrustumOffset(Vector2 position, PupilData.GazeSource gazeSource)
+		{
+			Vector2 offsetPoint = position;
+			offsetPoint -= Vector2.Scale(correctionFactor, (offsetPoint - standardFrustumCenter));
+
+			switch (gazeSource)
+			{
+			case PupilData.GazeSource.LeftEye:
+				offsetPoint -= (frustumOffsetsLeftEye - standardFrustumCenter);
+				break;
+			case PupilData.GazeSource.RightEye:
+				offsetPoint -= (frustumOffsetsRightEye - standardFrustumCenter);
+				break;
+			default:
+				break;
+			}
+			return offsetPoint;
+		}
+
+		public static Vector2 GetEyePosition (Camera sceneCamera, GazeSource gazeSource)
+		{
+			if (_sceneCamera == null || _sceneCamera != sceneCamera)
+			{
+				_sceneCamera = sceneCamera;
+				InitializeFrustumEyeOffset ();
+			}
+			return ApplyFrustumOffset (GetEyeGaze(gazeSource), gazeSource);
+		}
+
 		public static Vector2 GetEyeGaze (GazeSource s)
 		{
 			switch (s)
@@ -336,7 +397,7 @@ public static class PupilData
 			case GazeSource.RightEye:
 				return RightEyePos;
 			default:
-				return NormalizedEyePos2D;
+				return GazePosition;
 			}
 		}
 		public static Vector2 GetEyeGaze (string eyeID)
@@ -344,9 +405,9 @@ public static class PupilData
 			switch (eyeID)
 			{
 			case "0":
-				return GetEyeGaze(GazeSource.LeftEye);
-			case "1":
 				return GetEyeGaze(GazeSource.RightEye);
+			case "1":
+				return GetEyeGaze(GazeSource.LeftEye);
 			default:
 				return NormalizedEyePos2D;
 			}
@@ -389,29 +450,30 @@ public static class PupilData
 
 	public static double Confidence (int eyeID)
 	{
-		object confO;
-		if (eyeID == 0)
+		if (eyeID == PupilSettings.rightEyeID)
 		{
-			pupil0Dictionary.TryGetValue ("confidence", out confO);
-		} else
+			return ConfidenceForDictionary(pupil0Dictionary);
+		} 
+		else
 		{
-			pupil1Dictionary.TryGetValue ("confidence", out confO);
+			return ConfidenceForDictionary(pupil1Dictionary);
 		}
-		return (double)confO;
 	}
 	public static double Confidence (GazeSource s)
 	{
-		object confO;
 		switch (s)
 		{
-		case GazeSource.LeftEye:
-			pupil0Dictionary.TryGetValue ("confidence", out confO);
-			break;
+		case GazeSource.RightEye:
+			return Confidence (PupilSettings.rightEyeID);
 		default:
-			pupil1Dictionary.TryGetValue ("confidence", out confO);
-			break;
+			return Confidence (PupilSettings.leftEyeID);
 		}
-		return (double)confO;
+	}
+	public static double ConfidenceForDictionary(Dictionary<string,object> dictionary)
+	{
+		object conf0;
+		dictionary.TryGetValue ("confidence", out conf0);
+		return (double)conf0;
 	}
 
 	public static Dictionary<object,object> BaseData ()

@@ -46,15 +46,15 @@ public class PupilDataReceiver : MonoBehaviour {
 
 	#region Unity Methods
 
-	void Update(){
-
+	void Update()
+	{
 		if (pupilSettings.connection.subscribeSocket != null)
 			pupilSettings.connection.subscribeSocket.Poll ();
 
 	}
 
-	void Start(){
-
+	void Start()
+	{
 		pupilSettings = PupilSettings.Instance;
 
 		OnConnected += RunOnConnected;
@@ -129,8 +129,12 @@ public class PupilDataReceiver : MonoBehaviour {
 
 			NetMQMessage m = new NetMQMessage();
 
-			while(a.Socket.TryReceiveMultipartMessage(ref m) && i<= PupilSettings.Instance.numberOfMessages) // 6){
+			while(a.Socket.TryReceiveMultipartMessage(ref m)) 
 			{
+				// We read all the messages from the socket, but disregard the ones after a certain point
+				if ( i > PupilSettings.numberOfMessages ) // 6)
+					continue;
+				
 				mStream = new MemoryStream(m[1].ToByteArray());
 
 				string msgType = m[0].ConvertToString();
@@ -144,14 +148,15 @@ public class PupilDataReceiver : MonoBehaviour {
 				switch(msgType){
 
 				case "gaze":
+					var gazeDictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
 
-					if (PupilData.Confidence(PupilData.GazeSource.LeftEye) > 0.4f) 
+					if (PupilData.ConfidenceForDictionary(gazeDictionary) > 0.4f) 
 					{
 						switch (pupilSettings.dataProcess.state) 
 						{
 						case PupilSettings.EStatus.ProcessingGaze:
 
-							PupilData.gazeDictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
+							PupilData.gazeDictionary = gazeDictionary;
 							break;
 
 						case PupilSettings.EStatus.Calibration:

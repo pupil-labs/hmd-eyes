@@ -327,9 +327,6 @@ public class PupilGazeTracker:MonoBehaviour
 		lastTick = DateTime.Now.Ticks;
 		elapsedTime = 0f;
 
-		if (Settings.visualizeGaze)
-			CalibrationGL.InitializeVisuals (PupilSettings.EStatus.ProcessingGaze);
-
 		if (Settings.framePublishing.StreamCameraImages)
 			InitializeFramePublishing ();
 
@@ -452,11 +449,16 @@ public class PupilGazeTracker:MonoBehaviour
 	public void StartVisualizingGaze ()
 	{
 		OnUpdate += VisualizeGaze;
+
+		if (Settings.visualizeGaze)
+			CalibrationGL.InitializeVisuals (PupilSettings.EStatus.ProcessingGaze);
 	}
 
 	public void StopVisualizingGaze ()
 	{
 		OnUpdate -= VisualizeGaze;
+
+		CalibrationGL.InitializeVisuals (PupilSettings.EStatus.Idle);
 	}
 
 	void VisualizeGaze ()
@@ -482,8 +484,8 @@ public class PupilGazeTracker:MonoBehaviour
 				_markerRightEye.position.x = PupilData._2D.GetEyeGaze (PupilData.GazeSource.RightEye).x;
 				_markerRightEye.position.y = PupilData._2D.GetEyeGaze (PupilData.GazeSource.RightEye).y;
 
-				_markerGazeCenter.position.x = PupilData._2D.Gaze ().x;
-				_markerGazeCenter.position.y = PupilData._2D.Gaze ().y;
+				_markerGazeCenter.position.x = PupilData._2D.GazePosition.x;
+				_markerGazeCenter.position.y = PupilData._2D.GazePosition.y;
 			}
 
 			if (PupilSettings.Instance.calibration.currentCalibrationMode == PupilSettings.Calibration.CalibMode._3D)

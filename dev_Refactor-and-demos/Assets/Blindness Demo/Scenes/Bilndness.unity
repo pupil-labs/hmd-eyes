@@ -4180,7 +4180,7 @@ Terrain:
   m_GameObject: {fileID: 1995601717}
   m_Enabled: 1
   serializedVersion: 3
-  m_TerrainData: {fileID: 15600000, guid: 524a84a180f64ec42b95ffb6879192bb, type: 2}
+  m_TerrainData: {fileID: 0}
   m_TreeDistance: 2000
   m_TreeBillboardDistance: 50
   m_TreeCrossFadeLength: 5

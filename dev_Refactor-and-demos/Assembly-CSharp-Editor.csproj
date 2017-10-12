@@ -52,17 +52,40 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\MarchingCubes Demo\Editor\CustomMarchingInspector.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Abstracts\EditorWithSubEditors.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\DataPersistence\DataResetterEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\DataPersistence\SaveDataEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Extensions\SerializedPropertyExtensions.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\Conditions\AllConditionsEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\Conditions\ConditionCollectionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\Conditions\ConditionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\InteractableEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionCollectionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\AnimationReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\AudioReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\BehaviourReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\ConditionReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\GameObjectReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\LostItemReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\PickedUpReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\ReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\SceneReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Interaction\ReactionEditors\TextReactionEditor.cs" />
+     <Compile Include="Assets\Market Scene Demo\Scripts\Editor\Inventory\InventoryEditor.cs" />
      <Compile Include="Assets\pupil_plugin\Editor\CustomPupilDataReceiverInspector.cs" />
      <Compile Include="Assets\pupil_plugin\Editor\CustomPupilGazeTrackerInspector.cs" />
      <Compile Include="Assets\pupil_plugin\FFmpegOut\Editor\CameraCaptureEditor.cs" />
-     <Compile Include="Assets\tiltShift Demo\Editor\CustomTiltShiftControllerInspector.cs" />
-     <Compile Include="Assets\tiltShift Demo\Editor\TiltShiftEditor.cs" />
+     <Compile Include="Assets\tiltShift Demo Kornel\Editor\CustomTiltShiftControllerInspector.cs" />
+     <Compile Include="Assets\tiltShift Demo Kornel\Editor\TiltShiftEditorKornel.cs" />
      <None Include="Assets\pupil_plugin\FFmpegOut\Shader\CameraCapture.shader" />
+     <None Include="Assets\Market Scene Demo\Fonts\OFL.txt" />
      <None Include="Assets\pupil_plugin\Resources\NewUnlitShader.shader" />
      <None Include="Assets\MarchingCubes Demo\Shaders\VoxelTerrain.shader" />
-     <None Include="Assets\tiltShift Demo\Shaders\TiltShift.shader" />
-     <None Include="Assets\pupil_plugin\FFmpegOut\Internal\Shader\CameraCapture.shader" />
+     <None Include="Assets\tiltShift Demo Kornel\Shaders\TiltShiftKornel.shader" />
+     <None Include="Assets\Market Scene Demo\GazeHighlight.shader" />
      <None Include="Assets\MarchingCubes Demo\Textures\textures-license.txt" />
+     <None Include="Assets\Market Scene Demo\Shaders\ToonShader.shader" />
+     <None Include="Assets\Market Scene Demo\Shaders\Hologram.shader" />
      <None Include="Assets\Heatmap Demo\Shaders\Heatmap.shader" />
  <Reference Include="Facebook.Unity.Settings">
  <HintPath>C:/Users/office/Documents/ANic/dev_Refactor-and-demos/Library/FacebookSDK/Facebook.Unity.Settings.dll</HintPath>
@@ -120,6 +143,9 @@
  </Reference>
  <Reference Include="UnityEditor.Graphs">
  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.Graphs.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEditor.WSA.Extensions">
+ <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/MetroSupport/UnityEditor.WSA.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.WindowsStandalone.Extensions">
  <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/windowsstandalonesupport/UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
