@@ -6,8 +6,5 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/pupil_plugin/scene/Calibration.unity
-    guid: fad12140ef2b4a94c81325c8109f6458
-  - enabled: 1
-    path: Assets/Heatmap Demo/Scenes/heatmap.unity
-    guid: 9692d662fce91fa489cd8d41e6a8cb8a
+    path: Assets/Market Scene Demo/Market Scene Demo.unity
+    guid: 962a17030b528b24dac725004acc2a0b
