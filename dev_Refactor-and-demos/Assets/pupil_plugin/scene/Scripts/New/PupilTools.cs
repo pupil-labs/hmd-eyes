@@ -93,10 +93,7 @@ public class PupilTools : MonoBehaviour
 		//André: PupilSettings got overwritten every time, adding "pupil." after I removed it..
 		foreach (var topic in pupilSettings.connection.topicList)
 		{
-			if (topic != "pupil.")
-				_subscriberSocket.Subscribe (topic);
-			else
-				print ("Pupil");
+			_subscriberSocket.Subscribe (topic);
 		}
 
 		return _subscriberSocket;
@@ -212,7 +209,7 @@ public class PupilTools : MonoBehaviour
 		{
 			lastTimeStamp = t;
 
-			print ("its okay to go on");
+//			print ("its okay to go on");
 
 			//Create reference data to pass on. _cPointFloatValues are storing the float values for the relevant current Calibration mode
 			AddCalibrationPointReferencePosition (currentCalibrationType.positionKey, _currentCalibPointPosition, t, 0);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.

@@ -59,9 +59,6 @@ public class PupilDataReceiver : MonoBehaviour {
 
 		OnConnected += RunOnConnected;
 
-		if (!pupilSettings.connection.topicList.Contains ("pupil."))
-			pupilSettings.connection.topicList.Add ("pupil.");
-
 		if (!pupilSettings.connection.topicList.Contains ("gaze"))
 			pupilSettings.connection.topicList.Add ("gaze");
 		
