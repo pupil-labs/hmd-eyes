@@ -44,12 +44,16 @@ public class MarketSceneDemo : MonoBehaviour
 			heading.enabled = !heading.enabled;
 		if (heading.enabled)
 		{
+			heading.SetPosition (0, sceneCamera.transform.position-sceneCamera.transform.up);
+
 			Ray ray = sceneCamera.ViewportPointToRay (viewportPoint);
 			RaycastHit hit;
 			if (Physics.Raycast (ray, out hit))
 			{
-				heading.SetPosition (0, sceneCamera.transform.position-sceneCamera.transform.up);
 				heading.SetPosition (1, hit.point);
+			} else
+			{
+				heading.SetPosition (1, ray.origin + ray.direction * 50f);
 			}
 		}
 	}

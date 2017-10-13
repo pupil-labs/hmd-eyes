@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/Blindness Demo/Scenes/Bilndness.unity
+- path: Assets/Market Scene Demo/Market Scene Demo.unity
   isLoaded: 1
   isActive: 1

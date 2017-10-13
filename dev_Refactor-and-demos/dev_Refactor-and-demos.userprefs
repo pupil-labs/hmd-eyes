@@ -2,14 +2,17 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\pupil_plugin\scene\Scripts\New\PupilSettings.cs">
     <Files>
-      <File FileName="Assets\Blindness Demo\Scripts\ColliderController.cs" Line="42" Column="5" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\New\PupilSettings.cs" Line="198" Column="4" />
+      <File FileName="Assets\Blindness Demo\Scripts\ColliderController.cs" Line="1" Column="1" />
       <File FileName="Assets\pupil_plugin\scene\Scripts\New\PupilData.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\scene\Scripts\CalibrationGL.cs" Line="91" Column="29" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\CalibrationGL.cs" Line="1" Column="1" />
       <File FileName="Assets\Script\PupilDemoManager.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\scene\Scripts\PupilGazeTracker.cs" Line="461" Column="64" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\PupilGazeTracker.cs" Line="1" Column="1" />
       <File FileName="Assets\pupil_plugin\FFmpegOut\CameraCapture.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\scene\Scripts\New\PupilTools.cs" Line="249" Column="17" />
-      <File FileName="Assets\pupil_plugin\scene\Scripts\New\PupilSettings.cs" Line="89" Column="5" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\New\PupilTools.cs" Line="1" Column="1" />
+      <File FileName="Assets\Market Scene Demo\Scripts\MarketSceneDemo.cs" Line="57" Column="5" />
+      <File FileName="Assets\pupil_plugin\scene\Scripts\New\PupilDataReceiver.cs" Line="1" Column="1" />
+      <File FileName="Assets\Script\CalibrationDemo.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

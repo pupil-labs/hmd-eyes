@@ -190,7 +190,12 @@ public class PupilSettings:ScriptableObject
 	[Serializable]
 	public class DataProcess
 	{
-		public EStatus state;
+		private EStatus _state;
+		public EStatus state
+		{
+			get { return _state; }
+			set { _state = value; }
+		}
 		public string benchMarkString;
 	}
 
