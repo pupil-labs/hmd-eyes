@@ -51,7 +51,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\MarchingCubes Demo\Editor\CustomMarchingInspector.cs" />
      <Compile Include="Assets\Market Scene Demo\Unity\Scripts\Editor\Abstracts\EditorWithSubEditors.cs" />
      <Compile Include="Assets\Market Scene Demo\Unity\Scripts\Editor\DataPersistence\DataResetterEditor.cs" />
      <Compile Include="Assets\Market Scene Demo\Unity\Scripts\Editor\DataPersistence\SaveDataEditor.cs" />
@@ -75,18 +74,12 @@
      <Compile Include="Assets\pupil_plugin\Editor\CustomPupilDataReceiverInspector.cs" />
      <Compile Include="Assets\pupil_plugin\Editor\CustomPupilGazeTrackerInspector.cs" />
      <Compile Include="Assets\pupil_plugin\FFmpegOut\Editor\CameraCaptureEditor.cs" />
-     <Compile Include="Assets\tiltShift Demo Kornel\Editor\CustomTiltShiftControllerInspector.cs" />
-     <Compile Include="Assets\tiltShift Demo Kornel\Editor\TiltShiftEditorKornel.cs" />
      <None Include="Assets\pupil_plugin\FFmpegOut\Shader\CameraCapture.shader" />
      <None Include="Assets\Market Scene Demo\Unity\Fonts\OFL.txt" />
      <None Include="Assets\pupil_plugin\Resources\NewUnlitShader.shader" />
-     <None Include="Assets\MarchingCubes Demo\Shaders\VoxelTerrain.shader" />
-     <None Include="Assets\tiltShift Demo Kornel\Shaders\TiltShiftKornel.shader" />
      <None Include="Assets\Market Scene Demo\Scripts\GazeHighlight.shader" />
-     <None Include="Assets\MarchingCubes Demo\Textures\textures-license.txt" />
      <None Include="Assets\Market Scene Demo\Unity\Shaders\ToonShader.shader" />
      <None Include="Assets\Market Scene Demo\Unity\Shaders\Hologram.shader" />
-     <None Include="Assets\Heatmap Demo\Shaders\Heatmap.shader" />
  <Reference Include="Facebook.Unity.Settings">
  <HintPath>C:/Users/office/Documents/ANic/dev_Refactor-and-demos/Library/FacebookSDK/Facebook.Unity.Settings.dll</HintPath>
  </Reference>

@@ -261,15 +261,6 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 			PupilSettings.Instance.debugView.active = false;
 		}
 	}
-	public void DrawCircle (Vector3 pos, Matrix4x4 originMatrix, Matrix4x4 offsetMatrix, float size)
-	{
-		PupilSettings.Calibration.Marker _circle = new PupilSettings.Calibration.Marker ();
-		_circle.position = pos;
-		_circle.size = size;
-		_circle.toggle = true;
-		GL.MultMatrix (originMatrix * offsetMatrix);
-		CalibrationGL.Marker (_circle);
-	}
 	//	public Texture2D circleTexture;
 
 	public Material CreateLineMaterial ()

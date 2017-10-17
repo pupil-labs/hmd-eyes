@@ -12,8 +12,8 @@ public class PupilDemoManager : MonoBehaviour {
 	public PupilGazeTracker pupilTracker;
 	public PupilDataReceiver pupilDataReceiver;
 
-	void Start(){
-	
+	void Start()
+	{	
 		pupilTracker = PupilGazeTracker.Instance;
 
 		pupilDataReceiver = pupilTracker.gameObject.GetComponent<PupilDataReceiver> ();

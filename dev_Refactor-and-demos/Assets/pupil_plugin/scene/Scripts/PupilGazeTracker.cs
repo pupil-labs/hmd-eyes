@@ -445,30 +445,36 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 
 	#region packet
+	PupilSettings.Calibration.Marker _markerLeftEye;
+	PupilSettings.Calibration.Marker _markerRightEye;
+	PupilSettings.Calibration.Marker _markerGazeCenter;
 
 	public void StartVisualizingGaze ()
 	{
 		OnUpdate += VisualizeGaze;
 
+		_markerLeftEye = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.name == "LeftEye_2D").ToList () [0];
+		_markerLeftEye.SetMaterialColor (Color.green);
+		_markerRightEye = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.name == "RightEye_2D").ToList () [0];
+		_markerRightEye.SetMaterialColor (Color.blue);
+		_markerGazeCenter = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.name == "Gaze_2D").ToList () [0];
+		_markerGazeCenter.SetMaterialColor (Color.red);
+
 		if (Settings.visualizeGaze)
-			CalibrationGL.InitializeVisuals (PupilSettings.EStatus.ProcessingGaze);
+			PupilTools.ResetMarkerVisuals (PupilSettings.EStatus.ProcessingGaze);
 	}
 
 	public void StopVisualizingGaze ()
 	{
 		OnUpdate -= VisualizeGaze;
 
-		CalibrationGL.InitializeVisuals (PupilSettings.EStatus.Idle);
+		PupilTools.ResetMarkerVisuals (PupilSettings.EStatus.Idle);
 	}
 
 	void VisualizeGaze ()
 	{
 		if (PupilSettings.Instance.dataProcess.state == PupilSettings.EStatus.ProcessingGaze)
 		{
-			PupilSettings.Calibration.Marker _markerLeftEye = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.name == "LeftEye_2D").ToList () [0];
-			PupilSettings.Calibration.Marker _markerRightEye = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.name == "RightEye_2D").ToList () [0];
-			PupilSettings.Calibration.Marker _markerGazeCenter = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.name == "Gaze_2D").ToList () [0];
-
 			if (PupilSettings.Instance.calibration.currentCalibrationMode == PupilSettings.Calibration.CalibMode._2D)
 			{
 				var eyeID = PupilData.eyeID;
@@ -478,14 +484,9 @@ public class PupilGazeTracker:MonoBehaviour
 						OnEyeGaze (this);
 				}
 
-				_markerLeftEye.position.x = PupilData._2D.GetEyeGaze (PupilData.GazeSource.LeftEye).x;
-				_markerLeftEye.position.y = PupilData._2D.GetEyeGaze (PupilData.GazeSource.LeftEye).y;
-
-				_markerRightEye.position.x = PupilData._2D.GetEyeGaze (PupilData.GazeSource.RightEye).x;
-				_markerRightEye.position.y = PupilData._2D.GetEyeGaze (PupilData.GazeSource.RightEye).y;
-
-				_markerGazeCenter.position.x = PupilData._2D.GazePosition.x;
-				_markerGazeCenter.position.y = PupilData._2D.GazePosition.y;
+				_markerLeftEye.UpdatePosition(PupilData._2D.GetEyeGaze (PupilData.GazeSource.LeftEye));
+				_markerRightEye.UpdatePosition (PupilData._2D.GetEyeGaze (PupilData.GazeSource.RightEye));
+				_markerGazeCenter.UpdatePosition (PupilData._2D.GetEyeGaze (PupilData.GazeSource.BothEyes));
 			}
 
 			if (PupilSettings.Instance.calibration.currentCalibrationMode == PupilSettings.Calibration.CalibMode._3D)
@@ -516,9 +517,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void SwitchCalibrationMode ()
 	{
-
-		CalibrationGL.InitializeVisuals (PupilSettings.Instance.dataProcess.state);
-	
+		PupilTools.ResetMarkerVisuals(PupilSettings.Instance.dataProcess.state);
 	}
 
 	#region Recording

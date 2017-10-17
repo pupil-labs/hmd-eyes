@@ -330,7 +330,6 @@ public static class PupilData
 		static Camera _sceneCamera;
 		static Vector2 frustumOffsetsLeftEye = Vector2.zero;
 		static Vector2 frustumOffsetsRightEye = Vector2.zero;
-		static Vector2 correctionFactor = Vector2.one * 0.5f;
 		static Vector2 standardFrustumCenter = Vector2.one * 0.5f;
 		static void InitializeFrustumEyeOffset()
 		{
@@ -355,14 +354,11 @@ public static class PupilData
 			frustumOffsetsRightEye = 1.5f * frustumCornersRight [0] + 0.5f * frustumCornersRight [2] - 2f * frustumCornersMono [0];
 			frustumOffsetsRightEye.x /= frustumWidthHeight.x;
 			frustumOffsetsRightEye.y /= frustumWidthHeight.y;
-
-			correctionFactor.y /= _sceneCamera.aspect;
 		}
 
-		static Vector2 ApplyFrustumOffset(Vector2 position, PupilData.GazeSource gazeSource)
+		public static Vector2 ApplyFrustumOffset(Vector2 position, PupilData.GazeSource gazeSource)
 		{
 			Vector2 offsetPoint = position;
-			offsetPoint -= Vector2.Scale(correctionFactor, (offsetPoint - standardFrustumCenter));
 
 			switch (gazeSource)
 			{

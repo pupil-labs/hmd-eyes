@@ -136,13 +136,13 @@ public class PupilTools : MonoBehaviour
 		currCalibPoint = 0;
 		currCalibSamples = 0;
 
-		pupilSettings.calibration.marker.position.x = pupilSettings.calibration.currentCalibrationType.calibPoints [0] [0];
-		pupilSettings.calibration.marker.position.y = pupilSettings.calibration.currentCalibrationType.calibPoints [0] [1];
-		pupilSettings.calibration.marker.position.z = pupilSettings.calibration.currentCalibrationType.depth;
-
-		CalibrationGL.InitializeVisuals (PupilSettings.EStatus.Calibration);
+		calibrationMarker = pupilSettings.calibration.CalibrationMarkers.Where (p => p.calibrationPoint && p.calibMode == pupilSettings.calibration.currentCalibrationMode).ToList () [0];
+		calibrationMarker.UpdatePosition (pupilSettings.calibration.currentCalibrationType.calibPoints [0] [0], pupilSettings.calibration.currentCalibrationType.calibPoints [0] [1]);
+		calibrationMarker.SetMaterialColor (Color.white);
 
 //		yield return new WaitForSeconds (2f);
+
+		ResetMarkerVisuals(PupilSettings.EStatus.Calibration);
 
 		print ("Starting Calibration");
 
@@ -150,6 +150,27 @@ public class PupilTools : MonoBehaviour
 		pupilSettings.dataProcess.state = PupilSettings.EStatus.Calibration;
 
 		PupilTools.RepaintGUI ();
+	}
+
+	public static void ResetMarkerVisuals(PupilSettings.EStatus status)
+	{
+		foreach (PupilSettings.Calibration.Marker _m in PupilSettings.Instance.calibration.CalibrationMarkers) 
+		{
+			_m.SetActive(false);
+
+			if (_m.calibMode == PupilSettings.Instance.calibration.currentCalibrationMode)
+			{
+				if (_m.calibrationPoint && status == PupilSettings.EStatus.Calibration) 
+				{
+					_m.SetActive(true);
+				}
+
+				if (!_m.calibrationPoint && status == PupilSettings.EStatus.ProcessingGaze) 
+				{
+					_m.SetActive (true);
+				}
+			}
+		}
 	}
 
 	public static void StartCalibration ()
@@ -187,7 +208,7 @@ public class PupilTools : MonoBehaviour
 
 		_calibrationData.Clear ();
 	}
-
+	private static PupilSettings.Calibration.Marker calibrationMarker;
 	public static void Calibrate ()
 	{
 		// Get the current calibration information from the PupilSettings class
@@ -195,13 +216,7 @@ public class PupilTools : MonoBehaviour
 
 		float[] _currentCalibPointPosition = pupilSettings.calibration.currentCalibrationType.calibPoints [currCalibPoint];
 
-		float alphaRatio = Mathf.InverseLerp (defaultCalibrationCount, 0f, currCalibSamples);//*_m.baseSize;//size hardcoded, change this
-		PupilSettings.Calibration.Marker marker = pupilSettings.calibration.CalibrationMarkers.Where (p => p.calibrationPoint && p.calibMode == pupilSettings.calibration.currentCalibrationMode).ToList () [0];
-		marker.color = new Color (1f, 1f, 1f, alphaRatio);
-		marker.position.x = _currentCalibPointPosition [0];
-		marker.position.y = _currentCalibPointPosition [1];
-		marker.position.z = currentCalibrationType.depth;//using the height az depth offset
-		marker.toggle = true;
+		calibrationMarker.UpdatePosition (_currentCalibPointPosition [0], _currentCalibPointPosition [1]);
 
 		float t = GetPupilTimestamp ();
 
@@ -243,7 +258,7 @@ public class PupilTools : MonoBehaviour
 		pupilSettings.dataProcess.state = PupilSettings.EStatus.ProcessingGaze;
 		_sendRequestMessage (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
 
-		CalibrationGL.InitializeVisuals (PupilSettings.EStatus.Idle);
+		ResetMarkerVisuals(PupilSettings.EStatus.Idle);
 
 		if (OnCalibrationEnded != null)
 			OnCalibrationEnded ();

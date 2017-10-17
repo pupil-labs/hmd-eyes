@@ -54,9 +54,6 @@
      <Compile Include="Assets\Blindness Demo\Scripts\AnimateTextSheet.cs" />
      <Compile Include="Assets\Blindness Demo\Scripts\ColliderController.cs" />
      <Compile Include="Assets\Blindness Demo\Scripts\ParticleController.cs" />
-     <Compile Include="Assets\Heatmap Demo\Scripts\Heatmap.cs" />
-     <Compile Include="Assets\MarchingCubes Demo\Scripts\MarchingCubes.cs" />
-     <Compile Include="Assets\MarchingCubes Demo\Scripts\VoxelLevel.cs" />
      <Compile Include="Assets\Market Scene Demo\Scripts\MarketSceneDemo.cs" />
      <Compile Include="Assets\Market Scene Demo\Scripts\UpdateMeshColliders.cs" />
      <Compile Include="Assets\Market Scene Demo\Unity\Scripts\MonoBehaviours\Camera\CameraControl.cs" />
@@ -95,7 +92,6 @@
      <Compile Include="Assets\pupil_plugin\FFmpegOut\FFmpegConfig.cs" />
      <Compile Include="Assets\pupil_plugin\FFmpegOut\FFmpegPipe.cs" />
      <Compile Include="Assets\pupil_plugin\FFmpegOut\Internal\Blitter.cs" />
-     <Compile Include="Assets\pupil_plugin\scene\Scripts\CalibrationGL.cs" />
      <Compile Include="Assets\pupil_plugin\scene\Scripts\LineDrawer.cs" />
      <Compile Include="Assets\pupil_plugin\scene\Scripts\New\PupilConversions.cs" />
      <Compile Include="Assets\pupil_plugin\scene\Scripts\New\PupilData.cs" />
@@ -188,19 +184,12 @@
      <Compile Include="Assets\Script\CalibrationDemo.cs" />
      <Compile Include="Assets\Script\PupilDemoManager.cs" />
      <Compile Include="Assets\Script\SimpleSmoothMouseLook.cs" />
-     <Compile Include="Assets\tiltShift Demo Kornel\Scripts\ObjectInteractionController.cs" />
-     <Compile Include="Assets\tiltShift Demo Kornel\Scripts\TiltShiftControllerKornel.cs" />
-     <Compile Include="Assets\tiltShift Demo Kornel\Scripts\TiltShiftKornel.cs" />
      <None Include="Assets\pupil_plugin\FFmpegOut\Shader\CameraCapture.shader" />
      <None Include="Assets\Market Scene Demo\Unity\Fonts\OFL.txt" />
      <None Include="Assets\pupil_plugin\Resources\NewUnlitShader.shader" />
-     <None Include="Assets\MarchingCubes Demo\Shaders\VoxelTerrain.shader" />
-     <None Include="Assets\tiltShift Demo Kornel\Shaders\TiltShiftKornel.shader" />
      <None Include="Assets\Market Scene Demo\Scripts\GazeHighlight.shader" />
-     <None Include="Assets\MarchingCubes Demo\Textures\textures-license.txt" />
      <None Include="Assets\Market Scene Demo\Unity\Shaders\ToonShader.shader" />
      <None Include="Assets\Market Scene Demo\Unity\Shaders\Hologram.shader" />
-     <None Include="Assets\Heatmap Demo\Shaders\Heatmap.shader" />
  <Reference Include="Facebook.Unity.Settings">
  <HintPath>C:/Users/office/Documents/ANic/dev_Refactor-and-demos/Library/FacebookSDK/Facebook.Unity.Settings.dll</HintPath>
  </Reference>

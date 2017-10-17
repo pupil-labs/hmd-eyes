@@ -25,6 +25,8 @@ public class MarketSceneDemo : MonoBehaviour
 		heading = gameObject.GetComponent<LineRenderer> ();
 	}
 
+	bool monoColorMode = true;
+
 	void Update()
 	{
 		Vector3 viewportPoint = standardViewportPoint;
@@ -33,9 +35,12 @@ public class MarketSceneDemo : MonoBehaviour
 		{
 			gazePointLeft = PupilData._2D.GetEyePosition (sceneCamera, PupilData.GazeSource.LeftEye);
 			gazePointRight = PupilData._2D.GetEyePosition (sceneCamera, PupilData.GazeSource.RightEye);
-			gazePointCenter = PupilData._2D.GetEyePosition (sceneCamera, PupilData.GazeSource.BothEyes);
-			viewportPoint = new Vector3 (gazePointCenter.x, gazePointCenter.y, 0.8f);
+			gazePointCenter = PupilData._2D.GazePosition;//.GetEyePosition (sceneCamera, PupilData.GazeSource.BothEyes);
+			viewportPoint = new Vector3 (gazePointCenter.x, gazePointCenter.y, 1f);
 		}
+
+		if (Input.GetKeyUp (KeyCode.M))
+			monoColorMode = !monoColorMode;
 
 		if (Input.GetKeyUp (KeyCode.G))
 			calibrationDemo.enabled = !calibrationDemo.enabled;
@@ -60,6 +65,11 @@ public class MarketSceneDemo : MonoBehaviour
 
 	void OnRenderImage (RenderTexture source, RenderTexture destination)
 	{
+		if (monoColorMode)
+			shaderMaterial.SetFloat ("_highlightThreshold", 0.1f);
+		else
+			shaderMaterial.SetFloat ("_highlightThreshold", 1000f);
+		
 		switch (sceneCamera.stereoActiveEye)
 		{
 		case Camera.MonoOrStereoscopicEye.Left:

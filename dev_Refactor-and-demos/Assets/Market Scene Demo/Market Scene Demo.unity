@@ -23768,7 +23768,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1346602416}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: -0.5, z: 1.79}
+  m_LocalPosition: {x: -0, y: -0.2, z: 2}
   m_LocalScale: {x: 0.0125, y: 0.0125, z: 0.0125}
   m_Children: []
   m_Father: {fileID: 873154567}
@@ -23782,7 +23782,7 @@ TextMesh:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1346602416}
   m_Text: "Press 'g' to toggle classic gaze visualization\r\nPress 'l' to toggle laser
-    pointer"
+    pointer\nPress 'm' to de-/activate monochrome border"
   m_OffsetZ: 0
   m_CharacterSize: 1
   m_LineSpacing: 1

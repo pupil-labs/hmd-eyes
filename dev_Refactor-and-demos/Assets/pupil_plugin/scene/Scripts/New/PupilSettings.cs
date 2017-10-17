@@ -48,16 +48,70 @@ public class PupilSettings:ScriptableObject
 		[Serializable]
 		public class Marker
 		{
-
 			public string name;
 			public Vector3 position;
-			public float size;
-			public Color color;
-			public bool toggle;
 			public bool calibrationPoint;
-			public Material material;
 			public PupilSettings.Calibration.CalibMode calibMode;
+			private GameObject gameObject;
+			private Camera _camera;
+			public Camera camera
+			{
+				get
+				{
+					if (_camera == null)
+					{
+						_camera = Camera.main;
+					}
+					return _camera;
+				}
+				set
+				{
+					_camera = value;
+				}
+			}
 
+			public void UpdatePosition(Vector2 newPosition)
+			{
+				UpdatePosition (newPosition.x, newPosition.y);
+			}
+
+			public void UpdatePosition(float newX, float newY)
+			{
+				position.x = newX;
+				position.y = newY;
+				position.z = Instance.calibration.currentCalibrationType.depth;
+
+				if (gameObject == null)
+					InitializeGameObject ();
+				gameObject.transform.position = camera.ViewportToWorldPoint(position);
+			}
+
+			public void SetMaterialColor(Color color)
+			{
+				if (gameObject == null)
+					InitializeGameObject ();
+
+				var material = gameObject.GetComponent<MeshRenderer> ().sharedMaterial;
+				if (material == null)
+					material = new Material (Resources.Load<Material> ("MarkerMaterial"));
+				material.SetColor("_EmissionColor",color);
+			}
+
+			private void InitializeGameObject()
+			{
+				gameObject = GameObject.Instantiate (Resources.Load<GameObject> ("MarkerObject"));
+				gameObject.name = name;
+				gameObject.GetComponent<MeshRenderer> ().sharedMaterial = new Material (Resources.Load<Material> ("MarkerMaterial"));
+//				gameObject.hideFlags = HideFlags.HideInHierarchy;
+			}
+
+			public void SetActive(bool toggle)
+			{
+				if (gameObject == null)
+					InitializeGameObject ();
+				
+				gameObject.SetActive (toggle);
+			}
 		}
 
 		public enum CalibMode
@@ -74,17 +128,17 @@ public class PupilSettings:ScriptableObject
 			pluginName = "HMD_Calibration",
 			positionKey = "norm_pos",
 			ref_data = new double[]{ 0.0, 0.0 },
-			depth = 0.1f,
+			depth = 2f,
 			calibPoints = new List<float[]>() {
 				new float[]{0.5f,0.5f},
-				new float[]{0.25f,0.7f},
-				new float[]{0.5f,0.7f},
-				new float[]{0.75f,0.7f},
-				new float[]{0.75f,0.5f},
-				new float[]{0.75f,0.3f},
-				new float[]{0.5f,0.3f},
-				new float[]{0.25f,0.3f},
-				new float[]{0.25f,0.5f},
+				new float[]{0.375f,0.6f},
+				new float[]{0.5f,0.6f},
+				new float[]{0.625f,0.6f},
+				new float[]{0.625f,0.5f},
+				new float[]{0.625f,0.4f},
+				new float[]{0.5f,0.4f},
+				new float[]{0.375f,0.4f},
+				new float[]{0.375f,0.5f},
 				new float[]{0.5f,0.5f},
 			}
 		};
@@ -148,6 +202,7 @@ public class PupilSettings:ScriptableObject
 				if (_marker == null || _marker.name == "")
 				{	
 					_marker = CalibrationMarkers.Where (p => p.calibrationPoint && p.calibMode == PupilSettings.Instance.calibration.currentCalibrationMode).ToList () [0];
+//					_marker.camera = Camera.main;
 					Debug.Log ("getting");
 				
 				}
