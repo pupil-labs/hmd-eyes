@@ -68,6 +68,14 @@ public class PupilDemoManager : MonoBehaviour {
 		{
 			go.SetActive (true);
 		}
+
+		pupilDataReceiver.OnConnected -= OnConnected;
+
+		PupilTools.OnCalibrationStarted -= OnCalibtaionStarted;
+
+		PupilTools.OnCalibrationEnded -= OnCalibtaionEnded;
+
+		Destroy(gameObject);
 	}
 
 	void Update(){
