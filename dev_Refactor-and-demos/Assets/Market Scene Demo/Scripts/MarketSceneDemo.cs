@@ -35,7 +35,7 @@ public class MarketSceneDemo : MonoBehaviour
 		{
 			gazePointLeft = PupilData._2D.GetEyePosition (sceneCamera, PupilData.GazeSource.LeftEye);
 			gazePointRight = PupilData._2D.GetEyePosition (sceneCamera, PupilData.GazeSource.RightEye);
-			gazePointCenter = PupilData._2D.GazePosition;//.GetEyePosition (sceneCamera, PupilData.GazeSource.BothEyes);
+			gazePointCenter = PupilData._2D.GetEyeGaze (PupilData.GazeSource.BothEyes);
 			viewportPoint = new Vector3 (gazePointCenter.x, gazePointCenter.y, 1f);
 		}
 

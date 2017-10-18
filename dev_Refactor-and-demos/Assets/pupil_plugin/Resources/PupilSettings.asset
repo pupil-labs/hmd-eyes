@@ -23,7 +23,7 @@ MonoBehaviour:
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
     PORT: 50020
-    subport: 53788
+    subport: 56689
     isLocal: 1
     topicList:
     - gaze
@@ -51,7 +51,7 @@ MonoBehaviour:
       calibrationPoint: 0
       calibMode: 1
     - name: Calibration_2D
-      position: {x: 0.5, y: 0.5, z: 1}
+      position: {x: 0.35, y: 0.5, z: 2}
       calibrationPoint: 1
       calibMode: 0
     - name: Calibration_3D

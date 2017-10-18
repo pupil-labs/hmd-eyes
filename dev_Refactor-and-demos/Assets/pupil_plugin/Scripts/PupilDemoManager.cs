@@ -60,18 +60,14 @@ public class PupilDemoManager : MonoBehaviour {
 
 	}
 
-	void StartDemo(){
-
+	void StartDemo()
+	{
 		GUITexts [3].enabled = false;
 
-		foreach (GameObject go in gameObjectsToEnable) {
-
+		foreach (GameObject go in gameObjectsToEnable) 
+		{
 			go.SetActive (true);
-
 		}
-
-		Destroy (gameObject);
-
 	}
 
 	void Update(){

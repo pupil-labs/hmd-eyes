@@ -508,8 +508,8 @@ public class PupilGazeTracker:MonoBehaviour
 		if (!isOperatorMonitor)
 		{
 			string str = "Capture Rate=" + FPS;
-			str += "\nLeft Eye:" + PupilData._2D.LeftEyePos.ToString ();
-			str += "\nRight Eye:" + PupilData._2D.RightEyePos.ToString ();
+			str += "\nLeft Eye:" + PupilData._2D.GetEyeGaze(PupilData.GazeSource.LeftEye).ToString ();
+			str += "\nRight Eye:" + PupilData._2D.GetEyeGaze(PupilData.GazeSource.RightEye).ToString ();
 			GUI.TextArea (new Rect (50, 50, 200, 50), str);
 		}
 

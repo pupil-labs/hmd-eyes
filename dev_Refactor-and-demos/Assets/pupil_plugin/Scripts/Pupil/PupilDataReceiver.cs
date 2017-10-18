@@ -147,7 +147,7 @@ public class PupilDataReceiver : MonoBehaviour {
 				case "gaze":
 					var gazeDictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
 
-					if (PupilData.ConfidenceForDictionary(gazeDictionary) > 0.4f) 
+					if (PupilData.ConfidenceForDictionary(gazeDictionary) > 0.6f) 
 					{
 						switch (pupilSettings.dataProcess.state) 
 						{

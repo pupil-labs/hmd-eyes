@@ -284,27 +284,6 @@ public static class PupilData
 
 		}
 
-		public static Vector2 Left_Pos ()
-		{
-
-			return new Vector2 (0, 0);
-
-		}
-
-		public static Vector2 Right_Pos ()
-		{
-
-			return new Vector2 (0, 0);
-
-		}
-
-		public static Vector2 Gaze ()
-		{
-
-			return (Left_Pos () + Right_Pos ()) * 0.5f;
-
-		}
-
 		// André: Not, yet implemented..
 		private static Vector2 _normalizedEyePos2D;
 		public static Vector2 NormalizedEyePos2D
@@ -312,17 +291,17 @@ public static class PupilData
 			get{ return _normalizedEyePos2D; }
 		}
 
-		public static Vector2 LeftEyePos
+		private static Vector2 LeftEyePos
 		{
 			get{ return leftEye.gaze2D; }
 		}
 
-		public static Vector2 RightEyePos
+		private static Vector2 RightEyePos
 		{
 			get{ return rightEye.gaze2D; }
 		}
 
-		public static Vector2 GazePosition
+		private static Vector2 GazePosition
 		{
 			get { return 0.5f * (LeftEyePos + RightEyePos); }
 		}

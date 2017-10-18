@@ -131,15 +131,15 @@ public class PupilSettings:ScriptableObject
 			depth = 2f,
 			calibPoints = new List<float[]>() {
 				new float[]{0.5f,0.5f},
-				new float[]{0.375f,0.6f},
-				new float[]{0.5f,0.6f},
-				new float[]{0.625f,0.6f},
-				new float[]{0.625f,0.5f},
-				new float[]{0.625f,0.4f},
-				new float[]{0.5f,0.4f},
-				new float[]{0.375f,0.4f},
-				new float[]{0.375f,0.5f},
-				new float[]{0.5f,0.5f},
+				new float[]{0.42f,0.555f},
+				new float[]{0.5f,0.62f},
+				new float[]{0.58f,0.555f},
+				new float[]{0.65f,0.5f},
+				new float[]{0.58f,0.445f},
+				new float[]{0.5f,0.38f},
+				new float[]{0.42f,0.445f},
+				new float[]{0.35f,0.5f},
+//				new float[]{0.5f,0.5f},
 			}
 		};
 
