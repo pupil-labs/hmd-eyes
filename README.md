@@ -6,7 +6,7 @@ This repository demonstrates how to implement it with Unity3D.
 ## Setup
 
 1. Make sure that you have [Pupil Capture or Pupil Service](https://github.com/pupil-labs/pupil/releases/latest) on a Linux, macOS, or Windows 10 machine. 
-2. The Unity3D sample project contains two scenes: `pupil_plugin/Scene/Calibration.unity` and `Market Scene Demo/Market Scene Demo.unity`
+2. The Unity3D sample project contains two scenes: `pupil_plugin/Calibration.unity` and `Market Scene Demo/Market Scene Demo.unity`
 3. The former contains the `PupilGazeTracker` gameobject, which lets you adapt settings, while the latter serves as a starting point on how the eye tracking can be implemented.
 4. On Windows 10 and with the standard project settings, the path is set to `C:/Program Files/Pupil Service/pupil_service.exe`. If you have a different setup, please adapt it as follows 
 
