@@ -137,7 +137,9 @@ public class PupilTools : MonoBehaviour
 		currCalibSamples = 0;
 
 		calibrationMarker = pupilSettings.calibration.CalibrationMarkers.Where (p => p.calibrationPoint && p.calibMode == pupilSettings.calibration.currentCalibrationMode).ToList () [0];
-		calibrationMarker.UpdatePosition (pupilSettings.calibration.currentCalibrationType.calibPoints [0] [0], pupilSettings.calibration.currentCalibrationType.calibPoints [0] [1]);
+
+		float[] initialPoint = pupilSettings.calibration.GetCalibrationPoint (currCalibPoint);
+		calibrationMarker.UpdatePosition (initialPoint[0], initialPoint[1]);
 		calibrationMarker.SetMaterialColor (Color.white);
 
 //		yield return new WaitForSeconds (2f);
@@ -214,8 +216,7 @@ public class PupilTools : MonoBehaviour
 		// Get the current calibration information from the PupilSettings class
 		PupilSettings.CalibrationType currentCalibrationType = pupilSettings.calibration.currentCalibrationType;
 
-		float[] _currentCalibPointPosition = pupilSettings.calibration.currentCalibrationType.calibPoints [currCalibPoint];
-
+		float[] _currentCalibPointPosition = pupilSettings.calibration.GetCalibrationPoint (currCalibPoint);// .currentCalibrationType.calibPoints [currCalibPoint];
 		calibrationMarker.UpdatePosition (_currentCalibPointPosition [0], _currentCalibPointPosition [1]);
 
 		float t = GetPupilTimestamp ();
@@ -231,7 +232,7 @@ public class PupilTools : MonoBehaviour
 			AddCalibrationPointReferencePosition (currentCalibrationType.positionKey, _currentCalibPointPosition, t, 1);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
 
 			if (pupilSettings.debug.printSampling)
-				print ("Sampling at : " + currCalibSamples + ". On the position : " + _currentCalibPointPosition [0] + " | " + _currentCalibPointPosition [1]);
+				print ("Point: " + currCalibPoint + ", " + "Sampling at : " + currCalibSamples + ". On the position : " + _currentCalibPointPosition [0] + " | " + _currentCalibPointPosition [1]);
 
 			currCalibSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 
@@ -243,7 +244,7 @@ public class PupilTools : MonoBehaviour
 				//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
 				AddCalibrationReferenceData ();
 
-				if (currCalibPoint >= currentCalibrationType.calibPoints.Count)
+				if (currCalibPoint >= currentCalibrationType.points)
 				{
 					StopCalibration ();
 				}

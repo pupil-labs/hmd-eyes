@@ -23,7 +23,7 @@ MonoBehaviour:
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
     PORT: 50020
-    subport: 56689
+    subport: 61471
     isLocal: 1
     topicList:
     - gaze

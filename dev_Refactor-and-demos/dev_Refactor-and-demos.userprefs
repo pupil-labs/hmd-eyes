@@ -1,16 +1,11 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Script\PupilDemoManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\pupil_plugin\Scripts\Pupil\PupilSettings.cs">
     <Files>
-      <File FileName="Assets\Market Scene Demo\Scripts\MarketSceneDemo.cs" Line="1" Column="1" />
-      <File FileName="Assets\Blindness Demo\Scripts\ColliderController.cs" Line="1" Column="1" />
-      <File FileName="Assets\Script\PupilDemoManager.cs" Line="70" Column="4" />
-      <File FileName="Assets\pupil_plugin\FFmpegOut\CameraCapture.cs" Line="1" Column="1" />
-      <File FileName="Assets\Script\CalibrationDemo.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\Scripts\MessagePack\MessagePackSerializer.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\Editor\CustomPupilDataReceiverInspector.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\Editor\CustomPupilGazeTrackerInspector.cs" Line="1" Column="1" />
-      <File FileName="Assets\Market Scene Demo\Scripts\GazeHighlight.shader" Line="1" Column="1" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilData.cs" Line="366" Column="3" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilTools.cs" Line="219" Column="72" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilSettings.cs" Line="43" Column="3" />
+      <File FileName="Assets\pupil_plugin\Scripts\PupilDemoManager.cs" Line="78" Column="21" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
