@@ -451,10 +451,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 			////////////////////////////2D-3D TOGGLE BAR////////////////////////////
 			EditorGUI.BeginChangeCheck ();
-			pupilSettings.calibration.currentCalibrationMode = (PupilSettings.Calibration.CalibMode)GUILayout.Toolbar ((int)pupilSettings.calibration.currentCalibrationMode, new string[]{ "2D", "3D" });
+			var calibrationMode = (PupilSettings.Calibration.CalibMode)GUILayout.Toolbar ((int)pupilSettings.calibration.currentCalibrationMode, new string[] {"2D","3D"});
+			if (calibrationMode != pupilSettings.calibration.currentCalibrationMode)
+				pupilSettings.calibration.currentCalibrationMode = calibrationMode;
 			GUI.enabled = true;
 			if (EditorGUI.EndChangeCheck ()) {
-				pupilTracker.SwitchCalibrationMode ();
+//				pupilSettings.calibration.SwitchCalibrationMode ();
 			}
 			////////////////////////////2D-3D TOGGLE BAR////////////////////////////
 

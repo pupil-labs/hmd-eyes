@@ -45,85 +45,82 @@ public class PupilSettings:ScriptableObject
 	}
 
 	[Serializable]
-	public class Calibration
+	public class Marker
 	{
-
-		[Serializable]
-		public class Marker
+		public string name;
+		public Vector3 position;
+		public bool calibrationPoint;
+		public PupilSettings.Calibration.CalibMode calibMode;
+		private GameObject gameObject;
+		private Camera _camera;
+		public Camera camera
 		{
-			public string name;
-			public Vector3 position;
-			public bool calibrationPoint;
-			public PupilSettings.Calibration.CalibMode calibMode;
-			private GameObject gameObject;
-			private Camera _camera;
-			public Camera camera
+			get
 			{
-				get
+				if (_camera == null)
 				{
-					if (_camera == null)
-					{
-						_camera = Camera.main;
-					}
-					return _camera;
+					_camera = Camera.main;
 				}
-				set
-				{
-					_camera = value;
-				}
+				return _camera;
 			}
-
-			public void UpdatePosition(Vector2 newPosition)
+			set
 			{
-				UpdatePosition (newPosition.x, newPosition.y);
-			}
-
-			public void UpdatePosition(float newX, float newY)
-			{
-				position.x = newX;
-				position.y = newY;
-				position.z = Instance.calibration.currentCalibrationType.depth;
-
-				if (gameObject == null)
-					InitializeGameObject ();
-				gameObject.transform.position = camera.ViewportToWorldPoint(position);
-			}
-
-			public void SetMaterialColor(Color color)
-			{
-				if (gameObject == null)
-					InitializeGameObject ();
-
-				var material = gameObject.GetComponent<MeshRenderer> ().sharedMaterial;
-				if (material == null)
-					material = new Material (Resources.Load<Material> ("MarkerMaterial"));
-				material.SetColor("_EmissionColor",color);
-			}
-
-			private void InitializeGameObject()
-			{
-				gameObject = GameObject.Instantiate (Resources.Load<GameObject> ("MarkerObject"));
-				gameObject.name = name;
-				gameObject.GetComponent<MeshRenderer> ().sharedMaterial = new Material (Resources.Load<Material> ("MarkerMaterial"));
-//				gameObject.hideFlags = HideFlags.HideInHierarchy;
-			}
-
-			public void SetActive(bool toggle)
-			{
-				if (gameObject == null)
-					InitializeGameObject ();
-				
-				gameObject.SetActive (toggle);
+				_camera = value;
 			}
 		}
 
+		public void UpdatePosition(Vector2 newPosition)
+		{
+			UpdatePosition (newPosition.x, newPosition.y);
+		}
+
+		public void UpdatePosition(float newX, float newY)
+		{
+			position.x = newX;
+			position.y = newY;
+			position.z = Instance.calibration.currentCalibrationType.depth;
+
+			if (gameObject == null)
+				InitializeGameObject ();
+			gameObject.transform.position = camera.ViewportToWorldPoint(position);
+		}
+
+		public void SetMaterialColor(Color color)
+		{
+			if (gameObject == null)
+				InitializeGameObject ();
+
+			var material = gameObject.GetComponent<MeshRenderer> ().sharedMaterial;
+			if (material == null)
+				material = new Material (Resources.Load<Material> ("MarkerMaterial"));
+			material.SetColor("_EmissionColor",color);
+		}
+
+		private void InitializeGameObject()
+		{
+			gameObject = GameObject.Instantiate (Resources.Load<GameObject> ("MarkerObject"));
+			gameObject.name = name;
+			gameObject.GetComponent<MeshRenderer> ().sharedMaterial = new Material (Resources.Load<Material> ("MarkerMaterial"));
+			//				gameObject.hideFlags = HideFlags.HideInHierarchy;
+		}
+
+		public void SetActive(bool toggle)
+		{
+			if (gameObject == null)
+				InitializeGameObject ();
+
+			gameObject.SetActive (toggle);
+		}
+	}
+
+	[Serializable]
+	public class Calibration
+	{
 		public enum CalibMode
 		{
 			_2D,
 			_3D
 		}
-
-		;
 
 		private CalibrationType CalibrationType2D = new CalibrationType () 
 		{ 
@@ -178,7 +175,29 @@ public class PupilSettings:ScriptableObject
 		};
 				
 
-		public CalibMode currentCalibrationMode;
+		private CalibMode _currentCalibrationMode;
+		public CalibMode currentCalibrationMode
+		{
+			get
+			{
+				if (_currentCalibrationMode == null)
+					_currentCalibrationMode = CalibMode._3D;	// 3D is standard mode
+				return _currentCalibrationMode;
+			}
+			set
+			{
+				_currentCalibrationMode = value;
+				Debug.Log ("Calibration mode changed to: " + _currentCalibrationMode.ToString ());
+			}
+		}
+		public void SwitchCalibrationMode ()
+		{
+			if (_currentCalibrationMode == CalibMode._2D)
+				_currentCalibrationMode = CalibMode._3D;
+			else
+				_currentCalibrationMode = CalibMode._2D;
+			PupilTools.ResetMarkerVisuals(PupilSettings.Instance.dataProcess.state);
+		}	
 
 		public float[] GetCalibrationPoint(int index)
 		{
@@ -217,29 +236,6 @@ public class PupilSettings:ScriptableObject
 
 			}
 
-		}
-
-		Marker _marker = null;
-
-		public Marker marker
-		{
-			get
-			{
-				if (_marker == null || _marker.name == "")
-				{	
-					_marker = CalibrationMarkers.Where (p => p.calibrationPoint && p.calibMode == PupilSettings.Instance.calibration.currentCalibrationMode).ToList () [0];
-//					_marker.camera = Camera.main;
-					Debug.Log ("getting");
-				
-				}
-//				Debug.Log (_marker);
-
-				return _marker;
-
-			}
-			set { 
-				_marker = value;
-			}
 		}
 
 		public bool initialized = false;

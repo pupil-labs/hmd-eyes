@@ -172,7 +172,7 @@ namespace DebugView
 		public float EyeSize = 24.2f;
 		//official approximation of the size of an avarage human eye(mm). However it may vary from 21 to 27 millimeters.
 		[HideInInspector]
-		public PupilSettings.Calibration.Marker Circle;
+		public PupilSettings.Marker Circle;
 		public bool isDrawPoints = false;
 		public bool isDrawLines = false;
 		[HideInInspector]

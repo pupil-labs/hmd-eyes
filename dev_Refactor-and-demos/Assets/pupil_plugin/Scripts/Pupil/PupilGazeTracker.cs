@@ -445,9 +445,9 @@ public class PupilGazeTracker:MonoBehaviour
 	}
 
 	#region packet
-	PupilSettings.Calibration.Marker _markerLeftEye;
-	PupilSettings.Calibration.Marker _markerRightEye;
-	PupilSettings.Calibration.Marker _markerGazeCenter;
+	PupilSettings.Marker _markerLeftEye;
+	PupilSettings.Marker _markerRightEye;
+	PupilSettings.Marker _markerGazeCenter;
 
 	public void StartVisualizingGaze ()
 	{
@@ -513,11 +513,6 @@ public class PupilGazeTracker:MonoBehaviour
 			GUI.TextArea (new Rect (50, 50, 200, 50), str);
 		}
 
-	}
-
-	public void SwitchCalibrationMode ()
-	{
-		PupilTools.ResetMarkerVisuals(PupilSettings.Instance.dataProcess.state);
 	}
 
 	#region Recording

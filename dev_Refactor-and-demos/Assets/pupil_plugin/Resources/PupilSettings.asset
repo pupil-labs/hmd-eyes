@@ -23,7 +23,7 @@ MonoBehaviour:
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
     PORT: 50020
-    subport: 61471
+    subport: 62323
     isLocal: 1
     topicList:
     - gaze
@@ -31,7 +31,6 @@ MonoBehaviour:
   pupilServiceApp:
     servicePath: C:/Program Files/Pupil Service/pupil_service.exe
   calibration:
-    currentCalibrationMode: 0
     initialized: 0
     CalibrationMarkers:
     - name: LeftEye_2D
@@ -51,7 +50,7 @@ MonoBehaviour:
       calibrationPoint: 0
       calibMode: 1
     - name: Calibration_2D
-      position: {x: 0.35, y: 0.5, z: 2}
+      position: {x: 0.5, y: 0.5, z: 2}
       calibrationPoint: 1
       calibMode: 0
     - name: Calibration_3D

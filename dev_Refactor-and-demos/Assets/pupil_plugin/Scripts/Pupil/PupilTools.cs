@@ -210,7 +210,7 @@ public class PupilTools : MonoBehaviour
 
 		_calibrationData.Clear ();
 	}
-	private static PupilSettings.Calibration.Marker calibrationMarker;
+	private static PupilSettings.Marker calibrationMarker;
 	public static void Calibrate ()
 	{
 		// Get the current calibration information from the PupilSettings class
@@ -384,6 +384,11 @@ public class PupilTools : MonoBehaviour
 	public static void StartBinocularVectorGazeMapper ()
 	{
 		_sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
+	}
+
+	public static void SetDetectionMode(string mode)
+	{
+		_sendRequestMessage (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
 	}
 
 	public static void StartFramePublishing ()

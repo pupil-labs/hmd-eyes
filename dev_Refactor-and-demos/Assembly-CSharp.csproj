@@ -51,9 +51,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Blindness Demo\Scripts\AnimateTextSheet.cs" />
-     <Compile Include="Assets\Blindness Demo\Scripts\ColliderController.cs" />
-     <Compile Include="Assets\Blindness Demo\Scripts\ParticleController.cs" />
      <Compile Include="Assets\Market Scene Demo\Scripts\MarketSceneDemo.cs" />
      <Compile Include="Assets\Market Scene Demo\Scripts\UpdateMeshColliders.cs" />
      <Compile Include="Assets\Market Scene Demo\Unity\Scripts\MonoBehaviours\Camera\CameraControl.cs" />
