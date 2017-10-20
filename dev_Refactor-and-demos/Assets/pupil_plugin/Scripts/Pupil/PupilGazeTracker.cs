@@ -491,7 +491,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 			if (PupilSettings.Instance.calibration.currentCalibrationMode == PupilSettings.Calibration.CalibMode._3D)
 			{
-				PupilSettings.Calibration.Marker gaze3D = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.calibMode == PupilSettings.Calibration.CalibMode._3D && !p.calibrationPoint).ToList () [0];
+				PupilSettings.Marker gaze3D = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.calibMode == PupilSettings.Calibration.CalibMode._3D && !p.calibrationPoint).ToList () [0];
 
 				gaze3D.position = PupilData._3D.Gaze ();
 

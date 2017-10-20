@@ -156,7 +156,7 @@ public class PupilTools : MonoBehaviour
 
 	public static void ResetMarkerVisuals(PupilSettings.EStatus status)
 	{
-		foreach (PupilSettings.Calibration.Marker _m in PupilSettings.Instance.calibration.CalibrationMarkers) 
+		foreach (PupilSettings.Marker _m in PupilSettings.Instance.calibration.CalibrationMarkers) 
 		{
 			_m.SetActive(false);
 
