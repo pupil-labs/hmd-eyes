@@ -65,11 +65,7 @@ public class OperatorMonitor : MonoBehaviour {
 
 		PupilTools.SubscribeTo ("pupil.");
 
-		pupilTracker.CreateEye0ImageMaterial ();
-		pupilTracker.CreateEye1ImageMaterial ();
-		pupilTracker.InitializeFramePublishing ();
 		PupilTools.StartFramePublishing ();
-
 	}
 //	void OnDestroy(){
 //		pupilTracker.StopFramePublishing ();

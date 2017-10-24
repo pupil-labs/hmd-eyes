@@ -38,6 +38,14 @@ public static class PupilConversions
 		return _v3List.ToArray ();
 	}
 
+	private static float[] vector2ToFloatArray = new float[2];
+	public static float[] Vector2ToFloatArray(Vector2 vector)
+	{
+		vector2ToFloatArray [0] = vector.x;
+		vector2ToFloatArray [1] = vector.y;
+		return vector2ToFloatArray;
+	}
+
 	public static Matrix4x4 Matrix4x4FromString (string matrixString, bool column = true, float scaler = 1f)
 	{
 		Matrix4x4 _m = new Matrix4x4 ();

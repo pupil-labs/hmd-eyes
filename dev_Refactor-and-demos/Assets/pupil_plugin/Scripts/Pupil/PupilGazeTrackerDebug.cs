@@ -253,7 +253,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 			//			OnCalibDebug -= DrawCalibrationDebugView;
 			pupilGazeTracker.OnUpdate -= CalibrationDebugInteraction;
 			pupilGazeTracker.OnUpdate += CalibrationDebugInteraction;
-			pupilGazeTracker.InitializeFramePublishing ();
+
 			PupilTools.StartFramePublishing ();
 		} else
 		{
@@ -322,15 +322,12 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 
 	public void DrawCalibrationDebugView ()
 	{
-
 		debugViewFrameIndex++;
 
 		if (!isDrawCalibrationDebugInitialized)
 			InitDrawCalibrationDebug ();
 
 		CreateLineMaterial ();
-		pupilGazeTracker.CreateEye0ImageMaterial ();
-		pupilGazeTracker.CreateEye1ImageMaterial ();
 		CreateEyeSphereMaterial ();
 
 		Vector3 eye0Pos = PupilData._3D.EyeCenters (0);

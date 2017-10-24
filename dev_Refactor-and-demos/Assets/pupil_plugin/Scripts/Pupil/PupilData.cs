@@ -237,7 +237,7 @@ public static class PupilData
 
 			Vector3 _v3 = new Vector3 ();
 
-			if (gazeDictionary.TryGetValue ("gaze_point_3d", out o))
+			if (pupil0Dictionary.TryGetValue ("gaze_point_3d", out o))
 			{
 
 				gaze_point_3d_o = o as object[];
@@ -410,6 +410,9 @@ public static class PupilData
 		get
 		{
 			object IDo;
+			if (gazeDictionary == null)
+				return GazeSource.NoEye;
+			
 			bool isID = gazeDictionary.TryGetValue ("id", out IDo);
 
 			if (isID)

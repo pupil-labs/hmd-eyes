@@ -23,6 +23,8 @@ public class MarketSceneDemo : MonoBehaviour
 		sceneCamera = gameObject.GetComponent<Camera> ();
 		calibrationDemo = gameObject.GetComponent<CalibrationDemo> ();
 		heading = gameObject.GetComponent<LineRenderer> ();
+
+		PupilTools.SubscribeTo ("gaze");
 	}
 
 	bool monoColorMode = true;
@@ -83,5 +85,10 @@ public class MarketSceneDemo : MonoBehaviour
 			break;
 		}
 		Graphics.Blit (source, destination, shaderMaterial);
+	}
+
+	void OnDisable()
+	{
+		PupilTools.UnSubscribeFrom ("gaze");
 	}
 }

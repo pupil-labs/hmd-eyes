@@ -4,9 +4,6 @@
 
 using UnityEngine;
 using UnityEngine.UI;
-
-//TEMP
-//using UnityEditor;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics;
 using System.Collections;
@@ -16,15 +13,7 @@ using System.Net;
 using System.Threading;
 using System.IO;
 using System;
-using NetMQ;
-using NetMQ.Sockets;
-//using MsgPack.Serialization;
-using System.Linq;
-//using System.Linq.Expressions;
 
-//public delegate void Task();
-
-[RequireComponent (typeof(PupilDataReceiver))]
 public class PupilGazeTracker:MonoBehaviour
 {
 	public PupilSettings Settings;
@@ -59,35 +48,22 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public string ProjectName;
 
-	//	Thread _serviceThread;
-	//	bool _isDone=false;
-
 	#region delegates
 
 	public delegate void OnCalibrationStartedDeleg (PupilGazeTracker manager);
-
 	public delegate void OnCalibrationDoneDeleg (PupilGazeTracker manager);
-
 	public delegate void OnEyeGazeDeleg (PupilGazeTracker manager);
-
 	public delegate void OnCalibrationGLDeleg ();
-
 	public delegate void OnUpdateDeleg ();
-
 	public delegate void DrawMenuDeleg ();
-
 	public delegate void OnCalibDebugDeleg ();
-
 	public delegate void OnOperatorMonitorDeleg ();
-
 	public delegate void OnDrawGizmoDeleg ();
 
 	public event OnEyeGazeDeleg OnEyeGaze;
 
-
 	public DrawMenuDeleg DrawMenu;
 	public OnCalibrationGLDeleg OnCalibrationGL;
-
 	public OnCalibDebugDeleg OnCalibDebug;
 	public OnOperatorMonitorDeleg OnOperatorMonitor;
 	public OnDrawGizmoDeleg OnDrawGizmo;
@@ -103,17 +79,6 @@ public class PupilGazeTracker:MonoBehaviour
 	public Operator.properties[] OperatorMonitorProperties;
 
 	#endregion
-
-	//	//changed this
-	//	bool _isconnected =false;
-	//	public bool IsConnected{
-	//		get{ return _isconnected; }
-	//		set{_isconnected = value;}
-	//	}
-
-	//	[HideInInspector]
-	//	public bool _isFullConnected =false;
-	//	RequestSocket _requestSocket ;
 
 	//	[HideInInspector]
 	//	public int ServicePort=50020;
@@ -137,22 +102,6 @@ public class PupilGazeTracker:MonoBehaviour
 	[HideInInspector]
 	public int Codec = 1;
 
-	//	public CalibModeDetails CurrentCalibrationModeDetails{
-	//		get{
-	//			return CalibrationModes [CurrentCalibrationMode];
-	//		}
-	//	}
-	//
-	//	public CalibModes CurrentCalibrationMode{
-	//		get {
-	//			if (customInspector.calibrationMode == 0) {
-	//				return CalibModes._2D;
-	//			} else {
-	//				return CalibModes._3D;
-	//			}
-	//		}
-	//	}
-
 	//[HideInInspector]
 	//public bool AdvancedSettings;
 	[HideInInspector]
@@ -171,82 +120,39 @@ public class PupilGazeTracker:MonoBehaviour
 	[HideInInspector]
 	public GUIStyle CalibRowStyle = new GUIStyle ();
 
-
-	[Serializable]
-	public struct Platform
-	{
-		public RuntimePlatform platform;
-		public string DefaultPath;
-		public string FileName;
-	}
-
-	[HideInInspector]
-	public Platform[] Platforms;
-	[HideInInspector]
-	public Dictionary<RuntimePlatform, string[]> PlatformsDictionary;
-
 	Process serviceProcess;
 
 	int _gazeFPS = 0;
 	int _currentFps = 0;
 	DateTime _lastT;
 
-	long lastTick;
-	float elapsedTime;
-
 	public int FPS
 	{
 		get{ return _currentFps; }
 	}
-
-	public enum EStatus
-	{
-		Idle,
-		ProcessingGaze,
-		Calibration
-	}
-
-	[HideInInspector]
-	//	public EStatus m_status=EStatus.Idle;
-
-
 
 	public PupilGazeTracker ()
 	{
 		_Instance = this;
 	}
 		
-
-	//		public void RepaintGUI(){
-	//		if (WantRepaint != null)
-	//			WantRepaint ();
-	//	}
-	//
-
 	#region Update
 
 	void Update ()
 	{
-		if (Settings.framePublishing.StreamCameraImages)
+		Settings.framePublishing.UpdateEyeTextures ();
+
+		if (Settings.dataProcess.state == PupilSettings.EStatus.Calibration)
 		{
-			//Put this in a function and delegate it to the OnUpdate delegate
-			elapsedTime = (float)TimeSpan.FromTicks (DateTime.Now.Ticks - lastTick).TotalSeconds;
-			if (elapsedTime >= (1f / Settings.framePublishing.targetFPS))
-			{
-				//Limiting the MainThread calls to framePublishFramePerSecondLimit to avoid issues. 20-30 ideal.
-				AssignTexture (ref Settings.framePublishing.eye0Image, ref Settings.framePublishing.eye0ImageMaterial, Settings.framePublishing.raw0);
-				AssignTexture (ref Settings.framePublishing.eye1Image, ref Settings.framePublishing.eye1ImageMaterial, Settings.framePublishing.raw1);
-				lastTick = DateTime.Now.Ticks;
-			}
+			if (Settings.calibration.initialized)
+				PupilTools.Calibrate ();
 		}
-
-		if (OnUpdate != null)
-			OnUpdate ();
-
+		else if (Settings.connection.subscribeSocket != null)
+			Settings.connection.subscribeSocket.Poll ();
 
 		if (Input.GetKeyUp (KeyCode.C))
 		{
-			if (PupilSettings.Instance.dataProcess.state == PupilSettings.EStatus.Calibration)
+			if (Settings.dataProcess.state == PupilSettings.EStatus.Calibration)
 			{
 				PupilTools.StopCalibration ();
 			} else
@@ -268,6 +174,9 @@ public class PupilGazeTracker:MonoBehaviour
 			}
 
 		}
+
+		if (OnUpdate != null)
+			OnUpdate ();
 	}
 
 	#endregion
@@ -287,19 +196,6 @@ public class PupilGazeTracker:MonoBehaviour
 			OnCalibrationGL ();
 	}
 
-	void InitializeEyes (ref bool eyeProcess)
-	{
-		if (!Pupil.processStatus.initialized)
-		{
-			eyeProcess = true;
-			if (Pupil.processStatus.eyeProcess0 && Pupil.processStatus.eyeProcess1)
-			{
-				Pupil.processStatus.initialized = true;
-				//UnSubscribeFrom ("pupil.");
-			}
-		}
-	}
-
 	void OnEnable ()
 	{
 		if (PupilGazeTracker._Instance == null)
@@ -309,6 +205,8 @@ public class PupilGazeTracker:MonoBehaviour
 	void OnDisable ()
 	{
 		PupilGazeTracker._Instance = null;
+		var pupilSettings = PupilSettings.Instance;
+		PupilTools.SavePupilSettings (ref pupilSettings);
 	}
 
 	#region Start();
@@ -317,18 +215,15 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 //		print ("Start of pupil gaze tracker");
 
-		Settings = Resources.Load<PupilSettings> ("PupilSettings");
+		Settings = PupilTools.Settings;
 
-		Settings.framePublishing.StreamCameraImages = false;
 
 		string str = PupilConversions.ReadStringFromFile ("camera_intrinsics");
 		PupilConversions.ReadCalibrationData(str,ref PupilData.CalibrationData);
 
-		lastTick = DateTime.Now.Ticks;
-		elapsedTime = 0f;
-
+		Settings.framePublishing.StreamCameraImages = false;
 		if (Settings.framePublishing.StreamCameraImages)
-			InitializeFramePublishing ();
+			Settings.framePublishing.InitializeFramePublishing ();
 
 		if (PupilGazeTracker._Instance == null)
 			PupilGazeTracker._Instance = this;
@@ -341,141 +236,105 @@ public class PupilGazeTracker:MonoBehaviour
 			OperatorMonitor.Instantiate ();
 		}
 		//OnOperatorMonitor += DrawOperatorMonitor;
-		if (PupilSettings.Instance.debugView.active)
+		if (Settings.debugView.active)
 			debugInstance.StartCalibrationDebugView ();
 
 		PupilGazeTracker.Instance.ProjectName = Application.productName;
+
+		Settings.connection.isConnected = false;
+		Settings.dataProcess.state = PupilSettings.EStatus.Idle;
+
+		if (Settings.connection.isAutorun)
+			RunConnect ();
 	}
 
 	#endregion
 
-	#region frame_publishing.functions
-
-	public void CreateEye0ImageMaterial ()
-	{
-		if (!Settings.framePublishing.eye0ImageMaterial)
-		{
-			Shader shader = Shader.Find ("Unlit/Texture");
-			Settings.framePublishing.eye0ImageMaterial = new Material (shader);
-			Settings.framePublishing.eye0ImageMaterial.hideFlags = HideFlags.HideAndDontSave;
-		}
-	}
-
-	public void CreateEye1ImageMaterial ()
-	{
-		if (!Settings.framePublishing.eye1ImageMaterial)
-		{
-			Shader shader = Shader.Find ("Unlit/Texture");
-			Settings.framePublishing.eye1ImageMaterial = new Material (shader);
-			Settings.framePublishing.eye1ImageMaterial.hideFlags = HideFlags.HideAndDontSave;
-		}
-	}
-	public void InitializeFramePublishing ()
-	{
-		CreateEye0ImageMaterial ();
-		CreateEye1ImageMaterial ();
-		Settings.framePublishing.eye0Image = new Texture2D (100, 100);
-		Settings.framePublishing.eye1Image = new Texture2D (100, 100);
-	}
-
-	public void AssignTexture (ref Texture2D _eyeImage, ref Material _mat, byte[] data)
-	{
-		
-		_eyeImage.LoadImage (data);
-		_mat.mainTexture = _eyeImage;
-	
-	}
-
-	#endregion
-
-	// Andre: Where was/is this needed??
 	//Check platform dependent path for pupil service, only if there is no custom PupilServicePathSet
+	[Serializable]
+	public struct Platform
+	{
+		public RuntimePlatform platform;
+		public string DefaultPath;
+		public string FileName;
+	}
+	[HideInInspector]
+	public Platform[] Platforms;
+	[HideInInspector]
+	public Dictionary<RuntimePlatform, string[]> PlatformsDictionary;
 	public void AdjustPath ()
 	{
-		
-//		InitializePlatformsDictionary ();
-//		if (PupilServicePath == "" && PlatformsDictionary.ContainsKey (Application.platform)) {
-//			PupilServicePath = PlatformsDictionary [Application.platform] [0];
-//			PupilServiceFileName = PlatformsDictionary [Application.platform] [1];
-//			print ("Pupil service path is set to the default : " + PupilServicePath);
-//		} else if (!PlatformsDictionary.ContainsKey (Application.platform)) {
-//			print ("There is no platform default path set for " + Application.platform + ". Please set it under Settings/Platforms!");
-//		}
-
-	}
-
-	public void InitializePlatformsDictionary ()
-	{
-		//		PlatformsDictionary = new Dictionary<RuntimePlatform, string[]> ();
-		//		foreach (Platform p in Platforms) {
-		//			PlatformsDictionary.Add (p.platform, new string[]{ p.DefaultPath, p.FileName });
-		//		}
-	}
-
-	//Service is currently stored in Assets/Plugins/pupil_service_versionNumber . This path is hardcoded. See servicePath.
-	public void RunServiceAtPath ()
-	{
-		AdjustPath ();
-		string servicePath = PupilServicePath;
-		if (File.Exists (servicePath))
+		PlatformsDictionary = new Dictionary<RuntimePlatform, string[]> ();
+		foreach (Platform p in Platforms) 
 		{
-			if (Process.GetProcessesByName ("pupil_capture").Length > 0)
-			{
-				UnityEngine.Debug.LogWarning (" Pupil Capture is already running ! ");
-			} else
-			{
-				serviceProcess = new Process ();
-				serviceProcess.StartInfo.Arguments = servicePath;
-				serviceProcess.StartInfo.FileName = servicePath;
-				if (File.Exists (servicePath))
-				{
-					serviceProcess.Start ();
-				} else
-				{
-					print ("Pupil Service could not start! There is a problem with the file path. The file does not exist at given path");
-				}
-			}
-		} else
-		{
-			if (PupilServiceFileName == "")
-			{
-				print ("Pupil Service filename is not specified, most likely you will have to check if you have it set for the current platform under settings Platforms(DEV opt.)");
-			}
+			PlatformsDictionary.Add (p.platform, new string[]{ p.DefaultPath, p.FileName });
 		}
+		if (PupilServicePath == "" && PlatformsDictionary.ContainsKey (Application.platform)) 
+		{
+			PupilServicePath = PlatformsDictionary [Application.platform] [0];
+			PupilServiceFileName = PlatformsDictionary [Application.platform] [1];
+			print ("Pupil service path is set to the default : " + PupilServicePath);
+		} 
+		else if (!PlatformsDictionary.ContainsKey (Application.platform)) 
+		{
+			print ("There is no platform default path set for " + Application.platform + ". Please set it under Settings/Platforms!");
+		}
+	}
+
+	public void RunConnect()
+	{
+		if (Settings.connection.isLocal)
+			PupilTools.RunServiceAtPath ();
+		
+		StartCoroutine (PupilTools.Connect (retry: true, retryDelay: 5f));
 	}
 
 	#region packet
-	PupilSettings.Marker _markerLeftEye;
-	PupilSettings.Marker _markerRightEye;
-	PupilSettings.Marker _markerGazeCenter;
+	PupilMarker _markerLeftEye = new PupilMarker("LeftEye_2D");
+	PupilMarker _markerRightEye = new PupilMarker("RightEye_2D");
+	PupilMarker _markerGazeCenter = new PupilMarker("Gaze_2D");
+	PupilMarker _gaze3D= new PupilMarker("Gaze_3D");
 
 	public void StartVisualizingGaze ()
 	{
 		OnUpdate += VisualizeGaze;
 
-		_markerLeftEye = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.name == "LeftEye_2D").ToList () [0];
+		bool isCalibrationMode2D = Settings.calibration.currentCalibrationMode == Calibration.CalibMode._2D;
+		_markerLeftEye.SetActive (isCalibrationMode2D);
 		_markerLeftEye.SetMaterialColor (Color.green);
-		_markerRightEye = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.name == "RightEye_2D").ToList () [0];
+		_markerRightEye.SetActive (isCalibrationMode2D);
 		_markerRightEye.SetMaterialColor (Color.blue);
-		_markerGazeCenter = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.name == "Gaze_2D").ToList () [0];
+		_markerGazeCenter.SetActive (isCalibrationMode2D);
 		_markerGazeCenter.SetMaterialColor (Color.red);
-
-		if (Settings.visualizeGaze)
-			PupilTools.ResetMarkerVisuals (PupilSettings.EStatus.ProcessingGaze);
+		_gaze3D.SetActive (!isCalibrationMode2D);
+		if (isCalibrationMode2D)
+			PupilTools.SubscribeTo("gaze");
+		else
+			PupilTools.SubscribeTo("pupil.");
+			
 	}
 
 	public void StopVisualizingGaze ()
 	{
 		OnUpdate -= VisualizeGaze;
 
-		PupilTools.ResetMarkerVisuals (PupilSettings.EStatus.Idle);
+		_markerLeftEye.SetActive (false);
+		_markerRightEye.SetActive (false);
+		_markerGazeCenter.SetActive (false);
+		_gaze3D.SetActive (false);
+
+		bool isCalibrationMode2D = Settings.calibration.currentCalibrationMode == Calibration.CalibMode._2D;
+		if (isCalibrationMode2D)
+			PupilTools.UnSubscribeFrom("gaze");
+		else
+			PupilTools.UnSubscribeFrom("pupil.");
 	}
 
 	void VisualizeGaze ()
 	{
-		if (PupilSettings.Instance.dataProcess.state == PupilSettings.EStatus.ProcessingGaze)
+		if (Settings.dataProcess.state == PupilSettings.EStatus.ProcessingGaze)
 		{
-			if (PupilSettings.Instance.calibration.currentCalibrationMode == PupilSettings.Calibration.CalibMode._2D)
+			if (Settings.calibration.currentCalibrationMode == Calibration.CalibMode._2D)
 			{
 				var eyeID = PupilData.eyeID;
 				if (eyeID == PupilData.GazeSource.LeftEye || eyeID == PupilData.GazeSource.RightEye)
@@ -489,19 +348,14 @@ public class PupilGazeTracker:MonoBehaviour
 				_markerGazeCenter.UpdatePosition (PupilData._2D.GetEyeGaze (PupilData.GazeSource.BothEyes));
 			}
 
-			if (PupilSettings.Instance.calibration.currentCalibrationMode == PupilSettings.Calibration.CalibMode._3D)
+			if (Settings.calibration.currentCalibrationMode == Calibration.CalibMode._3D)
 			{
-				PupilSettings.Marker gaze3D = PupilSettings.Instance.calibration.CalibrationMarkers.Where (p => p.calibMode == PupilSettings.Calibration.CalibMode._3D && !p.calibrationPoint).ToList () [0];
-
-				gaze3D.position = PupilData._3D.Gaze ();
-
+				_gaze3D.position = PupilData._3D.Gaze ();
 			}
 		} 
 	}
 
 	#endregion
-
-
 
 	void OnGUI ()
 	{
@@ -530,6 +384,19 @@ public class PupilGazeTracker:MonoBehaviour
 		if (OperatorWindow.Instance != null)
 			OperatorWindow.Instance.Close ();
 		#endif
+
+		if (Settings.dataProcess.state == PupilSettings.EStatus.Calibration)
+			PupilTools.StopCalibration ();
+
+		PupilTools.StopEyeProcesses ();
+
+		Thread.Sleep (1);
+
+		Settings.connection.CloseSockets();
+			
+		StopAllCoroutines ();
+
+		PupilTools.RepaintGUI ();
 
 		Pupil.processStatus.eyeProcess0 = false;
 		Pupil.processStatus.eyeProcess1 = false;

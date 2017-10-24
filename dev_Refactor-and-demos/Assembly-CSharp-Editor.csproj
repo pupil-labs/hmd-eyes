@@ -71,7 +71,6 @@
      <Compile Include="Assets\Market Scene Demo\Unity\Scripts\Editor\Interaction\ReactionEditors\SceneReactionEditor.cs" />
      <Compile Include="Assets\Market Scene Demo\Unity\Scripts\Editor\Interaction\ReactionEditors\TextReactionEditor.cs" />
      <Compile Include="Assets\Market Scene Demo\Unity\Scripts\Editor\Inventory\InventoryEditor.cs" />
-     <Compile Include="Assets\pupil_plugin\Editor\CustomPupilDataReceiverInspector.cs" />
      <Compile Include="Assets\pupil_plugin\Editor\CustomPupilGazeTrackerInspector.cs" />
      <Compile Include="Assets\pupil_plugin\FFmpegOut\Editor\CameraCaptureEditor.cs" />
      <None Include="Assets\pupil_plugin\FFmpegOut\Shader\CameraCapture.shader" />

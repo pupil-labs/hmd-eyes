@@ -1,12 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Diagnostics;
 using UnityEngine;
-using NetMQ;
-using NetMQ.Sockets;
-using MessagePack;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -14,35 +10,31 @@ using UnityEditor;
 
 public class PupilTools : MonoBehaviour
 {
-	static PupilSettings _pupilSettings;
-	public static PupilSettings pupilSettings
+	static PupilSettings _settings;
+	public static PupilSettings Settings
 	{
 		get
 		{
-			if (_pupilSettings == null)
+			if (_settings == null)
 			{
-				foreach (var item in Resources.LoadAll<PupilSettings> (""))
-				{
-					_pupilSettings = item;
-				}
-				//			print (pupilSettings);	
+				_settings = Resources.Load<PupilSettings> ("PupilSettings");	
 			}
 
-			return _pupilSettings;
+			return _settings;
 		}
 	}
 
 	public delegate void GUIRepaintAction ();
 //InspectorGUI repaint
 	public delegate void OnCalibrationStartDeleg ();
-
 	public delegate void OnCalibrationEndDeleg ();
+	public delegate void OnConnectedDelegate ();
 
 	public static event GUIRepaintAction WantRepaint;
 
 	public static event OnCalibrationStartDeleg OnCalibrationStarted;
 	public static event OnCalibrationEndDeleg OnCalibrationEnded;
-
+	public static event OnConnectedDelegate OnConnected;
 
 	#region Recording
 
@@ -50,7 +42,7 @@ public class PupilTools : MonoBehaviour
 	{
 		var _p = path.Substring (2);
 
-		_sendRequestMessage (new Dictionary<string,object> {
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","recording.should_start" },
 			 {
 				"session_name",
@@ -62,7 +54,7 @@ public class PupilTools : MonoBehaviour
 
 	public static void StopPupilServiceRecording ()
 	{
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","recording.should_stop" } });
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","recording.should_stop" } });
 	}
 
 	#endregion
@@ -76,117 +68,110 @@ public class PupilTools : MonoBehaviour
 			WantRepaint ();
 	}
 
-	public static SubscriberSocket ClearAndInitiateSubscribe ()
+	public static IEnumerator Connect(bool retry = false, float retryDelay = 5f)
 	{
-		if (pupilSettings.connection.subscribeSocket != null)
+		yield return new WaitForSeconds (3f);
+
+		var connection = Settings.connection;
+
+		while (!connection.isConnected) 
 		{
-			
-			pupilSettings.connection.subscribeSocket.Close ();
+			connection.TryToConnect ();
 
+			if (!connection.isConnected) {
+
+				if (retry) 
+				{
+					print ("Could not connect, Re-trying in 5 seconds ! ");
+					yield return new WaitForSeconds (retryDelay);
+
+				} else 
+				{
+					connection.TerminateContext ();
+					yield break;
+				}
+
+			} 
+			else
+			{
+				print (" Succesfully connected to Pupil Service ! ");
+
+				StartEyeProcesses ();
+				RepaintGUI ();
+				OnConnected ();
+				yield break;
+			}
+			yield return null;
 		}
+	}
 
-		SubscriberSocket _subscriberSocket = new SubscriberSocket (pupilSettings.connection.IPHeader + pupilSettings.connection.subport);
+	public static void ClearAndInitiateSubscribe ()
+	{
+		Settings.dataProcess.state = PupilSettings.EStatus.ProcessingGaze;
 
-		//André: Is this necessary??
-		_subscriberSocket.Options.SendHighWatermark = PupilSettings.numberOfMessages;// 6;
-
-		//André: PupilSettings got overwritten every time, adding "pupil." after I removed it..
-		foreach (var topic in pupilSettings.connection.topicList)
-		{
-			_subscriberSocket.Subscribe (topic);
-		}
-
-		return _subscriberSocket;
-
+		Settings.connection.InitializeSubscriptionSocket ();
 	}
 
 	public static void SubscribeTo (string topic)
 	{
-		if (!pupilSettings.connection.topicList.Contains (topic))
+		if (!Settings.connection.topicList.Contains (topic))
 		{
-			
-			pupilSettings.connection.topicList.Add (topic);
-
+			Settings.connection.topicList.Add (topic);
 		}
-
-		pupilSettings.connection.subscribeSocket = ClearAndInitiateSubscribe ();
+		ClearAndInitiateSubscribe ();
 	}
 
 	public static void UnSubscribeFrom (string topic)
 	{
-
-		if (pupilSettings.connection.topicList.Contains (topic))
+		if (Settings.connection.topicList.Contains (topic))
 		{
-			pupilSettings.connection.topicList.Remove (topic);
+			Settings.connection.topicList.Remove (topic);
 		}
-
-		pupilSettings.connection.subscribeSocket = ClearAndInitiateSubscribe ();
-
+		ClearAndInitiateSubscribe ();
 	}
 
 
-	static int currCalibPoint;
-	static int currCalibSamples;
+	static int currentCalibrationPoint;
+	static int currentCalibrationSamples;
+	static Calibration.CalibrationType currentCalibrationType;
 	public static int defaultCalibrationCount = 120;
 	static float lastTimeStamp = 0;
 	public static void InitializeCalibration ()
 	{
 		print ("Initializing Calibration");
 
-		currCalibPoint = 0;
-		currCalibSamples = 0;
+		currentCalibrationPoint = 0;
+		currentCalibrationSamples = 0;
 
-		calibrationMarker = pupilSettings.calibration.CalibrationMarkers.Where (p => p.calibrationPoint && p.calibMode == pupilSettings.calibration.currentCalibrationMode).ToList () [0];
+		currentCalibrationType = Settings.calibration.currentCalibrationType;
 
-		float[] initialPoint = pupilSettings.calibration.GetCalibrationPoint (currCalibPoint);
-		calibrationMarker.UpdatePosition (initialPoint[0], initialPoint[1]);
+		calibrationMarker.SetActive (true);
+		float[] initialPoint = Settings.calibration.GetCalibrationPoint (currentCalibrationPoint);
+		calibrationMarker.UpdatePosition (initialPoint);
 		calibrationMarker.SetMaterialColor (Color.white);
 
 //		yield return new WaitForSeconds (2f);
 
-		ResetMarkerVisuals(PupilSettings.EStatus.Calibration);
-
 		print ("Starting Calibration");
 
-		pupilSettings.calibration.initialized = true;
-		pupilSettings.dataProcess.state = PupilSettings.EStatus.Calibration;
+		Settings.calibration.initialized = true;
+		Settings.dataProcess.state = PupilSettings.EStatus.Calibration;
 
 		PupilTools.RepaintGUI ();
-	}
-
-	public static void ResetMarkerVisuals(PupilSettings.EStatus status)
-	{
-		foreach (PupilSettings.Marker _m in PupilSettings.Instance.calibration.CalibrationMarkers) 
-		{
-			_m.SetActive(false);
-
-			if (_m.calibMode == PupilSettings.Instance.calibration.currentCalibrationMode)
-			{
-				if (_m.calibrationPoint && status == PupilSettings.EStatus.Calibration) 
-				{
-					_m.SetActive(true);
-				}
-
-				if (!_m.calibrationPoint && status == PupilSettings.EStatus.ProcessingGaze) 
-				{
-					_m.SetActive (true);
-				}
-			}
-		}
 	}
 
 	public static void StartCalibration ()
 	{
 		InitializeCalibration ();
 
-		_sendRequestMessage (new Dictionary<string,object> {
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","start_plugin" },
 			 {
 				"name",
-				pupilSettings.calibration.currentCalibrationType.pluginName
+				currentCalibrationType.pluginName
 			}
 		});
-		_sendRequestMessage (new Dictionary<string,object> {
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","calibration.should_start" },
 			 {
 				"hmd_video_frame_size",
@@ -210,16 +195,13 @@ public class PupilTools : MonoBehaviour
 
 		_calibrationData.Clear ();
 	}
-	private static PupilSettings.Marker calibrationMarker;
+	private static PupilMarker calibrationMarker = new PupilMarker ("Calibraton Marker");
 	public static void Calibrate ()
 	{
-		// Get the current calibration information from the PupilSettings class
-		PupilSettings.CalibrationType currentCalibrationType = pupilSettings.calibration.currentCalibrationType;
+		float[] _currentCalibPointPosition = Settings.calibration.GetCalibrationPoint (currentCalibrationPoint);// .currentCalibrationType.calibPoints [currentCalibrationPoint];
+		calibrationMarker.UpdatePosition (_currentCalibPointPosition);
 
-		float[] _currentCalibPointPosition = pupilSettings.calibration.GetCalibrationPoint (currCalibPoint);// .currentCalibrationType.calibPoints [currCalibPoint];
-		calibrationMarker.UpdatePosition (_currentCalibPointPosition [0], _currentCalibPointPosition [1]);
-
-		float t = GetPupilTimestamp ();
+		float t = Settings.connection.GetPupilTimestamp ();
 
 		if (t - lastTimeStamp > 0.02f) // was 0.1, 1000/60 ms wait in old version
 		{
@@ -228,23 +210,23 @@ public class PupilTools : MonoBehaviour
 //			print ("its okay to go on");
 
 			//Create reference data to pass on. _cPointFloatValues are storing the float values for the relevant current Calibration mode
-			AddCalibrationPointReferencePosition (currentCalibrationType.positionKey, _currentCalibPointPosition, t, 0);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
-			AddCalibrationPointReferencePosition (currentCalibrationType.positionKey, _currentCalibPointPosition, t, 1);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+			AddCalibrationPointReferencePosition (_currentCalibPointPosition, t, 0);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+			AddCalibrationPointReferencePosition (_currentCalibPointPosition, t, 1);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
 
-			if (pupilSettings.debug.printSampling)
-				print ("Point: " + currCalibPoint + ", " + "Sampling at : " + currCalibSamples + ". On the position : " + _currentCalibPointPosition [0] + " | " + _currentCalibPointPosition [1]);
+			if (Settings.debug.printSampling)
+				print ("Point: " + currentCalibrationPoint + ", " + "Sampling at : " + currentCalibrationSamples + ". On the position : " + _currentCalibPointPosition [0] + " | " + _currentCalibPointPosition [1]);
 
-			currCalibSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
+			currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 
-			if (currCalibSamples >= defaultCalibrationCount)
+			if (currentCalibrationSamples >= defaultCalibrationCount)
 			{
-				currCalibSamples = 0;
-				currCalibPoint++;
+				currentCalibrationSamples = 0;
+				currentCalibrationPoint++;
 
 				//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
 				AddCalibrationReferenceData ();
 
-				if (currCalibPoint >= currentCalibrationType.points)
+				if (currentCalibrationPoint >= currentCalibrationType.points)
 				{
 					StopCalibration ();
 				}
@@ -255,11 +237,13 @@ public class PupilTools : MonoBehaviour
 
 	public static void StopCalibration ()
 	{
-		pupilSettings.calibration.initialized = false;
-		pupilSettings.dataProcess.state = PupilSettings.EStatus.ProcessingGaze;
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
+		Settings.calibration.initialized = false;
+		Settings.dataProcess.state = PupilSettings.EStatus.Idle;
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
 
-		ResetMarkerVisuals(PupilSettings.EStatus.Idle);
+		calibrationMarker.SetActive (false);
+
+//		SetDetectionMode (currentCalibrationType.name);
 
 		if (OnCalibrationEnded != null)
 			OnCalibrationEnded ();
@@ -271,10 +255,9 @@ public class PupilTools : MonoBehaviour
 	}
 
 	private static List<Dictionary<string,object>> _calibrationData = new List<Dictionary<string,object>> ();
-
 	public static void AddCalibrationReferenceData ()
 	{
-		_sendRequestMessage (new Dictionary<string,object> {
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","calibration.add_ref_data" },
 			{
 				"ref_data",
@@ -282,7 +265,7 @@ public class PupilTools : MonoBehaviour
 			}
 		});
 
-		if (pupilSettings.debug.printSampling)
+		if (Settings.debug.printSampling)
 		{
 			print ("Sending ref_data");
 
@@ -311,10 +294,10 @@ public class PupilTools : MonoBehaviour
 		_calibrationData.Clear ();
 	}
 
-	public static void AddCalibrationPointReferencePosition (string calibrationType, float[] position, float timestamp, int id)
+	public static void AddCalibrationPointReferencePosition (float[] position, float timestamp, int id)
 	{
 		_calibrationData.Add ( new Dictionary<string,object> () {
-			{ calibrationType, position }, 
+			{ currentCalibrationType.positionKey, position }, 
 			{ "timestamp", timestamp },
 			{ "id", id }
 		});
@@ -322,39 +305,16 @@ public class PupilTools : MonoBehaviour
 
 	#endregion
 
-
-	public static NetMQMessage _sendRequestMessage (Dictionary<string,object> data)
-	{
-		NetMQMessage m = new NetMQMessage ();
-
-		m.Append ("notify." + data ["subject"]);
-		m.Append (MessagePackSerializer.Serialize<Dictionary<string,object>> (data));
-
-		PupilDataReceiver.Instance._requestSocket.SendMultipartMessage (m);
-
-		NetMQMessage recievedMsg;
-		recievedMsg = PupilDataReceiver.Instance._requestSocket.ReceiveMultipartMessage ();
-
-		return recievedMsg;
-	}
-
-	public static float GetPupilTimestamp ()
-	{
-		PupilDataReceiver.Instance._requestSocket.SendFrame ("t");
-		NetMQMessage recievedMsg = PupilDataReceiver.Instance._requestSocket.ReceiveMultipartMessage ();
-		return float.Parse (recievedMsg [0].ConvertToString ());
-	}
-
 	public static void StartEyeProcesses ()
 	{
-		_sendRequestMessage (new Dictionary<string,object> {
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","eye_process.should_start.0" },
 			{
 				"eye_id",
 				PupilSettings.leftEyeID
 			}
 		});
-		_sendRequestMessage (new Dictionary<string,object> {
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","eye_process.should_start.1" },
 			{
 				"eye_id",
@@ -365,14 +325,14 @@ public class PupilTools : MonoBehaviour
 
 	public static void StopEyeProcesses ()
 	{
-		_sendRequestMessage (new Dictionary<string,object> {
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","eye_process.should_stop" },
 			 {
 				"eye_id",
 				PupilSettings.leftEyeID
 			}
 		});
-		_sendRequestMessage (new Dictionary<string,object> {
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","eye_process.should_stop" },
 			 {
 				"eye_id",
@@ -383,33 +343,34 @@ public class PupilTools : MonoBehaviour
 
 	public static void StartBinocularVectorGazeMapper ()
 	{
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
 	}
 
 	public static void SetDetectionMode(string mode)
 	{
-		_sendRequestMessage (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
 	}
 
 	public static void StartFramePublishing ()
 	{
-		pupilSettings.framePublishing.StreamCameraImages = true;
+		Settings.framePublishing.StreamCameraImages = true;
+		Settings.framePublishing.InitializeFramePublishing ();
 
-		_sendRequestMessage (new Dictionary<string,object> { { "subject","plugin_started" }, { "name","Frame_Publisher" } });
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","plugin_started" }, { "name","Frame_Publisher" } });
 
 		SubscribeTo ("frame.");
 		//		print ("frame publish start");
-		//_sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
+		//Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
 	}
 
 	public static void StopFramePublishing ()
 	{
 		UnSubscribeFrom ("frame.");
 
-		pupilSettings.framePublishing.StreamCameraImages = false;
+		Settings.framePublishing.StreamCameraImages = false;
 
 		//Andre: No sendRequest??
-		//_sendRequestMessage (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
+		//Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
 	}
 
 	public static void SavePupilSettings (ref PupilSettings pupilSettings)
@@ -433,22 +394,11 @@ public class PupilTools : MonoBehaviour
 		{
 			return true;
 		}
-
-	}
-
-	public static void Connect ()
-	{
-		if (pupilSettings.connection.isLocal)
-			RunServiceAtPath ();
-
-		PupilDataReceiver.Instance.RunConnect ();
-
 	}
 
 	public static void RunServiceAtPath (bool runEyeProcess = false)
 	{
-
-		string servicePath = pupilSettings.pupilServiceApp.servicePath;
+		string servicePath = Settings.pupilServiceApp.servicePath;
 
 		if (File.Exists (servicePath))
 		{

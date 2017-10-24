@@ -10,15 +10,12 @@ public class PupilDemoManager : MonoBehaviour {
 	public List<Text> GUITexts;
 
 	public PupilGazeTracker pupilTracker;
-	public PupilDataReceiver pupilDataReceiver;
 
 	void Start()
 	{	
 		pupilTracker = PupilGazeTracker.Instance;
 
-		pupilDataReceiver = pupilTracker.gameObject.GetComponent<PupilDataReceiver> ();
-
-		pupilDataReceiver.OnConnected += OnConnected;
+		PupilTools.OnConnected += OnConnected;
 
 		PupilTools.OnCalibrationStarted += OnCalibtaionStarted;
 
@@ -69,7 +66,7 @@ public class PupilDemoManager : MonoBehaviour {
 			go.SetActive (true);
 		}
 
-		pupilDataReceiver.OnConnected -= OnConnected;
+		PupilTools.OnConnected -= OnConnected;
 
 		PupilTools.OnCalibrationStarted -= OnCalibtaionStarted;
 

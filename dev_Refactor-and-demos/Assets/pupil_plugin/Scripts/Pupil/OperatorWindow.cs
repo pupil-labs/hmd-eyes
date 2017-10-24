@@ -67,11 +67,7 @@ public class OperatorWindow : EditorWindow {
 
 		PupilTools.SubscribeTo ("pupil.");
 
-		pupilTracker.CreateEye0ImageMaterial ();
-		pupilTracker.CreateEye1ImageMaterial ();
-		pupilTracker.InitializeFramePublishing ();
 		PupilTools.StartFramePublishing ();
-
 	}
 
 	public void DrawGraph( Operator.properties _props ){

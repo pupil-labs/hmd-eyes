@@ -147,6 +147,47 @@ Prefab:
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 114998737830956956, guid: 6867d7df8e994d1408f20e1c72b7ad5f,
+        type: 2}
+      propertyPath: servicePath
+      value: C:/Program Files/Pupil Service/pupil_service.exe
+      objectReference: {fileID: 0}
+    - target: {fileID: 114183052706794194, guid: 6867d7df8e994d1408f20e1c72b7ad5f,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114998737830956956, guid: 6867d7df8e994d1408f20e1c72b7ad5f,
+        type: 2}
+      propertyPath: connection.isAutorun
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114998737830956956, guid: 6867d7df8e994d1408f20e1c72b7ad5f,
+        type: 2}
+      propertyPath: connection.IP
+      value: 127.0.0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114998737830956956, guid: 6867d7df8e994d1408f20e1c72b7ad5f,
+        type: 2}
+      propertyPath: connection.IPHeader
+      value: '>tcp://127.0.0.1:'
+      objectReference: {fileID: 0}
+    - target: {fileID: 114998737830956956, guid: 6867d7df8e994d1408f20e1c72b7ad5f,
+        type: 2}
+      propertyPath: connection.PORT
+      value: 50020
+      objectReference: {fileID: 0}
+    - target: {fileID: 114998737830956956, guid: 6867d7df8e994d1408f20e1c72b7ad5f,
+        type: 2}
+      propertyPath: connection.subport
+      value: 59485
+      objectReference: {fileID: 0}
+    - target: {fileID: 114998737830956956, guid: 6867d7df8e994d1408f20e1c72b7ad5f,
+        type: 2}
+      propertyPath: connection.isLocal
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 114059430647369094, guid: 6867d7df8e994d1408f20e1c72b7ad5f, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 6867d7df8e994d1408f20e1c72b7ad5f, type: 2}
   m_IsPrefabParent: 0

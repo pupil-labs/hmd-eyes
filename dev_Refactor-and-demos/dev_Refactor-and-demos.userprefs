@@ -1,23 +1,31 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\pupil_plugin\Editor\CustomPupilGazeTrackerInspector.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\pupil_plugin\Scripts\Pupil\PupilSettings.cs">
     <Files>
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilTools.cs" Line="136" Column="20" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilGazeTracker.cs" Line="345" Column="55" />
       <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilConversions.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilData.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilDataReceiver.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilTools.cs" Line="163" Column="11" />
-      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilDefinitions.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilGazeTracker.cs" Line="516" Column="3" />
-      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilSettings.cs" Line="192" Column="36" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilData.cs" Line="413" Column="1" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilDefinitions.cs" Line="124" Column="1" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilSettings.cs" Line="58" Column="27" />
       <File FileName="Assets\Market Scene Demo\Scripts\MarketSceneDemo.cs" Line="1" Column="1" />
-      <File FileName="Assets\pupil_plugin\Editor\CustomPupilGazeTrackerInspector.cs" Line="457" Column="30" />
+      <File FileName="Assets\pupil_plugin\Editor\CustomPupilGazeTrackerInspector.cs" Line="457" Column="23" />
+      <File FileName="Assets\pupil_plugin\Scripts\MessagePack\Formatters\PrimitiveObjectFormatter.cs" Line="1" Column="1" />
+      <File FileName="Assets\pupil_plugin\Scripts\PupilDemoManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\pupil_plugin\Scripts\CalibrationDemo.cs" Line="1" Column="1" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\OperatorMonitor.cs" Line="1" Column="1" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\OperatorWindow.cs" Line="1" Column="1" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilGazeTrackerDebug.cs" Line="1" Column="1" />
+      <File FileName="Assets\pupil_plugin\FFmpegOut\CameraCapture.cs" Line="1" Column="1" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\Connection.cs" Line="152" Column="50" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\Calibration.cs" Line="24" Column="2" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\PupilMarker.cs" Line="56" Column="73" />
+      <File FileName="Assets\pupil_plugin\Scripts\Pupil\FramePublishing.cs" Line="2" Column="19" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Breakpoint file="C:\Users\office\Documents\ANic\dev_Refactor-and-demos\Assets\pupil_plugin\scene\Scripts\CalibrationGL.cs" line="15" column="1" />
-      <Breakpoint file="C:\Users\office\Documents\ANic\dev_Refactor-and-demos\Assets\pupil_plugin\Scripts\MessagePack\Formatters\PrimitiveObjectFormatter.cs" line="138" column="1" />
-      <Breakpoint file="C:\Users\office\Documents\ANic\dev_Refactor-and-demos\Assets\pupil_plugin\Scripts\MessagePack\Formatters\PrimitiveObjectFormatter.cs" line="150" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
