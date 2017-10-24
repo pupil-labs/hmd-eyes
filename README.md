@@ -3,6 +3,17 @@
 Building blocks for eye tracking in Augmented Reality `AR` and Virtual Reality `VR` or more generally Head Mounted Displays `HMD`.
 This repository demonstrates how to implement it with Unity3D.
 
+## General restructuring
+PupilGazeTracker, which previously contained multiple classes has been separated into multiple files. These mostly correspond to classes that existed before, but were also reorganized to condense everything. This is still a work in progress.
+As a result of that, we concentrated on the 2D calibration - for now - and will add previously existing functionality in future releases.
+
+## Main new files/classes with a short description
+Connection -> Handles communication with ZeroMQ/NetMQ including initialization, sending and receiving messages
+PupilData -> Used to save and provide pupil positions
+PupilGazeTracker -> Main class to initialize settings, start the calibration process and implement standard gaze visualization
+PupilSettings -> Home to project variables and properties including calibration and connection instances
+PupilTools -> Handles message generation to be pushed through the sockets but also implements the calibration itself, as it is deeply connected with the former
+
 ## Setup
 
 1. Make sure that you have [Pupil Capture or Pupil Service](https://github.com/pupil-labs/pupil/releases/latest) on a Linux, macOS, or Windows 10 machine. 
@@ -33,8 +44,9 @@ This repository demonstrates how to implement it with Unity3D.
 3. This would be a good point to put your headset on.
 4. As should be displayed on screen, press the key `c` to start the calbration process
 5. Follow the markers as their position changes
-6. After a successful calibration, the `Calibration.unity` scene will display three colored markers representing the left (green) and right (blue) eye plus the center point (red).
-7. `Market Scene Demo.unity` will load a 3D scene with 3 alterinative visualizations for gaze tracking
+6. If you want to adapt marker positions, have a look at the Calibration.cs class. Markers are currently positioned on a circular pattern for which you can change the radius as well as the number of points.
+7. After a successful calibration, the `Calibration.unity` scene will display three colored markers representing the left (green) and right (blue) eye plus the center point (red).
+8. `Market Scene Demo.unity` will load a 3D scene with 3 alterinative visualizations for gaze tracking
 	* The one described before with 3 colored markers
 	* A laserpointer going to the center of your gaze
 	* A shader-based implementation that grays out the area around each of the eyes position
@@ -43,6 +55,7 @@ Note: The ideal setup for calibration may vary using different headsets. For opt
 
 ## Data access
 
+Once calibration is done, you need to call PupilTools.Subscribe(string topic) to receive messages for the 'topic' you specify. The standard case for a topic is either 'gaze', 'pupil.' or both.
 1. 2D
 	* `PupilData._2D.GetEyeGaze (PupilData.GazeSource s)` will provide the current viewport coordinates needed to get 3d world positions (used e.g. for the three colored markers)
 	* `PupilData._2D.GetEyePosition (Camera sceneCamera, GazeSource gazeSource)` applies an additional frustum center offset for each eye (used e.g. for the shader implementation)  
