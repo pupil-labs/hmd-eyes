@@ -1,11 +1,7 @@
 # hmd-eyes
 
 Building blocks for eye tracking in Augmented Reality `AR` and Virtual Reality `VR` or more generally Head Mounted Displays `HMD`.
-This repository demonstrates how to implement it with Unity3D.
-
-## General restructuring
-PupilGazeTracker, which previously contained multiple classes has been separated into multiple files. These mostly correspond to classes that existed before, but were also reorganized to condense everything. This is still a work in progress.
-As a result of that, we concentrated on the 2D calibration - for now - and will add previously existing functionality in future releases.
+The purpose of this repository is do demonstrates how to implement Pupil with Unity3D. For details on Pupil computations, please have a look at the related repositories.
 
 ## Main new files/classes with a short description
 Connection -> Handles communication with ZeroMQ/NetMQ including initialization, sending and receiving messages
@@ -21,7 +17,7 @@ PupilTools -> Handles message generation to be pushed through the sockets but al
 3. The former contains the `PupilGazeTracker` gameobject, which lets you adapt settings, while the latter serves as a starting point on how the eye tracking can be implemented.
 4. On Windows 10 and with the standard project settings, the path is set to `C:/Program Files/Pupil Service/pupil_service.exe`. If you have a different setup, please adapt it as follows 
 
-## Chaning standard settings via Calibration.unity
+## Changing standard settings via Calibration.unity
 1. Connection
 	* **Local** - use this setting if your HMD and your Pupil add-on are connected to the same computer.
 		1. In Unity's Inspector select `Settings>Pupil App>Local`
