@@ -403,10 +403,10 @@ public class PupilTools : MonoBehaviour
 		if (File.Exists (servicePath))
 		{
 		
-			if (Process.GetProcessesByName ("pupil_capture").Length > 0)
+			if (Process.GetProcessesByName ("pupil_service").Length > 0)
 			{
 			
-				UnityEngine.Debug.LogWarning (" Pupil Capture is already running ! ");
+				UnityEngine.Debug.LogWarning (" Pupil Service is already running ! ");
 			
 			} else
 			{
