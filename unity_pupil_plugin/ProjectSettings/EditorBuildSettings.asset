@@ -5,6 +5,12 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Market Scene Demo/Market Scene Demo.unity
     guid: 962a17030b528b24dac725004acc2a0b
+  - enabled: 0
+    path: Assets/Market Scene Demo/2D Calibration Demo.unity
+    guid: 2f1c116a342b19c4b8a20e74adbc8287
+  - enabled: 1
+    path: Assets/Market Scene Demo/3D Calibration Demo.unity
+    guid: 4cb203be38b3c9a43b8a5ac42076ed96
