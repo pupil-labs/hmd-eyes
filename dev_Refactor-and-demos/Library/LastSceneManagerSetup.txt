@@ -1,4 +1,0 @@
-sceneSetups:
-- path: Assets/Market Scene Demo/Market Scene Demo.unity
-  isLoaded: 1
-  isActive: 1
