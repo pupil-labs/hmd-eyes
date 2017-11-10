@@ -47,7 +47,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 			{
 				LineDrawer.Instance.AddLineToMesh (new LineDrawer.param () {
 					points = new Vector3[] {
-						PupilData._3D.EyeCenters (0),
+						PupilData._3D.RightEyeCenter,
 						_v3
 					},
 					color = new Color (1f, 0.6f, 0f, 0.1f)
@@ -57,7 +57,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 			{
 				LineDrawer.Instance.AddLineToMesh (new LineDrawer.param () {
 					points = new Vector3[] {
-						PupilData._3D.EyeCenters (1),
+						PupilData._3D.LeftEyeCenter,
 						_v3
 					},
 					color = new Color (1f, 1f, 0f, 0.1f)
@@ -191,7 +191,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 				{
 					LineDrawer.Instance.AddLineToMesh (new LineDrawer.param () {
 						points = new Vector3[] {
-							PupilData._3D.EyeCenters (0),
+							PupilData._3D.RightEyeCenter,
 							_v3
 						},
 						color = new Color (1f, 0.6f, 0f, 0.1f)
@@ -201,7 +201,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 				{
 					LineDrawer.Instance.AddLineToMesh (new LineDrawer.param () {
 						points = new Vector3[] {
-							PupilData._3D.EyeCenters (1),
+							PupilData._3D.LeftEyeCenter,
 							_v3
 						},
 						color = new Color (1f, 1f, 0f, 0.1f)
@@ -229,13 +229,13 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 			select tr).FirstOrDefault () as DebugView._Transform;
 		if (a.GO != null)
 			a.GO.SetActive (false);
-		if (!PupilSettings.Instance.debugView.active && !pupilGazeTracker.isOperatorMonitor)
+		if (!PupilTools.Settings.debugView.active && !pupilGazeTracker.isOperatorMonitor)
 		{	
 			PupilTools.StopFramePublishing ();
 		}
 		pupilGazeTracker.OnUpdate -= CalibrationDebugInteraction;
 		pupilGazeTracker.OnCalibDebug -= DrawCalibrationDebugView;
-		PupilSettings.Instance.debugView.active = false;
+		PupilTools.Settings.debugView.active = false;
 	}
 
 	public void StartCalibrationDebugView ()
@@ -258,7 +258,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 		} else
 		{
 			UnityEngine.Debug.LogWarning ("Please assign a Debug Eye Mesh under the Settings Debug View Variables. Accessable in Developer Mode!");
-			PupilSettings.Instance.debugView.active = false;
+			PupilTools.Settings.debugView.active = false;
 		}
 	}
 	//	public Texture2D circleTexture;
@@ -330,13 +330,13 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 		CreateLineMaterial ();
 		CreateEyeSphereMaterial ();
 
-		Vector3 eye0Pos = PupilData._3D.EyeCenters (0);
-		Vector3 eye0Norm = PupilData._3D.EyeCenters (0);
+		Vector3 eye0Pos = PupilData._3D.RightEyeCenter;
+		Vector3 eye0Norm = PupilData._3D.RightGazeNormal;
 
-		Vector3 eye1Pos = PupilData._3D.EyeCenters (1);
-		Vector3 eye1Norm = PupilData._3D.EyeCenters (1);
+		Vector3 eye1Pos = PupilData._3D.LeftEyeCenter;
+		Vector3 eye1Norm = PupilData._3D.RightGazeNormal;
 
-		Vector3 gazePoint = PupilData._3D.Gaze ();
+		Vector3 gazePoint = PupilData._3D.GazePosition;
 
 		////////////////Draw 3D pupils////////////////
 		Vector3 _pupil0Center = PupilData._3D.Circle.Center (0);

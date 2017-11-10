@@ -41,6 +41,9 @@ namespace FFmpegOut
 
 			path = path.Replace ("Assets/", "");
 
+			if (!Directory.Exists (path))
+				Directory.CreateDirectory (path);
+			
 			UnityEngine.Debug.Log (path);
 			PupilTools.StartPupilServiceRecording (path);
 
@@ -48,6 +51,9 @@ namespace FFmpegOut
 
 			path += "/" + GetLastIncrement (path);
 
+			if (!Directory.Exists (path))
+				Directory.CreateDirectory (path);
+			
 			Filename = "\"" + path + "/" + name + GetSuffix (codec) + "\"";
             
             var opt = "-y -f rawvideo -vcodec rawvideo -pixel_format rgb24";
@@ -128,13 +134,14 @@ namespace FFmpegOut
 		public string GetLastIncrement(string path){
 			string[] directories = Directory.GetDirectories (path);
 			List<int> directoryIncrements = new List<int> ();
-			foreach (string directory in directories) {
-//				UnityEngine.Debug.Log (directory);
-				directoryIncrements.Add (int.Parse (directory.Substring(directory.Length-3	)));
+			foreach (string directory in directories) 
+			{
+				var folderNameValue = int.Parse (directory.Substring (directory.Length - 3));
+				directoryIncrements.Add (folderNameValue);
 			}
 			int currentIncrement = Mathf.Max (directoryIncrements.ToArray());
 //			int newIncrement = currentIncrement + 1;
-			return currentIncrement.ToString ("000");
+			return (currentIncrement+1).ToString ("000");
 			//directoryIncrements.ToArray()
 		}
         #endregion

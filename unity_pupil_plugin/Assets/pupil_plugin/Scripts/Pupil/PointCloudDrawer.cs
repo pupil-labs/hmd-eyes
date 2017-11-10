@@ -9,8 +9,6 @@ public class PointCloudDrawer : MonoBehaviour {
 	private Mesh mesh;
 	private MeshRenderer mRenderer;
 
-	PupilGazeTracker pupilTracker;
-
 	static PointCloudDrawer _Instance;
 	public static PointCloudDrawer Instance
 	{
@@ -21,8 +19,6 @@ public class PointCloudDrawer : MonoBehaviour {
 
 	void Start () {
 		mesh = new Mesh();
-		pupilTracker = PupilGazeTracker.Instance;
-//		print (pupilTracker.CalibrationData.camera_intrinsics.camera_matrix);
 
 		mRenderer = GetComponent<MeshRenderer> ();
 		mRenderer.material = Resources.Load ("Material/Pupil", typeof(Material)) as Material;

@@ -4,22 +4,211 @@ using UnityEngine;
 [Serializable]
 public class Calibration
 {
-	public enum CalibMode
+	public enum Mode
 	{
 		_2D,
 		_3D
 	}
-	public struct CalibrationType
+
+	private Mode _currentMode = Mode._2D; // 3D should be standard mode in the future
+	public Mode currentMode
+	{
+		get { return _currentMode; }
+		set
+		{		
+			if (PupilTools.Settings.connection.isConnected && !PupilTools.Settings.connection.Is3DCalibrationSupported ())
+				value = Mode._2D;
+
+			if (_currentMode != value)
+			{
+				_currentMode = value;
+
+				if (PupilTools.Settings.connection.isConnected)
+					PupilTools.SetDetectionMode ();
+			}
+		}
+	}
+		
+	[Serializable]
+	public struct Type
 	{
 		public string name;
 		public string pluginName;
 		public string positionKey;
 		public double[] ref_data;
-		public float depth;
-		//		public List<float[]> calibPoints;
-		//		public float[] center;
-		public float radius;
 		public float points;
+		public Vector3[] vectorDepthRadiusScale;
+		public int samplesPerDepth;
+	}
+
+	public Type CalibrationType2D = new Type () 
+	{ 
+		name = "2d",
+		pluginName = "HMD_Calibration",
+		positionKey = "norm_pos",
+		ref_data = new double[]{ 0.0, 0.0 },
+		points = 8,
+		vectorDepthRadiusScale = new Vector3[] { new Vector3( 2f, 0.08f, 0.05f ) },
+		samplesPerDepth = 120
+	};
+
+	public Type CalibrationType3D = new Type () 
+	{ 
+		name = "3d",
+		pluginName = "HMD_Calibration_3D",
+		positionKey = "mm_pos",
+		ref_data = new double[]{ 0.0, 0.0, 0.0 },
+		points = 10,
+		vectorDepthRadiusScale = new Vector3[] { new Vector3( 1f, 0.5f, 50 ) },
+		samplesPerDepth = 40
+	};
+
+	public int samplesToIgnoreForEyeMovement = 10;
+
+	public Type currentCalibrationType
+	{
+		get
+		{
+			if (currentMode == Mode._2D)
+			{
+				return CalibrationType2D;
+
+			} else
+			{
+				return CalibrationType3D;
+			}
+		}
+	}
+
+	public enum Status
+	{
+		NotSet,
+		Started,
+		Stopped,
+		Succeeded
+	}
+	private Status _currentStatus;
+	public Status currentStatus
+	{
+		get { return _currentStatus; }
+		set
+		{
+			_currentStatus = value;
+			calibrationMarker.SetActive (_currentStatus == Status.Started);
+		}
+	}
+
+	public float[] rightEyeTranslation;
+	public float[] leftEyeTranslation;
+
+	private float radius;
+	public void UpdateCalibrationPoint()
+	{
+		currentCalibrationPointPosition = new float[]{0};
+		switch (currentMode)
+		{
+		case Mode._3D:
+			currentCalibrationPointPosition = new float[]{ 0f, 0f, currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].x };
+			break;
+		default:
+			currentCalibrationPointPosition = new float[]{ 0.5f, 0.5f };
+			break;
+		}
+		radius = currentCalibrationType.vectorDepthRadiusScale[currentCalibrationDepth].y;
+		if (currentCalibrationPoint > 0 && currentCalibrationPoint < currentCalibrationType.points)
+		{	
+			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
+			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
+		}
+		calibrationMarker.UpdatePosition (currentCalibrationPointPosition);
+		calibrationMarker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
+	}
+
+	public float[] ApplyCalibrationScaling(float[] point)
+	{
+		switch (currentMode)
+		{
+		case Mode._3D:
+			// 3D calibration unit is mm
+			for (int i = 0; i < point.Length; i++)
+				point [i] *= PupilSettings.PupilUnitScalingFactor;
+			return point;
+		default:
+			return point;
+		}
+	}
+
+	PupilMarker calibrationMarker;
+	int currentCalibrationPoint;
+	int currentCalibrationSamples;
+	int currentCalibrationDepth;
+	float[] currentCalibrationPointPosition;
+	public void InitializeCalibration ()
+	{
+		Debug.Log ("Initializing Calibration");
+
+		currentCalibrationPoint = 0;
+		currentCalibrationSamples = 0;
+		currentCalibrationDepth = 0;
+
+		Camera calibrationCamera = Camera.main;
+		GameObject calibrationCameraObject = GameObject.FindGameObjectWithTag ("CalibrationCamera");
+		if (calibrationCameraObject != null)
+			calibrationCamera = calibrationCameraObject.GetComponent<Camera> ();
+		if (!PupilMarker.TryToReset (calibrationMarker, calibrationCamera))
+			calibrationMarker = new PupilMarker ("Calibraton Marker", Color.white, calibrationCamera);
+		UpdateCalibrationPoint ();
+
+		//		yield return new WaitForSeconds (2f);
+
+		Debug.Log ("Starting Calibration");
+
+		currentStatus = Status.Started;
+	}
+
+	static float lastTimeStamp = 0;
+	static float timeBetweenCalibrationPoints = 0.02f; // was 0.1, 1000/60 ms wait in old version
+	public void UpdateCalibration ()
+	{
+		float t = PupilTools.Settings.connection.GetPupilTimestamp ();
+
+		if (t - lastTimeStamp > timeBetweenCalibrationPoints)
+		{
+			lastTimeStamp = t;
+
+			UpdateCalibrationPoint ();// .currentCalibrationType.calibPoints [currentCalibrationPoint];
+			//			print ("its okay to go on");
+
+			//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+			if ( currentCalibrationSamples > samplesToIgnoreForEyeMovement )
+				PupilTools.AddCalibrationPointReferencePosition (currentCalibrationPointPosition, t);
+			
+			if (PupilTools.Settings.debug.printSampling)
+				Debug.Log ("Point: " + currentCalibrationPoint + ", " + "Sampling at : " + currentCalibrationSamples + ". On the position : " + currentCalibrationPointPosition [0] + " | " + currentCalibrationPointPosition [1]);
+
+			currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
+
+			if (currentCalibrationSamples >= currentCalibrationType.samplesPerDepth)
+			{
+				currentCalibrationSamples = 0;
+				currentCalibrationDepth++;
+
+				if (currentCalibrationDepth >= currentCalibrationType.vectorDepthRadiusScale.Length)
+				{
+					currentCalibrationDepth = 0;
+					currentCalibrationPoint++;
+
+					//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
+					PupilTools.AddCalibrationReferenceData ();
+
+					if (currentCalibrationPoint >= currentCalibrationType.points)
+					{
+						PupilTools.StopCalibration ();
+					}
+				}
+
+			}
+		}
 	}
 
 	[Serializable]
@@ -45,118 +234,4 @@ public class Calibration
 		//figure this out if needed.
 		public int intt;
 	}
-
-	private CalibrationType CalibrationType2D = new CalibrationType () 
-	{ 
-		name = "2d",
-		pluginName = "HMD_Calibration",
-		positionKey = "norm_pos",
-		ref_data = new double[]{ 0.0, 0.0 },
-		depth = 2f,
-		//			calibPoints = new List<float[]>() {
-		//				new float[]{0.5f,0.5f},
-		//				new float[]{0.42f,0.555f},
-		//				new float[]{0.5f,0.62f},
-		//				new float[]{0.58f,0.555f},
-		//				new float[]{0.65f,0.5f},
-		//				new float[]{0.58f,0.445f},
-		//				new float[]{0.5f,0.38f},
-		//				new float[]{0.42f,0.445f},
-		//				new float[]{0.35f,0.5f},
-		////				new float[]{0.5f,0.5f},
-		//			},
-		//			center = new float[]{0.5f,0.5f},
-		radius = 0.08f,
-		points = 8
-	};
-
-	private CalibrationType CalibrationType3D = new CalibrationType () 
-	{ 
-		name = "3d",
-		pluginName = "HMD_Calibration_3D",
-		positionKey = "mm_pos",
-		ref_data = new double[]{ 0.0, 0.0, 0.0 },
-		depth = 2f,
-		//			calibPoints = new List<float[]> () {
-		//				new float[]{ 0f, 0f, 100f },
-		//				new float[]{ -40, -40, 100f },
-		//				new float[]{ -40, -0f, 100f },
-		//				new float[]{ 40, -0f, 100f },
-		//				new float[]{ -20, -20, 100f },
-		//				new float[]{ -40, 40, 100f },
-		//				new float[]{ 0f, 40, 100f },
-		//				new float[]{ 0f, -40, 100f },
-		//				new float[]{ -20, 20, 100f },
-		//				new float[]{ 40, 40, 100f },
-		//				new float[]{ 20, 20, 100f },
-		//				new float[]{ 40, -40, 100f },
-		//				new float[]{ 20, -20, 100f }
-		////				new float[]{0f,0f, 100f}
-		//			},
-		//			center = new float[]{0f,0f,0f},
-		radius = 1f,
-		points = 10
-	};
-
-	private CalibMode _currentCalibrationMode = CalibMode._2D; // 3D should be standard mode in the future
-	public CalibMode currentCalibrationMode
-	{
-		get { return _currentCalibrationMode; }
-		set
-		{
-			_currentCalibrationMode = value;
-			Debug.Log ("Calibration mode changed to: " + _currentCalibrationMode.ToString ());
-		}
-	}
-	public void SwitchCalibrationMode ()
-	{
-		if (_currentCalibrationMode == CalibMode._2D)
-			_currentCalibrationMode = CalibMode._3D;
-		else
-			_currentCalibrationMode = CalibMode._2D;
-	}	
-
-	public float[] GetCalibrationPoint(int index)
-	{
-		float[] point = new float[]{0};
-		switch (currentCalibrationMode)
-		{
-		case CalibMode._2D:
-			point = new float[]{0.5f,0.5f};
-			if (index > 0 && index < CalibrationType2D.points)
-			{	
-				point [0] += CalibrationType2D.radius * (float) Math.Cos (2f * Math.PI * (index - 1) / (CalibrationType2D.points-1));
-				point [1] += CalibrationType2D.radius * (float) Math.Sin (2f * Math.PI * (index - 1) / (CalibrationType2D.points-1));
-			}
-			return point;
-		case CalibMode._3D:
-			point = new float[]{0f,0f,CalibrationType3D.depth};
-			if (index > 0 && index < CalibrationType3D.points)
-			{	
-				point [0] += CalibrationType3D.radius * (float) Math.Cos (2f * Math.PI * (index - 1) / (CalibrationType3D.points-1));
-				point [1] += CalibrationType3D.radius * (float) Math.Sin (2f * Math.PI * (index - 1) / (CalibrationType3D.points-1));
-				point [2] = CalibrationType3D.depth;
-			}
-			return point;
-		default:
-			return point;
-		}
-	}
-
-	public CalibrationType currentCalibrationType
-	{
-		get
-		{
-			if (currentCalibrationMode == CalibMode._2D)
-			{
-				return CalibrationType2D;
-
-			} else
-			{
-				return CalibrationType3D;
-			}
-		}
-	}
-
-	public bool initialized = false;
 }

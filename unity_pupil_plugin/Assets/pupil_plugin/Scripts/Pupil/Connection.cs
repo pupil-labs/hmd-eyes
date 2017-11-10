@@ -21,19 +21,33 @@ public class Connection
 	public int PORT = 50020;
 	public string subport = "59485";
 	public bool isLocal = true;
-	public List<string> topicList;
+	private List<string> _topicList = new List<string>();
+	public List<string> topicList
+	{
+		get { return _topicList; }
+		set { _topicList = value; }
+	}
 
-	public SubscriberSocket subscribeSocket = null;
+	public SubscriberSocket _subscribeSocket = null;
+	public SubscriberSocket subscribeSocket
+	{
+		get { return _subscribeSocket; }
+		set { _subscribeSocket = value; }
+	}
 	public RequestSocket requestSocket = null;
 
-	private bool contextExists = false;
-	public void TryToConnect()
+	private bool _contextExists = false;
+	private bool contextExists
+	{
+		get { return _contextExists; }
+		set { _contextExists = value; }
+	}
+	private TimeSpan timeout = new System.TimeSpan (0, 0, 1); //1sec
+	public void InitializeRequestSocket()
 	{
 		IPHeader = ">tcp://" + IP + ":";
 
 		Debug.Log ("Attempting to connect to : " + IPHeader + PORT);
-
-		var timeout = new System.TimeSpan (0, 0, 1); //1sec
 
 		if (!contextExists)
 		{
@@ -43,10 +57,40 @@ public class Connection
 			contextExists = true;
 		}
 
-		requestSocket = new RequestSocket (PupilSettings.Instance.connection.IPHeader + PupilSettings.Instance.connection.PORT);
+		requestSocket = new RequestSocket (PupilTools.Settings.connection.IPHeader + PupilTools.Settings.connection.PORT);
 		requestSocket.SendFrame ("SUB_PORT");
+		isConnected = requestSocket.TryReceiveFrameString (timeout, out PupilTools.Settings.connection.subport);
 
-		isConnected = requestSocket.TryReceiveFrameString (timeout, out PupilSettings.Instance.connection.subport);
+		CheckPupilVersion ();
+	}
+
+	public string PupilVersion;
+	public List<int> PupilVersionNumbers;
+	public void CheckPupilVersion()
+	{
+		requestSocket.SendFrame ("v");
+		if (requestSocket.TryReceiveFrameString (timeout, out PupilVersion))
+		{
+			var split = PupilVersion.Split ('.');
+			PupilVersionNumbers = new List<int> ();
+			int number;
+			foreach (var item in split)
+			{
+				if ( int.TryParse (item, out number) )
+					PupilVersionNumbers.Add (number);
+			}
+			Is3DCalibrationSupported ();
+		}
+	}
+	public bool Is3DCalibrationSupported()
+	{
+		if (PupilVersionNumbers.Count > 0)
+			if (PupilVersionNumbers [0] >= 1)
+				return true;
+
+		Debug.Log ("Pupil version below 1 detected. V1 is required for 3D calibration");
+		PupilTools.Settings.calibration.currentMode = Calibration.Mode._2D;
+		return false;
 	}
 
 	public void CloseSockets()
@@ -59,8 +103,8 @@ public class Connection
 
 		if (subscribeSocket != null)
 			subscribeSocket.Close ();
-		if (contextExists)
-			NetMQConfig.ContextTerminate ();
+
+		TerminateContext ();
 	}
 
 	private MemoryStream mStream;
@@ -76,7 +120,7 @@ public class Connection
 		subscribeSocket = new SubscriberSocket (IPHeader + subport);
 
 		//André: Is this necessary??
-		subscribeSocket.Options.SendHighWatermark = PupilSettings.numberOfMessages;// 6;
+//		subscribeSocket.Options.SendHighWatermark = PupilSettings.numberOfMessages;// 6;
 
 		foreach (var topic in topicList)
 		{
@@ -92,45 +136,52 @@ public class Connection
 			while(a.Socket.TryReceiveMultipartMessage(ref m)) 
 			{
 				// We read all the messages from the socket, but disregard the ones after a certain point
-				if ( i > PupilSettings.numberOfMessages ) // 6)
-					continue;
+//				if ( i > PupilSettings.numberOfMessages ) // 6)
+//					continue;
 
 				mStream = new MemoryStream(m[1].ToByteArray());
 
 				string msgType = m[0].ConvertToString();
 
-				if (PupilSettings.Instance.debug.printMessageType)
+				if (PupilTools.Settings.debug.printMessageType)
 					Debug.Log(msgType);
 
-				if (PupilSettings.Instance.debug.printMessage)
+				if (PupilTools.Settings.debug.printMessage)
 					Debug.Log (MessagePackSerializer.ToJson(m[1].ToByteArray()));
-
-				if ( PupilSettings.Instance.dataProcess.state != PupilSettings.EStatus.ProcessingGaze )
-					continue;
 
 				switch(msgType)
 				{
+				case "notify.calibration.successful":
+					PupilTools.Settings.calibration.currentStatus = Calibration.Status.Succeeded;
+					PupilTools.CalibrationFinished();
+					Debug.Log(msgType);
+					break;
+				case "notify.calibration.failed":
+					PupilTools.Settings.calibration.currentStatus = Calibration.Status.NotSet;
+					PupilTools.CalibrationFailed();
+					Debug.Log(msgType);
+					break;
 				case "gaze":
 				case "pupil.0":
 				case "pupil.1":
 					var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
-					if (PupilData.ConfidenceForDictionary(dictionary) > 0.6f) 
+					if (PupilTools.ConfidenceForDictionary(dictionary) > 0.6f) 
 					{
 						if (msgType == "gaze")
-							PupilData.gazeDictionary = dictionary;
+							PupilTools.gazeDictionary = dictionary;
 						else if (msgType == "pupil.0")
-							PupilData.pupil0Dictionary = dictionary;
+							PupilTools.pupil0Dictionary = dictionary;
 						else if (msgType == "pupil.1")
-							PupilData.pupil1Dictionary = dictionary;
+							PupilTools.pupil1Dictionary = dictionary;
 					}
 					break;
 				default: 
 					Debug.Log(msgType);
-					foreach (var item in MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream))
-					{
-						Debug.Log(item.Key);
-						Debug.Log(item.Value.ToString());
-					}
+//					foreach (var item in MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream))
+//					{
+//						Debug.Log(item.Key);
+//						Debug.Log(item.Value.ToString());
+//					}
 					break;
 				}
 
@@ -141,15 +192,18 @@ public class Connection
 
 	public void sendRequestMessage (Dictionary<string,object> data)
 	{
-		NetMQMessage m = new NetMQMessage ();
+		if (requestSocket != null && isConnected)
+		{
+			NetMQMessage m = new NetMQMessage ();
 
-		m.Append ("notify." + data ["subject"]);
-		m.Append (MessagePackSerializer.Serialize<Dictionary<string,object>> (data));
+			m.Append ("notify." + data ["subject"]);
+			m.Append (MessagePackSerializer.Serialize<Dictionary<string,object>> (data));
 
-		requestSocket.SendMultipartMessage (m);
+			requestSocket.SendMultipartMessage (m);
 
-		// needs to wait for response for some reason..
-		recieveRequestMessage ();
+			// needs to wait for response for some reason..
+			recieveRequestMessage ();
+		}
 	}
 
 	public NetMQMessage recieveRequestMessage ()
@@ -166,6 +220,10 @@ public class Connection
 
 	public void TerminateContext()
 	{
-		NetMQConfig.ContextTerminate(true);
+		if (contextExists)
+		{
+			NetMQConfig.ContextTerminate (true);
+			contextExists = false;
+		}
 	}
 }

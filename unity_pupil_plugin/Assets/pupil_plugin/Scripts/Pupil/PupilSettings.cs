@@ -32,18 +32,6 @@ public class PupilSettings:ScriptableObject
 	}
 
 	[Serializable]
-	public class DataProcess
-	{
-		private EStatus _state;
-		public EStatus state
-		{
-			get { return _state; }
-			set { _state = value; }
-		}
-		public string benchMarkString;
-	}
-
-	[Serializable]
 	public class CustomGUIVariables
 	{
 		[Serializable]
@@ -78,7 +66,9 @@ public class PupilSettings:ScriptableObject
 	}
 
 	public DebugVars debug;
-	public DataProcess dataProcess;
+
+	public EStatus DataProcessState;
+
 	public Connection connection;
 	public PupilServiceApp pupilServiceApp;
 	public Calibration calibration;
@@ -91,9 +81,6 @@ public class PupilSettings:ScriptableObject
 
 	public static int numberOfMessages = 6;
 
-	public const int leftEyeID = 1;
-	public const string stringForLeftEyeID = "1";
-	public const int rightEyeID = 0;
-	public const string stringForRightEyeID = "0";
+	public static float PupilUnitScalingFactor = 1000;	// Pupil is currently operating in mm
 }
 

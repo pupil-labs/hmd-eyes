@@ -1,4 +1,6 @@
-﻿Shader "Custom/ToonShader" {
+﻿// Upgrade NOTE: replaced '_WorldToCamera' with 'unity_WorldToCamera'
+
+Shader "Custom/ToonShader" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
 		_SpecularPower("Specular Power", Range(0.0,1.0)) = 0.01
@@ -69,7 +71,7 @@
 		CGPROGRAM
 		// Physically based Standard lighting model, and enable shadows on all light types
 		#pragma shader_feature SPECULAR_ENABLE
-		#pragma surface surf Ramp fullforwardshadows
+		#pragma surface surf Ramp fullforwardshadows //vertex:vert
 
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
@@ -97,8 +99,13 @@
 		struct Input {
 			float2 uv_MainTex;
 			float3 viewDir;
+			float distanceToGazeFactor;
 		};
 
+		void vert (inout appdata_full v, out Input o) {
+          UNITY_INITIALIZE_OUTPUT(Input,o);
+          o.distanceToGazeFactor = (distance(float2(0.5f,0.5f),UnityObjectToViewPos(v.vertex).xy) - 1)*2.0f;
+        }
 
 		sampler2D _MainTex;
 		sampler2D _SpecTex;
@@ -109,6 +116,7 @@
 		void surf (Input IN, inout SurfaceOutput o) {
 			// Albedo comes from a texture tinted by color
 			fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+//			fixed4 c = tex2Dlod (_MainTex, float4(IN.uv_MainTex,0,IN.distanceToGazeFactor )) * _Color;
 			o.Albedo = c.rgb;
 			o.Alpha = c.a;
 			o.Specular = _SpecularPower * tex2D(_SpecTex, IN.uv_MainTex);

@@ -17,7 +17,7 @@ public class PupilTools : MonoBehaviour
 		{
 			if (_settings == null)
 			{
-				_settings = Resources.Load<PupilSettings> ("PupilSettings");	
+				_settings = Resources.Load<PupilSettings> ("PupilSettings");
 			}
 
 			return _settings;
@@ -28,12 +28,14 @@ public class PupilTools : MonoBehaviour
 //InspectorGUI repaint
 	public delegate void OnCalibrationStartDeleg ();
 	public delegate void OnCalibrationEndDeleg ();
+	public delegate void OnCalibrationFailedDeleg ();
 	public delegate void OnConnectedDelegate ();
 
 	public static event GUIRepaintAction WantRepaint;
 
 	public static event OnCalibrationStartDeleg OnCalibrationStarted;
 	public static event OnCalibrationEndDeleg OnCalibrationEnded;
+	public static event OnCalibrationEndDeleg OnCalibrationFailed;
 	public static event OnConnectedDelegate OnConnected;
 
 	#region Recording
@@ -59,7 +61,124 @@ public class PupilTools : MonoBehaviour
 
 	#endregion
 
+	public static Dictionary<string, object> pupil0Dictionary;
+	public static Dictionary<string, object> pupil1Dictionary;
+	private static Dictionary<string, object> _gazeDictionary;
+	public static Dictionary<string, object> gazeDictionary
+	{
+		get
+		{
+			return _gazeDictionary;
+		}
+		set
+		{
+			_gazeDictionary = value;
+			UpdateGaze ();
+			UpdateEyeID ();
+		}
+	}
 
+	private static string[] gazeKeys = { "gaze_point_3d", "norm_pos", "eye_centers_3d" , "gaze_normals_3d" };
+	private static string eyeDataKey;
+	private static void UpdateGaze()
+	{
+		foreach (var key in gazeKeys)
+		{
+			if (gazeDictionary.ContainsKey (key))
+			{
+				switch (key)
+				{
+				case "norm_pos": // 2D case
+					eyeDataKey = key + "_" + stringForEyeID(); // we add the identifier to the key
+					PupilData.AddGazeToEyeData(eyeDataKey,Position(gazeDictionary[key],false));
+					break;
+				case "eye_centers_3d":
+				case "gaze_normals_3d":
+					// in case of eye_centers_3d and gaze_normals_3d, we get an dictionary with one positional object for each eye id (the key)
+					if (gazeDictionary [key] is Dictionary<object,object>)
+						foreach (var item in (gazeDictionary[key] as Dictionary<object,object>))
+						{
+							eyeDataKey = key + "_" + item.Key.ToString ();
+							PupilData.AddGazeToEyeData (eyeDataKey, Position (item.Value,true));
+						}
+					break;
+				default:
+					PupilData.AddGazeToEyeData(key,Position(gazeDictionary[key],true));
+					break;
+				}
+			}
+		}
+	}
+
+	private static object IDo;
+	private static void UpdateEyeID ()
+	{
+		string id = "";
+
+		if (gazeDictionary != null)
+			if (gazeDictionary.TryGetValue ("id", out IDo))
+				id = IDo.ToString ();
+			
+		PupilData.UpdateCurrentEyeID(id);
+	}
+
+	public static string stringForEyeID ()
+	{
+		object IDo;
+		if (gazeDictionary == null)
+			return null;
+
+		bool isID = gazeDictionary.TryGetValue ("id", out IDo);
+
+		if (isID)
+		{
+			return IDo.ToString ();
+
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private static object[] position_o;
+	private static float[] Position (object position, bool applyScaling)
+	{
+		position_o = position as object[];
+		float[] position_f = new float[position_o.Length];
+		for (int i = 0; i < position_o.Length; i++)
+		{
+			position_f [i] = (float)(double)position_o [i];
+		}
+		if (applyScaling)
+			for (int i = 0; i < position_f.Length; i++)
+				position_f [i] /= PupilSettings.PupilUnitScalingFactor;
+		return position_f;
+	}
+
+	public static float ConfidenceForDictionary(Dictionary<string,object> dictionary)
+	{
+		object conf0;
+		dictionary.TryGetValue ("confidence", out conf0);
+		return (float)(double)conf0;
+	}
+
+	public static float Confidence (int eyeID)
+	{
+		if (eyeID == PupilData.rightEyeID)
+			return ConfidenceForDictionary (pupil0Dictionary);
+		else if (eyeID == PupilData.leftEyeID)
+			return ConfidenceForDictionary (pupil1Dictionary); 
+		else
+			return 0;
+	}
+
+	public static Dictionary<object,object> BaseData ()
+	{
+		object o;
+		gazeDictionary.TryGetValue ("base_data", out o);
+		return o as Dictionary<object,object>;
+	}
 	#region Calibration
 
 	public static void RepaintGUI ()
@@ -76,7 +195,7 @@ public class PupilTools : MonoBehaviour
 
 		while (!connection.isConnected) 
 		{
-			connection.TryToConnect ();
+			connection.InitializeRequestSocket ();
 
 			if (!connection.isConnected) {
 
@@ -97,6 +216,7 @@ public class PupilTools : MonoBehaviour
 				print (" Succesfully connected to Pupil Service ! ");
 
 				StartEyeProcesses ();
+				SetDetectionMode ();
 				RepaintGUI ();
 				OnConnected ();
 				yield break;
@@ -107,8 +227,6 @@ public class PupilTools : MonoBehaviour
 
 	public static void ClearAndInitiateSubscribe ()
 	{
-		Settings.dataProcess.state = PupilSettings.EStatus.ProcessingGaze;
-
 		Settings.connection.InitializeSubscriptionSocket ();
 	}
 
@@ -117,8 +235,8 @@ public class PupilTools : MonoBehaviour
 		if (!Settings.connection.topicList.Contains (topic))
 		{
 			Settings.connection.topicList.Add (topic);
+			ClearAndInitiateSubscribe ();
 		}
-		ClearAndInitiateSubscribe ();
 	}
 
 	public static void UnSubscribeFrom (string topic)
@@ -126,49 +244,31 @@ public class PupilTools : MonoBehaviour
 		if (Settings.connection.topicList.Contains (topic))
 		{
 			Settings.connection.topicList.Remove (topic);
+			ClearAndInitiateSubscribe ();
 		}
-		ClearAndInitiateSubscribe ();
 	}
 
-
-	static int currentCalibrationPoint;
-	static int currentCalibrationSamples;
-	static Calibration.CalibrationType currentCalibrationType;
-	public static int defaultCalibrationCount = 120;
-	static float lastTimeStamp = 0;
-	public static void InitializeCalibration ()
-	{
-		print ("Initializing Calibration");
-
-		currentCalibrationPoint = 0;
-		currentCalibrationSamples = 0;
-
-		currentCalibrationType = Settings.calibration.currentCalibrationType;
-
-		calibrationMarker.SetActive (true);
-		float[] initialPoint = Settings.calibration.GetCalibrationPoint (currentCalibrationPoint);
-		calibrationMarker.UpdatePosition (initialPoint);
-		calibrationMarker.SetMaterialColor (Color.white);
-
-//		yield return new WaitForSeconds (2f);
-
-		print ("Starting Calibration");
-
-		Settings.calibration.initialized = true;
-		Settings.dataProcess.state = PupilSettings.EStatus.Calibration;
-
-		PupilTools.RepaintGUI ();
-	}
-
+	static PupilSettings.EStatus previousState = PupilSettings.EStatus.Idle;
 	public static void StartCalibration ()
 	{
-		InitializeCalibration ();
+		if (OnCalibrationStarted != null)
+			OnCalibrationStarted ();
+		else
+		{
+			print ("No 'calibration started' delegate set");
+		}
+
+		Settings.calibration.InitializeCalibration ();
+
+		previousState = Settings.DataProcessState;
+		Settings.DataProcessState = PupilSettings.EStatus.Calibration;
+		SubscribeTo ("notify.");
 
 		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","start_plugin" },
 			 {
 				"name",
-				currentCalibrationType.pluginName
+				Settings.calibration.currentCalibrationType.pluginName
 			}
 		});
 		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
@@ -183,67 +283,34 @@ public class PupilTools : MonoBehaviour
 			 {
 				"outlier_threshold",
 				35
+			},
+			{
+				"translation_eye0",
+				Settings.calibration.rightEyeTranslation
+			},
+			{
+				"translation_eye1",
+				Settings.calibration.leftEyeTranslation
 			}
 		});
 
-		if (OnCalibrationStarted != null)
-			OnCalibrationStarted ();
-		else
-		{
-			print ("No 'calibration started' delegate set");
-		}
-
 		_calibrationData.Clear ();
-	}
-	private static PupilMarker calibrationMarker = new PupilMarker ("Calibraton Marker");
-	public static void Calibrate ()
-	{
-		float[] _currentCalibPointPosition = Settings.calibration.GetCalibrationPoint (currentCalibrationPoint);// .currentCalibrationType.calibPoints [currentCalibrationPoint];
-		calibrationMarker.UpdatePosition (_currentCalibPointPosition);
 
-		float t = Settings.connection.GetPupilTimestamp ();
-
-		if (t - lastTimeStamp > 0.02f) // was 0.1, 1000/60 ms wait in old version
-		{
-			lastTimeStamp = t;
-
-//			print ("its okay to go on");
-
-			//Create reference data to pass on. _cPointFloatValues are storing the float values for the relevant current Calibration mode
-			AddCalibrationPointReferencePosition (_currentCalibPointPosition, t, 0);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
-			AddCalibrationPointReferencePosition (_currentCalibPointPosition, t, 1);//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
-
-			if (Settings.debug.printSampling)
-				print ("Point: " + currentCalibrationPoint + ", " + "Sampling at : " + currentCalibrationSamples + ". On the position : " + _currentCalibPointPosition [0] + " | " + _currentCalibPointPosition [1]);
-
-			currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
-
-			if (currentCalibrationSamples >= defaultCalibrationCount)
-			{
-				currentCalibrationSamples = 0;
-				currentCalibrationPoint++;
-
-				//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
-				AddCalibrationReferenceData ();
-
-				if (currentCalibrationPoint >= currentCalibrationType.points)
-				{
-					StopCalibration ();
-				}
-
-			}
-		}
+		RepaintGUI ();
 	}
 
 	public static void StopCalibration ()
 	{
-		Settings.calibration.initialized = false;
-		Settings.dataProcess.state = PupilSettings.EStatus.Idle;
+		Settings.calibration.currentStatus = Calibration.Status.Stopped;
+		Settings.DataProcessState = previousState;
 		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
+	}
 
-		calibrationMarker.SetActive (false);
+	public static void CalibrationFinished ()
+	{
+		print ("Calibration finished");
 
-//		SetDetectionMode (currentCalibrationType.name);
+		UnSubscribeFrom ("notify.");
 
 		if (OnCalibrationEnded != null)
 			OnCalibrationEnded ();
@@ -251,7 +318,16 @@ public class PupilTools : MonoBehaviour
 		{
 			print ("No 'calibration ended' delegate set");
 		}
+	}
 
+	public static void CalibrationFailed ()
+	{
+		if (OnCalibrationFailed != null)
+			OnCalibrationFailed ();
+		else
+		{
+			print ("No 'calibration failed' delegate set");
+		}
 	}
 
 	private static List<Dictionary<string,object>> _calibrationData = new List<Dictionary<string,object>> ();
@@ -294,12 +370,21 @@ public class PupilTools : MonoBehaviour
 		_calibrationData.Clear ();
 	}
 
-	public static void AddCalibrationPointReferencePosition (float[] position, float timestamp, int id)
+	public static void AddCalibrationPointReferencePosition (float[] position, float timestamp)
 	{
+		if (Settings.calibration.currentMode == Calibration.Mode._3D)
+			for (int i = 0; i < position.Length; i++)
+				position [i] *= PupilSettings.PupilUnitScalingFactor;
+		
 		_calibrationData.Add ( new Dictionary<string,object> () {
-			{ currentCalibrationType.positionKey, position }, 
+			{ Settings.calibration.currentCalibrationType.positionKey, position }, 
 			{ "timestamp", timestamp },
-			{ "id", id }
+			{ "id", PupilData.leftEyeID }
+		});
+		_calibrationData.Add ( new Dictionary<string,object> () {
+			{ Settings.calibration.currentCalibrationType.positionKey, position }, 
+			{ "timestamp", timestamp },
+			{ "id", PupilData.rightEyeID }
 		});
 	}
 
@@ -311,14 +396,14 @@ public class PupilTools : MonoBehaviour
 			{ "subject","eye_process.should_start.0" },
 			{
 				"eye_id",
-				PupilSettings.leftEyeID
+				PupilData.leftEyeID
 			}
 		});
 		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","eye_process.should_start.1" },
 			{
 				"eye_id",
-				PupilSettings.rightEyeID
+				PupilData.rightEyeID
 			}
 		});
 	}
@@ -329,14 +414,14 @@ public class PupilTools : MonoBehaviour
 			{ "subject","eye_process.should_stop" },
 			 {
 				"eye_id",
-				PupilSettings.leftEyeID
+				PupilData.leftEyeID
 			}
 		});
 		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","eye_process.should_stop" },
 			 {
 				"eye_id",
-				PupilSettings.rightEyeID
+				PupilData.rightEyeID
 			}
 		});
 	}
@@ -346,9 +431,9 @@ public class PupilTools : MonoBehaviour
 		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
 	}
 
-	public static void SetDetectionMode(string mode)
+	public static void SetDetectionMode()
 	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
+		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", Settings.calibration.currentCalibrationType.name } });
 	}
 
 	public static void StartFramePublishing ()

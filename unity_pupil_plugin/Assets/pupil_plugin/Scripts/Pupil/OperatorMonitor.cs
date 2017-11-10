@@ -84,7 +84,7 @@ public class OperatorMonitor : MonoBehaviour {
 	{
 		PupilTools.UnSubscribeFrom ("pupil.");
 
-		if (!PupilSettings.Instance.debugView.active && !pupilTracker.isOperatorMonitor)
+		if (!PupilTools.Settings.debugView.active && !pupilTracker.isOperatorMonitor)
 		{	
 			PupilTools.StopFramePublishing ();
 		}
@@ -101,8 +101,8 @@ public class OperatorMonitor : MonoBehaviour {
 		string str;
 
 //		print ("confidence 0 in op mon : " + Pupil.values.Confidences [0]);
-		Operator.properties.Properties [0].confidence = (float)PupilData.Confidence(PupilData.GazeSource.LeftEye);
-		Operator.properties.Properties [1].confidence = (float)PupilData.Confidence (PupilData.GazeSource.RightEye);
+		Operator.properties.Properties [0].confidence = PupilTools.Confidence(PupilData.leftEyeID);
+		Operator.properties.Properties [1].confidence = PupilTools.Confidence (PupilData.rightEyeID);
 
 //		print (Pupil.values.Confidences [0]);
 
@@ -118,9 +118,9 @@ public class OperatorMonitor : MonoBehaviour {
 
 
 		//Construct the Text box string for data display on the Operator Monitor view
-		str = "Gaze Point : " + " ( X: " + PupilData._3D.Gaze().x + " Y: " + PupilData._3D.Gaze().y + " Z: " + PupilData._3D.Gaze().z + " ) ";
-		str += "\nEyeball 0 Center : " + " ( X: " + PupilData._3D.EyeCenters(0).x + " Y: " + PupilData._3D.EyeCenters(0).y + " Z: " + PupilData._3D.EyeCenters(0).z + " ) ";
-		str += "\nEyeball 1 Center : " + " ( X: " + PupilData._3D.EyeCenters(1).x + " Y: " + PupilData._3D.EyeCenters(1).y + " Z: " + PupilData._3D.EyeCenters(1).z + " ) ";
+		str = "Gaze Point : " + " ( X: " + PupilData._3D.GazePosition.x + " Y: " + PupilData._3D.GazePosition.y + " Z: " + PupilData._3D.GazePosition.z + " ) ";
+		str += "\nEyeball 0 Center : " + " ( X: " + PupilData._3D.RightEyeCenter.x + " Y: " + PupilData._3D.RightEyeCenter.y + " Z: " + PupilData._3D.RightEyeCenter.z + " ) ";
+		str += "\nEyeball 1 Center : " + " ( X: " + PupilData._3D.LeftEyeCenter.x + " Y: " + PupilData._3D.LeftEyeCenter.y + " Z: " + PupilData._3D.LeftEyeCenter.z + " ) ";
 		str += "\nPupil Diameter : " + PupilData.Diameter ();
 
 

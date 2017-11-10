@@ -6,7 +6,7 @@ public class CalibrationDemo : MonoBehaviour
 {
 	void OnEnable()
 	{
-		if (PupilSettings.Instance.connection.isConnected)
+		if (PupilTools.Settings.connection.isConnected)
 		{
 			PupilGazeTracker.Instance.StartVisualizingGaze ();		
 			print ("We are gazing");
@@ -14,7 +14,7 @@ public class CalibrationDemo : MonoBehaviour
 	}
 	void OnDisable()
 	{
-		if (PupilSettings.Instance.connection.isConnected && PupilSettings.Instance.dataProcess.state == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilTools.Settings.connection.isConnected && PupilTools.Settings.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
 		{
 			PupilGazeTracker.Instance.StopVisualizingGaze ();		
 			print ("We stopped gazing");

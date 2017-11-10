@@ -45,6 +45,7 @@ public class Recorder
 	public static void Stop ()
 	{
 		RecorderGO.GetComponent<FFmpegOut.CameraCapture> ().Stop ();
+		GameObject.Destroy (RecorderGO);
 		PupilTools.RepaintGUI ();
 	}
 }

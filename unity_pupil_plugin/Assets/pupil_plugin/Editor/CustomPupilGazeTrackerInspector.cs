@@ -85,30 +85,32 @@ public class CustomPupilGazeTrackerInspector : Editor {
 	
 	}
 
-	public override void OnInspectorGUI(){
-
-
-		if (pupilTracker == null) {
+	public override void OnInspectorGUI()
+	{
+		if (pupilTracker == null) 
+		{
 			Debug.Log ("fos");
 			pupilTracker = (PupilGazeTracker)target;
 //			pupilTracker.AdjustPath ();
 
 			PupilTools.WantRepaint += this.Repaint;
 
-			if (pupilTracker.Settings == null) {
+			if (pupilTracker.Settings == null) 
+			{
 				pupilTracker.Settings = Resources.Load<PupilSettings> ("PupilSettings");
 				pupilSettings = pupilTracker.Settings;
-			} else {
+			} 
+			else 
+			{
 				pupilSettings = pupilTracker.Settings;
 			}
 
-
-
 			tempServerIP = PupilTools.Settings.connection.IP;
 
-
-			if (pupilTracker.DrawMenu == null) {
-				switch (pupilSettings.customGUIVariables.tabs.mainTab) {
+			if (pupilTracker.DrawMenu == null) 
+			{
+				switch (pupilSettings.customGUIVariables.tabs.mainTab) 
+				{
 				case 0:////////MAIN MENU////////
 					pupilTracker.DrawMenu = null;
 					pupilTracker.DrawMenu += DrawMainMenu;
@@ -226,9 +228,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.Space (10);
 
 		////////////////////////////CALIBRATE BUTTON////////////////////////////
-		if (PupilTools.Settings.connection.isConnected) {
-			if (PupilTools.Settings.dataProcess.state != PupilSettings.EStatus.Calibration) {
-				if (GUILayout.Button ("Calibrate", GUILayout.Height (50))) {
+		if (PupilTools.Settings.connection.isConnected) 
+		{
+			if (PupilTools.Settings.DataProcessState != PupilSettings.EStatus.Calibration) 
+			{
+				if (GUILayout.Button ("Calibrate", GUILayout.Height (50))) 
+				{
 					if (Application.isPlaying) 
 					{
 						PupilTools.StartCalibration ();
@@ -237,12 +242,15 @@ public class CustomPupilGazeTrackerInspector : Editor {
 						EditorUtility.DisplayDialog ("Pupil service message", "You can only use calibration in playmode", "Understood");
 					}
 				}
-			} else {
-				if (GUILayout.Button ("Stop Calibration", GUILayout.Height (50))) {
+			} else 
+			{
+				if (GUILayout.Button ("Stop Calibration", GUILayout.Height (50))) 
+				{
 					PupilTools.StopCalibration ();
 				}
 			}
-		} else {
+		} else 
+		{
 			GUI.enabled = false;
 			GUILayout.Button ("Calibrate (Not Connected !)", GUILayout.Height (50));
 		}
@@ -252,27 +260,40 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUILayout.Space (5);
 
 		////////////////////////////RECORDING BUTTON////////////////////////////
-		EditorGUI.BeginChangeCheck ();
+		if (PupilTools.Settings.connection.isConnected)
+		{
+			EditorGUI.BeginChangeCheck ();
 
-		if (Recorder.isProcessing){
-			GUI.enabled = false;
-			Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, "Processing ... ", "Button", GUILayout.Height (50));
-		} else {
-			Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, "Recording", "Button", GUILayout.Height (50));
-		}
+			if (Recorder.isProcessing)
+			{
+				GUI.enabled = false;
+				Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, "Processing ... ", "Button", GUILayout.Height (50));
+			} else
+			{
+				Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, "Recording", "Button", GUILayout.Height (50));
+			}
 
-		GUI.enabled = true;
-		GUI.backgroundColor = Color.white;
-		if (EditorGUI.EndChangeCheck ()) {
-			if (Recorder.isRecording) {
-				Recorder.Start ();
-				EditorApplication.update += CheckRecording;
-				EditorUtility.SetDirty (target);
-			} else {
-				Recorder.Stop ();
+			GUI.enabled = true;
+			GUI.backgroundColor = Color.white;
+			if (EditorGUI.EndChangeCheck ())
+			{
+				if (Recorder.isRecording)
+				{
+					Recorder.Start ();
+					EditorApplication.update += CheckRecording;
+					EditorUtility.SetDirty (target);
+				} else
+				{
+					Recorder.Stop ();
+				}
 			}
 		}
-
+		else 
+		{
+			GUI.enabled = false;
+			GUILayout.Button ("Recording (Not Connected !)", GUILayout.Height (50));
+		}
+		GUI.enabled = true;
 		////////////////////////////RECORDING BUTTON////////////////////////////
 		/// 
 		GUILayout.Space (5);
@@ -347,7 +368,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		////////INPUT FIELDS////////
 		switch (pupilTracker.SettingsTab) {
 		case 0://PUPIL APP
-			if (PupilTools.Settings.dataProcess.state == PupilSettings.EStatus.Calibration) {
+			if (PupilTools.Settings.DataProcessState == PupilSettings.EStatus.Calibration) {
 				GUI.enabled = false;
 			}
 
@@ -447,21 +468,24 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		case 1://CALIBRATION
 			
 
-			GUILayout.Space (20);
-
-			////////////////////////////2D-3D TOGGLE BAR////////////////////////////
-			EditorGUI.BeginChangeCheck ();
-			var calibrationMode = (Calibration.CalibMode)GUILayout.Toolbar ((int)pupilSettings.calibration.currentCalibrationMode, new string[] {"2D","3D"});
-			if (calibrationMode != pupilSettings.calibration.currentCalibrationMode)
-				pupilSettings.calibration.currentCalibrationMode = calibrationMode;
-			GUI.enabled = true;
-			if (EditorGUI.EndChangeCheck ()) {
-//				pupilSettings.calibration.SwitchCalibrationMode ();
-			}
-			////////////////////////////2D-3D TOGGLE BAR////////////////////////////
+//			GUILayout.Space (20);
+//
+//			////////////////////////////2D-3D TOGGLE BAR////////////////////////////
+//			EditorGUI.BeginChangeCheck ();
+//			var calibrationMode = (Calibration.Mode)GUILayout.Toolbar ((int)pupilSettings.calibration.currentMode, new string[] {
+//				"2D",
+//				"3D"
+//			});
+//			if (calibrationMode != pupilSettings.calibration.currentMode)
+//			{
+//				pupilSettings.calibration.SetMode (calibrationMode);
+//			}
+//			GUI.enabled = true;
+//			EditorGUI.EndChangeCheck ();
+//			////////////////////////////2D-3D TOGGLE BAR////////////////////////////
 
 			////////////////////////////CALIBRATION DEBUG MODE////////////////////////////
-			if (PupilTools.Settings.dataProcess.state == PupilSettings.EStatus.Calibration || !isEyeProcessConnected || (int)pupilSettings.calibration.currentCalibrationMode != 1) {
+			if (PupilTools.Settings.DataProcessState == PupilSettings.EStatus.Calibration || !isEyeProcessConnected || (int)pupilSettings.calibration.currentMode != 1) {
 			} else {
 				
 				//GUI.enabled = false;
@@ -496,14 +520,14 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			}
 
 			GUI.enabled = true;
-			////////////////////////////CALIBRATION DEBUG MODE////////////////////////////
-
-			GUILayout.Space (20);
-
-			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
-			GUILayout.Label ("Samples ", pupilSettings.GUIStyles[3], GUILayout.MinWidth (35));
-			PupilTools.defaultCalibrationCount = EditorGUILayout.IntSlider (PupilTools.defaultCalibrationCount, 1, 120, GUILayout.ExpandWidth(true));
-			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
+//			////////////////////////////CALIBRATION DEBUG MODE////////////////////////////
+//
+//			GUILayout.Space (20);
+//
+//			GUILayout.BeginHorizontal ();////////////////////HORIZONTAL////////////////////
+//			GUILayout.Label ("Samples per depth", pupilSettings.GUIStyles[3], GUILayout.MinWidth (35));
+//			pupilSettings.calibration.currentCalibrationType.samplesPerDepth = EditorGUILayout.IntSlider (pupilSettings.calibration.currentCalibrationType.samplesPerDepth, 1, 120, GUILayout.ExpandWidth(true));
+//			GUILayout.EndHorizontal ();////////////////////HORIZONTAL////////////////////
 
 			GUILayout.Space (10);//------------------------------------------------------------//
 

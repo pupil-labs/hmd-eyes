@@ -88,6 +88,14 @@ namespace Pupil
 		public static bool eyeProcess0;
 		public static bool eyeProcess1;
 	}
+
+	public enum GazeSource
+	{
+		LeftEye,
+		RightEye,
+		BothEyes,
+		GazeOnly
+	}
 }
 namespace Operator
 {

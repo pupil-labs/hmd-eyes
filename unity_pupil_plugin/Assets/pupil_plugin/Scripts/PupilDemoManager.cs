@@ -3,86 +3,85 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PupilDemoManager : MonoBehaviour {
-
+public class PupilDemoManager : MonoBehaviour 
+{
+	public Calibration.Mode calibrationMode = Calibration.Mode._2D;
 	public List<GameObject> gameObjectsToEnable;
 
-	public List<Text> GUITexts;
-
-	public PupilGazeTracker pupilTracker;
+	Camera calibrationCamera;
+	Text calibrationText;
 
 	void Start()
 	{	
-		pupilTracker = PupilGazeTracker.Instance;
-
 		PupilTools.OnConnected += OnConnected;
-
 		PupilTools.OnCalibrationStarted += OnCalibtaionStarted;
-
-		PupilTools.OnCalibrationEnded += OnCalibtaionEnded;
+		PupilTools.OnCalibrationEnded += OnCalibrationEnded;
+		PupilTools.OnCalibrationFailed += OnCalibrationFailed;
 	
-//		PupilTools.Connect ();
+		calibrationCamera = GetComponentInChildren<Camera> ();
+		calibrationText = calibrationCamera.gameObject.GetComponentInChildren<Text> ();
 
+		calibrationText.text = "Connecting to pupil.";
 	}
 
-	void OnConnected(){
+	void OnConnected()
+	{
+		calibrationText.text = "Success";
 
-		GUITexts [1].enabled = false;//connecting text
-
-		GUITexts [2].enabled = true;//success text
+		PupilTools.Settings.calibration.currentMode = calibrationMode;
 
 		Invoke ("ShowCalibrate", 1f);
-
 	}
 
-	void ShowCalibrate(){
-	
-		GUITexts [2].enabled = false;//success text
-
-		GUITexts [0].enabled = true;//calibrate text
-
+	void ShowCalibrate()
+	{
+		calibrationText.text = "Press 'c' to start calibration.";
 	}
 
-	void OnCalibtaionStarted(){
-
-		GUITexts [0].enabled = false;
-
+	void OnCalibtaionStarted()
+	{
+		calibrationCamera.gameObject.SetActive (true);
+		calibrationText.text = "";
+			
+		foreach (GameObject go in gameObjectsToEnable) 
+		{
+			go.SetActive (false);
+		}
 	}
 		
-	void OnCalibtaionEnded(){
-
-		GUITexts [3].enabled = true;
+	void OnCalibrationEnded()
+	{
+		calibrationText.text = "Calibration ended.";
 
 		Invoke ("StartDemo", 1f);
+	}
 
+	void OnCalibrationFailed()
+	{
+		calibrationText.text = "Calibration failed\nPress 'c' to start it again.";
 	}
 
 	void StartDemo()
 	{
-		GUITexts [3].enabled = false;
-
 		foreach (GameObject go in gameObjectsToEnable) 
 		{
 			go.SetActive (true);
 		}
 
-		PupilTools.OnConnected -= OnConnected;
-
-		PupilTools.OnCalibrationStarted -= OnCalibtaionStarted;
-
-		PupilTools.OnCalibrationEnded -= OnCalibtaionEnded;
-
-		Destroy(gameObject);
+		calibrationCamera.gameObject.SetActive (false);
 	}
 
-	void Update(){
-	
-		if (Input.GetKeyUp (KeyCode.S)) {
-		
+	void Update()
+	{
+		if (Input.GetKeyUp (KeyCode.S)) 
 			StartDemo ();
-
-		}
-
 	}
 
+	void OnApplicationQuit()
+	{
+		PupilTools.OnConnected -= OnConnected;
+		PupilTools.OnCalibrationStarted -= OnCalibtaionStarted;
+		PupilTools.OnCalibrationEnded -= OnCalibrationEnded;
+		PupilTools.OnCalibrationFailed -= OnCalibrationFailed;
+	}
 }
