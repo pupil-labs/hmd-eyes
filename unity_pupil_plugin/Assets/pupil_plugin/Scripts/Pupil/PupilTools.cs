@@ -487,15 +487,11 @@ public class PupilTools : MonoBehaviour
 
 		if (File.Exists (servicePath))
 		{
-		
-			if (Process.GetProcessesByName ("pupil_capture").Length > 0)
+			if ( (Process.GetProcessesByName ("pupil_capture").Length > 0) || (Process.GetProcessesByName ("pupil_service").Length > 0) )
 			{
-			
-				UnityEngine.Debug.LogWarning (" Pupil Capture is already running ! ");
-			
+				UnityEngine.Debug.LogWarning (" Pupil Capture/Service is already running ! ");
 			} else
 			{
-			
 				Process serviceProcess = new Process ();
 				serviceProcess.StartInfo.Arguments = servicePath;
 				serviceProcess.StartInfo.FileName = servicePath;
@@ -506,28 +502,18 @@ public class PupilTools : MonoBehaviour
 
 				if (File.Exists (servicePath))
 				{
-				
 					serviceProcess.Start ();
-				
 				} else
 				{
-				
 					UnityEngine.Debug.LogWarning ("Pupil Service could not start! There is a problem with the file path. The file does not exist at given path");
-			
 				}
 			}
-
 		} else
 		{
-
 			if (servicePath == "")
 			{
-			
 				UnityEngine.Debug.LogWarning ("Pupil Service filename is not specified ! Please configure it under the Pupil plugin settings");
-			
 			}
-
 		}
-
 	}
 }
