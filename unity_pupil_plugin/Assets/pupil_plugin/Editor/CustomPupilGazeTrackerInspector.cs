@@ -541,33 +541,33 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			GUILayout.Space (20);
 
 			GUILayout.BeginHorizontal ();
-			pupilTracker.recorder.resolution = (FFmpegOut.FFmpegPipe.Resolution)EditorGUILayout.EnumPopup (pupilTracker.recorder.resolution);
-			pupilTracker.recorder.codec = (FFmpegOut.FFmpegPipe.Codec)EditorGUILayout.EnumPopup (pupilTracker.recorder.codec);//  GUILayout.Toolbar (pupilTracker.Codec, new string[] {
+			PupilTools.Settings.recorder.resolution = (FFmpegOut.FFmpegPipe.Resolution)EditorGUILayout.EnumPopup (PupilTools.Settings.recorder.resolution);
+			PupilTools.Settings.recorder.codec = (FFmpegOut.FFmpegPipe.Codec)EditorGUILayout.EnumPopup (PupilTools.Settings.recorder.codec);//  GUILayout.Toolbar (pupilTracker.Codec, new string[] {
 			GUILayout.EndHorizontal();
 
 //			GUILayout.BeginHorizontal ();
-//			pupilTracker.recorder.isFixedRecordingLength = GUILayout.Toggle (pupilTracker.recorder.isFixedRecordingLength, "fixed length", "Button", GUILayout.Width (90));
-//			if (pupilTracker.recorder.isFixedRecordingLength) {
-//				pupilTracker.recorder.recordingLength = EditorGUILayout.FloatField (pupilTracker.recorder.recordingLength);
+//			PupilTools.Settings.recorder.isFixedRecordingLength = GUILayout.Toggle (PupilTools.Settings.recorder.isFixedRecordingLength, "fixed length", "Button", GUILayout.Width (90));
+//			if (PupilTools.Settings.recorder.isFixedRecordingLength) {
+//				PupilTools.Settings.recorder.recordingLength = EditorGUILayout.FloatField (PupilTools.Settings.recorder.recordingLength);
 //			}
 //			GUILayout.EndHorizontal ();
 
 			GUILayout.BeginHorizontal ();
 			EditorGUI.BeginChangeCheck ();
-			pupilTracker.recorder.isCustomPath = GUILayout.Toggle (pupilTracker.recorder.isCustomPath, "CustomPath", "Button", GUILayout.Width (90));
+			PupilTools.Settings.recorder.isCustomPath = GUILayout.Toggle (PupilTools.Settings.recorder.isCustomPath, "CustomPath", "Button", GUILayout.Width (90));
 			if (EditorGUI.EndChangeCheck ()) {
-				if (pupilTracker.recorder.isCustomPath) {
-					pupilTracker.recorder.filePath = EditorUtility.OpenFolderPanel ("Select the output folder", pupilTracker.recorder.filePath, "");
+				if (PupilTools.Settings.recorder.isCustomPath) {
+					PupilTools.Settings.recorder.filePath = EditorUtility.OpenFolderPanel ("Select the output folder", PupilTools.Settings.recorder.filePath, "");
 				}
 			}
-			if (pupilTracker.recorder.isCustomPath) {
+			if (PupilTools.Settings.recorder.isCustomPath) {
 				GUIStyle centeredStyle = new GUIStyle (GUI.skin.textField);
 				centeredStyle.alignment = TextAnchor.MiddleCenter;
 				centeredStyle.margin = new RectOffset (0, 0, 3, 0);
 				centeredStyle.fixedHeight = 20;
-				pupilTracker.recorder.filePath = GUILayout.TextField (pupilTracker.recorder.filePath, centeredStyle);
+				PupilTools.Settings.recorder.filePath = GUILayout.TextField (PupilTools.Settings.recorder.filePath, centeredStyle);
 				if (GUILayout.Button ("Browse", GUILayout.Width(60))) {
-					pupilTracker.recorder.filePath = EditorUtility.OpenFolderPanel ("Select the output folder", pupilTracker.recorder.filePath, "");
+					PupilTools.Settings.recorder.filePath = EditorUtility.OpenFolderPanel ("Select the output folder", PupilTools.Settings.recorder.filePath, "");
 				}
 			}
 			GUILayout.EndHorizontal ();

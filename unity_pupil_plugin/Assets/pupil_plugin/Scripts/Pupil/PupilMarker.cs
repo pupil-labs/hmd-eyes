@@ -36,14 +36,15 @@ public class PupilMarker
 		set
 		{
 			_camera = value;
+			gameObject.transform.parent = _camera.transform;
 		}
 	}
 
-	public PupilMarker(string name, Color color, Camera camera)
+	public PupilMarker(string name, Color color)
 	{
 		this.name = name;
 		this.color = color;
-		this.camera = camera;
+		this.camera = PupilTools.Settings.currentCamera;
 	}
 
 	public void UpdatePosition(Vector2 newPosition)
@@ -120,12 +121,11 @@ public class PupilMarker
 			gameObject.transform.localScale = Vector3.one * value;
 	}
 
-	public static bool TryToReset (PupilMarker marker, Camera camera)
+	public static bool TryToReset (PupilMarker marker)
 	{
 		if (marker != null)
 		{
-			marker.camera = camera;
-			marker.gameObject.transform.parent = camera.transform;
+			marker.camera = PupilTools.Settings.currentCamera;
 			marker.gameObject.SetActive (true);
 			return true;
 		}

@@ -31,13 +31,13 @@ namespace FFmpegOut
         {
 			PupilGazeTracker pupilTracker = PupilGazeTracker.Instance;
 
-			name = "Unity_" + Camera.main.name;
+			name = "Unity_" + PupilTools.Settings.currentCamera.name;
 			string date = DateTime.Now.ToString ("yyyy_MM_dd");
 			string path = Application.dataPath + "/" + date;
 
 
-			if (pupilTracker.recorder.isCustomPath)
-				path = pupilTracker.recorder.filePath + "/" + date;
+			if (PupilTools.Settings.recorder.isCustomPath)
+				path = PupilTools.Settings.recorder.filePath + "/" + date;
 
 			path = path.Replace ("Assets/", "");
 

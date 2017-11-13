@@ -163,17 +163,17 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 				a.GO.transform.rotation = Quaternion.Euler (new Vector3 (24f, 292f, 30f));
 			}
 			if (Input.GetKey (KeyCode.W))
-				a.GO.transform.position += -Camera.main.transform.forward;
+				a.GO.transform.position += -PupilTools.Settings.currentCamera.transform.forward;
 			if (Input.GetKey (KeyCode.S))
-				a.GO.transform.position += Camera.main.transform.forward;
+				a.GO.transform.position += PupilTools.Settings.currentCamera.transform.forward;
 			if (Input.GetKey (KeyCode.A))
-				a.GO.transform.position += Camera.main.transform.right;
+				a.GO.transform.position += PupilTools.Settings.currentCamera.transform.right;
 			if (Input.GetKey (KeyCode.D))
-				a.GO.transform.position += -Camera.main.transform.right;
+				a.GO.transform.position += -PupilTools.Settings.currentCamera.transform.right;
 			if (Input.GetKey (KeyCode.Q))
-				a.GO.transform.position += Camera.main.transform.up;
+				a.GO.transform.position += PupilTools.Settings.currentCamera.transform.up;
 			if (Input.GetKey (KeyCode.E))
-				a.GO.transform.position += -Camera.main.transform.up;
+				a.GO.transform.position += -PupilTools.Settings.currentCamera.transform.up;
 			if (Input.GetKeyDown (KeyCode.P))
 			{
 				if (DebugViewVariables.isDrawLines || DebugViewVariables.isDrawPoints)
@@ -377,7 +377,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 		eyeSphereMaterial.SetPass (0);
 
 		if (originMatrix == default(Matrix4x4))
-			originMatrix = Camera.main.transform.localToWorldMatrix;
+			originMatrix = PupilTools.Settings.currentCamera.transform.localToWorldMatrix;
 
 		Matrix4x4 _m = new Matrix4x4 ();
 
@@ -448,7 +448,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 		Matrix4x4 offsetMatrix = new Matrix4x4 ();
 
 		if (origin == default(Matrix4x4))
-			origin = Camera.main.transform.localToWorldMatrix;
+			origin = PupilTools.Settings.currentCamera.transform.localToWorldMatrix;
 
 		if (transformOffset == null)
 		{

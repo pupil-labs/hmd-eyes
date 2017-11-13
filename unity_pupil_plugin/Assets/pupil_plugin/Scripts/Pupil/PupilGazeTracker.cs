@@ -45,8 +45,6 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 	}
 
-	public Recorder recorder = new Recorder ();
-
 	public string ProjectName;
 
 	#region delegates
@@ -307,14 +305,14 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		OnUpdate += VisualizeGaze;
 
-		if ( !PupilMarker.TryToReset(_markerLeftEye,Camera.main) )
-			_markerLeftEye= new PupilMarker("LeftEye_2D",Color.green,Camera.main);
-		if ( !PupilMarker.TryToReset(_markerRightEye,Camera.main) )
-			_markerRightEye = new PupilMarker("RightEye_2D",Color.blue,Camera.main);
-		if ( !PupilMarker.TryToReset(_markerGazeCenter,Camera.main) )
-			_markerGazeCenter = new PupilMarker("Gaze_2D",Color.red,Camera.main);
-		if ( !PupilMarker.TryToReset(_gaze3D,Camera.main) )
-			_gaze3D = new PupilMarker("Gaze_3D", Color.yellow, Camera.main);
+		if ( !PupilMarker.TryToReset(_markerLeftEye) )
+			_markerLeftEye= new PupilMarker("LeftEye_2D",Color.green);
+		if ( !PupilMarker.TryToReset(_markerRightEye) )
+			_markerRightEye = new PupilMarker("RightEye_2D",Color.blue);
+		if ( !PupilMarker.TryToReset(_markerGazeCenter) )
+			_markerGazeCenter = new PupilMarker("Gaze_2D",Color.red);
+		if ( !PupilMarker.TryToReset(_gaze3D) )
+			_gaze3D = new PupilMarker("Gaze_3D", Color.yellow);
 
 		Settings.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
 		PupilTools.SubscribeTo("gaze");

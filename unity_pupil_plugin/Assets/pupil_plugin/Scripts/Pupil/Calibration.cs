@@ -151,12 +151,8 @@ public class Calibration
 		currentCalibrationSamples = 0;
 		currentCalibrationDepth = 0;
 
-		Camera calibrationCamera = Camera.main;
-		GameObject calibrationCameraObject = GameObject.FindGameObjectWithTag ("CalibrationCamera");
-		if (calibrationCameraObject != null)
-			calibrationCamera = calibrationCameraObject.GetComponent<Camera> ();
-		if (!PupilMarker.TryToReset (calibrationMarker, calibrationCamera))
-			calibrationMarker = new PupilMarker ("Calibraton Marker", Color.white, calibrationCamera);
+		if (!PupilMarker.TryToReset (calibrationMarker))
+			calibrationMarker = new PupilMarker ("Calibraton Marker", Color.white);
 		UpdateCalibrationPoint ();
 
 		//		yield return new WaitForSeconds (2f);

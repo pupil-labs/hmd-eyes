@@ -8,7 +8,7 @@ public class PupilDemoManager : MonoBehaviour
 	public Calibration.Mode calibrationMode = Calibration.Mode._2D;
 	public List<GameObject> gameObjectsToEnable;
 
-	Camera calibrationCamera;
+	GameObject cameraObject;
 	Text calibrationText;
 
 	void Start()
@@ -18,8 +18,9 @@ public class PupilDemoManager : MonoBehaviour
 		PupilTools.OnCalibrationEnded += OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed += OnCalibrationFailed;
 	
-		calibrationCamera = GetComponentInChildren<Camera> ();
-		calibrationText = calibrationCamera.gameObject.GetComponentInChildren<Text> ();
+		PupilTools.Settings.currentCamera = GetComponentInChildren<Camera> ();
+		cameraObject = PupilTools.Settings.currentCamera.gameObject;
+		calibrationText = cameraObject.GetComponentInChildren<Text> ();
 
 		calibrationText.text = "Connecting to pupil.";
 	}
@@ -40,7 +41,7 @@ public class PupilDemoManager : MonoBehaviour
 
 	void OnCalibtaionStarted()
 	{
-		calibrationCamera.gameObject.SetActive (true);
+		cameraObject.SetActive (true);
 		calibrationText.text = "";
 			
 		foreach (GameObject go in gameObjectsToEnable) 
@@ -67,8 +68,8 @@ public class PupilDemoManager : MonoBehaviour
 		{
 			go.SetActive (true);
 		}
-
-		calibrationCamera.gameObject.SetActive (false);
+		PupilTools.Settings.currentCamera = Camera.main;
+		cameraObject.SetActive (false);
 	}
 
 	void Update()
