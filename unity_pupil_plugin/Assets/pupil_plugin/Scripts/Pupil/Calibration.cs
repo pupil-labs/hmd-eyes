@@ -124,20 +124,6 @@ public class Calibration
 		calibrationMarker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
 	}
 
-	public float[] ApplyCalibrationScaling(float[] point)
-	{
-		switch (currentMode)
-		{
-		case Mode._3D:
-			// 3D calibration unit is mm
-			for (int i = 0; i < point.Length; i++)
-				point [i] *= PupilSettings.PupilUnitScalingFactor;
-			return point;
-		default:
-			return point;
-		}
-	}
-
 	PupilMarker calibrationMarker;
 	int currentCalibrationPoint;
 	int currentCalibrationSamples;

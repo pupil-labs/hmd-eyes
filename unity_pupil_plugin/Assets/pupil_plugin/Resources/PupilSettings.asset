@@ -38,7 +38,8 @@ MonoBehaviour:
       points: 8
       vectorDepthRadiusScale:
       - {x: 2, y: 0.08, z: 0.05}
-      samplesPerDepth: 120
+      - {x: 2, y: 0.04, z: 0.05}
+      samplesPerDepth: 60
     CalibrationType3D:
       name: 3d
       pluginName: HMD_Calibration_3D
@@ -55,11 +56,11 @@ MonoBehaviour:
       samplesPerDepth: 40
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:
-    - 30.214787
+    - 30.09832
     - 0
     - 0
     leftEyeTranslation:
-    - -30.214905
+    - -30.0982
     - 0
     - 0
   customGUIVariables:
