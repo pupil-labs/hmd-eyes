@@ -4,10 +4,6 @@ using System.IO;
 using System.Diagnostics;
 using UnityEngine;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 public class PupilTools : MonoBehaviour
 {
 	static PupilSettings _settings;
@@ -445,16 +441,5 @@ public class PupilTools : MonoBehaviour
 
 		//Andre: No sendRequest??
 		//Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
-	}
-
-	public static void SavePupilSettings (ref PupilSettings pupilSettings)
-	{
-	
-		#if UNITY_EDITOR
-		AssetDatabase.Refresh ();
-		EditorUtility.SetDirty (pupilSettings);
-		AssetDatabase.SaveAssets ();
-		#endif
-
 	}
 }
