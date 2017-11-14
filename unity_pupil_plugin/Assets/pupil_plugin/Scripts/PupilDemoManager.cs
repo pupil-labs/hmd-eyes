@@ -42,6 +42,7 @@ public class PupilDemoManager : MonoBehaviour
 	void OnCalibtaionStarted()
 	{
 		cameraObject.SetActive (true);
+		PupilTools.Settings.currentCamera = cameraObject.GetComponent<Camera> ();
 		calibrationText.text = "";
 			
 		foreach (GameObject go in gameObjectsToEnable) 

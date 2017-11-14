@@ -225,27 +225,14 @@ public class PupilTools : MonoBehaviour
 		}
 	}
 
-	public static void ClearAndInitiateSubscribe ()
-	{
-		Settings.connection.InitializeSubscriptionSocket ();
-	}
-
 	public static void SubscribeTo (string topic)
 	{
-		if (!Settings.connection.topicList.Contains (topic))
-		{
-			Settings.connection.topicList.Add (topic);
-			ClearAndInitiateSubscribe ();
-		}
+		Settings.connection.InitializeSubscriptionSocket (topic);
 	}
 
 	public static void UnSubscribeFrom (string topic)
 	{
-		if (Settings.connection.topicList.Contains (topic))
-		{
-			Settings.connection.topicList.Remove (topic);
-			ClearAndInitiateSubscribe ();
-		}
+		Settings.connection.CloseSubscriptionSocket (topic);
 	}
 
 	static PupilSettings.EStatus previousState = PupilSettings.EStatus.Idle;
@@ -262,7 +249,8 @@ public class PupilTools : MonoBehaviour
 
 		previousState = Settings.DataProcessState;
 		Settings.DataProcessState = PupilSettings.EStatus.Calibration;
-		SubscribeTo ("notify.");
+		SubscribeTo ("notify.calibration.successful");
+		SubscribeTo ("notify.calibration.failed");
 
 		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","start_plugin" },
@@ -310,7 +298,8 @@ public class PupilTools : MonoBehaviour
 	{
 		print ("Calibration finished");
 
-		UnSubscribeFrom ("notify.");
+		UnSubscribeFrom ("notify.calibration.successful");
+		UnSubscribeFrom ("notify.calibration.failed");
 
 		if (OnCalibrationEnded != null)
 			OnCalibrationEnded ();

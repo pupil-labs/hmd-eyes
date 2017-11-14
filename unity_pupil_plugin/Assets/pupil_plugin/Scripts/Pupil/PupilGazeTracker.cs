@@ -143,9 +143,9 @@ public class PupilGazeTracker:MonoBehaviour
 		{
 			if (Settings.calibration.currentStatus == Calibration.Status.Started)
 				Settings.calibration.UpdateCalibration ();
-		}
-		else if (Settings.connection.subscribeSocket != null && Settings.connection.topicList.Count > 0 && Settings.connection.subscribeSocket.HasIn)
-			Settings.connection.subscribeSocket.Poll ();
+		} 
+
+		Settings.connection.UpdateSubscriptionSockets ();
 
 		if (Input.GetKeyUp (KeyCode.C))
 		{
@@ -245,9 +245,9 @@ public class PupilGazeTracker:MonoBehaviour
 		Settings.connection.isConnected = false;
 		Settings.DataProcessState = PupilSettings.EStatus.Idle;
 
-		var relativeRightEyePosition = UnityEngine.VR.InputTracking.GetLocalPosition (UnityEngine.VR.VRNode.RightEye) - UnityEngine.VR.InputTracking.GetLocalPosition (UnityEngine.VR.VRNode.CenterEye);
+		var relativeRightEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.RightEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
 		Settings.calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
-		var relativeLeftEyePosition = UnityEngine.VR.InputTracking.GetLocalPosition (UnityEngine.VR.VRNode.LeftEye) - UnityEngine.VR.InputTracking.GetLocalPosition (UnityEngine.VR.VRNode.CenterEye);
+		var relativeLeftEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.LeftEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
 		Settings.calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
 
 		if (Settings.connection.isAutorun)

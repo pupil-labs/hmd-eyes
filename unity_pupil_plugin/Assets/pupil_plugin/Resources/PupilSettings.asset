@@ -15,13 +15,13 @@ MonoBehaviour:
     printSampling: 0
     printMessage: 0
     printMessageType: 0
-  DataProcessState: 0
+  DataProcessState: 1
   connection:
     isAutorun: 1
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
     PORT: 50020
-    subport: 62345
+    subport: 56088
     isLocal: 1
     PupilVersion: 1.1.2
     PupilVersionNumbers: 010000000100000002000000
@@ -55,11 +55,11 @@ MonoBehaviour:
       samplesPerDepth: 40
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:
-    - 30.440777
+    - 30.214787
     - 0
     - 0
     leftEyeTranslation:
-    - -30.440807
+    - -30.214905
     - 0
     - 0
   customGUIVariables:
