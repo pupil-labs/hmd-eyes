@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+#if !UNITY_WSA
+
 [Serializable]
 public class Recorder
 {
@@ -10,8 +12,6 @@ public class Recorder
 	public static bool isRecording;
 	public static bool isProcessing;
 
-	public FFmpegOut.FFmpegPipe.Codec codec;
-	public FFmpegOut.FFmpegPipe.Resolution resolution;
 	public List<int[]> resolutions = new List<int[]> () {
 		new int[]{ 1920, 1080 },
 		new int[]{ 1280, 720 },
@@ -51,5 +51,7 @@ public class Recorder
 		PupilTools.RepaintGUI ();
 	}
 }
+
+#endif
 
 

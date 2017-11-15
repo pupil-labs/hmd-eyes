@@ -140,18 +140,6 @@ public static class PupilConversions
 		}
 	}
 
-	public static T ByteArrayToObject<T> (byte[] arrayOfBytes)
-	{
-		if (arrayOfBytes == null || arrayOfBytes.Length < 1)
-			return default(T);
-
-		System.Runtime.Serialization.Formatters.Binary.BinaryFormatter binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter ();
-
-		T obj = (T)binaryFormatter.Deserialize (new MemoryStream (arrayOfBytes));
-
-		return obj;
-	}
-
 	public static byte[] doubleArrayToByteArray (double[] doubleArray)
 	{
 		byte[] _bytes_blockcopy;

@@ -4,11 +4,9 @@
 
 using UnityEngine;
 using UnityEngine.UI;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Net;
 using System.Threading;
 using System.IO;
@@ -123,8 +121,6 @@ public class PupilGazeTracker:MonoBehaviour
 	[HideInInspector]
 	public GUIStyle CalibRowStyle = new GUIStyle ();
 
-	Process serviceProcess;
-
 	int _currentFps = 0;
 	DateTime _lastT;
 
@@ -161,6 +157,7 @@ public class PupilGazeTracker:MonoBehaviour
 				PupilTools.StartCalibration ();
 			}
 		}
+#if !UNITY_WSA
 		if (Input.GetKeyUp (KeyCode.R))
 		{
 			if (Settings.connection.isConnected)
@@ -177,6 +174,7 @@ public class PupilGazeTracker:MonoBehaviour
 			} else
 				print ("Can not start recording without connection to pupil service");
 		}
+#endif
 
 		if (OnUpdate != null)
 			OnUpdate ();
@@ -310,8 +308,8 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public static void RunServiceAtPath (bool runEyeProcess = false)
 	{
+#if !UNITY_WSA
 		string servicePath = PupilTools.Settings.pupilServiceApp.servicePath;
-
 		if (File.Exists (servicePath))
 		{
 			if ( (Process.GetProcessesByName ("pupil_capture").Length > 0) || (Process.GetProcessesByName ("pupil_service").Length > 0) )
@@ -342,6 +340,9 @@ public class PupilGazeTracker:MonoBehaviour
 				UnityEngine.Debug.LogWarning ("Pupil Service filename is not specified ! Please configure it under the Pupil plugin settings");
 			}
 		}
+#else
+		print("Process can not be started in UWP environment");
+#endif
 	}
 
 	#region packet
@@ -444,17 +445,17 @@ public class PupilGazeTracker:MonoBehaviour
 
 		PupilTools.StopEyeProcesses ();
 
-		Thread.Sleep (1);
+//		Thread.Sleep (1);
 
 		Settings.connection.CloseSockets();
 			
 		StopAllCoroutines ();
-
+#if !UNITY_WSA
 		if (Recorder.isRecording)
 		{
 			Recorder.Stop ();
 		}
-
+#endif
 		PupilTools.RepaintGUI ();
 
 		Pupil.processStatus.eyeProcess0 = false;

@@ -77,7 +77,6 @@ public class PupilSettings:ScriptableObject
 	public FramePublishing framePublishing;
 	public bool visualizeGaze;
 	public Camera currentCamera;
-	public Recorder recorder;
 
 	public List<GUIStyle> GUIStyles;
 
