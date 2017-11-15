@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 
-
+#if !UNITY_WSA
 namespace FFmpegOut
 {
     [RequireComponent(typeof(Camera))]
@@ -276,3 +276,4 @@ namespace FFmpegOut
         #endregion
     }
 }
+#endif

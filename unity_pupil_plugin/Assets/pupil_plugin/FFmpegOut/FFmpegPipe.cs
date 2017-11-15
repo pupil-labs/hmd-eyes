@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
 
+#if !UNITY_WSA
 namespace FFmpegOut
 {
     // A stream pipe class that invokes ffmpeg and connect to it.
@@ -147,3 +148,4 @@ namespace FFmpegOut
         #endregion
     }
 }
+#endif
