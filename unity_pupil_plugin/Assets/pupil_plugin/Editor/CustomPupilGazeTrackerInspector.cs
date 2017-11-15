@@ -259,6 +259,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		GUILayout.Space (5);
 
+#if !UNITY_WSA
 		////////////////////////////RECORDING BUTTON////////////////////////////
 		if (PupilTools.Settings.connection.isConnected)
 		{
@@ -295,6 +296,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		}
 		GUI.enabled = true;
 		////////////////////////////RECORDING BUTTON////////////////////////////
+#endif
 		/// 
 		GUILayout.Space (5);
 
@@ -363,7 +365,9 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		pupilTracker.SettingsTab = GUILayout.Toolbar (pupilTracker.SettingsTab, new string[] {
 			"pupil app",
 			"calibration",
+#if !UNITY_WSA
 			"recording"
+#endif
 		}, GUILayout.Height(30));
 		////////INPUT FIELDS////////
 		switch (pupilTracker.SettingsTab) {
@@ -536,6 +540,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				base.OnInspectorGUI ();
 			}
 			break;
+#if !UNITY_WSA
 		case 2://RECORDING
 
 			GUILayout.Space (20);
@@ -573,6 +578,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			GUILayout.EndHorizontal ();
 
 			break;
+#endif
 		}
 
 
@@ -597,11 +603,15 @@ public class CustomPupilGazeTrackerInspector : Editor {
 //		Repaint ();
 //	}
 		
-	public void CheckRecording(){
-		if (!Recorder.isRecording) {
+	public void CheckRecording()
+	{
+#if !UNITY_WSA
+		if (!Recorder.isRecording) 
+		{
 			EditorApplication.update -= CheckRecording;
 			Repaint ();
 		}
+#endif
 	}
 		
 	void OnApplicationQuit(){
