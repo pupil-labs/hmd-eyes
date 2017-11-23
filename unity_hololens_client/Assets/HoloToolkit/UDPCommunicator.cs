@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MixedRealityNetworking;
 using System.Text;
 using MessagePack;
 using HoloToolkit.Unity;
@@ -124,6 +123,63 @@ public class UDPCommunicator : Singleton<UDPCommunicator>
 			ExecuteOnMainThread.Dequeue().Invoke();
 		}
 	}
+		
+	public void InterpreteUDPData(byte[] data)
+	{
+		switch (data[0])
+		{
+		// Connection established
+		case 0:
+			UnityEngine.Debug.Log("Connection established");
+			PupilTools.Settings.connection.isConnected = data[1] == 1;
+			break;
+		// "notify.calibration.successful":
+		case 21:
+			UnityEngine.Debug.Log("notify.calibration.successful");
+			PupilTools.Settings.calibration.currentStatus = Calibration.Status.Succeeded;
+			PupilTools.CalibrationFinished();
+			break;
+			// "notify.calibration.failed":
+		case 22:
+			UnityEngine.Debug.Log("notify.calibration.failed");
+			PupilTools.Settings.calibration.currentStatus = Calibration.Status.NotSet;
+			PupilTools.CalibrationFailed();
+			break;
+		//  "gaze","pupil.0", "pupil.1"
+		case 23:
+		case 24:
+		case 25:
+			int readSize;
+			var dictionary = MessagePackSlim.Deserialize (data, 1, out readSize); // MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
+			if (PupilTools.ConfidenceForDictionary(dictionary) > 0.6f) 
+			{
+				if (data[0] == 23)
+					PupilTools.gazeDictionary = dictionary;
+				else if (data[0] == 24)
+					PupilTools.pupil0Dictionary = dictionary;
+				else if (data[0] == 25)
+					PupilTools.pupil1Dictionary = dictionary;
+			}
+			break;
+		case 30:
+			UnityEngine.Debug.Log("UpdatePupilTimestamp");
+			PupilTools.Settings.connection.currentPupilTimestamp = System.BitConverter.ToSingle (data, 1);
+			break;
+		default:
+			UnityEngine.Debug.Log(StringFromPacket(data));
+			break;
+		}
+	}
+
+	private string StringFromPacket (byte[] data)
+	{
+		byte[] message = new byte[data.Length - 1];
+		for (int i = 1; i < data.Length; i++)
+		{
+			message [i-1] = data [i];
+		}
+		return Encoding.ASCII.GetString (message);
+	}
 
 	#if !UNITY_EDITOR
 
@@ -158,35 +214,6 @@ public class UDPCommunicator : Singleton<UDPCommunicator>
 	ExecuteOnMainThread.Enqueue(() => { InterpreteUDPData(msgData); });
 	}
 	}
-
-	TextMesh tm;
-		public void InterpreteUDPData(byte[] data)
-		{
-			if (tm == null)
-			{
-				tm = GameObject.Find ("UDPResponder").GetComponent<TextMesh> ();
-			}
-					switch (data[0])
-					{
-					// Connection established
-					case 0:
-	PupilTools.Settings.connection.isConnected = data[1] == 1;
-						break;
-					default:
-	tm.text = StringFromPacket(data);
-						break;
-					}
-		}
-
-	private string StringFromPacket (byte[] data)
-		{
-			byte[] message = new byte[data.Length - 1];
-			for (int i = 1; i < data.Length; i++)
-			{
-				message [i-1] = data [i];
-			}
-			return Encoding.ASCII.GetString (message);
-		}
 
 	#endif
 }

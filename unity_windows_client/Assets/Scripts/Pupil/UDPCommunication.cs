@@ -15,7 +15,7 @@ public class UDPCommunication : MonoBehaviour
 		get
 		{
 			if (_pupilConnection == null)
-				_pupilConnection = new Connection ();
+				_pupilConnection = new Connection (this);
 			return _pupilConnection;
 		}
 	}
@@ -25,8 +25,6 @@ public class UDPCommunication : MonoBehaviour
 	public int listeningPort = 12345;
 	public int receivingPort = 12346;
 	public string receivingIP = "192.168.1.90";
-
-	public TextMesh tm;
 
 	void StartUDPThread()
 	{
@@ -70,7 +68,6 @@ public class UDPCommunication : MonoBehaviour
 		}
 	}
 
-	static string receivedMessage = "";
 	void InterpreteByteData(byte[] data)
 	{
 		byte id = data [0];
@@ -85,11 +82,13 @@ public class UDPCommunication : MonoBehaviour
 		{
 		// InitializeSubscriptionSocket
 		case 1:
+			UnityEngine.Debug.Log ("InitializeSubscriptionSocket");
 			string initializeTopic = Encoding.ASCII.GetString (message);
 			PupilConnection.InitializeSubscriptionSocket (initializeTopic);
 			break;
-		// CloseSubscriptionSocket
+			// CloseSubscriptionSocket
 		case 2:
+			UnityEngine.Debug.Log ("CloseSubscriptionSocket");
 			string closeTopic = Encoding.ASCII.GetString (message);
 			PupilConnection.CloseSubscriptionSocket (closeTopic);
 			break;
@@ -97,15 +96,21 @@ public class UDPCommunication : MonoBehaviour
 		case 10:
 			var dictionary = MessagePack.MessagePackSerializer.Deserialize<Dictionary<string,object>> (message);
 			PupilConnection.sendRequestMessage (dictionary ["subject"].ToString (), message);
+			UnityEngine.Debug.Log ("sendRequestMessage; subject: " + dictionary ["subject"].ToString ());
+			break;
+		case 30:
+			UnityEngine.Debug.Log ("Update pupil time");
+			PupilConnection.updatingPupilTimestamp = data [1] == 1;
 			break;
 		// Calling functions
 		default:
 			string functionName = Encoding.ASCII.GetString (message);
-			receivedMessage = functionName;
+			UnityEngine.Debug.Log (functionName);
 			switch (functionName)
 			{
 			case "InitializeRequestSocket":
 				PupilConnection.InitializeRequestSocket ();
+
 				break;
 			case "CloseSockets":
 				PupilConnection.CloseSockets ();
@@ -126,10 +131,8 @@ public class UDPCommunication : MonoBehaviour
 	public void SendCallback(IAsyncResult ar)
 	{
 		UdpClient u = (UdpClient)ar.AsyncState;
-
-		Console.WriteLine("number of bytes sent: {0}", u.EndSend(ar));
-
-		receivedMessage += "\n Sent Data " + PupilConnection.isConnected.ToString();
+		u.EndSend (ar);
+//		Console.WriteLine("number of bytes sent: {0}", u.EndSend(ar));
 		messageSent = true;
 	}
 	public void SendUDPData(byte[] data)
@@ -139,7 +142,8 @@ public class UDPCommunication : MonoBehaviour
 			remoteEndPoint = new IPEndPoint(IPAddress.Parse(receivingIP), receivingPort);
 		}
 
-//		udpClient.Send (data, data.Length, remoteEndPoint);
+		messageSent = false;
+
 		udpClient.BeginSend(data, data.Length, remoteEndPoint, 
 			new AsyncCallback(SendCallback), udpClient);
 
@@ -159,27 +163,15 @@ public class UDPCommunication : MonoBehaviour
 	bool connected = false;
 	void Update () 
 	{
-		if (tm.text != receivedMessage)
-			tm.text = receivedMessage; 
-
 		PupilConnection.UpdateSubscriptionSockets ();
 
 		PupilConnection.UpdatePupilTimestamp ();
-
-		if (connected != PupilConnection.isConnected)
-		{
-			connected = PupilConnection.isConnected;
-			if ( connected )
-				SendUDPData (new byte[] { 0, 1 }); 
-			else
-				SendUDPData (new byte[] { 0, 0 }); 
-		}
 	}
 
 	void OnDisable()
 	{
 		StopUDPThread ();
 
-		PupilConnection.TerminateContext ();
+		PupilConnection.CloseSockets ();
 	}
 }

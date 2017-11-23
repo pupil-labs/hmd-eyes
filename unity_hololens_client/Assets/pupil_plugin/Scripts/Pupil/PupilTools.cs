@@ -193,33 +193,30 @@ public class PupilTools : MonoBehaviour
 		{
 			connection.InitializeRequestSocket ();
 
-			if (!connection.isConnected) {
-
+			if (!connection.isConnected)
+            {
 				if (retry) 
 				{
-					print ("Could not connect, Re-trying in 5 seconds ! ");
+                    UnityEngine.Debug.Log("Could not connect, Re-trying in 5 seconds ! ");
 					yield return new WaitForSeconds (retryDelay);
 
 				} else 
 				{
 					connection.TerminateContext ();
-					yield break;
+					yield return null;
 				}
 
 			} 
-			else
-			{
-				print (" Succesfully connected to Pupil Service ! ");
+			//yield return null;
+        }
+        UnityEngine.Debug.Log(" Succesfully connected to Pupil Service ! ");
 
-				StartEyeProcesses ();
-				SetDetectionMode ();
-				RepaintGUI ();
-				OnConnected ();
-				yield break;
-			}
-			yield return null;
-		}
-	}
+        StartEyeProcesses();
+        SetDetectionMode();
+        RepaintGUI();
+        OnConnected();
+        yield break;
+    }
 
 	public static void SubscribeTo (string topic)
 	{

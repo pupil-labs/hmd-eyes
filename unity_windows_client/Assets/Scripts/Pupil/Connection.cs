@@ -9,6 +9,12 @@ using MessagePack;
 [Serializable]
 public class Connection
 {
+	public UDPCommunication udpComm;
+	public Connection(UDPCommunication comm)
+	{
+		udpComm = comm;
+	}
+
 	private bool _isConnected = false;
 	public bool isConnected
 	{
@@ -16,6 +22,11 @@ public class Connection
 		set 
 		{
 			_isConnected = value;
+
+			if ( _isConnected )
+				udpComm.SendUDPData (new byte[] { 0, 1 }); 
+			else
+				udpComm.SendUDPData (new byte[] { 0, 0 }); 
 		}
 	}
 	public bool isAutorun = true;
@@ -123,56 +134,43 @@ public class Connection
 
 			subscriptionSocketForTopic[topic].ReceiveReady += (s, a) => 
 			{
-				int i = 0;
-
 				NetMQMessage m = new NetMQMessage();
 
 				while(a.Socket.TryReceiveMultipartMessage(ref m)) 
 				{
-					// We read all the messages from the socket, but disregard the ones after a certain point
-	//				if ( i > PupilSettings.numberOfMessages ) // 6)
-	//					continue;
-					mStream = new MemoryStream(m[1].ToByteArray());
-
 					string msgType = m[0].ConvertToString();
 
-//					switch(msgType)
-//					{
-//					case "notify.calibration.successful":
-//						PupilTools.Settings.calibration.currentStatus = Calibration.Status.Succeeded;
-//						PupilTools.CalibrationFinished();
-//						Debug.Log(msgType);
-//						break;
-//					case "notify.calibration.failed":
-//						PupilTools.Settings.calibration.currentStatus = Calibration.Status.NotSet;
-//						PupilTools.CalibrationFailed();
-//						Debug.Log(msgType);
-//						break;
-//					case "gaze":
-//					case "pupil.0":
-//					case "pupil.1":
-//						var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
-//						if (PupilTools.ConfidenceForDictionary(dictionary) > 0.6f) 
-//						{
-//							if (msgType == "gaze")
-//								PupilTools.gazeDictionary = dictionary;
-//							else if (msgType == "pupil.0")
-//								PupilTools.pupil0Dictionary = dictionary;
-//							else if (msgType == "pupil.1")
-//								PupilTools.pupil1Dictionary = dictionary;
-//						}
-//						break;
-//					default: 
-//						Debug.Log(msgType);
-//	//					foreach (var item in MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream))
-//	//					{
-//	//						Debug.Log(item.Key);
-//	//						Debug.Log(item.Value.ToString());
-//	//					}
-//						break;
-//					}
-
-					i++;
+					byte subscriptionSocketMessageType;
+					switch(msgType)
+					{
+					case "notify.calibration.successful":
+						UnityEngine.Debug.Log(msgType);
+						subscriptionSocketMessageType = 21;
+						break;
+					case "notify.calibration.failed":
+						UnityEngine.Debug.Log(msgType);
+						subscriptionSocketMessageType = 22;
+						break;
+					case "gaze":
+						subscriptionSocketMessageType = 23;
+						break;
+					case "pupil.0":
+						subscriptionSocketMessageType = 24;
+						break;
+					case "pupil.1":
+						subscriptionSocketMessageType = 25;
+						break;
+					default: 
+						UnityEngine.Debug.Log(msgType);
+						subscriptionSocketMessageType = 20;
+						break;
+					}
+					byte[] message = m[1].ToByteArray();
+					byte[] data = new byte[message.Length+1];
+					data[0] = subscriptionSocketMessageType;
+					for (int i = 1; i < data.Length; i++)
+						data[i] = message[i-1];
+					udpComm.SendUDPData(data);
 				}
 			};
 		}
@@ -257,6 +255,12 @@ public class Connection
 		set
 		{
 			_currentPupilTimestamp = value;
+			byte[] message = System.BitConverter.GetBytes (_currentPupilTimestamp);
+			byte[] data = new byte[message.Length+1];
+			data[0] = 30;
+			for (int i = 1; i < data.Length; i++)
+				data[i] = message[i-1];
+			udpComm.SendUDPData(data);
 		}
 	}
 	public void UpdatePupilTimestamp ()
@@ -265,7 +269,7 @@ public class Connection
 		{
 			requestSocket.SendFrame ("t");
 			NetMQMessage recievedMsg = recieveRequestMessage ();
-			_currentPupilTimestamp = float.Parse (recievedMsg [0].ConvertToString ());
+			currentPupilTimestamp = float.Parse (recievedMsg [0].ConvertToString ());
 		}
 	}
 

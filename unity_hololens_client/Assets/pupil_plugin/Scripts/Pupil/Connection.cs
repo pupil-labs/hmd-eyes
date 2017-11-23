@@ -83,12 +83,31 @@ public class Connection
 			data [i] = message [i - 1];
 		}
 		data [0] = 10;
+        UnityEngine.Debug.Log(dictionary["subject"]);
 		UDPCommunicator.Instance.SendUDPMessage (data);
 	}
 
-	public float GetPupilTimestamp ()
+	public bool updatingPupilTimestamp = false;
+	private float _currentPupilTimestamp = 0;
+	public float currentPupilTimestamp
 	{
-		return 0;
+		get 
+		{ 
+			if (!updatingPupilTimestamp)
+			{
+				updatingPupilTimestamp = true;
+				UpdatePupilTimestamp ();
+			}
+			return _currentPupilTimestamp;
+		}
+		set
+		{
+			_currentPupilTimestamp = value;
+		}
+	}
+	private void UpdatePupilTimestamp ()
+	{
+		UDPCommunicator.Instance.SendUDPMessage (new byte[]{ 30, 1 });
 	}
 
 	public void TerminateContext()

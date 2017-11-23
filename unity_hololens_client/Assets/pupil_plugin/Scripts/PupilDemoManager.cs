@@ -32,6 +32,8 @@ public class PupilDemoManager : MonoBehaviour
 		PupilTools.Settings.calibration.currentMode = calibrationMode;
 
 		Invoke ("ShowCalibrate", 1f);
+
+		PupilTools.StartCalibration ();
 	}
 
 	void ShowCalibrate()
