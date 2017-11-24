@@ -77,7 +77,9 @@ public class PupilSettings:ScriptableObject
 	public FramePublishing framePublishing;
 	public bool visualizeGaze;
 	public Camera currentCamera;
-
+#if !UNITY_WSA
+	public Recorder recorder;
+#endif
 	public List<GUIStyle> GUIStyles;
 
 	public static int numberOfMessages = 6;

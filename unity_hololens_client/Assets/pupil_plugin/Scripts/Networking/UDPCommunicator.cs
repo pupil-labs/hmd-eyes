@@ -153,10 +153,6 @@ public class UDPCommunicator : Singleton<UDPCommunicator>
 					PupilTools.pupil1Dictionary = dictionary;
 			}
 			break;
-		case 30:
-			UnityEngine.Debug.Log("UpdatePupilTimestamp");
-			PupilTools.Settings.connection.currentPupilTimestamp = System.BitConverter.ToSingle (data, 1);
-			break;
 		case 90:
 			UnityEngine.Debug.Log ("Start/stop calibration command");
 			if (data [1] == 1)

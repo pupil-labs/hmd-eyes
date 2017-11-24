@@ -53,14 +53,12 @@ public class PupilMarker
 		position.y = newPosition.y;
 		position.z = PupilTools.Settings.calibration.currentCalibrationType.vectorDepthRadiusScale[0].x;
 		gameObject.transform.position = camera.ViewportToWorldPoint(position);
-		UnityEngine.Debug.Log (newPosition.ToString ());
 		UpdateOrientation ();
 	}
 	public void UpdatePosition(Vector3 newPosition)
 	{
 		position = newPosition;
 		gameObject.transform.localPosition = position;
-		UnityEngine.Debug.Log (newPosition.ToString ());
 		UpdateOrientation ();
 	}
 	public void UpdatePosition(float[] newPosition)

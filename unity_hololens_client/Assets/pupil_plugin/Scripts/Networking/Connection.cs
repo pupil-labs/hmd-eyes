@@ -96,29 +96,6 @@ public class Connection
 		UDPCommunicator.Instance.SendUDPMessage (data);
 	}
 
-	public bool updatingPupilTimestamp = false;
-	private float _currentPupilTimestamp = 0;
-	public float currentPupilTimestamp
-	{
-		get 
-		{ 
-			if (!updatingPupilTimestamp)
-			{
-				updatingPupilTimestamp = true;
-				UpdatePupilTimestamp ();
-			}
-			return _currentPupilTimestamp;
-		}
-		set
-		{
-			_currentPupilTimestamp = value;
-		}
-	}
-	private void UpdatePupilTimestamp ()
-	{
-		UDPCommunicator.Instance.SendUDPMessage (new byte[]{ 30, 1 });
-	}
-
 	public void TerminateContext()
 	{
 		byte[] data = StringToPacket ("TerminateContext");

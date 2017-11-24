@@ -99,10 +99,6 @@ public class UDPCommunication : MonoBehaviour
 			PupilConnection.sendRequestMessage (dictionary ["subject"].ToString (), message);
 			UnityEngine.Debug.Log ("sendRequestMessage; subject: " + dictionary ["subject"].ToString ());
 			break;
-		case 30:
-			UnityEngine.Debug.Log ("Update pupil time");
-			PupilConnection.updatingPupilTimestamp = data [1] == 1;
-			break;
 		case 40:
 			float time = System.BitConverter.ToSingle (data, 1);
 			UnityEngine.Debug.Log ("Set time reference " + time.ToString ("0.00000000"));
@@ -214,8 +210,6 @@ public class UDPCommunication : MonoBehaviour
 	void Update () 
 	{
 		PupilConnection.UpdateSubscriptionSockets ();
-
-		PupilConnection.UpdatePupilTimestamp ();
 
 		if ( isConnected != PupilConnection.isConnected)
 		{

@@ -65,11 +65,11 @@ public class PupilDemoManager : MonoBehaviour
 
 	void StartDemo()
 	{
+		PupilTools.Settings.currentCamera = Camera.main;
 		foreach (GameObject go in gameObjectsToEnable) 
 		{
 			go.SetActive (true);
 		}
-		PupilTools.Settings.currentCamera = Camera.main;
 		cameraObject.SetActive (false);
 	}
 

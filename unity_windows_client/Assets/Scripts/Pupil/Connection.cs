@@ -72,8 +72,10 @@ public class Connection
 		requestSocket = new RequestSocket (IPHeader + PORT);
 		requestSocket.SendFrame ("SUB_PORT");
 		isConnected = requestSocket.TryReceiveFrameString (timeout, out subport);
-
-		CheckPupilVersion ();
+		if (isConnected)
+		{
+			CheckPupilVersion ();
+		}
 	}
 
 	public string PupilVersion;
@@ -240,46 +242,16 @@ public class Connection
 	{
 		return requestSocket.ReceiveMultipartMessage ();
 	}
-
-	public bool updatingPupilTimestamp = false;
-	private float _currentPupilTimestamp = 0;
-	public float currentPupilTimestamp
-	{
-		get 
-		{ 
-			if (!updatingPupilTimestamp)
-			{
-				updatingPupilTimestamp = true;
-				UpdatePupilTimestamp ();
-			}
-			return _currentPupilTimestamp;
-		}
-		set
-		{
-			_currentPupilTimestamp = value;
-//			byte[] message = System.BitConverter.GetBytes (_currentPupilTimestamp);
-//			byte[] data = new byte[message.Length+1];
-//			data[0] = 30;
-//			for (int i = 1; i < data.Length; i++)
-//				data[i] = message[i-1];
-//			udpComm.SendUDPData(data);
-		}
-	}
-	public void UpdatePupilTimestamp ()
-	{
-		if (updatingPupilTimestamp && requestSocket != null)
-		{
-			requestSocket.SendFrame ("t");
-			NetMQMessage recievedMsg = receiveRequestMessage ();
-			currentPupilTimestamp = float.Parse (recievedMsg [0].ConvertToString ());
-		}
-	}
+		
 	public void SetPupilTimestamp(float time)
 	{
-		if (requestSocket != null)
+		if (requestSocket != null && isConnected)
 		{
 			requestSocket.SendFrame ("T " + time.ToString ("0.00000000"));
 			receiveRequestMessage ();
+		} else
+		{
+			UnityEngine.Debug.Log ("SYNC-TIME NOT SET");
 		}
 	}
 
