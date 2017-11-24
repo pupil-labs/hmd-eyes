@@ -15,6 +15,7 @@ using UnityEditor.SceneManagement;
 [CustomEditor(typeof(PupilGazeTracker))]
 public class CustomPupilGazeTrackerInspector : Editor {
 
+#if !UNITY_WSA
 	PupilGazeTracker pupilTracker;
 
 	private PupilSettings pupilSettings;
@@ -82,7 +83,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		}
 
 		////////////////////////////TOGGLE AUTO MODE////////////////////////////
-	
 	}
 
 	public override void OnInspectorGUI()
@@ -106,7 +106,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			}
 
 			tempServerIP = PupilTools.Settings.connection.IP;
-
 			if (pupilTracker.DrawMenu == null) 
 			{
 				switch (pupilSettings.customGUIVariables.tabs.mainTab) 
@@ -259,7 +258,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		GUILayout.Space (5);
 
-#if !UNITY_WSA
 		////////////////////////////RECORDING BUTTON////////////////////////////
 		if (PupilTools.Settings.connection.isConnected)
 		{
@@ -296,7 +294,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		}
 		GUI.enabled = true;
 		////////////////////////////RECORDING BUTTON////////////////////////////
-#endif
+
 		/// 
 		GUILayout.Space (5);
 
@@ -365,9 +363,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		pupilTracker.SettingsTab = GUILayout.Toolbar (pupilTracker.SettingsTab, new string[] {
 			"pupil app",
 			"calibration",
-#if !UNITY_WSA
 			"recording"
-#endif
 		}, GUILayout.Height(30));
 		////////INPUT FIELDS////////
 		switch (pupilTracker.SettingsTab) {
@@ -540,7 +536,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				base.OnInspectorGUI ();
 			}
 			break;
-#if !UNITY_WSA
 		case 2://RECORDING
 
 			GUILayout.Space (20);
@@ -578,7 +573,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 			GUILayout.EndHorizontal ();
 
 			break;
-#endif
 		}
 
 
@@ -605,19 +599,17 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		
 	public void CheckRecording()
 	{
-#if !UNITY_WSA
 		if (!Recorder.isRecording) 
 		{
 			EditorApplication.update -= CheckRecording;
 			Repaint ();
 		}
-#endif
 	}
 		
 	void OnApplicationQuit(){
 		EditorApplication.update = null;
 	}
 
-
+#endif
 }
 

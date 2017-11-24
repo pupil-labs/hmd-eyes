@@ -58,8 +58,11 @@ public class Connection
 		requestSocket = new RequestSocket (PupilTools.Settings.connection.IPHeader + PupilTools.Settings.connection.PORT);
 		requestSocket.SendFrame ("SUB_PORT");
 		isConnected = requestSocket.TryReceiveFrameString (timeout, out PupilTools.Settings.connection.subport);
-
-		CheckPupilVersion ();
+		if (isConnected)
+		{
+			CheckPupilVersion ();
+			SetPupilTimestamp (Time.time);
+		}
 	}
 
 	public string PupilVersion;
@@ -128,7 +131,6 @@ public class Connection
 					// We read all the messages from the socket, but disregard the ones after a certain point
 	//				if ( i > PupilSettings.numberOfMessages ) // 6)
 	//					continue;
-
 					mStream = new MemoryStream(m[1].ToByteArray());
 
 					string msgType = m[0].ConvertToString();
@@ -220,20 +222,50 @@ public class Connection
 			requestSocket.SendMultipartMessage (m);
 
 			// needs to wait for response for some reason..
-			recieveRequestMessage ();
+			receiveRequestMessage ();
 		}
 	}
 
-	public NetMQMessage recieveRequestMessage ()
+	public NetMQMessage receiveRequestMessage ()
 	{
 		return requestSocket.ReceiveMultipartMessage ();
 	}
 
-	public float GetPupilTimestamp ()
+	public bool updatingPupilTimestamp = false;
+	private float _currentPupilTimestamp = 0;
+	public float currentPupilTimestamp
 	{
-		requestSocket.SendFrame ("t");
-		NetMQMessage recievedMsg = recieveRequestMessage ();
-		return float.Parse (recievedMsg [0].ConvertToString ());
+		get 
+		{ 
+			if (!updatingPupilTimestamp)
+			{
+				updatingPupilTimestamp = true;
+				UpdatePupilTimestamp ();
+			}
+			return _currentPupilTimestamp;
+		}
+		set
+		{
+			_currentPupilTimestamp = value;
+		}
+	}
+	public void UpdatePupilTimestamp ()
+	{
+		if (updatingPupilTimestamp)
+		{
+			requestSocket.SendFrame ("t");
+			NetMQMessage recievedMsg = receiveRequestMessage ();
+			currentPupilTimestamp = float.Parse (recievedMsg [0].ConvertToString ());
+		}
+	}
+
+	public void SetPupilTimestamp(float time)
+	{
+		if (requestSocket != null)
+		{
+			requestSocket.SendFrame ("T " + time.ToString ("0.00000000"));
+			receiveRequestMessage ();
+		}
 	}
 
 	public void TerminateContext()

@@ -152,7 +152,7 @@ namespace FFmpegOut
 			if (_pipe != null && _recorderState == RecorderState.RECORDING)
             {
                 var tempRT = RenderTexture.GetTemporary(source.width, source.height);
-				var pupilTimeStamp = PupilTools.Settings.connection.GetPupilTimestamp ();
+				var pupilTimeStamp = PupilTools.Settings.connection.currentPupilTimestamp;
 
 
 				if (_material != null) {

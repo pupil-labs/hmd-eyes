@@ -149,10 +149,10 @@ public class Calibration
 	}
 
 	static float lastTimeStamp = 0;
-	static float timeBetweenCalibrationPoints = 0.02f; // was 0.1, 1000/60 ms wait in old version
+	static float timeBetweenCalibrationPoints = 0.1f; // was 0.1, 1000/60 ms wait in old version
 	public void UpdateCalibration ()
 	{
-		float t = PupilTools.Settings.connection.GetPupilTimestamp ();
+		float t = Time.time;// PupilTools.Settings.connection.currentPupilTimestamp;
 
 		if (t - lastTimeStamp > timeBetweenCalibrationPoints)
 		{

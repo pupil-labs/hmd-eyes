@@ -261,8 +261,12 @@ public class PupilGazeTracker:MonoBehaviour
 		var relativeLeftEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.LeftEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
 		Settings.calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
 
+#if !UNITY_WSA
 		if (Settings.connection.isAutorun)
 			RunConnect ();
+#else
+		RunConnect();
+#endif
 	}
 
 	#endregion
@@ -300,8 +304,10 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void RunConnect()
 	{
+#if !UNITY_WSA
 		if (Settings.connection.isLocal)
 			RunServiceAtPath ();
+#endif
 		
 		StartCoroutine (PupilTools.Connect (retry: true, retryDelay: 5f));
 	}
