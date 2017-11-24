@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Threading;
 using System.Net;
@@ -102,6 +103,11 @@ public class UDPCommunication : MonoBehaviour
 			UnityEngine.Debug.Log ("Update pupil time");
 			PupilConnection.updatingPupilTimestamp = data [1] == 1;
 			break;
+		case 40:
+			float time = System.BitConverter.ToSingle (data, 1);
+			UnityEngine.Debug.Log ("Set time reference " + time.ToString ("0.00000000"));
+			PupilConnection.SetPupilTimestamp (time);
+			break;
 		// Calling functions
 		default:
 			string functionName = Encoding.ASCII.GetString (message);
@@ -110,7 +116,6 @@ public class UDPCommunication : MonoBehaviour
 			{
 			case "InitializeRequestSocket":
 				PupilConnection.InitializeRequestSocket ();
-
 				break;
 			case "CloseSockets":
 				PupilConnection.CloseSockets ();
@@ -153,19 +158,69 @@ public class UDPCommunication : MonoBehaviour
 		}
 	}
 
+	bool calibrationStarted = false;
+	Button calibrationButton;
+	Text calibrationButtonText;
+	void InitializeCalibrationButton()
+	{
+		calibrationButton = GameObject.Find ("CalibrationButton").GetComponent<Button> ();
+		calibrationButtonText = calibrationButton.gameObject.GetComponentInChildren<Text> ();
+	}
+	public void CalibrationButtonClicked()
+	{
+		if (calibrationStarted)
+			StopCalibration ();
+		else
+			StartCalibration ();
+	}
+	public void StartCalibration()
+	{
+		SendUDPData(new byte[] { 90, 1 });
+		calibrationStarted = true;
+		calibrationButtonText.text = "Stop Calibration";
+	}
+	public void StopCalibration()
+	{
+		SendUDPData(new byte[] { 90, 0 });
+	}
+	public void ResetCalibrationButton()
+	{
+		calibrationStarted = false;
+		calibrationButtonText.text = "Re-/Start Calibration";
+	}
+
 	// Use this for initialization
 	void Start () 
 	{
 		StartUDPThread ();		
+
+		InitializeCalibrationButton ();
 	}
-	
-	// Update is called once per frame
-	bool connected = false;
+
+	bool _isConnected = false;
+	bool isConnected
+	{
+		get { return _isConnected; }
+		set
+		{
+			_isConnected = value;
+			if (_isConnected)
+			{
+				calibrationButton.interactable = true;
+				calibrationButtonText.text = "Start Calibration";
+			}
+		}
+	}
 	void Update () 
 	{
 		PupilConnection.UpdateSubscriptionSockets ();
 
 		PupilConnection.UpdatePupilTimestamp ();
+
+		if ( isConnected != PupilConnection.isConnected)
+		{
+			isConnected = PupilConnection.isConnected;
+		}
 	}
 
 	void OnDisable()

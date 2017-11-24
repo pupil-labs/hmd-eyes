@@ -32,13 +32,11 @@ public class PupilDemoManager : MonoBehaviour
 		PupilTools.Settings.calibration.currentMode = calibrationMode;
 
 		Invoke ("ShowCalibrate", 1f);
-
-		PupilTools.StartCalibration ();
 	}
 
 	void ShowCalibrate()
 	{
-		calibrationText.text = "Press 'c' to start calibration.";
+		calibrationText.text = "Use remote client to start calibration";
 	}
 
 	void OnCalibtaionStarted()

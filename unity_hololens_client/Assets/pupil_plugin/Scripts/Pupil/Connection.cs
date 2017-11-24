@@ -37,6 +37,15 @@ public class Connection
         byte[] data = StringToPacket ("InitializeRequestSocket");
 		data [0] = 0;
 		UDPCommunicator.Instance.SendUDPMessage (data);
+
+		byte[] time = System.BitConverter.GetBytes (Time.time);
+		byte[] timeData = new byte[time.Length + 1];
+		timeData [0] = 40;
+		for (int i = 1; i < timeData.Length; i++)
+		{
+			timeData [i] = time [i - 1];
+		}
+		UDPCommunicator.Instance.SendUDPMessage (timeData);
 	}
 
 	public string PupilVersion;

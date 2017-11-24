@@ -36,19 +36,11 @@ public class UDPCommunicator : Singleton<UDPCommunicator>
 
 	#if !UNITY_EDITOR
 
-	//we've got a message (data[]) from (host) in case of not assigned an event
-	void UDPMessageReceived(string host, string port, byte[] data)
-	{
-	Debug.Log("GOT MESSAGE FROM: " + host + " on port " + port + " " + data.Length.ToString() + " bytes ");
-	}
-
 	//Send an UDP-Packet
 	public async void SendUDPMessage(byte[] data)
 	{
 	    await _SendUDPMessage(data);
 	}
-
-
 
 	DatagramSocket socket;
 
@@ -165,6 +157,13 @@ public class UDPCommunicator : Singleton<UDPCommunicator>
 			UnityEngine.Debug.Log("UpdatePupilTimestamp");
 			PupilTools.Settings.connection.currentPupilTimestamp = System.BitConverter.ToSingle (data, 1);
 			break;
+		case 90:
+			UnityEngine.Debug.Log ("Start/stop calibration command");
+			if (data [1] == 1)
+				PupilTools.StartCalibration ();
+			else
+				PupilTools.StopCalibration ();
+			break;
 		default:
 			UnityEngine.Debug.Log(StringFromPacket(data));
 			break;
@@ -202,7 +201,6 @@ public class UDPCommunicator : Singleton<UDPCommunicator>
 	private void Socket_MessageReceived(Windows.Networking.Sockets.DatagramSocket sender,
 	Windows.Networking.Sockets.DatagramSocketMessageReceivedEventArgs args)
 	{
-	Debug.Log("GOT MESSAGE FROM: " + args.RemoteAddress.DisplayName);
 	//Read the message that was received from the UDP  client.
 	Stream streamIn = args.GetDataStream().AsStreamForRead();
 	MemoryStream ms = ToMemoryStream(streamIn);

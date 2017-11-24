@@ -146,10 +146,12 @@ public class Connection
 					case "notify.calibration.successful":
 						UnityEngine.Debug.Log(msgType);
 						subscriptionSocketMessageType = 21;
+						udpComm.ResetCalibrationButton();
 						break;
 					case "notify.calibration.failed":
 						UnityEngine.Debug.Log(msgType);
 						subscriptionSocketMessageType = 22;
+						udpComm.ResetCalibrationButton();
 						break;
 					case "gaze":
 						subscriptionSocketMessageType = 23;
@@ -215,7 +217,7 @@ public class Connection
 			requestSocket.SendMultipartMessage (m);
 
 			// needs to wait for response for some reason..
-			recieveRequestMessage ();
+			receiveRequestMessage ();
 		}
 	}
 	public void sendRequestMessage (string subject, byte[] data)
@@ -230,11 +232,11 @@ public class Connection
 			requestSocket.SendMultipartMessage (m);
 
 			// needs to wait for response for some reason..
-			recieveRequestMessage ();
+			receiveRequestMessage ();
 		}
 	}
 
-	public NetMQMessage recieveRequestMessage ()
+	public NetMQMessage receiveRequestMessage ()
 	{
 		return requestSocket.ReceiveMultipartMessage ();
 	}
@@ -255,21 +257,29 @@ public class Connection
 		set
 		{
 			_currentPupilTimestamp = value;
-			byte[] message = System.BitConverter.GetBytes (_currentPupilTimestamp);
-			byte[] data = new byte[message.Length+1];
-			data[0] = 30;
-			for (int i = 1; i < data.Length; i++)
-				data[i] = message[i-1];
-			udpComm.SendUDPData(data);
+//			byte[] message = System.BitConverter.GetBytes (_currentPupilTimestamp);
+//			byte[] data = new byte[message.Length+1];
+//			data[0] = 30;
+//			for (int i = 1; i < data.Length; i++)
+//				data[i] = message[i-1];
+//			udpComm.SendUDPData(data);
 		}
 	}
 	public void UpdatePupilTimestamp ()
 	{
-		if (updatingPupilTimestamp)
+		if (updatingPupilTimestamp && requestSocket != null)
 		{
 			requestSocket.SendFrame ("t");
-			NetMQMessage recievedMsg = recieveRequestMessage ();
+			NetMQMessage recievedMsg = receiveRequestMessage ();
 			currentPupilTimestamp = float.Parse (recievedMsg [0].ConvertToString ());
+		}
+	}
+	public void SetPupilTimestamp(float time)
+	{
+		if (requestSocket != null)
+		{
+			requestSocket.SendFrame ("T " + time.ToString ("0.00000000"));
+			receiveRequestMessage ();
 		}
 	}
 

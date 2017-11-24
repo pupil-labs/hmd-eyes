@@ -32,7 +32,7 @@ MonoBehaviour:
       - 0
       points: 8
       vectorDepthRadiusScale:
-      - {x: 4, y: 0.4, z: 0.05}
+      - {x: 4, y: 0.32, z: 0.05}
       - {x: 4, y: 0.125, z: 0.05}
       samplesPerDepth: 60
     CalibrationType3D:
