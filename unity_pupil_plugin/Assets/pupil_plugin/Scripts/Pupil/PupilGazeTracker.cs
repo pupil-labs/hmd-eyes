@@ -208,7 +208,7 @@ public class PupilGazeTracker:MonoBehaviour
 		CloseShop ();
 
 		PupilGazeTracker._Instance = null;
-		var pupilSettings = PupilTools.Settings;
+		var pupilSettings = PupilSettings.Instance;
 		SavePupilSettings (ref pupilSettings);
 	}
 
@@ -227,7 +227,7 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 //		print ("Start of pupil gaze tracker");
 
-		Settings = PupilTools.Settings;
+		Settings = PupilSettings.Instance;
 
 
 		string str = PupilConversions.ReadStringFromFile ("camera_intrinsics");
@@ -315,7 +315,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public static void RunServiceAtPath (bool runEyeProcess = false)
 	{
 #if !UNITY_WSA
-		string servicePath = PupilTools.Settings.pupilServiceApp.servicePath;
+		string servicePath = PupilSettings.Instance.pupilServiceApp.servicePath;
 		if (File.Exists (servicePath))
 		{
 			if ( (Process.GetProcessesByName ("pupil_capture").Length > 0) || (Process.GetProcessesByName ("pupil_service").Length > 0) )

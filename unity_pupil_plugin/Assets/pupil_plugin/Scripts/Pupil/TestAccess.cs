@@ -14,7 +14,7 @@ public class TestAccess : MonoBehaviour {
 
 
 
-		if (PupilTools.Settings.connection.isConnected) {
+		if (PupilSettings.Instance.connection.isConnected) {
 
 //			if ( PupilData.gazeDictionary != null && ((object[])PupilData.gazeDictionary ["norm_pos"]).Length > 0 )
 //				print (  ((object[])PupilData.gazeDictionary ["norm_pos"])[0] );

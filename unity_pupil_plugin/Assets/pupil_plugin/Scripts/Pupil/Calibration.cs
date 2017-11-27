@@ -16,14 +16,14 @@ public class Calibration
 		get { return _currentMode; }
 		set
 		{		
-			if (PupilTools.Settings.connection.isConnected && !PupilTools.Settings.connection.Is3DCalibrationSupported ())
+			if (PupilSettings.Instance.connection.isConnected && !PupilSettings.Instance.connection.Is3DCalibrationSupported ())
 				value = Mode._2D;
 
 			if (_currentMode != value)
 			{
 				_currentMode = value;
 
-				if (PupilTools.Settings.connection.isConnected)
+				if (PupilSettings.Instance.connection.isConnected)
 					PupilTools.SetDetectionMode ();
 			}
 		}
@@ -152,7 +152,7 @@ public class Calibration
 	static float timeBetweenCalibrationPoints = 0.1f; // was 0.1, 1000/60 ms wait in old version
 	public void UpdateCalibration ()
 	{
-		float t = Time.time;// PupilTools.Settings.connection.currentPupilTimestamp;
+		float t = Time.time;// PupilSettings.Instance.connection.currentPupilTimestamp;
 
 		if (t - lastTimeStamp > timeBetweenCalibrationPoints)
 		{
@@ -165,7 +165,7 @@ public class Calibration
 			if ( currentCalibrationSamples > samplesToIgnoreForEyeMovement )
 				PupilTools.AddCalibrationPointReferencePosition (currentCalibrationPointPosition, t);
 			
-			if (PupilTools.Settings.debug.printSampling)
+			if (PupilSettings.Instance.debug.printSampling)
 				Debug.Log ("Point: " + currentCalibrationPoint + ", " + "Sampling at : " + currentCalibrationSamples + ". On the position : " + currentCalibrationPointPosition [0] + " | " + currentCalibrationPointPosition [1]);
 
 			currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)

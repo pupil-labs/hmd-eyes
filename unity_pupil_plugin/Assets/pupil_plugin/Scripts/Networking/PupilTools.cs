@@ -6,18 +6,9 @@ using UnityEngine;
 
 public class PupilTools : MonoBehaviour
 {
-	static PupilSettings _settings;
-	public static PupilSettings Settings
+	private static PupilSettings Settings
 	{
-		get
-		{
-			if (_settings == null)
-			{
-				_settings = Resources.Load<PupilSettings> ("PupilSettings");
-			}
-
-			return _settings;
-		}
+		get { return PupilSettings.Instance; }
 	}
 
 	public delegate void GUIRepaintAction ();

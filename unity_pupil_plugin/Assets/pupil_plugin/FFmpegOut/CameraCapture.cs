@@ -98,13 +98,13 @@ namespace FFmpegOut
         {
             _elapsed += Time.deltaTime;
 
-			if (_elapsed < PupilTools.Settings.recorder.recordingLength)
+			if (_elapsed < PupilSettings.Instance.recorder.recordingLength)
             {
                 if (_pipe == null) OpenPipe();
             }
             else
             {
-				if (_pipe != null && PupilTools.Settings.recorder.isFixedRecordingLength && _recorderState == RecorderState.RECORDING) Stop ();
+				if (_pipe != null && PupilSettings.Instance.recorder.isFixedRecordingLength && _recorderState == RecorderState.RECORDING) Stop ();
             }
 
 			if (_recorderState == RecorderState.STOPPING) {
@@ -152,7 +152,7 @@ namespace FFmpegOut
 			if (_pipe != null && _recorderState == RecorderState.RECORDING)
             {
                 var tempRT = RenderTexture.GetTemporary(source.width, source.height);
-				var pupilTimeStamp = PupilTools.Settings.connection.currentPupilTimestamp;
+				var pupilTimeStamp = PupilSettings.Instance.connection.currentPupilTimestamp;
 
 
 				if (_material != null) {
@@ -193,8 +193,8 @@ namespace FFmpegOut
 			timeStampList = new List<double> ();
 
             var camera = GetComponent<Camera>();
-			var width = PupilTools.Settings.recorder.resolutions [(int)PupilTools.Settings.recorder.resolution] [0];
-			var height = PupilTools.Settings.recorder.resolutions [(int)PupilTools.Settings.recorder.resolution] [1];
+			var width = PupilSettings.Instance.recorder.resolutions [(int)PupilSettings.Instance.recorder.resolution] [0];
+			var height = PupilSettings.Instance.recorder.resolutions [(int)PupilSettings.Instance.recorder.resolution] [1];
             // Apply the screen resolution settings.
             if (_setResolution)
             {
@@ -209,7 +209,7 @@ namespace FFmpegOut
             }
 
             // Open an output stream.
-			_pipe = new FFmpegPipe(PupilTools.Settings.recorder.filePath, width, height, _frameRate, PupilTools.Settings.recorder.codec);
+			_pipe = new FFmpegPipe(PupilSettings.Instance.recorder.filePath, width, height, _frameRate, PupilSettings.Instance.recorder.codec);
 
             // Change the application frame rate.
             if (Time.captureFramerate == 0)
@@ -254,7 +254,7 @@ namespace FFmpegOut
 				Debug.Log ("Capture ended (" + _pipe.Filename + ")" + ". Rendered frame count on MainThread : " + renderedFrameCount + ". Written out frame count on SecondaryThread : " + writtenFrameCount + ". Leftover : " + renderPipeQueue.Count);
 
 				// Write pupil timestamps to a file
-				string timeStampFileName = "Unity_" + PupilTools.Settings.currentCamera.name;
+				string timeStampFileName = "Unity_" + PupilSettings.Instance.currentCamera.name;
 				byte[] timeStampByteArray = PupilConversions.doubleArrayToByteArray (timeStampList.ToArray ());
 				File.WriteAllBytes(_pipe.FilePath + "/" + timeStampFileName + ".time", timeStampByteArray);
 
