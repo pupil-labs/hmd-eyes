@@ -415,7 +415,8 @@ public class PupilGazeTracker:MonoBehaviour
 	#endregion
 
 	void OnGUI ()
-	{
+    {
+#if !UNITY_WSA
 		if (!isOperatorMonitor)
 		{
 			string str = "Capture Rate=" + FPS;
@@ -423,16 +424,16 @@ public class PupilGazeTracker:MonoBehaviour
 			str += "\nRight Eye:" + PupilData._2D.GetEyeGaze(GazeSource.RightEye).ToString ();
 			GUI.TextArea (new Rect (50, 50, 200, 50), str);
 		}
-
+#endif
 	}
 
-	#region Recording
+#region Recording
 
 	public void OnRecording ()
 	{
 	}
 
-	#endregion
+#endregion
 
 	void OnApplicationQuit()
 	{
@@ -441,10 +442,10 @@ public class PupilGazeTracker:MonoBehaviour
 
 	void CloseShop ()
 	{
-		#if UNITY_EDITOR // Operator window will only be available in Editor mode
+#if UNITY_EDITOR // Operator window will only be available in Editor mode
 		if (OperatorWindow.Instance != null)
 			OperatorWindow.Instance.Close ();
-		#endif
+#endif
 
 		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
 			PupilTools.StopCalibration ();

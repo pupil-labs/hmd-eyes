@@ -100,6 +100,7 @@ public class OperatorMonitor : MonoBehaviour {
 	public Shader CameraShader;
 	void OnGUI()
 	{
+#if !UNITY_WSA
 		string str;
 
 //		print ("confidence 0 in op mon : " + Pupil.values.Confidences [0]);
@@ -133,7 +134,7 @@ public class OperatorMonitor : MonoBehaviour {
 		//This is the call to draw both Confidence Graphs for each eyes
 		DrawGraph (Operator.properties.Properties[0]);
 		DrawGraph (Operator.properties.Properties[1]);
-
+#endif
 	}
 		
 	#region operator_monitor.functions

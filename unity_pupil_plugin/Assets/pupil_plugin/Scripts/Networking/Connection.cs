@@ -185,10 +185,12 @@ public class Connection
 
 	public void UpdateSubscriptionSockets()
 	{
-		foreach (var socket in subscriptionSocketForTopic)
+		string[] keys = new string[subscriptionSocketForTopic.Count];
+		subscriptionSocketForTopic.Keys.CopyTo (keys, 0);
+		for (int i = 0; i < keys.Length; i++)
 		{
-			if (socket.Value.HasIn)
-				socket.Value.Poll ();
+			if (subscriptionSocketForTopic [keys [i]].HasIn)
+				subscriptionSocketForTopic [keys [i]].Poll ();
 		}
 		for (int i = 0; i < subscriptionSocketToBeClosed.Count; i++)
 		{
