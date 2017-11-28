@@ -103,8 +103,7 @@ public class Connection
 				return true;
 
 		Debug.Log ("Pupil version below 1 detected. V1 is required for 3D calibration");
-		// UDP
-//		PupilTools.Settings.calibration.currentMode = Calibration.Mode._2D;
+		udpComm.SendUDPData(new byte[]{91});
 		return false;
 	}
 
@@ -156,14 +155,20 @@ public class Connection
 						udpComm.ResetCalibrationButton();
 						break;
 					case "gaze":
-						subscriptionSocketMessageType = 23;
-						break;
 					case "pupil.0":
-						subscriptionSocketMessageType = 24;
-						break;
 					case "pupil.1":
-						subscriptionSocketMessageType = 25;
-						break;
+						var mStream = new MemoryStream(m[1].ToByteArray());
+						var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
+						if (PupilTools.ConfidenceForDictionary(dictionary) > 0.6f) 
+						{
+							if (msgType == "gaze")
+								PupilTools.gazeDictionary = dictionary;
+							else if (msgType == "pupil.0")
+								PupilTools.pupil0Dictionary = dictionary;
+							else if (msgType == "pupil.1")
+								PupilTools.pupil1Dictionary = dictionary;
+						}
+						continue;
 					default: 
 						UnityEngine.Debug.Log(msgType);
 						subscriptionSocketMessageType = 20;
@@ -182,10 +187,12 @@ public class Connection
 
 	public void UpdateSubscriptionSockets()
 	{
-		foreach (var socket in subscriptionSocketForTopic)
+		string[] keys = new string[subscriptionSocketForTopic.Count];
+		subscriptionSocketForTopic.Keys.CopyTo (keys, 0);
+		for (int i = 0; i < keys.Length; i++)
 		{
-			if (socket.Value.HasIn)
-				socket.Value.Poll ();
+			if (subscriptionSocketForTopic [keys [i]].HasIn)
+				subscriptionSocketForTopic [keys [i]].Poll ();
 		}
 		for (int i = 0; i < subscriptionSocketToBeClosed.Count; i++)
 		{

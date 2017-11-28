@@ -27,9 +27,9 @@ public class MarketWith2DCalibration : MonoBehaviour
 
 	void OnEnable()
 	{
-		if (PupilTools.Settings.connection.isConnected)
+		if (PupilSettings.Instance.connection.isConnected)
 		{
-			PupilTools.Settings.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
+			PupilSettings.Instance.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
 			PupilTools.SubscribeTo ("gaze");
 		}
 	}
@@ -40,10 +40,10 @@ public class MarketWith2DCalibration : MonoBehaviour
 	{
 		Vector3 viewportPoint = standardViewportPoint;
 
-		if (PupilTools.Settings.connection.isConnected && PupilTools.Settings.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilSettings.Instance.connection.isConnected && PupilSettings.Instance.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
 		{
-			gazePointLeft = PupilData._2D.GetEyePosition (sceneCamera, Pupil.GazeSource.LeftEye);
-			gazePointRight = PupilData._2D.GetEyePosition (sceneCamera, Pupil.GazeSource.RightEye);
+			gazePointLeft = PupilData._2D.GetEyeGaze (Pupil.GazeSource.LeftEye);
+			gazePointRight = PupilData._2D.GetEyeGaze (Pupil.GazeSource.RightEye);
 			gazePointCenter = PupilData._2D.GetEyeGaze (Pupil.GazeSource.BothEyes);
 			viewportPoint = new Vector3 (gazePointCenter.x, gazePointCenter.y, 1f);
 		}
@@ -97,7 +97,7 @@ public class MarketWith2DCalibration : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (PupilTools.Settings.connection.isConnected)
+		if (PupilSettings.Instance.connection.isConnected)
 			PupilTools.UnSubscribeFrom ("gaze");
 	}
 }

@@ -18,8 +18,8 @@ public class PupilDemoManager : MonoBehaviour
 		PupilTools.OnCalibrationEnded += OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed += OnCalibrationFailed;
 	
-		PupilTools.Settings.currentCamera = GetComponentInChildren<Camera> ();
-		cameraObject = PupilTools.Settings.currentCamera.gameObject;
+		PupilSettings.Instance.currentCamera = GetComponentInChildren<Camera> ();
+		cameraObject = PupilSettings.Instance.currentCamera.gameObject;
 		calibrationText = cameraObject.GetComponentInChildren<Text> ();
 
 		calibrationText.text = "Connecting to pupil.";
@@ -29,20 +29,20 @@ public class PupilDemoManager : MonoBehaviour
 	{
 		calibrationText.text = "Success";
 
-		PupilTools.Settings.calibration.currentMode = calibrationMode;
+		PupilSettings.Instance.calibration.currentMode = calibrationMode;
 
 		Invoke ("ShowCalibrate", 1f);
 	}
 
 	void ShowCalibrate()
 	{
-		calibrationText.text = "Use remote client to start calibration";
+		calibrationText.text = "Press 'c' to start calibration.";
 	}
 
 	void OnCalibtaionStarted()
 	{
 		cameraObject.SetActive (true);
-		PupilTools.Settings.currentCamera = cameraObject.GetComponent<Camera> ();
+		PupilSettings.Instance.currentCamera = cameraObject.GetComponent<Camera> ();
 		calibrationText.text = "";
 			
 		foreach (GameObject go in gameObjectsToEnable) 
@@ -65,7 +65,7 @@ public class PupilDemoManager : MonoBehaviour
 
 	void StartDemo()
 	{
-		PupilTools.Settings.currentCamera = Camera.main;
+		PupilSettings.Instance.currentCamera = Camera.main;
 		foreach (GameObject go in gameObjectsToEnable) 
 		{
 			go.SetActive (true);

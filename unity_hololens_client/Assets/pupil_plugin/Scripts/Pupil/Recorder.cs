@@ -31,7 +31,7 @@ public class Recorder
 	public static void Start ()
 	{
 		RecorderGO = new GameObject ("RecorderCamera");
-		RecorderGO.transform.parent = PupilTools.Settings.currentCamera.transform;
+		RecorderGO.transform.parent = PupilSettings.Instance.currentCamera.transform;
 		RecorderGO.transform.localPosition = Vector3.zero;
 		RecorderGO.transform.localEulerAngles = Vector3.zero;
 
@@ -43,7 +43,7 @@ public class Recorder
 		c.allowHDR = false;
 		c.allowMSAA = false;
 		#endif
-		c.fieldOfView = PupilTools.Settings.currentCamera.fieldOfView;
+		c.fieldOfView = PupilSettings.Instance.currentCamera.fieldOfView;
 		PupilTools.RepaintGUI ();
 	}
 

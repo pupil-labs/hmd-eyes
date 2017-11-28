@@ -1,11 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Pupil;
 
 public static class PupilData
 {
-	public static Calibration.data CalibrationData;
+	public enum GazeSource
+	{
+		LeftEye,
+		RightEye,
+		BothEyes,
+		GazeOnly
+	}
+
+	public enum udpMode
+	{
+		LeftEyeOnly = 0,
+		RightEyeOnly = 1,
+		LeftAndRight = 2,
+		Gaze2D = 3,
+		Gaze3D = 4
+	}
+	public static udpMode mode = udpMode.Gaze2D;
 
 	private static int SamplesCount = 4;
 
@@ -199,63 +214,6 @@ public static class PupilData
 		private static Vector2 GazePosition
 		{
 			get { return 0.5f * (LeftEyePos + RightEyePos); }
-		}
-
-		static Camera _sceneCamera;
-		static Vector2 frustumOffsetsLeftEye = Vector2.zero;
-		static Vector2 frustumOffsetsRightEye = Vector2.zero;
-		static Vector2 standardFrustumCenter = Vector2.one * 0.5f;
-		static void InitializeFrustumEyeOffset()
-		{
-			Vector3[] frustumCornersMono = new Vector3[4];
-			_sceneCamera.CalculateFrustumCorners(new Rect(0, 0, 1, 1), _sceneCamera.nearClipPlane, Camera.MonoOrStereoscopicEye.Mono, frustumCornersMono);
-			Vector2 frustumWidthHeight = frustumCornersMono [2] - frustumCornersMono [0];
-
-			Vector3[] frustumCornersLeft = new Vector3[4];
-			_sceneCamera.CalculateFrustumCorners(new Rect(0, 0, 1, 1), _sceneCamera.nearClipPlane, Camera.MonoOrStereoscopicEye.Left, frustumCornersLeft);
-
-			// Step by step example for x
-			//		float leftEyeFrustumLeftOffset = (frustumCornersLeft [0].x - frustumCornersMono [0].x) / frustumWidth;
-			//		float leftEyeFrustumRightOffset = (frustumCornersLeft [3].x - frustumCornersMono [0].x) / frustumWidth;
-			//		float frustumOffsetLeftEye = leftEyeFrustumLeftOffset + 0.5f * (leftEyeFrustumRightOffset + leftEyeFrustumLeftOffset) - 0.5f;
-			// Combined
-			frustumOffsetsLeftEye = 1.5f * frustumCornersLeft [0] + 0.5f * frustumCornersLeft [2] - 2f * frustumCornersMono [0];
-			frustumOffsetsLeftEye.x /= frustumWidthHeight.x;
-			frustumOffsetsLeftEye.y /= frustumWidthHeight.y;
-
-			Vector3[] frustumCornersRight = new Vector3[4];
-			_sceneCamera.CalculateFrustumCorners(new Rect(0, 0, 1, 1), _sceneCamera.nearClipPlane, Camera.MonoOrStereoscopicEye.Right, frustumCornersRight);
-			frustumOffsetsRightEye = 1.5f * frustumCornersRight [0] + 0.5f * frustumCornersRight [2] - 2f * frustumCornersMono [0];
-			frustumOffsetsRightEye.x /= frustumWidthHeight.x;
-			frustumOffsetsRightEye.y /= frustumWidthHeight.y;
-		}
-
-		public static Vector2 ApplyFrustumOffset(Vector2 position,GazeSource gazeSource)
-		{
-			Vector2 offsetPoint = position;
-
-			switch (gazeSource)
-			{
-			case GazeSource.LeftEye:
-				offsetPoint -= (frustumOffsetsLeftEye - standardFrustumCenter);
-				break;
-			case GazeSource.RightEye:
-				offsetPoint -= (frustumOffsetsRightEye - standardFrustumCenter);
-				break;
-			default:
-				break;
-			}
-			return offsetPoint;
-		}
-
-		public static Vector2 GetEyePosition (Camera sceneCamera, GazeSource gazeSource)
-		{
-			if (_sceneCamera == null || _sceneCamera != sceneCamera)
-			{
-				_sceneCamera = sceneCamera;
-				InitializeFrustumEyeOffset ();
-			}
-			return ApplyFrustumOffset (GetEyeGaze(gazeSource), gazeSource);
 		}
 
 		public static Vector2 GetEyeGaze (GazeSource s)

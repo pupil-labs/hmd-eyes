@@ -163,17 +163,17 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 				a.GO.transform.rotation = Quaternion.Euler (new Vector3 (24f, 292f, 30f));
 			}
 			if (Input.GetKey (KeyCode.W))
-				a.GO.transform.position += -PupilTools.Settings.currentCamera.transform.forward;
+				a.GO.transform.position += -PupilSettings.Instance.currentCamera.transform.forward;
 			if (Input.GetKey (KeyCode.S))
-				a.GO.transform.position += PupilTools.Settings.currentCamera.transform.forward;
+				a.GO.transform.position += PupilSettings.Instance.currentCamera.transform.forward;
 			if (Input.GetKey (KeyCode.A))
-				a.GO.transform.position += PupilTools.Settings.currentCamera.transform.right;
+				a.GO.transform.position += PupilSettings.Instance.currentCamera.transform.right;
 			if (Input.GetKey (KeyCode.D))
-				a.GO.transform.position += -PupilTools.Settings.currentCamera.transform.right;
+				a.GO.transform.position += -PupilSettings.Instance.currentCamera.transform.right;
 			if (Input.GetKey (KeyCode.Q))
-				a.GO.transform.position += PupilTools.Settings.currentCamera.transform.up;
+				a.GO.transform.position += PupilSettings.Instance.currentCamera.transform.up;
 			if (Input.GetKey (KeyCode.E))
-				a.GO.transform.position += -PupilTools.Settings.currentCamera.transform.up;
+				a.GO.transform.position += -PupilSettings.Instance.currentCamera.transform.up;
 			if (Input.GetKeyDown (KeyCode.P))
 			{
 				if (DebugViewVariables.isDrawLines || DebugViewVariables.isDrawPoints)
@@ -229,13 +229,13 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 			select tr).FirstOrDefault () as DebugView._Transform;
 		if (a.GO != null)
 			a.GO.SetActive (false);
-		if (!PupilTools.Settings.debugView.active && !pupilGazeTracker.isOperatorMonitor)
+		if (!PupilSettings.Instance.debugView.active && !pupilGazeTracker.isOperatorMonitor)
 		{	
 			PupilTools.StopFramePublishing ();
 		}
 		pupilGazeTracker.OnUpdate -= CalibrationDebugInteraction;
 		pupilGazeTracker.OnCalibDebug -= DrawCalibrationDebugView;
-		PupilTools.Settings.debugView.active = false;
+		PupilSettings.Instance.debugView.active = false;
 	}
 
 	public void StartCalibrationDebugView ()
@@ -258,7 +258,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 		} else
 		{
 			UnityEngine.Debug.LogWarning ("Please assign a Debug Eye Mesh under the Settings Debug View Variables. Accessable in Developer Mode!");
-			PupilTools.Settings.debugView.active = false;
+			PupilSettings.Instance.debugView.active = false;
 		}
 	}
 	//	public Texture2D circleTexture;
@@ -377,7 +377,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 		eyeSphereMaterial.SetPass (0);
 
 		if (originMatrix == default(Matrix4x4))
-			originMatrix = PupilTools.Settings.currentCamera.transform.localToWorldMatrix;
+			originMatrix = PupilSettings.Instance.currentCamera.transform.localToWorldMatrix;
 
 		Matrix4x4 _m = new Matrix4x4 ();
 
@@ -448,7 +448,7 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 		Matrix4x4 offsetMatrix = new Matrix4x4 ();
 
 		if (origin == default(Matrix4x4))
-			origin = PupilTools.Settings.currentCamera.transform.localToWorldMatrix;
+			origin = PupilSettings.Instance.currentCamera.transform.localToWorldMatrix;
 
 		if (transformOffset == null)
 		{

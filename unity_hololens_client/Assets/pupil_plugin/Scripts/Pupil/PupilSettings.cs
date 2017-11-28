@@ -13,7 +13,7 @@ public class PupilSettings:ScriptableObject
 		get
 		{
 			if (_instance == null)
-				_instance = PupilTools.Settings;
+				_instance = Resources.Load<PupilSettings> ("PupilSettings");
 			return _instance;
 		}
 	}

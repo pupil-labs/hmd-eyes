@@ -47,12 +47,6 @@ public class Connection
 		}
 		UDPCommunicator.Instance.SendUDPMessage (timeData);
 	}
-
-	public string PupilVersion;
-	public List<int> PupilVersionNumbers;
-	public void CheckPupilVersion()
-	{
-	}
 	public bool Is3DCalibrationSupported()
 	{
 		return false;

@@ -13,9 +13,9 @@ public class MarketWith3DCalibration : MonoBehaviour
 
 	void OnEnable()
 	{
-		if (PupilTools.Settings.connection.isConnected)
+		if (PupilSettings.Instance.connection.isConnected)
 		{
-			PupilTools.Settings.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
+			PupilSettings.Instance.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
 			PupilTools.SubscribeTo ("gaze");
 		}	
 	}
@@ -23,7 +23,7 @@ public class MarketWith3DCalibration : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-		if (PupilTools.Settings.connection.isConnected && PupilTools.Settings.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilSettings.Instance.connection.isConnected && PupilSettings.Instance.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
 		{
 			marker.localPosition = PupilData._3D.GazePosition;
 		}
@@ -31,7 +31,7 @@ public class MarketWith3DCalibration : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (PupilTools.Settings.connection.isConnected && PupilTools.Settings.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilSettings.Instance.connection.isConnected && PupilSettings.Instance.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
 		{
 			PupilTools.UnSubscribeFrom("gaze");	
 			print ("We stopped gazing");

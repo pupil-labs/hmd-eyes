@@ -20,6 +20,16 @@ public class UDPCommunication : MonoBehaviour
 			return _pupilConnection;
 		}
 	}
+	private PupilTools _pupilTools;
+	public PupilTools pupilTools
+	{
+		get
+		{
+			if (_pupilTools == null)
+				_pupilTools = new PupilTools ();
+			return _pupilTools;
+		}
+	}
 
 	Thread udpThread;
 	UdpClient udpClient;
@@ -96,13 +106,26 @@ public class UDPCommunication : MonoBehaviour
 		// sendRequestMessage
 		case 10:
 			var dictionary = MessagePack.MessagePackSerializer.Deserialize<Dictionary<string,object>> (message);
-			PupilConnection.sendRequestMessage (dictionary ["subject"].ToString (), message);
-			UnityEngine.Debug.Log ("sendRequestMessage; subject: " + dictionary ["subject"].ToString ());
+			var subject = dictionary ["subject"].ToString ();
+			if (waitingForCalibrationStart && subject == "start_plugin")
+				waitingForCalibrationStart = false;
+			if (waitingForConnectionToBeCommunicated && subject.StartsWith ("eye_process.should_start"))
+				waitingForConnectionToBeCommunicated = false;
+			PupilConnection.sendRequestMessage (subject, message);
+			UnityEngine.Debug.Log ("sendRequestMessage; subject: " + subject);
 			break;
 		case 40:
 			float time = System.BitConverter.ToSingle (data, 1);
 			UnityEngine.Debug.Log ("Set time reference " + time.ToString ("0.00000000"));
 			PupilConnection.SetPupilTimestamp (time);
+			break;
+		case 50:
+			UnityEngine.Debug.Log ("Setting PupilData UDP mode to " + data [1].ToString ());
+			PupilData.mode = (PupilData.udpMode)(int)data [1];
+			break;
+		case 59:
+			UnityEngine.Debug.Log ("Calculate moving average " + (data [1] == 1).ToString ());
+			PupilData.calculateMovingAverage = data [1] == 1;
 			break;
 		// Calling functions
 		default:
@@ -144,13 +167,13 @@ public class UDPCommunication : MonoBehaviour
 		}
 
 		messageSent = false;
-
+//		udpClient.Send (data, data.Length, remoteEndPoint);
 		udpClient.BeginSend(data, data.Length, remoteEndPoint, 
 			new AsyncCallback(SendCallback), udpClient);
 
 		while (!messageSent)
 		{
-			Thread.Sleep(100);
+			Thread.Sleep(10);
 		}
 	}
 
@@ -169,14 +192,22 @@ public class UDPCommunication : MonoBehaviour
 		else
 			StartCalibration ();
 	}
+
+	bool waitingForCalibrationStart = true;
 	public void StartCalibration()
 	{
+		UnityEngine.Debug.Log ("UDP: Starting calibration");
 		SendUDPData(new byte[] { 90, 1 });
+		waitingForCalibrationStart = true;
+	}
+	public void CalibrationStarted()
+	{
 		calibrationStarted = true;
 		calibrationButtonText.text = "Stop Calibration";
 	}
 	public void StopCalibration()
 	{
+		UnityEngine.Debug.Log ("UDP: Stopping calibration");
 		SendUDPData(new byte[] { 90, 0 });
 	}
 	public void ResetCalibrationButton()
@@ -193,6 +224,7 @@ public class UDPCommunication : MonoBehaviour
 		InitializeCalibrationButton ();
 	}
 
+	bool waitingForConnectionToBeCommunicated = true;
 	bool _isConnected = false;
 	bool isConnected
 	{
@@ -207,20 +239,96 @@ public class UDPCommunication : MonoBehaviour
 			}
 		}
 	}
+
 	void Update () 
 	{
 		PupilConnection.UpdateSubscriptionSockets ();
 
-		if ( isConnected != PupilConnection.isConnected)
+		UpdatePupilData ();
+
+		if (!waitingForConnectionToBeCommunicated && !isConnected)
+			isConnected = true;
+
+		if (!waitingForCalibrationStart && !calibrationStarted)
+			CalibrationStarted ();
+	}
+
+	void UpdatePupilData()
+	{
+		switch (PupilData.mode)
 		{
-			isConnected = PupilConnection.isConnected;
+		case PupilData.udpMode.LeftEyeOnly:
+			byte[] leftEyedata = Vector2ToByteArray (PupilData._2D.GetEyeGaze (PupilData.GazeSource.LeftEye));
+			leftEyedata [0] = 52;
+			SendUDPData (leftEyedata);
+			break;
+		case PupilData.udpMode.RightEyeOnly:
+			byte[] rightEyeData = Vector2ToByteArray (PupilData._2D.GetEyeGaze (PupilData.GazeSource.RightEye));
+			rightEyeData [0] = 53;
+			SendUDPData (rightEyeData);
+			break;
+		case PupilData.udpMode.LeftAndRight:
+			byte[] dataLeft = Vector2ToByteArray (PupilData._2D.GetEyeGaze (PupilData.GazeSource.LeftEye));
+			dataLeft [0] = 52;
+			SendUDPData (dataLeft);
+			byte[] dataRight = Vector2ToByteArray (PupilData._2D.GetEyeGaze (PupilData.GazeSource.RightEye));
+			dataRight [0] = 53;
+			SendUDPData (dataRight);
+			break;
+		case PupilData.udpMode.Gaze2D:
+			byte[] gaze2D = Vector2ToByteArray (PupilData._2D.GetEyeGaze (PupilData.GazeSource.BothEyes));
+			gaze2D [0] = 54;
+			SendUDPData (gaze2D);
+			break;
+		case PupilData.udpMode.Gaze3D:
+			byte[] gaze3D = Vector3ToByteArray (PupilData._3D.GazePosition);
+			gaze3D [0] = 55;
+			SendUDPData (gaze3D);
+			break;
+		default:
+			break;
 		}
+	}
+
+	byte[] Vector2ToByteArray (Vector2 position)
+	{
+		byte[] data = new byte[1 + 2 * sizeof(float)];
+
+		for (int i = 0; i < 2; i++)
+		{
+			byte[] xy = BitConverter.GetBytes (position.x);
+			if ( i==1 )
+				xy = BitConverter.GetBytes (position.y);
+			for (int j = 0; j < xy.Length; j++) 
+			{
+				data [1 + i * sizeof(float) + j] = xy [j];
+			}
+		}
+		return data;
+	}
+	byte[] Vector3ToByteArray (Vector3 position)
+	{
+		byte[] data = new byte[1 + 3 * sizeof(float)];
+
+		for (int i = 0; i < 3; i++)
+		{
+			byte[] xy = BitConverter.GetBytes (position.x);
+			if ( i==1 )
+				xy = BitConverter.GetBytes (position.y);
+			else if ( i== 2 )
+				xy = BitConverter.GetBytes (position.z);
+			for (int j = 0; j < xy.Length; j++) 
+			{
+				data [1 + i * sizeof(float) + j] = xy [j];
+			}
+		}
+		return data;
 	}
 
 	void OnDisable()
 	{
-		StopUDPThread ();
-
 		PupilConnection.CloseSockets ();
+
+		StopUDPThread ();
 	}
 }
