@@ -361,7 +361,9 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		OnUpdate += VisualizeGaze;
 
-		if ( !PupilMarker.TryToReset(_markerLeftEye) )
+        PupilSettings.Instance.currentCamera = Camera.main;
+
+        if ( !PupilMarker.TryToReset(_markerLeftEye) )
 			_markerLeftEye= new PupilMarker("LeftEye_2D",Color.green);
 		if ( !PupilMarker.TryToReset(_markerRightEye) )
 			_markerRightEye = new PupilMarker("RightEye_2D",Color.blue);
