@@ -36,7 +36,7 @@ public class PupilDemoManager : MonoBehaviour
 
 	void ShowCalibrate()
 	{
-		calibrationText.text = "Press 'c' to start calibration.";
+		calibrationText.text = "Use remote client\nto start calibration";
 	}
 
 	void OnCalibtaionStarted()
@@ -60,12 +60,11 @@ public class PupilDemoManager : MonoBehaviour
 
 	void OnCalibrationFailed()
 	{
-		calibrationText.text = "Calibration failed\nPress 'c' to start it again.";
+		calibrationText.text = "Calibration failed\nPlease re-start (via remote client).";
 	}
 
 	void StartDemo()
 	{
-		PupilSettings.Instance.currentCamera = Camera.main;
 		foreach (GameObject go in gameObjectsToEnable) 
 		{
 			go.SetActive (true);

@@ -14,7 +14,7 @@ using Windows.Networking.Connectivity;
 using Windows.Networking;
 #endif
 
-public class UDPCommunicator : Singleton<UDPCommunicator>
+public class UDPCommunication : Singleton<UDPCommunication>
 {
 	[Tooltip ("port to listen for incoming data")]
 	public string internalPort = "12346";
@@ -138,13 +138,13 @@ public class UDPCommunicator : Singleton<UDPCommunicator>
 			PupilTools.CalibrationFailed();
 			break;
 		case 52:
-            UnityEngine.Debug.Log("Left eye position received");
+            //UnityEngine.Debug.Log("Left eye position received");
             var leftEyePosition = FloatArrayFromPacket (data);
 			PupilData._2D.LeftEyePosUDP.x = leftEyePosition [0];
 			PupilData._2D.LeftEyePosUDP.y = leftEyePosition [1];
             break;
 		case 53:
-            UnityEngine.Debug.Log("Right eye position received");
+            //UnityEngine.Debug.Log("Right eye position received");
             var rightEyePosition = FloatArrayFromPacket (data);
 			PupilData._2D.RightEyePosUDP.x = rightEyePosition [0];
 			PupilData._2D.RightEyePosUDP.y = rightEyePosition [1];

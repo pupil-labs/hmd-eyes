@@ -18,9 +18,10 @@ public static class PupilData
 		RightEyeOnly = 1,
 		LeftAndRight = 2,
 		Gaze2D = 3,
-		Gaze3D = 4
+		Gaze3D = 4,
+		DontSendData = 5
 	}
-	public static udpMode mode = udpMode.Gaze2D;
+	public static udpMode mode = udpMode.DontSendData;
 
 	private static int SamplesCount = 4;
 

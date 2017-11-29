@@ -11,9 +11,10 @@ public static class PupilData
 		RightEyeOnly = 1,
 		LeftAndRight = 2,
 		Gaze2D = 3,
-		Gaze3D = 4
+		Gaze3D = 4,
+		DontSendData = 5
 	}
-	private static udpMode _mode = udpMode.Gaze2D;
+	private static udpMode _mode = udpMode.DontSendData;
 	public static udpMode mode
 	{
 		get { return _mode; }
@@ -22,7 +23,7 @@ public static class PupilData
 			if (_mode != value)
 			{
 				_mode = value;
-				UDPCommunicator.Instance.SendUDPMessage (new byte[] { 50, (byte) _mode });
+				UDPCommunication.Instance.SendUDPMessage (new byte[] { 50, (byte) _mode });
 			}
 		}
 	}
@@ -149,9 +150,9 @@ public static class PupilData
 		{
 			_calculateMovingAverage = value;
 			if (_calculateMovingAverage)
-				UDPCommunicator.Instance.SendUDPMessage (new byte[]{ 59, 1 });
+				UDPCommunication.Instance.SendUDPMessage (new byte[]{ 59, 1 });
 			else
-				UDPCommunicator.Instance.SendUDPMessage (new byte[]{ 59, 0 });
+				UDPCommunication.Instance.SendUDPMessage (new byte[]{ 59, 0 });
 		}
 	}
 

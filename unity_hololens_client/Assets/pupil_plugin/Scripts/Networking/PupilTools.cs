@@ -115,6 +115,8 @@ public class PupilTools : MonoBehaviour
 
 		previousState = Settings.DataProcessState;
 		Settings.DataProcessState = PupilSettings.EStatus.Calibration;
+		PupilData.mode = PupilData.udpMode.DontSendData;
+
 		SubscribeTo ("notify.calibration.successful");
 		SubscribeTo ("notify.calibration.failed");
 

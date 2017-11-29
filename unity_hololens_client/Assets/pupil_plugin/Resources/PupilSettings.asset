@@ -16,10 +16,6 @@ MonoBehaviour:
     printMessage: 0
     printMessageType: 0
   DataProcessState: 0
-  connection:
-    PupilVersion: 1.1.2
-    PupilVersionNumbers: 010000000100000002000000
-    updatingPupilTimestamp: 0
   pupilServiceApp:
     servicePath: C:/Program Files/Pupil Service/pupil_service.exe
   calibration:
@@ -45,9 +41,9 @@ MonoBehaviour:
       - 0
       points: 8
       vectorDepthRadiusScale:
-      - {x: 1, y: 0.36, z: 0.05}
-      - {x: 5, y: 1.2, z: 0.2}
-      - {x: 10, y: 1.4, z: 0.3}
+      - {x: 1, y: 0.08, z: 0.015}
+      - {x: 5, y: 0.33, z: 0.08}
+      - {x: 10, y: 0.5, z: 0.14}
       samplesPerDepth: 40
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:

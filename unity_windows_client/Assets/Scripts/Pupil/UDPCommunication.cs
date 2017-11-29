@@ -196,6 +196,7 @@ public class UDPCommunication : MonoBehaviour
 	bool waitingForCalibrationStart = true;
 	public void StartCalibration()
 	{
+		PupilData.mode = PupilData.udpMode.DontSendData;
 		UnityEngine.Debug.Log ("UDP: Starting calibration");
 		SendUDPData(new byte[] { 90, 1 });
 		waitingForCalibrationStart = true;
@@ -213,6 +214,7 @@ public class UDPCommunication : MonoBehaviour
 	public void ResetCalibrationButton()
 	{
 		calibrationStarted = false;
+		waitingForCalibrationStart = true;
 		calibrationButtonText.text = "Re-/Start Calibration";
 	}
 

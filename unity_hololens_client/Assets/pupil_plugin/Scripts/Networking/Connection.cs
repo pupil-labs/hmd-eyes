@@ -36,7 +36,7 @@ public class Connection
 	{
         byte[] data = StringToPacket ("InitializeRequestSocket");
 		data [0] = 0;
-		UDPCommunicator.Instance.SendUDPMessage (data);
+		UDPCommunication.Instance.SendUDPMessage (data);
 
 		byte[] time = System.BitConverter.GetBytes (Time.time);
 		byte[] timeData = new byte[time.Length + 1];
@@ -45,7 +45,7 @@ public class Connection
 		{
 			timeData [i] = time [i - 1];
 		}
-		UDPCommunicator.Instance.SendUDPMessage (timeData);
+		UDPCommunication.Instance.SendUDPMessage (timeData);
 	}
 	public bool Is3DCalibrationSupported()
 	{
@@ -56,14 +56,14 @@ public class Connection
 	{
 		byte[] data = StringToPacket ("CloseSockets");
 		data [0] = 0;
-		UDPCommunicator.Instance.SendUDPMessage (data);
+		UDPCommunication.Instance.SendUDPMessage (data);
 	}
 
 	public void InitializeSubscriptionSocket(string topic)
 	{	
 		byte[] data = StringToPacket (topic);
 		data [0] = 1;
-		UDPCommunicator.Instance.SendUDPMessage (data);
+		UDPCommunication.Instance.SendUDPMessage (data);
 	}
 
 	public void UpdateSubscriptionSockets()
@@ -74,7 +74,7 @@ public class Connection
 	{
 		byte[] data = StringToPacket (topic);
 		data [0] = 2;
-		UDPCommunicator.Instance.SendUDPMessage (data);
+		UDPCommunication.Instance.SendUDPMessage (data);
 	}
 
 	public void sendRequestMessage (Dictionary<string,object> dictionary)
@@ -87,13 +87,13 @@ public class Connection
 		}
 		data [0] = 10;
         UnityEngine.Debug.Log(dictionary["subject"]);
-		UDPCommunicator.Instance.SendUDPMessage (data);
+		UDPCommunication.Instance.SendUDPMessage (data);
 	}
 
 	public void TerminateContext()
 	{
 		byte[] data = StringToPacket ("TerminateContext");
 		data [0] = 0;
-		UDPCommunicator.Instance.SendUDPMessage (data);
+		UDPCommunication.Instance.SendUDPMessage (data);
 	}
 }

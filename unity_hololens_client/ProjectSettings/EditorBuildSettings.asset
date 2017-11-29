@@ -6,8 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Market Scene Demo/2D Calibration Demo.unity
+    guid: 2f1c116a342b19c4b8a20e74adbc8287
+  - enabled: 0
     path: Assets/pupil_plugin/Calibration.unity
     guid: fad12140ef2b4a94c81325c8109f6458
-  - enabled: 0
-    path: Assets/First.unity
-    guid: 75d76072d85142849ada1363d5eb20fe
