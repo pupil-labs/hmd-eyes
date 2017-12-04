@@ -176,25 +176,25 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 #endif
 
-		if (OnUpdate != null)
-			OnUpdate ();
+		if (Instance.OnUpdate != null)
+			Instance.OnUpdate ();
 	}
 
 	#endregion
 
 	public virtual void OnDrawGizmos ()
 	{
-		if (OnDrawGizmo != null)
-			OnDrawGizmo ();
+		if (Instance.OnDrawGizmo != null)
+			Instance.OnDrawGizmo ();
 	}
 
 	public void OnRenderObject ()
 	{
-		if (OnCalibDebug != null)
-			OnCalibDebug ();
+		if (Instance.OnCalibDebug != null)
+			Instance.OnCalibDebug ();
 
-		if (OnCalibrationGL != null)
-			OnCalibrationGL ();
+		if (Instance.OnCalibrationGL != null)
+			Instance.OnCalibrationGL ();
 	}
 
 	void OnEnable ()
@@ -359,7 +359,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void StartVisualizingGaze ()
 	{
-		OnUpdate += VisualizeGaze;
+		Instance.OnUpdate += VisualizeGaze;
 
         PupilSettings.Instance.currentCamera = Camera.main;
 
@@ -380,7 +380,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void StopVisualizingGaze ()
 	{
-		OnUpdate -= VisualizeGaze;
+		Instance.OnUpdate -= VisualizeGaze;
 
 		_markerLeftEye.SetActive (false);
 		_markerRightEye.SetActive (false);
