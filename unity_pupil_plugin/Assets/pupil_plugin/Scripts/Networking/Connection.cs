@@ -72,15 +72,19 @@ public class Connection
 		requestSocket.SendFrame ("v");
 		if (requestSocket.TryReceiveFrameString (timeout, out PupilVersion))
 		{
-			var split = PupilVersion.Split ('.');
-			PupilVersionNumbers = new List<int> ();
-			int number;
-			foreach (var item in split)
+			if (PupilVersion != null && PupilVersion != "Unknown command.")
 			{
-				if ( int.TryParse (item, out number) )
-					PupilVersionNumbers.Add (number);
+				Debug.Log (PupilVersion);
+				var split = PupilVersion.Split ('.');
+				PupilVersionNumbers = new List<int> ();
+				int number;
+				foreach (var item in split)
+				{
+					if (int.TryParse (item, out number))
+						PupilVersionNumbers.Add (number);
+				}
+				Is3DCalibrationSupported ();
 			}
-			Is3DCalibrationSupported ();
 		}
 	}
 	public bool Is3DCalibrationSupported()
@@ -212,7 +216,7 @@ public class Connection
 			subscriptionSocketToBeClosed.Add (topic);
 	}
 
-	public void sendRequestMessage (Dictionary<string,object> data)
+	public bool sendRequestMessage (Dictionary<string,object> data)
 	{
 		if (requestSocket != null && isConnected)
 		{
@@ -222,43 +226,16 @@ public class Connection
 			m.Append (MessagePackSerializer.Serialize<Dictionary<string,object>> (data));
 
 			requestSocket.SendMultipartMessage (m);
-
-			// needs to wait for response for some reason..
-			receiveRequestMessage ();
+			return receiveRequestResponse ();
 		}
+		return false;
 	}
 
-	public NetMQMessage receiveRequestMessage ()
+	public bool receiveRequestResponse ()
 	{
-		return requestSocket.ReceiveMultipartMessage ();
-	}
-
-	public bool updatingPupilTimestamp = false;
-	private float _currentPupilTimestamp = 0;
-	public float currentPupilTimestamp
-	{
-		get 
-		{ 
-			if (!updatingPupilTimestamp)
-			{
-				updatingPupilTimestamp = true;
-				UpdatePupilTimestamp ();
-			}
-			return _currentPupilTimestamp;
-		}
-		set
-		{
-			_currentPupilTimestamp = value;
-		}
-	}
-	public void UpdatePupilTimestamp ()
-	{
-		if (updatingPupilTimestamp)
-		{
-			requestSocket.SendFrame ("t");
-			NetMQMessage recievedMsg = receiveRequestMessage ();
-			currentPupilTimestamp = float.Parse (recievedMsg [0].ConvertToString ());
-		}
+		// we are currently not doing anything with this
+		NetMQMessage m = new NetMQMessage ();
+		return requestSocket.TryReceiveMultipartMessage (timeout, ref m);
 	}
 
 	public void SetPupilTimestamp(float time)
@@ -266,7 +243,7 @@ public class Connection
 		if (requestSocket != null)
 		{
 			requestSocket.SendFrame ("T " + time.ToString ("0.00000000"));
-			receiveRequestMessage ();
+			receiveRequestResponse ();
 		}
 	}
 

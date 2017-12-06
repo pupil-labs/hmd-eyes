@@ -152,8 +152,6 @@ namespace FFmpegOut
 			if (_pipe != null && _recorderState == RecorderState.RECORDING)
             {
                 var tempRT = RenderTexture.GetTemporary(source.width, source.height);
-				var pupilTimeStamp = PupilSettings.Instance.connection.currentPupilTimestamp;
-
 
 				if (_material != null) {
 					Graphics.Blit (source, tempRT, _material, 0);
@@ -171,7 +169,8 @@ namespace FFmpegOut
 				renderPipeQueue.Add (tempTex.GetRawTextureData ());
 				renderedFrameCount++;
 
-				timeStampList.Add (pupilTimeStamp);
+				// With the winter 2017 release of this plugin, Pupil timestamp is set to Unity time when connecting
+				timeStampList.Add (Time.time);
                 //_pipe.Write(tempTex.GetRawTextureData());
 
                 Destroy(tempTex);

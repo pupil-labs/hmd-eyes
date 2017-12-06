@@ -203,7 +203,6 @@ public class PupilTools : MonoBehaviour
         UnityEngine.Debug.Log(" Succesfully connected to Pupil Service ! ");
 
         StartEyeProcesses();
-        SetDetectionMode();
         RepaintGUI();
         OnConnected();
         yield break;
@@ -363,40 +362,45 @@ public class PupilTools : MonoBehaviour
 
 	#endregion
 
-	public static void StartEyeProcesses ()
+	public static bool StartEyeProcesses ()
 	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
+		var startLeftEye = new Dictionary<string,object> {
 			{ "subject","eye_process.should_start.0" },
-			{
-				"eye_id",
-				PupilData.leftEyeID
-			}
-		});
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
-			{ "subject","eye_process.should_start.1" },
-			{
-				"eye_id",
-				PupilData.rightEyeID
-			}
-		});
+			{ "eye_id", PupilData.leftEyeID	}, 
+			{ "delay", 0.1f }
+		};
+		var startRightEye = new Dictionary<string,object> {
+			{ "subject","eye_process.should_start.1" }, 
+			{ "eye_id", PupilData.rightEyeID },
+			{ "delay", 0.2f }
+		};
+
+		if ( SetDetectionMode() )
+			if ( Settings.connection.sendRequestMessage (startLeftEye) )
+				if ( Settings.connection.sendRequestMessage (startRightEye) )
+					return true;
+
+		return false;
 	}
 
-	public static void StopEyeProcesses ()
+	public static bool StopEyeProcesses ()
 	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
-			{ "subject","eye_process.should_stop" },
-			 {
-				"eye_id",
-				PupilData.leftEyeID
-			}
-		});
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
-			{ "subject","eye_process.should_stop" },
-			 {
-				"eye_id",
-				PupilData.rightEyeID
-			}
-		});
+		var stopLeftEye = new Dictionary<string,object> {
+			{ "subject","eye_process.should_stop.0" },
+			{ "eye_id", PupilData.leftEyeID	}, 
+			{ "delay", 0.1f }
+		};
+		var stopRightEye = new Dictionary<string,object> {
+			{ "subject","eye_process.should_stop.1" }, 
+			{ "eye_id", PupilData.rightEyeID },
+			{ "delay", 0.2f }
+		};
+
+		if ( Settings.connection.sendRequestMessage (stopLeftEye) )
+			if ( Settings.connection.sendRequestMessage (stopRightEye) )
+				return true;
+
+		return false;
 	}
 
 	public static void StartBinocularVectorGazeMapper ()
@@ -404,9 +408,9 @@ public class PupilTools : MonoBehaviour
 		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
 	}
 
-	public static void SetDetectionMode()
+	public static bool SetDetectionMode()
 	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", Settings.calibration.currentCalibrationType.name } });
+		return Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", Settings.calibration.currentCalibrationType.name } });
 	}
 
 	public static void StartFramePublishing ()
