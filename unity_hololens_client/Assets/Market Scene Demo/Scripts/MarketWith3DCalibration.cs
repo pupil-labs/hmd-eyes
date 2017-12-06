@@ -8,7 +8,6 @@ public class MarketWith3DCalibration : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-		PupilData.calculateMovingAverage = true;
 	}
 
 	void OnEnable()

@@ -4,19 +4,12 @@ using UnityEngine;
 
 public class MarketWith2DCalibration : MonoBehaviour 
 {
-	private Camera sceneCamera;
-	private CalibrationDemo calibrationDemo;
-
 	private Vector2 gazePointCenter;
 
 	public Material shaderMaterial;
 
 	void Start () 
 	{
-		PupilData.calculateMovingAverage = true;
-
-		sceneCamera = gameObject.GetComponent<Camera> ();
-		calibrationDemo = gameObject.GetComponent<CalibrationDemo> ();
 	}
 
 	void OnEnable()
@@ -42,7 +35,7 @@ public class MarketWith2DCalibration : MonoBehaviour
 	{
 		if (monoColorMode)
 		{
-			shaderMaterial.SetFloat ("_highlightThreshold", 0.2f);
+			shaderMaterial.SetFloat ("_highlightThreshold", 0.1f);
 			shaderMaterial.SetVector ("_viewportGazePosition", gazePointCenter);
 			Graphics.Blit (source, destination, shaderMaterial);
 		} else
