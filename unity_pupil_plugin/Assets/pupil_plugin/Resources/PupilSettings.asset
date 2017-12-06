@@ -20,12 +20,11 @@ MonoBehaviour:
     isAutorun: 1
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
-    PORT: 50020
-    subport: 49325
+    PORT: 52956
+    subport: 57886
     isLocal: 1
     PupilVersion: 1.1.2
     PupilVersionNumbers: 010000000100000002000000
-    updatingPupilTimestamp: 0
   pupilServiceApp:
     servicePath: C:/Program Files/Pupil Service/pupil_service.exe
   calibration:
@@ -39,8 +38,7 @@ MonoBehaviour:
       points: 8
       vectorDepthRadiusScale:
       - {x: 2, y: 0.08, z: 0.05}
-      - {x: 2, y: 0.04, z: 0.05}
-      samplesPerDepth: 60
+      samplesPerDepth: 120
     CalibrationType3D:
       name: 3d
       pluginName: HMD_Calibration_3D
@@ -57,11 +55,11 @@ MonoBehaviour:
       samplesPerDepth: 40
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:
-    - -15
+    - 25.619858
     - 0
     - 0
     leftEyeTranslation:
-    - -15
+    - -25.619858
     - 0
     - 0
   customGUIVariables:
