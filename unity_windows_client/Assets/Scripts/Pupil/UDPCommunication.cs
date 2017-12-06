@@ -34,8 +34,8 @@ public class UDPCommunication : MonoBehaviour
 	Thread udpThread;
 	UdpClient udpClient;
 	public int listeningPort = 12345;
-	public int receivingPort = 12346;
-	public string receivingIP = "192.168.1.90";
+	public int hololensClientPort = 12346;
+	public string hololensClientIP = "192.168.1.90";
 
 	void StartUDPThread()
 	{
@@ -64,12 +64,11 @@ public class UDPCommunication : MonoBehaviour
 		{
 			udpClient = new UdpClient(listeningPort);
 			print ("Started UDP client on port: " + listeningPort);
-			IPEndPoint anyIP = new IPEndPoint(IPAddress.Any, 0);
 
 			while (true)
 			{
 				// receive bytes
-				byte[] data = udpClient.Receive(ref anyIP);
+				byte[] data = udpClient.Receive(ref _remoteEndPoint);
 				InterpreteByteData(data);
 			}
 		}
@@ -149,8 +148,17 @@ public class UDPCommunication : MonoBehaviour
 			break;
 		}
 	}
-		
-	IPEndPoint remoteEndPoint;
+
+	IPEndPoint _remoteEndPoint;
+	IPEndPoint remoteEndPoint
+	{
+		get 
+		{
+			if ( _remoteEndPoint == null )
+				_remoteEndPoint = new IPEndPoint(IPAddress.Parse(hololensClientIP), hololensClientPort);
+			return _remoteEndPoint;
+		}
+	}
 	public bool messageSent = true;
 	public void SendCallback(IAsyncResult ar)
 	{
@@ -159,22 +167,26 @@ public class UDPCommunication : MonoBehaviour
 //		Console.WriteLine("number of bytes sent: {0}", u.EndSend(ar));
 		messageSent = true;
 	}
+
+
 	public void SendUDPData(byte[] data)
 	{
-		if (remoteEndPoint == null)
+//		messageSent = false;
+		try
 		{
-			remoteEndPoint = new IPEndPoint(IPAddress.Parse(receivingIP), receivingPort);
+			udpClient.Send (data, data.Length, remoteEndPoint);
 		}
-
-		messageSent = false;
-//		udpClient.Send (data, data.Length, remoteEndPoint);
-		udpClient.BeginSend(data, data.Length, remoteEndPoint, 
-			new AsyncCallback(SendCallback), udpClient);
-
-		while (!messageSent)
+		catch (Exception e)
 		{
-			Thread.Sleep(10);
+			UnityEngine.Debug.Log (e.ToString ());
 		}
+//		udpClient.BeginSend(data, data.Length, remoteEndPoint, 
+//			new AsyncCallback(SendCallback), udpClient);
+//
+//		while (!messageSent)
+//		{
+//			Thread.Sleep(1);
+//		}
 	}
 
 	bool calibrationStarted = false;
@@ -253,6 +265,20 @@ public class UDPCommunication : MonoBehaviour
 
 		if (!waitingForCalibrationStart && !calibrationStarted)
 			CalibrationStarted ();
+
+//		try 
+//		{
+//		if (dataToSend.Count > 0)
+//		{
+//			var current = dataToSend[0];
+//			udpClient.Send (current, current.Length, remoteEndPoint);
+//			dataToSend.RemoveAt(0);
+//		}
+//		}
+//		catch (Exception e)
+//		{
+//			UnityEngine.Debug.Log (e.ToString ());
+//		}
 	}
 
 	void UpdatePupilData()

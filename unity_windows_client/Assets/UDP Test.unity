@@ -401,8 +401,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   listeningPort: 12345
-  receivingPort: 12346
-  receivingIP: 192.168.1.90
+  hololensClientPort: 12346
+  hololensClientIP: 192.168.1.90
   messageSent: 1
 --- !u!81 &1900725048
 AudioListener:
