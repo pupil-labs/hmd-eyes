@@ -42,46 +42,23 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		PupilSettings pupilSettings = PupilSettings.Instance;
 
 		////////////////////////////TOGGLE AUTO MODE////////////////////////////
-
-		PupilSettings.Instance.connection.isAutorun = GUILayout.Toggle (PupilSettings.Instance.connection.isAutorun, "Autorun Pupil Service", "Button");
-
-		if (!PupilSettings.Instance.connection.isAutorun && Application.isPlaying) {
-		
+		GUI.enabled = !Application.isPlaying;
+		PupilSettings.Instance.connection.isAutorun = GUILayout.Toggle (PupilSettings.Instance.connection.isAutorun, "Auto-connect to Pupil", "Button");
+		GUI.enabled = Application.isPlaying;
+		if (!PupilSettings.Instance.connection.isAutorun && Application.isPlaying) 
+		{
 			GUILayout.BeginHorizontal ();
-
-			if (GUILayout.Button ("Start")) {
-
-				Debug.Log ("start button before connect");
-				PupilTools.Connect ();
-				Debug.Log ("start button after connect");
-
-//				if (PupilSettings.Instance.connection.isLocal)
-//					PupilTools.RunServiceAtPath ();
-//
-//
-//				PupilDataReceiver.Instance.StartCoroutine (PupilDataReceiver.Instance.Connect (retry: true, retryDelay: 5f));
-
-
-
-//				if (PupilSettings.Instance.connection.isLocal) {
-//				
-//					PupilTools.RunServiceAtPath ();
-//					PupilDataReceiver.Instance.StartCoroutine (PupilDataReceiver.Instance.Connect (retry: true, retryDelay: 5f));
-//				
-//				} else {
-//				
-//					PupilDataReceiver.Instance.StartCoroutine (PupilDataReceiver.Instance.Connect (retry: true, retryDelay: 5f));
-//				
-//				}
-
+			GUI.enabled = !PupilSettings.Instance.connection.isConnected;
+			if (GUILayout.Button ("Start")) 
+			{
+				PupilGazeTracker.Instance.RunConnect ();
 			}
-
+			GUI.enabled = PupilSettings.Instance.connection.isConnected;
 			if (GUILayout.Button ("Stop"))
-				PupilTools.StopEyeProcesses ();
-
+				PupilGazeTracker.Instance.CloseShop ();
 			GUILayout.EndHorizontal ();
 		}
-
+		GUI.enabled = true;
 		////////////////////////////TOGGLE AUTO MODE////////////////////////////
 	}
 

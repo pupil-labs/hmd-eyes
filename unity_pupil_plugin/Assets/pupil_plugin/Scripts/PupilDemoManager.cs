@@ -14,15 +14,31 @@ public class PupilDemoManager : MonoBehaviour
 	void Start()
 	{	
 		PupilTools.OnConnected += OnConnected;
+		PupilTools.OnDisconnected += OnDisconnected;
 		PupilTools.OnCalibrationStarted += OnCalibtaionStarted;
 		PupilTools.OnCalibrationEnded += OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed += OnCalibrationFailed;
 	
 		PupilSettings.Instance.currentCamera = GetComponentInChildren<Camera> ();
 		cameraObject = PupilSettings.Instance.currentCamera.gameObject;
-		calibrationText = cameraObject.GetComponentInChildren<Text> ();
 
-		calibrationText.text = "Connecting to pupil.";
+		ResetCalibrationText ();
+	}
+
+	void ResetCalibrationText()
+	{
+		if (calibrationText == null)
+			calibrationText = cameraObject.GetComponentInChildren<Text> ();
+
+		if (PupilSettings.Instance.connection.isAutorun)
+			calibrationText.text = "Connecting to pupil.";
+		else
+			calibrationText.text = "Select PupilGazeTracker and\npress 'Start' in the Inspector GUI\nto connect to Pupil.";
+	}
+
+	void OnDisconnected()
+	{
+		ResetCalibrationText ();
 	}
 
 	void OnConnected()
@@ -81,6 +97,7 @@ public class PupilDemoManager : MonoBehaviour
 	void OnApplicationQuit()
 	{
 		PupilTools.OnConnected -= OnConnected;
+		PupilTools.OnDisconnected -= OnDisconnected;
 		PupilTools.OnCalibrationStarted -= OnCalibtaionStarted;
 		PupilTools.OnCalibrationEnded -= OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed -= OnCalibrationFailed;

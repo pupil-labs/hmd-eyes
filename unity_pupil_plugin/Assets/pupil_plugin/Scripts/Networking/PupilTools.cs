@@ -17,6 +17,7 @@ public class PupilTools : MonoBehaviour
 	public delegate void OnCalibrationEndDeleg ();
 	public delegate void OnCalibrationFailedDeleg ();
 	public delegate void OnConnectedDelegate ();
+	public delegate void OnDisconnectedDelegate ();
 
 	public static event GUIRepaintAction WantRepaint;
 
@@ -24,6 +25,7 @@ public class PupilTools : MonoBehaviour
 	public static event OnCalibrationEndDeleg OnCalibrationEnded;
 	public static event OnCalibrationEndDeleg OnCalibrationFailed;
 	public static event OnConnectedDelegate OnConnected;
+	public static event OnConnectedDelegate OnDisconnected;
 
 	#region Recording
 
@@ -204,7 +206,8 @@ public class PupilTools : MonoBehaviour
 
         StartEyeProcesses();
         RepaintGUI();
-        OnConnected();
+		if (OnConnected != null)
+        	OnConnected();
         yield break;
     }
 
@@ -381,6 +384,19 @@ public class PupilTools : MonoBehaviour
 					return true;
 
 		return false;
+	}
+
+	public static void Disconnect()
+	{
+		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
+			StopCalibration ();
+		
+		StopEyeProcesses ();
+
+		Settings.connection.CloseSockets ();
+
+		if (OnDisconnected != null)
+			OnDisconnected ();
 	}
 
 	public static bool StopEyeProcesses ()

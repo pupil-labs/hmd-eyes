@@ -442,21 +442,14 @@ public class PupilGazeTracker:MonoBehaviour
 		CloseShop ();
 	}
 
-	void CloseShop ()
+	public void CloseShop ()
 	{
 #if UNITY_EDITOR // Operator window will only be available in Editor mode
 		if (OperatorWindow.Instance != null)
 			OperatorWindow.Instance.Close ();
 #endif
 
-		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
-			PupilTools.StopCalibration ();
-
-		PupilTools.StopEyeProcesses ();
-
-//		Thread.Sleep (1);
-
-		Settings.connection.CloseSockets();
+		PupilTools.Disconnect ();
 			
 		StopAllCoroutines ();
 #if !UNITY_WSA
