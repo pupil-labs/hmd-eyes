@@ -15,7 +15,7 @@ MonoBehaviour:
     printSampling: 0
     printMessage: 0
     printMessageType: 0
-  DataProcessState: 1
+  DataProcessState: 0
   connection:
     isAutorun: 1
     IP: 127.0.0.1
@@ -55,11 +55,11 @@ MonoBehaviour:
       samplesPerDepth: 40
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:
-    - 26.417374
+    - 28.748154
     - 0
     - 0
     leftEyeTranslation:
-    - -26.417435
+    - -28.748274
     - 0
     - 0
   customGUIVariables:

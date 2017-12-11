@@ -20,9 +20,13 @@ public class BlinkDemoManager : MonoBehaviour
 		PupilSettings.Instance.connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject", "start_plugin" }
 			,{ "name", "Blink_Detection" }
-			,{ "history_length", 0.2f }
-			,{ "onset_confidence_threshold", 0.5f }
-			,{ "offset_confidence_threshold", 0.5f }
+			,{
+				"args", new Dictionary<string,object> { 
+					{ "history_length", 0.2f }
+					,{ "onset_confidence_threshold", 0.5f }
+					,{ "offset_confidence_threshold", 0.5f }
+				}
+			}
 		});
 	}
 
