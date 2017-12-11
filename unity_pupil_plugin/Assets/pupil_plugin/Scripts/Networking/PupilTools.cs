@@ -17,7 +17,8 @@ public class PupilTools : MonoBehaviour
 	public delegate void OnCalibrationEndDeleg ();
 	public delegate void OnCalibrationFailedDeleg ();
 	public delegate void OnConnectedDelegate ();
-	public delegate void OnDisconnectedDelegate ();
+	public delegate void OnDisconnectingDelegate ();
+	public delegate void OnReceiveDataDelegate (string topic, Dictionary<string,object> dictionary);
 
 	public static event GUIRepaintAction WantRepaint;
 
@@ -25,7 +26,8 @@ public class PupilTools : MonoBehaviour
 	public static event OnCalibrationEndDeleg OnCalibrationEnded;
 	public static event OnCalibrationEndDeleg OnCalibrationFailed;
 	public static event OnConnectedDelegate OnConnected;
-	public static event OnConnectedDelegate OnDisconnected;
+	public static event OnDisconnectingDelegate OnDisconnecting;
+	public static event OnReceiveDataDelegate OnReceiveData;
 
 	#region Recording
 
@@ -388,15 +390,24 @@ public class PupilTools : MonoBehaviour
 
 	public static void Disconnect()
 	{
+		if (OnDisconnecting != null)
+			OnDisconnecting ();
+		
 		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
 			StopCalibration ();
 		
 		StopEyeProcesses ();
 
 		Settings.connection.CloseSockets ();
+	}
 
-		if (OnDisconnected != null)
-			OnDisconnected ();
+	public static bool ReceiveDataIsSet { get { return OnReceiveData != null; } }
+	public static void ReceiveData (string topic, Dictionary<string,object> dictionary)
+	{
+		if (OnReceiveData != null)
+			OnReceiveData (topic, dictionary);
+		else
+			UnityEngine.Debug.Log ("OnReceiveData is not set");
 	}
 
 	public static bool StopEyeProcesses ()

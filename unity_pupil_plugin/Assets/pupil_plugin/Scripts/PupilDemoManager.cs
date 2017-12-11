@@ -14,7 +14,7 @@ public class PupilDemoManager : MonoBehaviour
 	void Start()
 	{	
 		PupilTools.OnConnected += OnConnected;
-		PupilTools.OnDisconnected += OnDisconnected;
+		PupilTools.OnDisconnecting += OnDisconnected;
 		PupilTools.OnCalibrationStarted += OnCalibtaionStarted;
 		PupilTools.OnCalibrationEnded += OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed += OnCalibrationFailed;
@@ -97,7 +97,7 @@ public class PupilDemoManager : MonoBehaviour
 	void OnApplicationQuit()
 	{
 		PupilTools.OnConnected -= OnConnected;
-		PupilTools.OnDisconnected -= OnDisconnected;
+		PupilTools.OnDisconnecting -= OnDisconnected;
 		PupilTools.OnCalibrationStarted -= OnCalibtaionStarted;
 		PupilTools.OnCalibrationEnded -= OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed -= OnCalibrationFailed;

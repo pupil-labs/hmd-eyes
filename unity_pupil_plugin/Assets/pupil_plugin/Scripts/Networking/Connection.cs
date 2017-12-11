@@ -145,6 +145,12 @@ public class Connection
 					if (PupilSettings.Instance.debug.printMessage)
 						Debug.Log (MessagePackSerializer.ToJson(m[1].ToByteArray()));
 
+					if ( PupilTools.ReceiveDataIsSet )
+					{
+						PupilTools.ReceiveData( msgType, MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream) );
+						continue;
+					}
+
 					switch(msgType)
 					{
 					case "notify.calibration.successful":
