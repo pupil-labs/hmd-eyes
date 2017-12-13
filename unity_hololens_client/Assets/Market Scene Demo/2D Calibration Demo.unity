@@ -397,25 +397,6 @@ Prefab:
       propertyPath: gameObjectsToEnable.Array.data[1]
       value: 
       objectReference: {fileID: 257062067}
-    - target: {fileID: 1508411167041054, guid: 1a363ebd9791e7d48a02435c46d956ab, type: 2}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114343787466544676, guid: 1a363ebd9791e7d48a02435c46d956ab,
-        type: 2}
-      propertyPath: listeningPort
-      value: 50021
-      objectReference: {fileID: 0}
-    - target: {fileID: 114343787466544676, guid: 1a363ebd9791e7d48a02435c46d956ab,
-        type: 2}
-      propertyPath: windowsClientPort
-      value: 50021
-      objectReference: {fileID: 0}
-    - target: {fileID: 114343787466544676, guid: 1a363ebd9791e7d48a02435c46d956ab,
-        type: 2}
-      propertyPath: windowsClientIP
-      value: 192.168.1.105
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 1a363ebd9791e7d48a02435c46d956ab, type: 2}
   m_IsPrefabParent: 0

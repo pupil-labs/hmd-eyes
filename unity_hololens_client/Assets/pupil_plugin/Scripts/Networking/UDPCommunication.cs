@@ -16,21 +16,6 @@ using Windows.Networking;
 
 public class UDPCommunication : Singleton<UDPCommunication>
 {
-	[Tooltip ("port to listen for incoming data")]
-	public string internalPort = "12346";
-
-	[Tooltip("IP-Address for sending")]
-	public string externalIP = "192.168.1.12";
-
-	[Tooltip("Port for sending")]
-	public string externalPort = "12345";
-
-	[Tooltip("Send a message at Startup")]
-	public bool sendPingAtStart = true;
-
-	[Tooltip("Conten of Ping")]
-	public string PingMessage = "hello";
-
 	private readonly  Queue<Action> ExecuteOnMainThread = new Queue<Action>();
 
 
@@ -39,11 +24,11 @@ public class UDPCommunication : Singleton<UDPCommunication>
 	//Send an UDP-Packet
 	public async void SendUDPMessage(byte[] data)
 	{
-        UnityEngine.Debug.Log("UDP data head " + data[0]);
-	    await _SendUDPMessage(data);
+        UnityEngine.Debug.Log("UDP data head " + (char)data[0]);
+        await _SendUDPMessage(data);
 	}
 
-	DatagramSocket socket;
+    DatagramSocket socket;
 
 	async void Start()
 	{
@@ -64,7 +49,7 @@ public class UDPCommunication : Singleton<UDPCommunication>
 	    hn.IPInformation?.NetworkAdapter != null && hn.IPInformation.NetworkAdapter.NetworkAdapterId
 	    == icp.NetworkAdapter.NetworkAdapterId);
 
-	    await socket.BindEndpointAsync(IP, internalPort);
+	await socket.BindEndpointAsync(IP, PupilSettings.Instance.connection.pupilRemotePort);
 	}
 	catch (Exception e)
 	{
@@ -72,17 +57,11 @@ public class UDPCommunication : Singleton<UDPCommunication>
 	    Debug.Log(SocketError.GetStatus(e.HResult).ToString());
 	    return;
 	}
-
-	if(sendPingAtStart)
-	    SendUDPMessage(Encoding.UTF8.GetBytes(PingMessage));
 	}
-
-
-
-
+    
 	private async System.Threading.Tasks.Task _SendUDPMessage(byte[] data)
 	{
-	    using (var stream = await socket.GetOutputStreamAsync(new Windows.Networking.HostName(externalIP), externalPort))
+	using (var stream = await socket.GetOutputStreamAsync(new Windows.Networking.HostName(PupilSettings.Instance.connection.pupilRemoteIP), PupilSettings.Instance.connection.pupilRemotePort))
 	    {
 	        using (var writer = new Windows.Storage.Streams.DataWriter(stream))
 	        {
@@ -121,44 +100,76 @@ public class UDPCommunication : Singleton<UDPCommunication>
 		switch (data[0])
 		{
 		// Connection established
-		case 0:
-			UnityEngine.Debug.Log("Connection established");
-			PupilSettings.Instance.connection.isConnected = data[1] == 1;
+		case (byte) '0':
+			switch (data [1])
+			{
+			case (byte) 'I':
+				UnityEngine.Debug.Log ("Connection established");
+				PupilSettings.Instance.connection.isConnected = true;
+				break;
+			default:
+				UnityEngine.Debug.Log ("Unknown response: " + (char) data[1]);
+				break;
+			}
 			break;
-		// "notify.calibration.successful":
-		case 21:
-			UnityEngine.Debug.Log("notify.calibration.successful");
-			PupilSettings.Instance.calibration.currentStatus = Calibration.Status.Succeeded;
-			PupilTools.CalibrationFinished();
-			break;
-			// "notify.calibration.failed":
-		case 22:
-			UnityEngine.Debug.Log("notify.calibration.failed");
-			PupilSettings.Instance.calibration.currentStatus = Calibration.Status.NotSet;
-			PupilTools.CalibrationFailed();
-			break;
-		case 52:
-            //UnityEngine.Debug.Log("Left eye position received");
-            var leftEyePosition = FloatArrayFromPacket (data);
-			PupilData._2D.LeftEyePosUDP.x = leftEyePosition [0];
-			PupilData._2D.LeftEyePosUDP.y = leftEyePosition [1];
-            break;
-		case 53:
-            //UnityEngine.Debug.Log("Right eye position received");
-            var rightEyePosition = FloatArrayFromPacket (data);
-			PupilData._2D.RightEyePosUDP.x = rightEyePosition [0];
-			PupilData._2D.RightEyePosUDP.y = rightEyePosition [1];
-			break;
-		case 54:
-			var gaze2DPosition = FloatArrayFromPacket (data);
-			PupilData._2D.Gaze2DPosUDP.x = gaze2DPosition [0];
-			PupilData._2D.Gaze2DPosUDP.y = gaze2DPosition [1];
-			break;
-		case 55:
-			var gaze3DPosition = FloatArrayFromPacket (data);
-			PupilData._3D.Gaze3DPosUDP.x = gaze3DPosition [0];
-			PupilData._3D.Gaze3DPosUDP.y = gaze3DPosition [1];
-			PupilData._3D.Gaze3DPosUDP.z = gaze3DPosition [2];
+		case (byte) 'E':
+			switch (data [1])
+			{
+			case (byte) 'C':
+				if (data [2] == (byte) 'S') // "notify.calibration.successful"
+				{
+					UnityEngine.Debug.Log ("notify.calibration.successful");
+					PupilSettings.Instance.calibration.currentStatus = Calibration.Status.Succeeded;
+					PupilTools.CalibrationFinished ();
+				} else if (data [2] == (byte) 'F') // "notify.calibration.failed"
+				{
+					UnityEngine.Debug.Log("notify.calibration.failed");
+					PupilSettings.Instance.calibration.currentStatus = Calibration.Status.NotSet;
+					PupilTools.CalibrationFailed();
+				}
+				else
+					UnityEngine.Debug.Log ("Unknown calibration ended event");
+				break;
+			case (byte) 'G':
+				if (data [2] == (byte)'2')
+				{
+					if (data [3] == (byte)'1')
+					{
+						//UnityEngine.Debug.Log("Left eye position received");
+						var leftEyePosition = FloatArrayFromPacket (data, 4);
+						PupilData._2D.LeftEyePosUDP.x = leftEyePosition [0];
+						PupilData._2D.LeftEyePosUDP.y = leftEyePosition [1];
+					    UnityEngine.Debug.Log ("Left eye position: " + PupilData._2D.LeftEyePosUDP.ToString());
+					} else if (data [3] == (byte)'0')
+					{
+						//UnityEngine.Debug.Log("Right eye position received");
+						var rightEyePosition = FloatArrayFromPacket (data, 4);
+						PupilData._2D.RightEyePosUDP.x = rightEyePosition [0];
+						PupilData._2D.RightEyePosUDP.y = rightEyePosition [1];
+					    UnityEngine.Debug.Log ("Right Eye Position: " + PupilData._2D.RightEyePosUDP.ToString());
+					} else if (data [3] == (byte)'2')
+					{
+						var gaze2DPosition = FloatArrayFromPacket (data, 4);
+						PupilData._2D.Gaze2DPosUDP.x = gaze2DPosition [0];
+						PupilData._2D.Gaze2DPosUDP.y = gaze2DPosition [1];
+					    UnityEngine.Debug.Log ("Gazepoint 2D: " + PupilData._2D.Gaze2DPosUDP.ToString());
+					}
+					else
+						UnityEngine.Debug.Log ("Unknown gaze 2d data");
+				} else if (data [2] == (byte)'3')
+				{
+					var gaze3DPosition = FloatArrayFromPacket (data, 4);
+					PupilData._3D.Gaze3DPosUDP.x = gaze3DPosition [0] / PupilSettings.PupilUnitScalingFactor;
+					PupilData._3D.Gaze3DPosUDP.y = gaze3DPosition [1] / PupilSettings.PupilUnitScalingFactor;
+					PupilData._3D.Gaze3DPosUDP.z = gaze3DPosition [2] / PupilSettings.PupilUnitScalingFactor;
+					UnityEngine.Debug.Log ("Gazepoint 3D: " + PupilData._3D.Gaze3DPosUDP.ToString());
+				} else
+					UnityEngine.Debug.Log ("Unknown gaze event");
+				break;
+			default:
+				UnityEngine.Debug.Log ("Unknown event");
+				break;
+			}
 			break;
 		case 90:
 			UnityEngine.Debug.Log ("Start/stop calibration command");
@@ -177,12 +188,12 @@ public class UDPCommunication : Singleton<UDPCommunication>
 		}
 	}
 
-	private float[] FloatArrayFromPacket (byte[] data)
+	private float[] FloatArrayFromPacket (byte[] data, int offset = 1)
 	{
 		float[] floats = new float[(data.Length-1)/sizeof(float)];
 		for(int i = 0; i < floats.Length; i++)
 		{
-			floats[i] = BitConverter.ToSingle(data, 1 + i*sizeof(float));
+			floats[i] = BitConverter.ToSingle(data, offset + i*sizeof(float));
 		}
 		return floats;
 	}

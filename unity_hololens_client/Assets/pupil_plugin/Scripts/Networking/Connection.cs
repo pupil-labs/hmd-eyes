@@ -7,6 +7,9 @@ using System.Text;
 [Serializable]
 public class Connection
 {
+	public string pupilRemotePort = "50021";
+	public string pupilRemoteIP = "192.168.1.12";
+
 	private byte[] StringToPacket (string functionName)
 	{
 		byte[] message = Encoding.ASCII.GetBytes (functionName);
@@ -32,20 +35,25 @@ public class Connection
 		set { _contextExists = value; }
 	}
 
-	public void InitializeRequestSocket()
+	public void Initialize()
 	{
-        byte[] data = StringToPacket ("InitializeRequestSocket");
-		data [0] = 0;
-		UDPCommunication.Instance.SendUDPMessage (data);
+		// Initialization command
+		sendData ( new byte[] 
+			{
+				(byte)'I',
+				PupilSettings.Instance.calibration.currentMode == Calibration.Mode._2D ? (byte)'2' : (byte)'3'
+			}
+		);
 
+		// Setting reference time
 		byte[] time = System.BitConverter.GetBytes (Time.time);
 		byte[] timeData = new byte[time.Length + 1];
-		timeData [0] = 40;
+		timeData [0] = (byte)'T';
 		for (int i = 1; i < timeData.Length; i++)
 		{
 			timeData [i] = time [i - 1];
 		}
-		UDPCommunication.Instance.SendUDPMessage (timeData);
+		sendData (timeData);
 	}
 	public bool Is3DCalibrationSupported()
 	{
@@ -54,16 +62,19 @@ public class Connection
 
 	public void CloseSockets()
 	{
-		byte[] data = StringToPacket ("CloseSockets");
-		data [0] = 0;
-		UDPCommunication.Instance.SendUDPMessage (data);
+		sendCommandKey ('i');
+
+        isConnected = false;
 	}
 
 	public void InitializeSubscriptionSocket(string topic)
 	{	
-		byte[] data = StringToPacket (topic);
-		data [0] = 1;
-		UDPCommunication.Instance.SendUDPMessage (data);
+		if (topic != "gaze")
+		{
+			UnityEngine.Debug.Log ("The HoloLens implementation currently only supports gaze data");
+			return;
+		}
+		sendCommandKey ('S');
 	}
 
 	public void UpdateSubscriptionSockets()
@@ -72,28 +83,43 @@ public class Connection
 	private List<string> subscriptionSocketToBeClosed;
 	public void CloseSubscriptionSocket (string topic)
 	{
-		byte[] data = StringToPacket (topic);
-		data [0] = 2;
-		UDPCommunication.Instance.SendUDPMessage (data);
+		if (topic != "gaze")
+		{
+			UnityEngine.Debug.Log ("The HoloLens implementation currently only supports gaze data");
+			return;
+		}
+		sendCommandKey ('s');
+	}
+
+	public void sendCommandKey( char commandKey)
+	{
+		sendData (new byte[] { (byte)commandKey });
+	}
+
+	public void sendData (byte[] data)
+	{
+        UDPCommunication.Instance.SendUDPMessage(data);
 	}
 
 	public void sendRequestMessage (Dictionary<string,object> dictionary)
 	{
 		byte[] message = MessagePackSlim.Serialize(dictionary);
-		byte[] data = new byte[message.Length + 1];
-		for (int i = 1; i < data.Length; i++)
-		{
-			data [i] = message [i - 1];
-		}
-		data [0] = 10;
+        byte[] data = new byte[1 + message.Length];
+        //byte[] data = new byte[1 + sizeof(ushort) + message.Length];
+        data[0] = (byte)'R';
+        //ushort messageLength = (ushort)message.Length;
+        //UnityEngine.Debug.Log(messageLength.ToString());
+        //byte[] messageLengthData = System.BitConverter.GetBytes(messageLength);
+        //for (int i = 0; i < messageLengthData.Length; i++)
+        //{
+        //    data[1 + i] = messageLengthData[i];
+        //}
+        for (int i = 0; i < message.Length; i++)
+        {
+            data[1 + i] = message[i];
+            //data[1 + sizeof(ushort) + i] = message[i];
+        }
         UnityEngine.Debug.Log(dictionary["subject"]);
-		UDPCommunication.Instance.SendUDPMessage (data);
-	}
-
-	public void TerminateContext()
-	{
-		byte[] data = StringToPacket ("TerminateContext");
-		data [0] = 0;
 		UDPCommunication.Instance.SendUDPMessage (data);
 	}
 }

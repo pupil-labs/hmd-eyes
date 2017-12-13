@@ -16,6 +16,9 @@ MonoBehaviour:
     printMessage: 0
     printMessageType: 0
   DataProcessState: 0
+  connection:
+    pupilRemotePort: 50021
+    pupilRemoteIP: 192.168.1.12
   pupilServiceApp:
     servicePath: C:/Program Files/Pupil Service/pupil_service.exe
   calibration:
@@ -28,8 +31,7 @@ MonoBehaviour:
       - 0
       points: 8
       vectorDepthRadiusScale:
-      - {x: 4, y: 0.32, z: 0.05}
-      - {x: 4, y: 0.125, z: 0.05}
+      - {x: 1, y: 0.32, z: 0.0125}
       samplesPerDepth: 60
     CalibrationType3D:
       name: 3d
@@ -41,9 +43,9 @@ MonoBehaviour:
       - 0
       points: 8
       vectorDepthRadiusScale:
-      - {x: 1, y: 0.08, z: 0.015}
-      - {x: 5, y: 0.33, z: 0.08}
-      - {x: 10, y: 0.5, z: 0.14}
+      - {x: 1, y: 0.125, z: 0.0125}
+      - {x: 5, y: 0.5, z: 0.06}
+      - {x: 10, y: 0.75, z: 0.125}
       samplesPerDepth: 40
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:

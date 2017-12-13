@@ -176,8 +176,8 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 #endif
 
-		if (OnUpdate != null)
-			OnUpdate ();
+		if (Instance.OnUpdate != null)
+			Instance.OnUpdate ();
 	}
 
 	#endregion
@@ -196,13 +196,7 @@ public class PupilGazeTracker:MonoBehaviour
 		if (OnCalibrationGL != null)
 			OnCalibrationGL ();
 	}
-
-	void OnEnable ()
-	{
-		if (PupilGazeTracker._Instance == null)
-			PupilGazeTracker._Instance = this;
-	}
-
+    
 	void OnDisable ()
 	{
 		CloseShop ();
@@ -221,16 +215,15 @@ public class PupilGazeTracker:MonoBehaviour
 #endif
 
 	}
-	#region Start();
-
-	void Start ()
+    #region Start();
+    
+    void OnEnable ()
 	{
 //		print ("Start of pupil gaze tracker");
 
 		Settings = PupilSettings.Instance;
-
-
-		string str = PupilConversions.ReadStringFromFile ("camera_intrinsics");
+                
+        string str = PupilConversions.ReadStringFromFile ("camera_intrinsics");
 		PupilConversions.ReadCalibrationData(str,ref PupilData.CalibrationData);
 
 		Settings.framePublishing.StreamCameraImages = false;
@@ -239,8 +232,6 @@ public class PupilGazeTracker:MonoBehaviour
 
 		if (PupilGazeTracker._Instance == null)
 			PupilGazeTracker._Instance = this;
-
-		PupilData.calculateMovingAverage = true;
 
 		//make sure that if the toggles are on it functions as the toggle requires it
 		if (isOperatorMonitor && OnOperatorMonitor == null)
@@ -264,8 +255,8 @@ public class PupilGazeTracker:MonoBehaviour
 #if !UNITY_WSA
 		if (Settings.connection.isAutorun)
 			RunConnect ();
-#else
-		RunConnect();
+//#else
+//		RunConnect();
 #endif
 	}
 
@@ -359,7 +350,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void StartVisualizingGaze ()
 	{
-		OnUpdate += VisualizeGaze;
+		Instance.OnUpdate += VisualizeGaze;
 
         PupilSettings.Instance.currentCamera = Camera.main;
 
@@ -380,7 +371,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void StopVisualizingGaze ()
 	{
-		OnUpdate -= VisualizeGaze;
+		Instance.OnUpdate -= VisualizeGaze;
 
 		_markerLeftEye.SetActive (false);
 		_markerRightEye.SetActive (false);
@@ -442,23 +433,16 @@ public class PupilGazeTracker:MonoBehaviour
 		CloseShop ();
 	}
 
-	void CloseShop ()
+    public void CloseShop ()
 	{
 #if UNITY_EDITOR // Operator window will only be available in Editor mode
 		if (OperatorWindow.Instance != null)
 			OperatorWindow.Instance.Close ();
 #endif
 
-		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
-			PupilTools.StopCalibration ();
+		PupilTools.Disconnect ();
 
-		PupilTools.StopEyeProcesses ();
-
-//		Thread.Sleep (1);
-
-		Settings.connection.CloseSockets();
-			
-		StopAllCoroutines ();
+        StopAllCoroutines();
 #if !UNITY_WSA
 		if (Recorder.isRecording)
 		{

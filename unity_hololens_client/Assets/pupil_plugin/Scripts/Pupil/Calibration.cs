@@ -20,8 +20,9 @@ public class Calibration
 			{
 				_currentMode = value;
 
-				if (PupilSettings.Instance.connection.isConnected)
-					PupilTools.SetDetectionMode ();
+				// Setting the mode is now part of the initialization process
+//				if (PupilSettings.Instance.connection.isConnected)
+//					PupilTools.SetDetectionMode ();
 			}
 		}
 	}
