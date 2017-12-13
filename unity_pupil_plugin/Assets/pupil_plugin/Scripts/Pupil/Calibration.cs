@@ -1,34 +1,16 @@
 ﻿using System;
 using UnityEngine;
+using Pupil;
 
 [Serializable]
 public class Calibration
-{
+{	
 	public enum Mode
 	{
 		_2D,
 		_3D
 	}
 
-	private Mode _currentMode = Mode._2D; // 3D should be standard mode in the future
-	public Mode currentMode
-	{
-		get { return _currentMode; }
-		set
-		{		
-			if (PupilTools.IsConnected && !PupilTools.Connection.Is3DCalibrationSupported ())
-				value = Mode._2D;
-
-			if (_currentMode != value)
-			{
-				_currentMode = value;
-
-				if (PupilTools.IsConnected)
-					PupilTools.SetDetectionMode ();
-			}
-		}
-	}
-		
 	[Serializable]
 	public struct Type
 	{
@@ -69,32 +51,10 @@ public class Calibration
 	{
 		get
 		{
-			if (currentMode == Mode._2D)
-			{
+			if (PupilTools.CalibrationMode == Mode._2D)
 				return CalibrationType2D;
-
-			} else
-			{
+ 			else
 				return CalibrationType3D;
-			}
-		}
-	}
-
-	public enum Status
-	{
-		NotSet,
-		Started,
-		Stopped,
-		Succeeded
-	}
-	private Status _currentStatus;
-	public Status currentStatus
-	{
-		get { return _currentStatus; }
-		set
-		{
-			_currentStatus = value;
-			calibrationMarker.SetActive (_currentStatus == Status.Started);
 		}
 	}
 
@@ -105,7 +65,7 @@ public class Calibration
 	public void UpdateCalibrationPoint()
 	{
 		currentCalibrationPointPosition = new float[]{0};
-		switch (currentMode)
+		switch (PupilTools.CalibrationMode)
 		{
 		case Mode._3D:
 			currentCalibrationPointPosition = new float[]{ 0f, 0f, currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].x };
@@ -120,11 +80,11 @@ public class Calibration
 			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
 			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
 		}
-		calibrationMarker.UpdatePosition (currentCalibrationPointPosition);
-		calibrationMarker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
+		Marker.UpdatePosition (currentCalibrationPointPosition);
+		Marker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
 	}
 
-	PupilMarker calibrationMarker;
+	public PupilMarker Marker;
 	int currentCalibrationPoint;
 	int currentCalibrationSamples;
 	int currentCalibrationDepth;
@@ -137,15 +97,13 @@ public class Calibration
 		currentCalibrationSamples = 0;
 		currentCalibrationDepth = 0;
 
-		if (!PupilMarker.TryToReset (calibrationMarker))
-			calibrationMarker = new PupilMarker ("Calibraton Marker", Color.white);
+		if (!PupilMarker.TryToReset (Marker))
+			Marker = new PupilMarker ("Calibraton Marker", Color.white);
 		UpdateCalibrationPoint ();
 
 		//		yield return new WaitForSeconds (2f);
 
 		Debug.Log ("Starting Calibration");
-
-		currentStatus = Status.Started;
 	}
 
 	static float lastTimeStamp = 0;

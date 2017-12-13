@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using UnityEngine;
+using Pupil;
 
 public class PupilTools : MonoBehaviour
 {
@@ -11,7 +12,18 @@ public class PupilTools : MonoBehaviour
 		get { return PupilSettings.Instance; }
 	}
 
-	public static Pupil.EStatus DataProcessState;
+	private static EStatus _dataProcessState = EStatus.Idle;
+	public static EStatus DataProcessState
+	{
+		get { return _dataProcessState; }
+		set
+		{
+			_dataProcessState = value;
+			if (Calibration.Marker != null)
+				Calibration.Marker.SetActive (_dataProcessState == EStatus.Calibration);
+		}
+	}
+	static EStatus stateBeforeCalibration = EStatus.Idle;
 
 	//InspectorGUI repaint
 	public delegate void GUIRepaintAction ();
@@ -236,7 +248,33 @@ public class PupilTools : MonoBehaviour
 		return Connection.sendRequestMessage (dictionary);
 	}
 
-	static Pupil.EStatus previousState = Pupil.EStatus.Idle;
+	public static Calibration Calibration
+	{
+		get { return Settings.calibration; }
+	}
+	private static Calibration.Mode _calibrationMode = Calibration.Mode._2D;
+	public static Calibration.Mode CalibrationMode
+	{
+		get { return _calibrationMode; }
+		set 
+		{
+			if (IsConnected && !Connection.Is3DCalibrationSupported ())
+				value = Calibration.Mode._2D;
+
+			if (_calibrationMode != value)
+			{
+				_calibrationMode = value;
+
+				if (IsConnected)
+					SetDetectionMode ();
+			}
+		}
+	}
+	public static Calibration.Type CalibrationType
+	{
+		get { return Calibration.currentCalibrationType; }
+	}
+
 	public static void StartCalibration ()
 	{
 		if (OnCalibrationStarted != null)
@@ -246,10 +284,10 @@ public class PupilTools : MonoBehaviour
 			print ("No 'calibration started' delegate set");
 		}
 
-		Settings.calibration.InitializeCalibration ();
+		Calibration.InitializeCalibration ();
 
-		previousState = DataProcessState;
-		DataProcessState = Pupil.EStatus.Calibration;
+		stateBeforeCalibration = DataProcessState;
+		DataProcessState = EStatus.Calibration;
 		SubscribeTo ("notify.calibration.successful");
 		SubscribeTo ("notify.calibration.failed");
 
@@ -257,7 +295,7 @@ public class PupilTools : MonoBehaviour
 			{ "subject","start_plugin" },
 			 {
 				"name",
-				Settings.calibration.currentCalibrationType.pluginName
+				CalibrationType.pluginName
 			}
 		});
 		Send (new Dictionary<string,object> {
@@ -275,11 +313,11 @@ public class PupilTools : MonoBehaviour
 			},
 			{
 				"translation_eye0",
-				Settings.calibration.rightEyeTranslation
+				Calibration.rightEyeTranslation
 			},
 			{
 				"translation_eye1",
-				Settings.calibration.leftEyeTranslation
+				Calibration.leftEyeTranslation
 			}
 		});
 
@@ -290,13 +328,14 @@ public class PupilTools : MonoBehaviour
 
 	public static void StopCalibration ()
 	{
-		Settings.calibration.currentStatus = Calibration.Status.Stopped;
-		DataProcessState = previousState;
+		DataProcessState = stateBeforeCalibration;
 		Send (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
 	}
 
 	public static void CalibrationFinished ()
 	{
+		DataProcessState = EStatus.Idle;
+
 		print ("Calibration finished");
 
 		UnSubscribeFrom ("notify.calibration.successful");
@@ -312,6 +351,8 @@ public class PupilTools : MonoBehaviour
 
 	public static void CalibrationFailed ()
 	{
+		DataProcessState = EStatus.Idle;
+
 		if (OnCalibrationFailed != null)
 			OnCalibrationFailed ();
 		else
@@ -362,17 +403,17 @@ public class PupilTools : MonoBehaviour
 
 	public static void AddCalibrationPointReferencePosition (float[] position, float timestamp)
 	{
-		if (Settings.calibration.currentMode == Calibration.Mode._3D)
+		if (CalibrationMode == Calibration.Mode._3D)
 			for (int i = 0; i < position.Length; i++)
 				position [i] *= PupilSettings.PupilUnitScalingFactor;
 		
 		_calibrationData.Add ( new Dictionary<string,object> () {
-			{ Settings.calibration.currentCalibrationType.positionKey, position }, 
+			{ CalibrationType.positionKey, position }, 
 			{ "timestamp", timestamp },
 			{ "id", PupilData.leftEyeID }
 		});
 		_calibrationData.Add ( new Dictionary<string,object> () {
-			{ Settings.calibration.currentCalibrationType.positionKey, position }, 
+			{ CalibrationType.positionKey, position }, 
 			{ "timestamp", timestamp },
 			{ "id", PupilData.rightEyeID }
 		});
@@ -406,7 +447,7 @@ public class PupilTools : MonoBehaviour
 		if (OnDisconnecting != null)
 			OnDisconnecting ();
 		
-		if (DataProcessState == Pupil.EStatus.Calibration)
+		if (DataProcessState == EStatus.Calibration)
 			StopCalibration ();
 		
 		StopEyeProcesses ();
@@ -450,7 +491,7 @@ public class PupilTools : MonoBehaviour
 
 	public static bool SetDetectionMode()
 	{
-		return Send (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", Settings.calibration.currentCalibrationType.name } });
+		return Send (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", CalibrationType.name } });
 	}
 
 	public static void StartFramePublishing ()

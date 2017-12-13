@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Pupil;
 
 public class PupilDemoManager : MonoBehaviour 
 {
@@ -45,7 +46,7 @@ public class PupilDemoManager : MonoBehaviour
 	{
 		calibrationText.text = "Success";
 
-		PupilSettings.Instance.calibration.currentMode = calibrationMode;
+		PupilTools.CalibrationMode = calibrationMode;
 
 		Invoke ("ShowCalibrate", 1f);
 	}

@@ -139,17 +139,16 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		Settings.framePublishing.UpdateEyeTextures ();
 
-		if (PupilTools.DataProcessState == Pupil.EStatus.Calibration)
+		if (PupilTools.DataProcessState == EStatus.Calibration)
 		{
-			if (Settings.calibration.currentStatus == Calibration.Status.Started)
-				Settings.calibration.UpdateCalibration ();
+			PupilTools.Calibration.UpdateCalibration ();
 		} 
 
 		PupilTools.Connection.UpdateSubscriptionSockets ();
 
 		if (Input.GetKeyUp (KeyCode.C))
 		{
-			if (PupilTools.DataProcessState == Pupil.EStatus.Calibration)
+			if (PupilTools.DataProcessState == EStatus.Calibration)
 			{
 				PupilTools.StopCalibration ();
 			} else
@@ -254,12 +253,12 @@ public class PupilGazeTracker:MonoBehaviour
 		PupilGazeTracker.Instance.ProjectName = Application.productName;
 
 		PupilTools.IsConnected = false;
-		PupilTools.DataProcessState = Pupil.EStatus.Idle;
+		PupilTools.DataProcessState = EStatus.Idle;
 
 		var relativeRightEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.RightEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
-		Settings.calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
+		PupilTools.Calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
 		var relativeLeftEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.LeftEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
-		Settings.calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
+		PupilTools.Calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
 
 #if !UNITY_WSA
 		if (PupilTools.Connection.isAutorun)
@@ -372,7 +371,7 @@ public class PupilGazeTracker:MonoBehaviour
 		if ( !PupilMarker.TryToReset(_gaze3D) )
 			_gaze3D = new PupilMarker("Gaze_3D", Color.yellow);
 
-		PupilTools.DataProcessState = Pupil.EStatus.ProcessingGaze;
+		PupilTools.DataProcessState = EStatus.ProcessingGaze;
 		PupilTools.SubscribeTo("gaze");
 	}
 
@@ -392,9 +391,9 @@ public class PupilGazeTracker:MonoBehaviour
 
 	void VisualizeGaze ()
 	{
-		if (PupilTools.DataProcessState == Pupil.EStatus.ProcessingGaze)
+		if (PupilTools.DataProcessState == EStatus.ProcessingGaze)
 		{
-			if (Settings.calibration.currentMode == Calibration.Mode._2D)
+			if (PupilTools.CalibrationMode == Calibration.Mode._2D)
 			{
 				var eyeID = PupilData.currentEyeID;
 				if (eyeID == GazeSource.LeftEye || eyeID == GazeSource.RightEye)
@@ -407,7 +406,7 @@ public class PupilGazeTracker:MonoBehaviour
 				_markerRightEye.UpdatePosition (PupilData._2D.GetEyeGaze (GazeSource.RightEye));
 				_markerGazeCenter.UpdatePosition (PupilData._2D.GetEyeGaze (GazeSource.BothEyes));
 			}
-			else if (Settings.calibration.currentMode == Calibration.Mode._3D)
+			else if (PupilTools.CalibrationMode == Calibration.Mode._3D)
 			{
 				_gaze3D.UpdatePosition(PupilData._3D.GazePosition);
 			}
@@ -460,8 +459,7 @@ public class PupilGazeTracker:MonoBehaviour
 #endif
 		PupilTools.RepaintGUI ();
 
-		Pupil.processStatus.eyeProcess0 = false;
-		Pupil.processStatus.eyeProcess1 = false;
-
+		processStatus.eyeProcess0 = false;
+		processStatus.eyeProcess1 = false;
 	}
 }

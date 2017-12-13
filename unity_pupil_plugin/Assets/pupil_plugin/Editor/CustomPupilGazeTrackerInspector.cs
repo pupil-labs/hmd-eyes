@@ -462,7 +462,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 //			////////////////////////////2D-3D TOGGLE BAR////////////////////////////
 
 			////////////////////////////CALIBRATION DEBUG MODE////////////////////////////
-			if (PupilTools.DataProcessState == Pupil.EStatus.Calibration || !isEyeProcessConnected || (int)pupilSettings.calibration.currentMode != 1) {
+			if (PupilTools.DataProcessState == Pupil.EStatus.Calibration || !isEyeProcessConnected || (int)PupilTools.CalibrationMode != 1) {
 			} else {
 				
 				//GUI.enabled = false;

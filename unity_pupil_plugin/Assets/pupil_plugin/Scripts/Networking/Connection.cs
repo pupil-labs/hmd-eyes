@@ -94,7 +94,7 @@ public class Connection
 				return true;
 
 		Debug.Log ("Pupil version below 1 detected. V1 is required for 3D calibration");
-		PupilSettings.Instance.calibration.currentMode = Calibration.Mode._2D;
+		PupilTools.CalibrationMode = Calibration.Mode._2D;
 		return false;
 	}
 
@@ -154,12 +154,10 @@ public class Connection
 					switch(msgType)
 					{
 					case "notify.calibration.successful":
-						PupilSettings.Instance.calibration.currentStatus = Calibration.Status.Succeeded;
 						PupilTools.CalibrationFinished();
 						Debug.Log(msgType);
 						break;
 					case "notify.calibration.failed":
-						PupilSettings.Instance.calibration.currentStatus = Calibration.Status.NotSet;
 						PupilTools.CalibrationFailed();
 						Debug.Log(msgType);
 						break;
