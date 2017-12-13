@@ -27,9 +27,9 @@ public class MarketWith2DCalibration : MonoBehaviour
 
 	void OnEnable()
 	{
-		if (PupilSettings.Instance.connection.isConnected)
+		if (PupilTools.IsConnected)
 		{
-			PupilSettings.Instance.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
+			PupilTools.DataProcessState = Pupil.EStatus.ProcessingGaze;
 			PupilTools.SubscribeTo ("gaze");
 		}
 	}
@@ -40,7 +40,7 @@ public class MarketWith2DCalibration : MonoBehaviour
 	{
 		Vector3 viewportPoint = standardViewportPoint;
 
-		if (PupilSettings.Instance.connection.isConnected && PupilSettings.Instance.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.DataProcessState == Pupil.EStatus.ProcessingGaze)
 		{
 			gazePointLeft = PupilData._2D.GetEyePosition (sceneCamera, Pupil.GazeSource.LeftEye);
 			gazePointRight = PupilData._2D.GetEyePosition (sceneCamera, Pupil.GazeSource.RightEye);
@@ -97,7 +97,7 @@ public class MarketWith2DCalibration : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (PupilSettings.Instance.connection.isConnected)
+		if (PupilTools.IsConnected)
 			PupilTools.UnSubscribeFrom ("gaze");
 	}
 }

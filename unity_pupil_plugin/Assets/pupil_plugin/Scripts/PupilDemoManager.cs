@@ -30,7 +30,7 @@ public class PupilDemoManager : MonoBehaviour
 		if (calibrationText == null)
 			calibrationText = cameraObject.GetComponentInChildren<Text> ();
 
-		if (PupilSettings.Instance.connection.isAutorun)
+		if (PupilTools.Connection.isAutorun)
 			calibrationText.text = "Connecting to pupil.";
 		else
 			calibrationText.text = "Select PupilGazeTracker and\npress 'Start' in the Inspector GUI\nto connect to Pupil.";

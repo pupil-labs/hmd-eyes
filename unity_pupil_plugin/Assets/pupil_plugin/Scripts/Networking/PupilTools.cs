@@ -11,8 +11,10 @@ public class PupilTools : MonoBehaviour
 		get { return PupilSettings.Instance; }
 	}
 
+	public static Pupil.EStatus DataProcessState;
+
+	//InspectorGUI repaint
 	public delegate void GUIRepaintAction ();
-//InspectorGUI repaint
 	public delegate void OnCalibrationStartDeleg ();
 	public delegate void OnCalibrationEndDeleg ();
 	public delegate void OnCalibrationFailedDeleg ();
@@ -21,7 +23,6 @@ public class PupilTools : MonoBehaviour
 	public delegate void OnReceiveDataDelegate (string topic, Dictionary<string,object> dictionary);
 
 	public static event GUIRepaintAction WantRepaint;
-
 	public static event OnCalibrationStartDeleg OnCalibrationStarted;
 	public static event OnCalibrationEndDeleg OnCalibrationEnded;
 	public static event OnCalibrationEndDeleg OnCalibrationFailed;
@@ -35,7 +36,7 @@ public class PupilTools : MonoBehaviour
 	{
 		var _p = path.Substring (2);
 
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
+		Send (new Dictionary<string,object> {
 			{ "subject","recording.should_start" },
 			 {
 				"session_name",
@@ -47,7 +48,7 @@ public class PupilTools : MonoBehaviour
 
 	public static void StopPupilServiceRecording ()
 	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","recording.should_stop" } });
+		Send (new Dictionary<string,object> { { "subject","recording.should_stop" } });
 	}
 
 	#endregion
@@ -178,17 +179,24 @@ public class PupilTools : MonoBehaviour
 			WantRepaint ();
 	}
 
+	public static Connection Connection
+	{
+		get { return Settings.connection; }
+	}
+	public static bool IsConnected
+	{
+		get { return Connection.isConnected; }
+		set { Connection.isConnected = false; }
+	}
 	public static IEnumerator Connect(bool retry = false, float retryDelay = 5f)
 	{
 		yield return new WaitForSeconds (3f);
 
-		var connection = Settings.connection;
-
-		while (!connection.isConnected) 
+		while (!IsConnected) 
 		{
-			connection.InitializeRequestSocket ();
+			Connection.InitializeRequestSocket ();
 
-			if (!connection.isConnected)
+			if (!IsConnected)
             {
 				if (retry) 
 				{
@@ -197,7 +205,7 @@ public class PupilTools : MonoBehaviour
 
 				} else 
 				{
-					connection.TerminateContext ();
+					Connection.TerminateContext ();
 					yield return null;
 				}
 
@@ -215,15 +223,20 @@ public class PupilTools : MonoBehaviour
 
 	public static void SubscribeTo (string topic)
 	{
-		Settings.connection.InitializeSubscriptionSocket (topic);
+		Connection.InitializeSubscriptionSocket (topic);
 	}
 
 	public static void UnSubscribeFrom (string topic)
 	{
-		Settings.connection.CloseSubscriptionSocket (topic);
+		Connection.CloseSubscriptionSocket (topic);
 	}
 
-	static PupilSettings.EStatus previousState = PupilSettings.EStatus.Idle;
+	public static bool Send(Dictionary<string,object> dictionary)
+	{
+		return Connection.sendRequestMessage (dictionary);
+	}
+
+	static Pupil.EStatus previousState = Pupil.EStatus.Idle;
 	public static void StartCalibration ()
 	{
 		if (OnCalibrationStarted != null)
@@ -235,19 +248,19 @@ public class PupilTools : MonoBehaviour
 
 		Settings.calibration.InitializeCalibration ();
 
-		previousState = Settings.DataProcessState;
-		Settings.DataProcessState = PupilSettings.EStatus.Calibration;
+		previousState = DataProcessState;
+		DataProcessState = Pupil.EStatus.Calibration;
 		SubscribeTo ("notify.calibration.successful");
 		SubscribeTo ("notify.calibration.failed");
 
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
+		Send (new Dictionary<string,object> {
 			{ "subject","start_plugin" },
 			 {
 				"name",
 				Settings.calibration.currentCalibrationType.pluginName
 			}
 		});
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
+		Send (new Dictionary<string,object> {
 			{ "subject","calibration.should_start" },
 			 {
 				"hmd_video_frame_size",
@@ -278,8 +291,8 @@ public class PupilTools : MonoBehaviour
 	public static void StopCalibration ()
 	{
 		Settings.calibration.currentStatus = Calibration.Status.Stopped;
-		Settings.DataProcessState = previousState;
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
+		DataProcessState = previousState;
+		Send (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
 	}
 
 	public static void CalibrationFinished ()
@@ -310,7 +323,7 @@ public class PupilTools : MonoBehaviour
 	private static List<Dictionary<string,object>> _calibrationData = new List<Dictionary<string,object>> ();
 	public static void AddCalibrationReferenceData ()
 	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
+		Send (new Dictionary<string,object> {
 			{ "subject","calibration.add_ref_data" },
 			{
 				"ref_data",
@@ -381,8 +394,8 @@ public class PupilTools : MonoBehaviour
 		};
 
 		if ( SetDetectionMode() )
-			if ( Settings.connection.sendRequestMessage (startLeftEye) )
-				if ( Settings.connection.sendRequestMessage (startRightEye) )
+			if ( Send (startLeftEye) )
+				if ( Send (startRightEye) )
 					return true;
 
 		return false;
@@ -393,12 +406,12 @@ public class PupilTools : MonoBehaviour
 		if (OnDisconnecting != null)
 			OnDisconnecting ();
 		
-		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
+		if (DataProcessState == Pupil.EStatus.Calibration)
 			StopCalibration ();
 		
 		StopEyeProcesses ();
 
-		Settings.connection.CloseSockets ();
+		Connection.CloseSockets ();
 	}
 
 	public static bool ReceiveDataIsSet { get { return OnReceiveData != null; } }
@@ -423,8 +436,8 @@ public class PupilTools : MonoBehaviour
 			{ "delay", 0.2f }
 		};
 
-		if ( Settings.connection.sendRequestMessage (stopLeftEye) )
-			if ( Settings.connection.sendRequestMessage (stopRightEye) )
+		if ( Send (stopLeftEye) )
+			if ( Send (stopRightEye) )
 				return true;
 
 		return false;
@@ -432,12 +445,12 @@ public class PupilTools : MonoBehaviour
 
 	public static void StartBinocularVectorGazeMapper ()
 	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
+		Send (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
 	}
 
 	public static bool SetDetectionMode()
 	{
-		return Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", Settings.calibration.currentCalibrationType.name } });
+		return Send (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", Settings.calibration.currentCalibrationType.name } });
 	}
 
 	public static void StartFramePublishing ()
@@ -445,11 +458,11 @@ public class PupilTools : MonoBehaviour
 		Settings.framePublishing.StreamCameraImages = true;
 		Settings.framePublishing.InitializeFramePublishing ();
 
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","plugin_started" }, { "name","Frame_Publisher" } });
+		Send (new Dictionary<string,object> { { "subject","plugin_started" }, { "name","Frame_Publisher" } });
 
 		SubscribeTo ("frame.");
 		//		print ("frame publish start");
-		//Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
+		//Send (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
 	}
 
 	public static void StopFramePublishing ()
@@ -459,6 +472,6 @@ public class PupilTools : MonoBehaviour
 		Settings.framePublishing.StreamCameraImages = false;
 
 		//Andre: No sendRequest??
-		//Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
+		//Send (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
 	}
 }

@@ -15,9 +15,9 @@ public class BlinkDemoManager : MonoBehaviour
 
 	void StartBlinkSubscription()
 	{
-		PupilSettings.Instance.connection.InitializeSubscriptionSocket ("blinks");
+		PupilTools.SubscribeTo ("blinks");
 
-		PupilSettings.Instance.connection.sendRequestMessage (new Dictionary<string,object> {
+		PupilTools.Send (new Dictionary<string,object> {
 			{ "subject", "start_plugin" }
 			,{ "name", "Blink_Detection" }
 			,{
@@ -34,12 +34,12 @@ public class BlinkDemoManager : MonoBehaviour
 	{
 		UnityEngine.Debug.Log ("Disconnected");
 
-		PupilSettings.Instance.connection.sendRequestMessage (new Dictionary<string,object> {
+		PupilTools.Send (new Dictionary<string,object> {
 			{ "subject","stop_plugin" }
 			,{ "name", "Blink_Detection" }
 		});
 
-		PupilSettings.Instance.connection.CloseSubscriptionSocket ("blinks");
+		PupilTools.UnSubscribeFrom ("blinks");
 	}
 
 	void CustomReceiveData(string topic, Dictionary<string,object> dictionary)

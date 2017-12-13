@@ -16,14 +16,14 @@ public class Calibration
 		get { return _currentMode; }
 		set
 		{		
-			if (PupilSettings.Instance.connection.isConnected && !PupilSettings.Instance.connection.Is3DCalibrationSupported ())
+			if (PupilTools.IsConnected && !PupilTools.Connection.Is3DCalibrationSupported ())
 				value = Mode._2D;
 
 			if (_currentMode != value)
 			{
 				_currentMode = value;
 
-				if (PupilSettings.Instance.connection.isConnected)
+				if (PupilTools.IsConnected)
 					PupilTools.SetDetectionMode ();
 			}
 		}

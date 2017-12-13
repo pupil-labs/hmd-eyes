@@ -55,9 +55,9 @@ public class Connection
 			contextExists = true;
 		}
 
-		requestSocket = new RequestSocket (PupilSettings.Instance.connection.IPHeader + PupilSettings.Instance.connection.PORT);
+		requestSocket = new RequestSocket (IPHeader + PORT);
 		requestSocket.SendFrame ("SUB_PORT");
-		isConnected = requestSocket.TryReceiveFrameString (timeout, out PupilSettings.Instance.connection.subport);
+		isConnected = requestSocket.TryReceiveFrameString (timeout, out subport);
 		if (isConnected)
 		{
 			CheckPupilVersion ();

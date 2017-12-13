@@ -64,6 +64,14 @@ Once calibration is done, you need to call PupilTools.Subscribe(string topic) to
 2. 3D
 	* `PupilData._3D.GazePosition`
 
+## Blink demo
+
+For users who do not need gaze data or want a simple example on how to subscribe to a topic and read data from the socket, please have a look at the Blink demo.
+* As suggested by its name, this demo utilizes the Blink_Detection Pupil plugin
+* It does not require to run through the calibration process
+* While dictionary setup is usually kept within PupilTools, BlinkDemoManager contains all blink-specific variants to give a better overview of what is involved
+* This includes starting/stoping the plugin, un-/subscribing to "blinks" and receiving the dictionary packages from Pupil
+	
 ## Connect
 
 Chat with the hmd-eyes community on [Discord](https://discord.gg/PahDtSH).
