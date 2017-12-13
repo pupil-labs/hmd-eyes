@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Pupil;
 
 public class MarketWith3DCalibration : MonoBehaviour 
 {
@@ -12,9 +13,9 @@ public class MarketWith3DCalibration : MonoBehaviour
 
 	void OnEnable()
 	{
-		if (PupilSettings.Instance.connection.isConnected)
+		if (PupilTools.IsConnected)
 		{
-			PupilSettings.Instance.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
+			PupilTools.DataProcessState = EStatus.ProcessingGaze;
 			PupilTools.SubscribeTo ("gaze");
 		}	
 	}
@@ -22,7 +23,7 @@ public class MarketWith3DCalibration : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-		if (PupilSettings.Instance.connection.isConnected && PupilSettings.Instance.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
 		{
 			marker.localPosition = PupilData._3D.GazePosition;
 		}
@@ -30,7 +31,7 @@ public class MarketWith3DCalibration : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (PupilSettings.Instance.connection.isConnected && PupilSettings.Instance.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
 		{
 			PupilTools.UnSubscribeFrom("gaze");	
 			print ("We stopped gazing");

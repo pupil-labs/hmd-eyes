@@ -31,14 +31,14 @@ public class PupilDemoManager : MonoBehaviour
 		menuCamera = cameraObject.GetComponent<Camera> ();
 		calibrationText = cameraObject.GetComponentInChildren<Text> ();
         
-        PupilSettings.Instance.calibration.currentMode = calibrationMode;
+		PupilTools.CalibrationMode = calibrationMode;
 
         InitializeGestureRecognizer ();
 	}
 
 	public void OnConnectionButtonClicked()
 	{
-		if (PupilSettings.Instance.connection.isConnected)
+		if (PupilTools.IsConnected)
 		{
 			PupilGazeTracker.Instance.CloseShop ();
 		}
@@ -53,7 +53,7 @@ public class PupilDemoManager : MonoBehaviour
 
 	public void OnCalibrationButtonClicked()
 	{
-		if (PupilSettings.Instance.DataProcessState == PupilSettings.EStatus.Calibration)
+		if (PupilTools.DataProcessState == Pupil.EStatus.Calibration)
 		{
 			PupilTools.StopCalibration ();
 		}

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Pupil;
 
 public class PupilMarker
 {
@@ -51,7 +52,7 @@ public class PupilMarker
 	{		
 		position.x = newPosition.x;
 		position.y = newPosition.y;
-		position.z = PupilSettings.Instance.calibration.currentCalibrationType.vectorDepthRadiusScale[0].x;
+		position.z = PupilTools.CalibrationType.vectorDepthRadiusScale[0].x;
 		gameObject.transform.position = camera.ViewportToWorldPoint(position);
 		UpdateOrientation ();
 	}
@@ -63,13 +64,13 @@ public class PupilMarker
 	}
 	public void UpdatePosition(float[] newPosition)
 	{
-		if (PupilSettings.Instance.calibration.currentMode == Calibration.Mode._2D)
+		if (PupilTools.CalibrationMode == Calibration.Mode._2D)
 		{
 			if (newPosition.Length == 2)
 			{
 				position.x = newPosition[0];
 				position.y = newPosition[1];
-				position.z = PupilSettings.Instance.calibration.currentCalibrationType.vectorDepthRadiusScale[0].x;
+				position.z = PupilTools.CalibrationType.vectorDepthRadiusScale[0].x;
 				gameObject.transform.position = camera.ViewportToWorldPoint(position);
 			} 
 			else
@@ -77,7 +78,7 @@ public class PupilMarker
 				Debug.Log ("Length of new position array does not match 2D mode");
 			}
 		}
-		else if (PupilSettings.Instance.calibration.currentMode == Calibration.Mode._3D)
+		else if (PupilTools.CalibrationMode == Calibration.Mode._3D)
 		{
 			if (newPosition.Length == 3)
 			{

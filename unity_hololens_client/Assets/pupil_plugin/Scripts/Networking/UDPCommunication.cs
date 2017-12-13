@@ -105,7 +105,7 @@ public class UDPCommunication : Singleton<UDPCommunication>
 			{
 			case (byte) 'I':
 				UnityEngine.Debug.Log ("Connection established");
-				PupilSettings.Instance.connection.isConnected = true;
+				PupilTools.IsConnected = true;
 				break;
 			default:
 				UnityEngine.Debug.Log ("Unknown response: " + (char) data[1]);
@@ -119,12 +119,10 @@ public class UDPCommunication : Singleton<UDPCommunication>
 				if (data [2] == (byte) 'S') // "notify.calibration.successful"
 				{
 					UnityEngine.Debug.Log ("notify.calibration.successful");
-					PupilSettings.Instance.calibration.currentStatus = Calibration.Status.Succeeded;
 					PupilTools.CalibrationFinished ();
 				} else if (data [2] == (byte) 'F') // "notify.calibration.failed"
 				{
 					UnityEngine.Debug.Log("notify.calibration.failed");
-					PupilSettings.Instance.calibration.currentStatus = Calibration.Status.NotSet;
 					PupilTools.CalibrationFailed();
 				}
 				else
@@ -180,7 +178,7 @@ public class UDPCommunication : Singleton<UDPCommunication>
 			break;
 		case 91:
 			UnityEngine.Debug.Log ("Forcing 2D calibration mode (Pupil version < 1 detected)");
-			PupilSettings.Instance.calibration.currentMode = Calibration.Mode._2D;
+			PupilTools.CalibrationMode = Calibration.Mode._2D;
 			break;
 		default:
 			UnityEngine.Debug.Log(StringFromPacket(data));

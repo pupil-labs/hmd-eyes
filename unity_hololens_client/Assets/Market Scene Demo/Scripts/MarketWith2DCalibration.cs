@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Pupil;
 
 public class MarketWith2DCalibration : MonoBehaviour 
 {
@@ -14,9 +15,9 @@ public class MarketWith2DCalibration : MonoBehaviour
 
 	void OnEnable()
 	{
-		if (PupilSettings.Instance.connection.isConnected)
+		if (PupilTools.IsConnected)
 		{
-			PupilSettings.Instance.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
+			PupilTools.DataProcessState = EStatus.ProcessingGaze;
 			PupilTools.SubscribeTo ("gaze");
 		}
 	}
@@ -25,9 +26,9 @@ public class MarketWith2DCalibration : MonoBehaviour
 
 	void Update()
 	{
-		if (PupilSettings.Instance.connection.isConnected && PupilSettings.Instance.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
 		{
-			gazePointCenter = PupilData._2D.GetEyeGaze (Pupil.GazeSource.BothEyes);
+			gazePointCenter = PupilData._2D.GetEyeGaze (GazeSource.BothEyes);
 		}
 	}
 
@@ -45,7 +46,7 @@ public class MarketWith2DCalibration : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (PupilSettings.Instance.connection.isConnected)
+		if (PupilTools.IsConnected)
 			PupilTools.UnSubscribeFrom ("gaze");
 	}
 }

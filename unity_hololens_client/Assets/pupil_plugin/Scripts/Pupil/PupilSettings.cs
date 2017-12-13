@@ -18,13 +18,6 @@ public class PupilSettings:ScriptableObject
 		}
 	}
 
-	public enum EStatus
-	{
-		Idle,
-		ProcessingGaze,
-		Calibration
-	}
-
 	[Serializable]
 	public class PupilServiceApp
 	{
@@ -66,8 +59,6 @@ public class PupilSettings:ScriptableObject
 	}
 
 	public DebugVars debug;
-
-	public EStatus DataProcessState;
 
 	public Connection connection;
 	public PupilServiceApp pupilServiceApp;

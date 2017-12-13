@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using UnityEngine;
+using Pupil;
 
 public class PupilTools : MonoBehaviour
 {
@@ -11,8 +12,21 @@ public class PupilTools : MonoBehaviour
 		get { return PupilSettings.Instance; }
 	}
 
+	private static EStatus _dataProcessState = EStatus.Idle;
+	public static EStatus DataProcessState
+	{
+		get { return _dataProcessState; }
+		set
+		{
+			_dataProcessState = value;
+			if (Calibration.Marker != null)
+				Calibration.Marker.SetActive (_dataProcessState == EStatus.Calibration);
+		}
+	}
+	static EStatus stateBeforeCalibration = EStatus.Idle;
+
+	//InspectorGUI repaint
 	public delegate void GUIRepaintAction ();
-//InspectorGUI repaint
 	public delegate void OnCalibrationStartDeleg ();
 	public delegate void OnCalibrationEndDeleg ();
 	public delegate void OnCalibrationFailedDeleg ();
@@ -21,7 +35,6 @@ public class PupilTools : MonoBehaviour
 	public delegate void OnReceiveDataDelegate (string topic, Dictionary<string,object> dictionary);
 
 	public static event GUIRepaintAction WantRepaint;
-
 	public static event OnCalibrationStartDeleg OnCalibrationStarted;
 	public static event OnCalibrationEndDeleg OnCalibrationEnded;
 	public static event OnCalibrationEndDeleg OnCalibrationFailed;
@@ -60,17 +73,24 @@ public class PupilTools : MonoBehaviour
 			WantRepaint ();
 	}
 
+	public static Connection Connection
+	{
+		get { return Settings.connection; }
+	}
+	public static bool IsConnected
+	{
+		get { return Connection.isConnected; }
+		set { Connection.isConnected = false; }
+	}
 	public static IEnumerator Connect(bool retry = false, float retryDelay = 5f)
 	{
 		yield return new WaitForSeconds (3f);
 
-		var connection = Settings.connection;
-
-		while (!connection.isConnected) 
+		while (!IsConnected) 
 		{
-			connection.Initialize();
+			Connection.Initialize();
 
-			if (!connection.isConnected)
+			if (!IsConnected)
             {
 				if (retry) 
 				{
@@ -92,21 +112,48 @@ public class PupilTools : MonoBehaviour
 //        StartEyeProcesses();
 //        SetDetectionMode(); // Now part of initialization process
         RepaintGUI();
-        OnConnected();
+		if (OnConnected != null)
+			OnConnected();
         yield break;
     }
 
 	public static void SubscribeTo (string topic)
 	{
-		Settings.connection.InitializeSubscriptionSocket (topic);
+		Connection.InitializeSubscriptionSocket (topic);
 	}
 
 	public static void UnSubscribeFrom (string topic)
 	{
-		Settings.connection.CloseSubscriptionSocket (topic);
+		Connection.CloseSubscriptionSocket (topic);
 	}
 
-	static PupilSettings.EStatus previousState = PupilSettings.EStatus.Idle;
+	public static Calibration Calibration
+	{
+		get { return Settings.calibration; }
+	}
+	private static Calibration.Mode _calibrationMode = Calibration.Mode._2D;
+	public static Calibration.Mode CalibrationMode
+	{
+		get { return _calibrationMode; }
+		set 
+		{
+			if (IsConnected && !Connection.Is3DCalibrationSupported ())
+				value = Calibration.Mode._2D;
+
+			if (_calibrationMode != value)
+			{
+				_calibrationMode = value;
+
+//				if (IsConnected)
+//					SetDetectionMode ();
+			}
+		}
+	}
+	public static Calibration.Type CalibrationType
+	{
+		get { return Calibration.currentCalibrationType; }
+	}
+
 	public static void StartCalibration ()
 	{
 		if (OnCalibrationStarted != null)
@@ -118,8 +165,8 @@ public class PupilTools : MonoBehaviour
 
 		Settings.calibration.InitializeCalibration ();
 
-		previousState = Settings.DataProcessState;
-		Settings.DataProcessState = PupilSettings.EStatus.Calibration;
+		stateBeforeCalibration = DataProcessState;
+		DataProcessState = EStatus.Calibration;
 
 		byte[] calibrationData = new byte[ 1 + 2 * sizeof(ushort) + sizeof(float) ];
 		calibrationData [0] = (byte) 'C';
@@ -138,7 +185,7 @@ public class PupilTools : MonoBehaviour
 		{
 			calibrationData [1 + 2 * sizeof(ushort) + i] = outlierThresholdData [i];
 		}
-		Settings.connection.sendData ( calibrationData );
+		Connection.sendData ( calibrationData );
 
 		_calibrationData.Clear ();
 
@@ -147,13 +194,14 @@ public class PupilTools : MonoBehaviour
 
 	public static void StopCalibration ()
 	{
-		Settings.calibration.currentStatus = Calibration.Status.Stopped;
-		Settings.DataProcessState = previousState;
+		DataProcessState = stateBeforeCalibration;
 		Settings.connection.sendCommandKey ('c');
 	}
 
 	public static void CalibrationFinished ()
 	{
+		DataProcessState = EStatus.Idle;
+
 		print ("Calibration finished");
 
 //		UnSubscribeFrom ("notify.calibration.successful");
@@ -169,6 +217,8 @@ public class PupilTools : MonoBehaviour
 
 	public static void CalibrationFailed ()
 	{
+		DataProcessState = EStatus.Idle;
+
 		if (OnCalibrationFailed != null)
 			OnCalibrationFailed ();
 		else
@@ -180,7 +230,7 @@ public class PupilTools : MonoBehaviour
 	private static List<Dictionary<string,object>> _calibrationData = new List<Dictionary<string,object>> ();
 	public static void AddCalibrationReferenceData ()
 	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
+		Connection.sendRequestMessage (new Dictionary<string,object> {
 			{ "subject","calibration.add_ref_data" },
 			{
 				"ref_data",
@@ -219,7 +269,7 @@ public class PupilTools : MonoBehaviour
 
 	public static void AddCalibrationPointReferencePosition (float[] position, float timestamp)
 	{
-		if (Settings.calibration.currentMode == Calibration.Mode._3D)
+		if (CalibrationMode == Calibration.Mode._3D)
 			for (int i = 0; i < position.Length; i++)
 				position [i] *= PupilSettings.PupilUnitScalingFactor;
 		
@@ -244,22 +294,21 @@ public class PupilTools : MonoBehaviour
 	{
 		if (OnDisconnecting != null)
 			OnDisconnecting ();
-
-
-		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
+		
+		if (DataProcessState == EStatus.Calibration)
 			PupilTools.StopCalibration ();
 
 		// Starting/Stopping eye process is now part of initialization process
 		//PupilTools.StopEyeProcesses ();
 
-		Settings.connection.CloseSubscriptionSocket("gaze");
+		Connection.CloseSubscriptionSocket("gaze");
 
-		Settings.connection.CloseSockets();
+		Connection.CloseSockets();
 	}
 
 	public static void StartBinocularVectorGazeMapper ()
 	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
+		Connection.sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
 	}
 
 	public static void StartFramePublishing ()

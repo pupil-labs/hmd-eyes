@@ -139,17 +139,16 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		Settings.framePublishing.UpdateEyeTextures ();
 
-		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
+		if (PupilTools.DataProcessState == EStatus.Calibration)
 		{
-			if (Settings.calibration.currentStatus == Calibration.Status.Started)
-				Settings.calibration.UpdateCalibration ();
+			PupilTools.Calibration.UpdateCalibration ();
 		} 
 
-		Settings.connection.UpdateSubscriptionSockets ();
+		PupilTools.Connection.UpdateSubscriptionSockets ();
 
 		if (Input.GetKeyUp (KeyCode.C))
 		{
-			if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
+			if (PupilTools.DataProcessState == EStatus.Calibration)
 			{
 				PupilTools.StopCalibration ();
 			} else
@@ -160,7 +159,7 @@ public class PupilGazeTracker:MonoBehaviour
 #if !UNITY_WSA
 		if (Input.GetKeyUp (KeyCode.R))
 		{
-			if (Settings.connection.isConnected)
+			if (PupilTools.IsConnected)
 			{
 				if (!Recorder.isRecording)
 				{
@@ -184,19 +183,25 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public virtual void OnDrawGizmos ()
 	{
-		if (OnDrawGizmo != null)
-			OnDrawGizmo ();
+		if (Instance.OnDrawGizmo != null)
+			Instance.OnDrawGizmo ();
 	}
 
 	public void OnRenderObject ()
 	{
-		if (OnCalibDebug != null)
-			OnCalibDebug ();
+		if (Instance.OnCalibDebug != null)
+			Instance.OnCalibDebug ();
 
-		if (OnCalibrationGL != null)
-			OnCalibrationGL ();
+		if (Instance.OnCalibrationGL != null)
+			Instance.OnCalibrationGL ();
 	}
-    
+
+	void OnEnable ()
+	{
+		if (PupilGazeTracker._Instance == null)
+			PupilGazeTracker._Instance = this;
+	}
+
 	void OnDisable ()
 	{
 		CloseShop ();
@@ -215,15 +220,16 @@ public class PupilGazeTracker:MonoBehaviour
 #endif
 
 	}
-    #region Start();
-    
-    void OnEnable ()
+	#region Start();
+
+	void Start ()
 	{
 //		print ("Start of pupil gaze tracker");
 
 		Settings = PupilSettings.Instance;
-                
-        string str = PupilConversions.ReadStringFromFile ("camera_intrinsics");
+
+
+		string str = PupilConversions.ReadStringFromFile ("camera_intrinsics");
 		PupilConversions.ReadCalibrationData(str,ref PupilData.CalibrationData);
 
 		Settings.framePublishing.StreamCameraImages = false;
@@ -233,6 +239,9 @@ public class PupilGazeTracker:MonoBehaviour
 		if (PupilGazeTracker._Instance == null)
 			PupilGazeTracker._Instance = this;
 
+#if !UNITY_WSA
+		PupilData.calculateMovingAverage = true;
+#endif
 		//make sure that if the toggles are on it functions as the toggle requires it
 		if (isOperatorMonitor && OnOperatorMonitor == null)
 		{
@@ -244,19 +253,19 @@ public class PupilGazeTracker:MonoBehaviour
 
 		PupilGazeTracker.Instance.ProjectName = Application.productName;
 
-		Settings.connection.isConnected = false;
-		Settings.DataProcessState = PupilSettings.EStatus.Idle;
+		PupilTools.IsConnected = false;
+		PupilTools.DataProcessState = EStatus.Idle;
 
 		var relativeRightEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.RightEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
-		Settings.calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
+		PupilTools.Calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
 		var relativeLeftEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.LeftEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
-		Settings.calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
+		PupilTools.Calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
 
 #if !UNITY_WSA
-		if (Settings.connection.isAutorun)
+		if (PupilTools.Connection.isAutorun)
 			RunConnect ();
-//#else
-//		RunConnect();
+#else
+		RunConnect();
 #endif
 	}
 
@@ -296,7 +305,7 @@ public class PupilGazeTracker:MonoBehaviour
 	public void RunConnect()
 	{
 #if !UNITY_WSA
-		if (Settings.connection.isLocal)
+		if (PupilTools.Connection.isLocal)
 			RunServiceAtPath ();
 #endif
 		
@@ -363,7 +372,7 @@ public class PupilGazeTracker:MonoBehaviour
 		if ( !PupilMarker.TryToReset(_gaze3D) )
 			_gaze3D = new PupilMarker("Gaze_3D", Color.yellow);
 
-		Settings.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
+		PupilTools.DataProcessState = EStatus.ProcessingGaze;
 		PupilTools.SubscribeTo("gaze");
 	}
 
@@ -383,9 +392,9 @@ public class PupilGazeTracker:MonoBehaviour
 
 	void VisualizeGaze ()
 	{
-		if (Settings.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilTools.DataProcessState == EStatus.ProcessingGaze)
 		{
-			if (Settings.calibration.currentMode == Calibration.Mode._2D)
+			if (PupilTools.CalibrationMode == Calibration.Mode._2D)
 			{
 				var eyeID = PupilData.currentEyeID;
 				if (eyeID == GazeSource.LeftEye || eyeID == GazeSource.RightEye)
@@ -398,7 +407,7 @@ public class PupilGazeTracker:MonoBehaviour
 				_markerRightEye.UpdatePosition (PupilData._2D.GetEyeGaze (GazeSource.RightEye));
 				_markerGazeCenter.UpdatePosition (PupilData._2D.GetEyeGaze (GazeSource.BothEyes));
 			}
-			else if (Settings.calibration.currentMode == Calibration.Mode._3D)
+			else if (PupilTools.CalibrationMode == Calibration.Mode._3D)
 			{
 				_gaze3D.UpdatePosition(PupilData._3D.GazePosition);
 			}
@@ -433,7 +442,7 @@ public class PupilGazeTracker:MonoBehaviour
 		CloseShop ();
 	}
 
-    public void CloseShop ()
+	public void CloseShop ()
 	{
 #if UNITY_EDITOR // Operator window will only be available in Editor mode
 		if (OperatorWindow.Instance != null)
@@ -441,8 +450,8 @@ public class PupilGazeTracker:MonoBehaviour
 #endif
 
 		PupilTools.Disconnect ();
-
-        StopAllCoroutines();
+			
+		StopAllCoroutines ();
 #if !UNITY_WSA
 		if (Recorder.isRecording)
 		{
@@ -451,8 +460,7 @@ public class PupilGazeTracker:MonoBehaviour
 #endif
 		PupilTools.RepaintGUI ();
 
-		Pupil.processStatus.eyeProcess0 = false;
-		Pupil.processStatus.eyeProcess1 = false;
-
+		processStatus.eyeProcess0 = false;
+		processStatus.eyeProcess1 = false;
 	}
 }

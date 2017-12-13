@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Pupil;
 
 public class CalibrationDemo : MonoBehaviour 
 {
 	void OnEnable()
 	{
-		if (PupilSettings.Instance.connection.isConnected)
+		if (PupilTools.IsConnected)
 		{
 			PupilGazeTracker.Instance.StartVisualizingGaze ();		
 			print ("We are gazing");
@@ -14,7 +15,7 @@ public class CalibrationDemo : MonoBehaviour
 	}
 	void OnDisable()
 	{
-		if (PupilSettings.Instance.connection.isConnected && PupilSettings.Instance.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
 		{
 			PupilGazeTracker.Instance.StopVisualizingGaze ();		
 			print ("We stopped gazing");

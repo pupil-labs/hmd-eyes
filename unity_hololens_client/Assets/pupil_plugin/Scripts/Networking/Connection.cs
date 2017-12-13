@@ -41,7 +41,7 @@ public class Connection
 		sendData ( new byte[] 
 			{
 				(byte)'I',
-				PupilSettings.Instance.calibration.currentMode == Calibration.Mode._2D ? (byte)'2' : (byte)'3'
+				PupilTools.CalibrationMode == Calibration.Mode._2D ? (byte)'2' : (byte)'3'
 			}
 		);
 
