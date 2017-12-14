@@ -264,8 +264,6 @@ public class PupilGazeTracker:MonoBehaviour
 #if !UNITY_WSA
 		if (PupilTools.Connection.isAutorun)
 			RunConnect ();
-#else
-		RunConnect();
 #endif
 	}
 
@@ -387,7 +385,7 @@ public class PupilGazeTracker:MonoBehaviour
 		_markerGazeCenter.SetActive (false);
 		_gaze3D.SetActive (false);
 
-//		PupilTools.UnSubscribeFrom("gaze");
+		PupilTools.UnSubscribeFrom("gaze");
 	}
 
 	void VisualizeGaze ()

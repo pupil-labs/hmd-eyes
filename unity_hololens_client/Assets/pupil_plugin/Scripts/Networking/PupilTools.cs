@@ -42,30 +42,7 @@ public class PupilTools : MonoBehaviour
 	public static event OnDisconnectingDelegate OnDisconnecting;
 	public static event OnReceiveDataDelegate OnReceiveData;
 
-	#region Recording
-
-	public static void StartPupilServiceRecording (string path)
-	{
-		var _p = path.Substring (2);
-
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> {
-			{ "subject","recording.should_start" },
-			 {
-				"session_name",
-				_p
-			}
-		});
-
-	}
-
-	public static void StopPupilServiceRecording ()
-	{
-		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","recording.should_stop" } });
-	}
-
-	#endregion
-
-	#region Calibration
+#region Calibration
 
 	public static void RepaintGUI ()
 	{
@@ -80,7 +57,7 @@ public class PupilTools : MonoBehaviour
 	public static bool IsConnected
 	{
 		get { return Connection.isConnected; }
-		set { Connection.isConnected = false; }
+		set { Connection.isConnected = value; }
 	}
 	public static IEnumerator Connect(bool retry = false, float retryDelay = 5f)
 	{
@@ -99,7 +76,6 @@ public class PupilTools : MonoBehaviour
 
 				} else 
 				{
-//					connection.TerminateContext ();
 					yield return null;
 				}
 
@@ -108,9 +84,6 @@ public class PupilTools : MonoBehaviour
         }
         UnityEngine.Debug.Log(" Succesfully connected to Pupil Service ! ");
 
-		// Starting/Stopping eye process is now part of initialization process
-//        StartEyeProcesses();
-//        SetDetectionMode(); // Now part of initialization process
         RepaintGUI();
 		if (OnConnected != null)
 			OnConnected();
@@ -137,15 +110,9 @@ public class PupilTools : MonoBehaviour
 		get { return _calibrationMode; }
 		set 
 		{
-			if (IsConnected && !Connection.Is3DCalibrationSupported ())
-				value = Calibration.Mode._2D;
-
 			if (_calibrationMode != value)
 			{
 				_calibrationMode = value;
-
-//				if (IsConnected)
-//					SetDetectionMode ();
 			}
 		}
 	}
@@ -306,30 +273,28 @@ public class PupilTools : MonoBehaviour
 		Connection.CloseSockets();
 	}
 
+#region CurrentlyNotSupportedOnHoloLens
+
+	public static void StartPupilServiceRecording (string path)
+	{
+	}
+
+	public static void StopPupilServiceRecording ()
+	{
+	}
+
 	public static void StartBinocularVectorGazeMapper ()
 	{
-		Connection.sendRequestMessage (new Dictionary<string,object> { { "subject","" }, { "name", "Binocular_Vector_Gaze_Mapper" } });
 	}
 
 	public static void StartFramePublishing ()
 	{
-//		Settings.framePublishing.StreamCameraImages = true;
-//		Settings.framePublishing.InitializeFramePublishing ();
-//
-//		Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","plugin_started" }, { "name","Frame_Publisher" } });
-//
-//		SubscribeTo ("frame.");
-		//		print ("frame publish start");
-		//Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
 	}
 
 	public static void StopFramePublishing ()
 	{
-//		UnSubscribeFrom ("frame.");
-//
-//		Settings.framePublishing.StreamCameraImages = false;
-
-		//Andre: No sendRequest??
-		//Settings.connection.sendRequestMessage (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
 	}
+		
+#endregion
+
 }

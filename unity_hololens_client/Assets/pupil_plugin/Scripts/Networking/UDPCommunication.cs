@@ -107,7 +107,17 @@ public class UDPCommunication : Singleton<UDPCommunication>
 				UnityEngine.Debug.Log ("Connection established");
 				PupilTools.IsConnected = true;
 				break;
-			default:
+            case (byte)'i':
+                UnityEngine.Debug.Log("Connection closed");
+                PupilTools.IsConnected = false;
+                break;
+            case (byte)'S':
+                // Start gazing command received
+                break;
+            case (byte)'s':
+                // Stop gazing command received
+                break;
+            default:
 				UnityEngine.Debug.Log ("Unknown response: " + (char) data[1]);
 				break;
 			}

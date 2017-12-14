@@ -15,6 +15,7 @@ public class PupilDemoManager : MonoBehaviour
 
 	GameObject cameraObject;
 	Camera menuCamera;
+    GameObject menuPointer;
 	Text calibrationText;
 
 	void OnEnable()
@@ -29,6 +30,7 @@ public class PupilDemoManager : MonoBehaviour
 		PupilSettings.Instance.currentCamera = GetComponentInChildren<Camera> ();
 		cameraObject = PupilSettings.Instance.currentCamera.gameObject;
 		menuCamera = cameraObject.GetComponent<Camera> ();
+        menuPointer = cameraObject.GetComponentInChildren<MeshRenderer>().gameObject;
 		calibrationText = cameraObject.GetComponentInChildren<Text> ();
         
 		PupilTools.CalibrationMode = calibrationMode;
@@ -60,8 +62,9 @@ public class PupilDemoManager : MonoBehaviour
 		else
 		{
 			PupilTools.StartCalibration ();
-			canvasUI.gameObject.SetActive (false);
-		}
+			ResetCanvasUI (false);
+            calibrationText.text = "";
+        }
 	}
 
 	private GestureRecognizer recognizer;
@@ -75,7 +78,7 @@ public class PupilDemoManager : MonoBehaviour
 			{
 				ResetCanvasUI(!canvasUI.gameObject.activeInHierarchy);
             }
-			else if (tapCount == 1)
+			else if (tapCount == 1 && canvasUI.gameObject.activeInHierarchy)
 			{
 				if (EventSystem.current.currentSelectedGameObject == connectionButton.gameObject)
 				{
@@ -113,6 +116,7 @@ public class PupilDemoManager : MonoBehaviour
 	void ResetDemo()
 	{
 		cameraObject.SetActive (true);
+
 		PupilSettings.Instance.currentCamera = cameraObject.GetComponent<Camera> ();
 
 		foreach (GameObject go in gameObjectsToEnable) 
@@ -123,8 +127,14 @@ public class PupilDemoManager : MonoBehaviour
 
 	void ResetCanvasUI(bool visible)
 	{
-		canvasUI.gameObject.SetActive(visible);
-		if (visible)
+        EventSystem.current.SetSelectedGameObject(null);
+
+        if (!cameraObject.activeInHierarchy)
+            ResetDemo();
+
+        canvasUI.gameObject.SetActive(visible);
+        menuPointer.SetActive(visible);
+        if (visible)
 		{
 			canvasUI.position = cameraObject.transform.position + cameraObject.transform.forward;
 			canvasUI.LookAt (canvasUI.position + cameraObject.transform.forward);
@@ -136,7 +146,7 @@ public class PupilDemoManager : MonoBehaviour
 	{
 		calibrationButton.GetComponentInChildren<Text> ().text = "Stop\nCalibration";
 		ResetDemo ();
-	}
+    }
 		
 	void OnCalibrationEnded()
 	{
@@ -148,6 +158,8 @@ public class PupilDemoManager : MonoBehaviour
 	void OnCalibrationFailed()
 	{
 		calibrationButton.GetComponentInChildren<Text> ().text = "Calibration\nfailed,\nrestart";
+
+        ResetCanvasUI(true);
 	}
 
 	void StartDemo()
@@ -188,15 +200,7 @@ public class PupilDemoManager : MonoBehaviour
 				EventSystem.current.SetSelectedGameObject (null);
 		}
 	}
-
-    private void OnApplicationPause(bool pause)
-    {
-        if (pause)
-            OnDisable();
-        else
-            OnEnable();
-    }
-
+    
     void OnDisable()
 	{
 		PupilTools.OnConnected -= OnConnected;

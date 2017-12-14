@@ -55,10 +55,6 @@ public class Connection
 		}
 		sendData (timeData);
 	}
-	public bool Is3DCalibrationSupported()
-	{
-		return false;
-	}
 
 	public void CloseSockets()
 	{
@@ -105,21 +101,15 @@ public class Connection
 	{
 		byte[] message = MessagePackSlim.Serialize(dictionary);
         byte[] data = new byte[1 + message.Length];
-        //byte[] data = new byte[1 + sizeof(ushort) + message.Length];
+
         data[0] = (byte)'R';
-        //ushort messageLength = (ushort)message.Length;
-        //UnityEngine.Debug.Log(messageLength.ToString());
-        //byte[] messageLengthData = System.BitConverter.GetBytes(messageLength);
-        //for (int i = 0; i < messageLengthData.Length; i++)
-        //{
-        //    data[1 + i] = messageLengthData[i];
-        //}
+
         for (int i = 0; i < message.Length; i++)
         {
             data[1 + i] = message[i];
-            //data[1 + sizeof(ushort) + i] = message[i];
+
         }
-        UnityEngine.Debug.Log(dictionary["subject"]);
+//        UnityEngine.Debug.Log(dictionary["subject"]);
 		UDPCommunication.Instance.SendUDPMessage (data);
 	}
 }
