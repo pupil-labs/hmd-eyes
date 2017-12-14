@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Pupil;
 
 public class PupilMarker
 {
@@ -36,21 +37,22 @@ public class PupilMarker
 		set
 		{
 			_camera = value;
+			gameObject.transform.parent = _camera.transform;
 		}
 	}
 
-	public PupilMarker(string name, Color color, Camera camera)
+	public PupilMarker(string name, Color color)
 	{
 		this.name = name;
 		this.color = color;
-		this.camera = camera;
+		this.camera = PupilSettings.Instance.currentCamera;
 	}
 
 	public void UpdatePosition(Vector2 newPosition)
 	{		
 		position.x = newPosition.x;
 		position.y = newPosition.y;
-		position.z = PupilTools.Settings.calibration.currentCalibrationType.vectorDepthRadiusScale[0].x;
+		position.z = PupilTools.CalibrationType.vectorDepthRadiusScale[0].x;
 		gameObject.transform.position = camera.ViewportToWorldPoint(position);
 		UpdateOrientation ();
 	}
@@ -62,13 +64,13 @@ public class PupilMarker
 	}
 	public void UpdatePosition(float[] newPosition)
 	{
-		if (PupilTools.Settings.calibration.currentMode == Calibration.Mode._2D)
+		if (PupilTools.CalibrationMode == Calibration.Mode._2D)
 		{
 			if (newPosition.Length == 2)
 			{
 				position.x = newPosition[0];
 				position.y = newPosition[1];
-				position.z = PupilTools.Settings.calibration.currentCalibrationType.vectorDepthRadiusScale[0].x;
+				position.z = PupilTools.CalibrationType.vectorDepthRadiusScale[0].x;
 				gameObject.transform.position = camera.ViewportToWorldPoint(position);
 			} 
 			else
@@ -76,7 +78,7 @@ public class PupilMarker
 				Debug.Log ("Length of new position array does not match 2D mode");
 			}
 		}
-		else if (PupilTools.Settings.calibration.currentMode == Calibration.Mode._3D)
+		else if (PupilTools.CalibrationMode == Calibration.Mode._3D)
 		{
 			if (newPosition.Length == 3)
 			{
@@ -120,12 +122,11 @@ public class PupilMarker
 			gameObject.transform.localScale = Vector3.one * value;
 	}
 
-	public static bool TryToReset (PupilMarker marker, Camera camera)
+	public static bool TryToReset (PupilMarker marker)
 	{
 		if (marker != null)
 		{
-			marker.camera = camera;
-			marker.gameObject.transform.parent = camera.transform;
+			marker.camera = PupilSettings.Instance.currentCamera;
 			marker.gameObject.SetActive (true);
 			return true;
 		}

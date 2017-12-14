@@ -1,34 +1,16 @@
 ﻿using System;
 using UnityEngine;
+using Pupil;
 
 [Serializable]
 public class Calibration
-{
+{	
 	public enum Mode
 	{
 		_2D,
 		_3D
 	}
 
-	private Mode _currentMode = Mode._2D; // 3D should be standard mode in the future
-	public Mode currentMode
-	{
-		get { return _currentMode; }
-		set
-		{		
-			if (PupilTools.Settings.connection.isConnected && !PupilTools.Settings.connection.Is3DCalibrationSupported ())
-				value = Mode._2D;
-
-			if (_currentMode != value)
-			{
-				_currentMode = value;
-
-				if (PupilTools.Settings.connection.isConnected)
-					PupilTools.SetDetectionMode ();
-			}
-		}
-	}
-		
 	[Serializable]
 	public struct Type
 	{
@@ -69,32 +51,10 @@ public class Calibration
 	{
 		get
 		{
-			if (currentMode == Mode._2D)
-			{
+			if (PupilTools.CalibrationMode == Mode._2D)
 				return CalibrationType2D;
-
-			} else
-			{
+ 			else
 				return CalibrationType3D;
-			}
-		}
-	}
-
-	public enum Status
-	{
-		NotSet,
-		Started,
-		Stopped,
-		Succeeded
-	}
-	private Status _currentStatus;
-	public Status currentStatus
-	{
-		get { return _currentStatus; }
-		set
-		{
-			_currentStatus = value;
-			calibrationMarker.SetActive (_currentStatus == Status.Started);
 		}
 	}
 
@@ -105,7 +65,7 @@ public class Calibration
 	public void UpdateCalibrationPoint()
 	{
 		currentCalibrationPointPosition = new float[]{0};
-		switch (currentMode)
+		switch (PupilTools.CalibrationMode)
 		{
 		case Mode._3D:
 			currentCalibrationPointPosition = new float[]{ 0f, 0f, currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].x };
@@ -120,25 +80,11 @@ public class Calibration
 			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
 			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
 		}
-		calibrationMarker.UpdatePosition (currentCalibrationPointPosition);
-		calibrationMarker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
+		Marker.UpdatePosition (currentCalibrationPointPosition);
+		Marker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
 	}
 
-	public float[] ApplyCalibrationScaling(float[] point)
-	{
-		switch (currentMode)
-		{
-		case Mode._3D:
-			// 3D calibration unit is mm
-			for (int i = 0; i < point.Length; i++)
-				point [i] *= PupilSettings.PupilUnitScalingFactor;
-			return point;
-		default:
-			return point;
-		}
-	}
-
-	PupilMarker calibrationMarker;
+	public PupilMarker Marker;
 	int currentCalibrationPoint;
 	int currentCalibrationSamples;
 	int currentCalibrationDepth;
@@ -151,26 +97,20 @@ public class Calibration
 		currentCalibrationSamples = 0;
 		currentCalibrationDepth = 0;
 
-		Camera calibrationCamera = Camera.main;
-		GameObject calibrationCameraObject = GameObject.FindGameObjectWithTag ("CalibrationCamera");
-		if (calibrationCameraObject != null)
-			calibrationCamera = calibrationCameraObject.GetComponent<Camera> ();
-		if (!PupilMarker.TryToReset (calibrationMarker, calibrationCamera))
-			calibrationMarker = new PupilMarker ("Calibraton Marker", Color.white, calibrationCamera);
+		if (!PupilMarker.TryToReset (Marker))
+			Marker = new PupilMarker ("Calibraton Marker", Color.white);
 		UpdateCalibrationPoint ();
 
 		//		yield return new WaitForSeconds (2f);
 
 		Debug.Log ("Starting Calibration");
-
-		currentStatus = Status.Started;
 	}
 
 	static float lastTimeStamp = 0;
-	static float timeBetweenCalibrationPoints = 0.02f; // was 0.1, 1000/60 ms wait in old version
+	static float timeBetweenCalibrationPoints = 0.05f; // was 0.1, 1000/60 ms wait in old version
 	public void UpdateCalibration ()
 	{
-		float t = PupilTools.Settings.connection.GetPupilTimestamp ();
+		float t = Time.time;// PupilSettings.Instance.connection.currentPupilTimestamp;
 
 		if (t - lastTimeStamp > timeBetweenCalibrationPoints)
 		{
@@ -183,7 +123,7 @@ public class Calibration
 			if ( currentCalibrationSamples > samplesToIgnoreForEyeMovement )
 				PupilTools.AddCalibrationPointReferencePosition (currentCalibrationPointPosition, t);
 			
-			if (PupilTools.Settings.debug.printSampling)
+			if (PupilSettings.Instance.debug.printSampling)
 				Debug.Log ("Point: " + currentCalibrationPoint + ", " + "Sampling at : " + currentCalibrationSamples + ". On the position : " + currentCalibrationPointPosition [0] + " | " + currentCalibrationPointPosition [1]);
 
 			currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)

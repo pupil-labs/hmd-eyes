@@ -52,12 +52,12 @@ public class OperatorWindow : EditorWindow {
 //		Operator.properties.Properties [0].OperatorCamera = _cam;
 //		_cam.stereoTargetEye = StereoTargetEyeMask.None;
 //		//		_cam.backgroundColor = Color.gray;
-//		_cam.transform.parent = Camera.main.transform;
-//		_cam.fieldOfView = Camera.main.fieldOfView;
+//		_cam.transform.parent = PupilSettings.Instance.currentCamera.transform;
+//		_cam.fieldOfView = PupilSettings.Instance.currentCamera.fieldOfView;
 //		_cam.clearFlags = CameraClearFlags.Depth;
 
 //		_opscript.MainCameraTargetDisplay = Camera.main.targetDisplay;
-		//		Camera.main.targetDisplay = 1;
+//		PupilSettings.Instance.currentCamera.targetDisplay = 1;
 
 
 		Operator.properties.Properties [0].confidenceList.Capacity = Operator.properties.Properties [0].graphLength + 1;
@@ -122,7 +122,7 @@ public class OperatorWindow : EditorWindow {
 //		GUI.DrawTexture (new Rect (Screen.width / 2, imageVerticalPosition, Screen.width / 2, imageHeight), pupilTracker.FramePublishingVariables.eye1Image);
 //
 ////		Operator.properties.Properties [0].OperatorCamera.Render ();
-////		Camera.main.Render();
+////		PupilSettings.Instance.currentCamera.Render();
 //
 //		//Construct the Text box string for data display on the Operator Monitor view
 //		str = "Gaze Point : " + " ( X: " + Pupil.values.GazePoint3D.x + " Y: " + Pupil.values.GazePoint3D.y + " Z: " + Pupil.values.GazePoint3D.z + " ) ";

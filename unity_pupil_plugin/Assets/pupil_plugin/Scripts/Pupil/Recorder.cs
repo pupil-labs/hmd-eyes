@@ -3,15 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+#if !UNITY_WSA
+
 [Serializable]
 public class Recorder
 {
 	public static GameObject RecorderGO;
 	public static bool isRecording;
 	public static bool isProcessing;
-
+#if !UNITY_WSA
 	public FFmpegOut.FFmpegPipe.Codec codec;
 	public FFmpegOut.FFmpegPipe.Resolution resolution;
+#endif
 	public List<int[]> resolutions = new List<int[]> () {
 		new int[]{ 1920, 1080 },
 		new int[]{ 1280, 720 },
@@ -28,7 +31,9 @@ public class Recorder
 	public static void Start ()
 	{
 		RecorderGO = new GameObject ("RecorderCamera");
-		RecorderGO.transform.parent = Camera.main.gameObject.transform;
+		RecorderGO.transform.parent = PupilSettings.Instance.currentCamera.transform;
+		RecorderGO.transform.localPosition = Vector3.zero;
+		RecorderGO.transform.localEulerAngles = Vector3.zero;
 
 		RecorderGO.AddComponent<FFmpegOut.CameraCapture> ();
 		Camera c = RecorderGO.GetComponent<Camera> ();
@@ -38,7 +43,7 @@ public class Recorder
 		c.allowHDR = false;
 		c.allowMSAA = false;
 		#endif
-		c.fieldOfView = 111;
+		c.fieldOfView = PupilSettings.Instance.currentCamera.fieldOfView;
 		PupilTools.RepaintGUI ();
 	}
 
@@ -49,5 +54,7 @@ public class Recorder
 		PupilTools.RepaintGUI ();
 	}
 }
+
+#endif
 
 

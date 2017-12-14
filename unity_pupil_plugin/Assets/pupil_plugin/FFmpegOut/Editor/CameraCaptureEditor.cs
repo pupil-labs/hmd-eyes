@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEditor;
 
+#if !UNITY_WSA
+
 namespace FFmpegOut
 {
     [CanEditMultipleObjects]
@@ -55,3 +57,5 @@ namespace FFmpegOut
         }
     }
 }
+
+#endif

@@ -2,33 +2,51 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Pupil;
 
 public class PupilDemoManager : MonoBehaviour 
 {
 	public Calibration.Mode calibrationMode = Calibration.Mode._2D;
 	public List<GameObject> gameObjectsToEnable;
 
-	Camera calibrationCamera;
+	GameObject cameraObject;
 	Text calibrationText;
 
 	void Start()
 	{	
 		PupilTools.OnConnected += OnConnected;
+		PupilTools.OnDisconnecting += OnDisconnected;
 		PupilTools.OnCalibrationStarted += OnCalibtaionStarted;
 		PupilTools.OnCalibrationEnded += OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed += OnCalibrationFailed;
 	
-		calibrationCamera = GetComponentInChildren<Camera> ();
-		calibrationText = calibrationCamera.gameObject.GetComponentInChildren<Text> ();
+		PupilSettings.Instance.currentCamera = GetComponentInChildren<Camera> ();
+		cameraObject = PupilSettings.Instance.currentCamera.gameObject;
 
-		calibrationText.text = "Connecting to pupil.";
+		ResetCalibrationText ();
+	}
+
+	void ResetCalibrationText()
+	{
+		if (calibrationText == null)
+			calibrationText = cameraObject.GetComponentInChildren<Text> ();
+
+		if (PupilTools.Connection.isAutorun)
+			calibrationText.text = "Connecting to pupil.";
+		else
+			calibrationText.text = "Select PupilGazeTracker and\npress 'Start' in the Inspector GUI\nto connect to Pupil.";
+	}
+
+	void OnDisconnected()
+	{
+		ResetCalibrationText ();
 	}
 
 	void OnConnected()
 	{
 		calibrationText.text = "Success";
 
-		PupilTools.Settings.calibration.currentMode = calibrationMode;
+		PupilTools.CalibrationMode = calibrationMode;
 
 		Invoke ("ShowCalibrate", 1f);
 	}
@@ -40,7 +58,8 @@ public class PupilDemoManager : MonoBehaviour
 
 	void OnCalibtaionStarted()
 	{
-		calibrationCamera.gameObject.SetActive (true);
+		cameraObject.SetActive (true);
+		PupilSettings.Instance.currentCamera = cameraObject.GetComponent<Camera> ();
 		calibrationText.text = "";
 			
 		foreach (GameObject go in gameObjectsToEnable) 
@@ -67,8 +86,7 @@ public class PupilDemoManager : MonoBehaviour
 		{
 			go.SetActive (true);
 		}
-
-		calibrationCamera.gameObject.SetActive (false);
+		cameraObject.SetActive (false);
 	}
 
 	void Update()
@@ -80,6 +98,7 @@ public class PupilDemoManager : MonoBehaviour
 	void OnApplicationQuit()
 	{
 		PupilTools.OnConnected -= OnConnected;
+		PupilTools.OnDisconnecting -= OnDisconnected;
 		PupilTools.OnCalibrationStarted -= OnCalibtaionStarted;
 		PupilTools.OnCalibrationEnded -= OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed -= OnCalibrationFailed;

@@ -15,16 +15,15 @@ MonoBehaviour:
     printSampling: 0
     printMessage: 0
     printMessageType: 0
-  DataProcessState: 1
   connection:
     isAutorun: 1
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
     PORT: 50020
-    subport: 52074
+    subport: 51591
     isLocal: 1
-    PupilVersion: 1.0.102
-    PupilVersionNumbers: 010000000000000066000000
+    PupilVersion: 1.1.2
+    PupilVersionNumbers: 010000000100000002000000
   pupilServiceApp:
     servicePath: C:/Program Files/Pupil Service/pupil_service.exe
   calibration:
@@ -55,11 +54,11 @@ MonoBehaviour:
       samplesPerDepth: 40
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:
-    - 26.727795
+    - 27.335762
     - 0
     - 0
     leftEyeTranslation:
-    - -26.727795
+    - -27.335762
     - 0
     - 0
   customGUIVariables:
@@ -79,6 +78,14 @@ MonoBehaviour:
     eye0ImageMaterial: {fileID: 0}
     eye1ImageMaterial: {fileID: 0}
   visualizeGaze: 1
+  currentCamera: {fileID: 0}
+  recorder:
+    codec: 1
+    resolution: 1
+    filePath: 
+    isFixedRecordingLength: 0
+    recordingLength: 10
+    isCustomPath: 0
   GUIStyles:
   - m_Name: Pupil Labs Logo
     m_Normal:

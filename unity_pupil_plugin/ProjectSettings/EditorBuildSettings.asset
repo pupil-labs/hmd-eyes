@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Market Scene Demo/Market Scene Demo.unity
+    path: 
     guid: 962a17030b528b24dac725004acc2a0b
   - enabled: 0
     path: Assets/Market Scene Demo/2D Calibration Demo.unity

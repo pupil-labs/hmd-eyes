@@ -13,16 +13,9 @@ public class PupilSettings:ScriptableObject
 		get
 		{
 			if (_instance == null)
-				_instance = PupilTools.Settings;
+				_instance = Resources.Load<PupilSettings> ("PupilSettings");
 			return _instance;
 		}
-	}
-
-	public enum EStatus
-	{
-		Idle,
-		ProcessingGaze,
-		Calibration
 	}
 
 	[Serializable]
@@ -67,8 +60,6 @@ public class PupilSettings:ScriptableObject
 
 	public DebugVars debug;
 
-	public EStatus DataProcessState;
-
 	public Connection connection;
 	public PupilServiceApp pupilServiceApp;
 	public Calibration calibration;
@@ -76,7 +67,10 @@ public class PupilSettings:ScriptableObject
 	public DebugView debugView;
 	public FramePublishing framePublishing;
 	public bool visualizeGaze;
-
+	public Camera currentCamera;
+#if !UNITY_WSA
+	public Recorder recorder;
+#endif
 	public List<GUIStyle> GUIStyles;
 
 	public static int numberOfMessages = 6;

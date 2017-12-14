@@ -50,12 +50,14 @@ public class OperatorMonitor : MonoBehaviour {
 		Operator.properties.Properties [0].OperatorCamera = _cam;
 		_cam.stereoTargetEye = StereoTargetEyeMask.None;
 //		_cam.backgroundColor = Color.gray;
-		_cam.transform.parent = Camera.main.transform;
-		_cam.fieldOfView = Camera.main.fieldOfView;
+		_cam.transform.parent = PupilSettings.Instance.currentCamera.transform;
+		_cam.transform.localPosition = Vector3.zero;
+		_cam.transform.localEulerAngles = Vector3.zero;
+		_cam.fieldOfView = PupilSettings.Instance.currentCamera.fieldOfView;
 		_cam.clearFlags = CameraClearFlags.Depth;
 
-		_opscript.MainCameraTargetDisplay = Camera.main.targetDisplay;
-//		Camera.main.targetDisplay = 1;
+		_opscript.MainCameraTargetDisplay = PupilSettings.Instance.currentCamera.targetDisplay;
+		//		PupilSettings.Instance.currentCamera.targetDisplay = 1;
 
 
 		Operator.properties.Properties [0].confidenceList.Capacity = Operator.properties.Properties [0].graphLength + 1;
@@ -70,13 +72,13 @@ public class OperatorMonitor : MonoBehaviour {
 //	void OnDestroy(){
 //		pupilTracker.StopFramePublishing ();
 //		pupilTracker.isOperatorMonitor = false;
-//		Camera.main.targetDisplay = MainCameraTargetDisplay;
+	//		PupilSettings.Instance.currentCamera.targetDisplay = MainCameraTargetDisplay;
 //	}
 
 	void Awake(){
 		pupilTracker = PupilGazeTracker.Instance;
 		pupilSettings = pupilTracker.Settings;
-		Camera.main.SetReplacementShader (CameraShader, null);	
+		PupilSettings.Instance.currentCamera.SetReplacementShader (CameraShader, null);	
 		_Instance = this;
 	}
 
@@ -84,12 +86,12 @@ public class OperatorMonitor : MonoBehaviour {
 	{
 		PupilTools.UnSubscribeFrom ("pupil.");
 
-		if (!PupilTools.Settings.debugView.active && !pupilTracker.isOperatorMonitor)
+		if (!PupilSettings.Instance.debugView.active && !pupilTracker.isOperatorMonitor)
 		{	
 			PupilTools.StopFramePublishing ();
 		}
 		pupilTracker.isOperatorMonitor = false;
-		Camera.main.targetDisplay = MainCameraTargetDisplay;
+		PupilSettings.Instance.currentCamera.targetDisplay = MainCameraTargetDisplay;
 		Destroy (gameObject);
 	}
 
@@ -98,6 +100,7 @@ public class OperatorMonitor : MonoBehaviour {
 	public Shader CameraShader;
 	void OnGUI()
 	{
+#if !UNITY_WSA
 		string str;
 
 //		print ("confidence 0 in op mon : " + Pupil.values.Confidences [0]);
@@ -131,7 +134,7 @@ public class OperatorMonitor : MonoBehaviour {
 		//This is the call to draw both Confidence Graphs for each eyes
 		DrawGraph (Operator.properties.Properties[0]);
 		DrawGraph (Operator.properties.Properties[1]);
-
+#endif
 	}
 		
 	#region operator_monitor.functions

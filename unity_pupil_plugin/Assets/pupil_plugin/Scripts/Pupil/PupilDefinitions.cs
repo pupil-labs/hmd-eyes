@@ -96,6 +96,13 @@ namespace Pupil
 		BothEyes,
 		GazeOnly
 	}
+
+	public enum EStatus
+	{
+		Idle,
+		ProcessingGaze,
+		Calibration
+	}
 }
 namespace Operator
 {

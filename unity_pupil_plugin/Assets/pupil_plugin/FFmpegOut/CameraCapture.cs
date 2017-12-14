@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 
-
+#if !UNITY_WSA
 namespace FFmpegOut
 {
     [RequireComponent(typeof(Camera))]
@@ -41,8 +41,6 @@ namespace FFmpegOut
 
 		List<byte[]> renderPipeQueue = new List<byte[]>();
 //		object datalock = new object();
-
-		PupilGazeTracker pupilTracker;
 
 		int renderedFrameCount = 0;
 		int writtenFrameCount = 0;
@@ -94,20 +92,19 @@ namespace FFmpegOut
         void Start()
         {
 			_material = new Material (Shader.Find ("Hidden/FFmpegOut/CameraCapture"));
-			pupilTracker = PupilGazeTracker.Instance;
         }
 
         void Update()
         {
             _elapsed += Time.deltaTime;
 
-			if (_elapsed < pupilTracker.recorder.recordingLength)
+			if (_elapsed < PupilSettings.Instance.recorder.recordingLength)
             {
                 if (_pipe == null) OpenPipe();
             }
             else
             {
-				if (_pipe != null && pupilTracker.recorder.isFixedRecordingLength && _recorderState == RecorderState.RECORDING) Stop ();
+				if (_pipe != null && PupilSettings.Instance.recorder.isFixedRecordingLength && _recorderState == RecorderState.RECORDING) Stop ();
             }
 
 			if (_recorderState == RecorderState.STOPPING) {
@@ -119,7 +116,8 @@ namespace FFmpegOut
 
         }
 
-		public void Stop(){
+		public void Stop()
+		{
 			Recorder.isRecording = false;
 			PupilTools.StopPupilServiceRecording ();
 			_recorderState = RecorderState.PROCESSING;
@@ -154,8 +152,6 @@ namespace FFmpegOut
 			if (_pipe != null && _recorderState == RecorderState.RECORDING)
             {
                 var tempRT = RenderTexture.GetTemporary(source.width, source.height);
-				var pupilTimeStamp = PupilTools.Settings.connection.GetPupilTimestamp ();
-
 
 				if (_material != null) {
 					Graphics.Blit (source, tempRT, _material, 0);
@@ -173,7 +169,8 @@ namespace FFmpegOut
 				renderPipeQueue.Add (tempTex.GetRawTextureData ());
 				renderedFrameCount++;
 
-				timeStampList.Add (pupilTimeStamp);
+				// With the winter 2017 release of this plugin, Pupil timestamp is set to Unity time when connecting
+				timeStampList.Add (Time.time);
                 //_pipe.Write(tempTex.GetRawTextureData());
 
                 Destroy(tempTex);
@@ -195,8 +192,8 @@ namespace FFmpegOut
 			timeStampList = new List<double> ();
 
             var camera = GetComponent<Camera>();
-			var width = pupilTracker.recorder.resolutions [(int)pupilTracker.recorder.resolution] [0];
-			var height = pupilTracker.recorder.resolutions [(int)pupilTracker.recorder.resolution] [1];
+			var width = PupilSettings.Instance.recorder.resolutions [(int)PupilSettings.Instance.recorder.resolution] [0];
+			var height = PupilSettings.Instance.recorder.resolutions [(int)PupilSettings.Instance.recorder.resolution] [1];
             // Apply the screen resolution settings.
             if (_setResolution)
             {
@@ -211,7 +208,7 @@ namespace FFmpegOut
             }
 
             // Open an output stream.
-			_pipe = new FFmpegPipe(pupilTracker.recorder.filePath, width, height, _frameRate, pupilTracker.recorder.codec);
+			_pipe = new FFmpegPipe(PupilSettings.Instance.recorder.filePath, width, height, _frameRate, PupilSettings.Instance.recorder.codec);
 
             // Change the application frame rate.
             if (Time.captureFramerate == 0)
@@ -256,7 +253,7 @@ namespace FFmpegOut
 				Debug.Log ("Capture ended (" + _pipe.Filename + ")" + ". Rendered frame count on MainThread : " + renderedFrameCount + ". Written out frame count on SecondaryThread : " + writtenFrameCount + ". Leftover : " + renderPipeQueue.Count);
 
 				// Write pupil timestamps to a file
-				string timeStampFileName = "Unity_" + Camera.main.name;
+				string timeStampFileName = "Unity_" + PupilSettings.Instance.currentCamera.name;
 				byte[] timeStampByteArray = PupilConversions.doubleArrayToByteArray (timeStampList.ToArray ());
 				File.WriteAllBytes(_pipe.FilePath + "/" + timeStampFileName + ".time", timeStampByteArray);
 
@@ -278,3 +275,4 @@ namespace FFmpegOut
         #endregion
     }
 }
+#endif

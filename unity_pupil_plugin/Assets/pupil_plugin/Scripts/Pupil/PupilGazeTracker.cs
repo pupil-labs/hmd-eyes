@@ -4,16 +4,18 @@
 
 using UnityEngine;
 using UnityEngine.UI;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Net;
 using System.Threading;
 using System.IO;
 using System;
 using Pupil;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class PupilGazeTracker:MonoBehaviour
 {
@@ -44,8 +46,6 @@ public class PupilGazeTracker:MonoBehaviour
 			return _debugInstance;
 		}
 	}
-
-	public Recorder recorder = new Recorder ();
 
 	public string ProjectName;
 
@@ -121,8 +121,6 @@ public class PupilGazeTracker:MonoBehaviour
 	[HideInInspector]
 	public GUIStyle CalibRowStyle = new GUIStyle ();
 
-	Process serviceProcess;
-
 	int _currentFps = 0;
 	DateTime _lastT;
 
@@ -141,17 +139,16 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		Settings.framePublishing.UpdateEyeTextures ();
 
-		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
+		if (PupilTools.DataProcessState == EStatus.Calibration)
 		{
-			if (Settings.calibration.currentStatus == Calibration.Status.Started)
-				Settings.calibration.UpdateCalibration ();
-		}
-		else if (Settings.connection.subscribeSocket != null && Settings.connection.topicList.Count > 0 && Settings.connection.subscribeSocket.HasIn)
-			Settings.connection.subscribeSocket.Poll ();
+			PupilTools.Calibration.UpdateCalibration ();
+		} 
+
+		PupilTools.Connection.UpdateSubscriptionSockets ();
 
 		if (Input.GetKeyUp (KeyCode.C))
 		{
-			if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
+			if (PupilTools.DataProcessState == EStatus.Calibration)
 			{
 				PupilTools.StopCalibration ();
 			} else
@@ -159,9 +156,10 @@ public class PupilGazeTracker:MonoBehaviour
 				PupilTools.StartCalibration ();
 			}
 		}
+#if !UNITY_WSA
 		if (Input.GetKeyUp (KeyCode.R))
 		{
-			if (Settings.connection.isConnected)
+			if (PupilTools.IsConnected)
 			{
 				if (!Recorder.isRecording)
 				{
@@ -175,26 +173,27 @@ public class PupilGazeTracker:MonoBehaviour
 			} else
 				print ("Can not start recording without connection to pupil service");
 		}
+#endif
 
-		if (OnUpdate != null)
-			OnUpdate ();
+		if (Instance.OnUpdate != null)
+			Instance.OnUpdate ();
 	}
 
 	#endregion
 
 	public virtual void OnDrawGizmos ()
 	{
-		if (OnDrawGizmo != null)
-			OnDrawGizmo ();
+		if (Instance.OnDrawGizmo != null)
+			Instance.OnDrawGizmo ();
 	}
 
 	public void OnRenderObject ()
 	{
-		if (OnCalibDebug != null)
-			OnCalibDebug ();
+		if (Instance.OnCalibDebug != null)
+			Instance.OnCalibDebug ();
 
-		if (OnCalibrationGL != null)
-			OnCalibrationGL ();
+		if (Instance.OnCalibrationGL != null)
+			Instance.OnCalibrationGL ();
 	}
 
 	void OnEnable ()
@@ -208,17 +207,26 @@ public class PupilGazeTracker:MonoBehaviour
 		CloseShop ();
 
 		PupilGazeTracker._Instance = null;
-		var pupilSettings = PupilTools.Settings;
-		PupilTools.SavePupilSettings (ref pupilSettings);
+		var pupilSettings = PupilSettings.Instance;
+		SavePupilSettings (ref pupilSettings);
 	}
 
+	public static void SavePupilSettings (ref PupilSettings pupilSettings)
+	{
+#if UNITY_EDITOR
+		AssetDatabase.Refresh ();
+		EditorUtility.SetDirty (pupilSettings);
+		AssetDatabase.SaveAssets ();
+#endif
+
+	}
 	#region Start();
 
 	void Start ()
 	{
 //		print ("Start of pupil gaze tracker");
 
-		Settings = PupilTools.Settings;
+		Settings = PupilSettings.Instance;
 
 
 		string str = PupilConversions.ReadStringFromFile ("camera_intrinsics");
@@ -244,16 +252,20 @@ public class PupilGazeTracker:MonoBehaviour
 
 		PupilGazeTracker.Instance.ProjectName = Application.productName;
 
-		Settings.connection.isConnected = false;
-		Settings.DataProcessState = PupilSettings.EStatus.Idle;
+		PupilTools.IsConnected = false;
+		PupilTools.DataProcessState = EStatus.Idle;
 
-		var relativeRightEyePosition = UnityEngine.VR.InputTracking.GetLocalPosition (UnityEngine.VR.VRNode.RightEye) - UnityEngine.VR.InputTracking.GetLocalPosition (UnityEngine.VR.VRNode.CenterEye);
-		Settings.calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
-		var relativeLeftEyePosition = UnityEngine.VR.InputTracking.GetLocalPosition (UnityEngine.VR.VRNode.LeftEye) - UnityEngine.VR.InputTracking.GetLocalPosition (UnityEngine.VR.VRNode.CenterEye);
-		Settings.calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
+		var relativeRightEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.RightEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
+		PupilTools.Calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
+		var relativeLeftEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.LeftEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
+		PupilTools.Calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
 
-		if (Settings.connection.isAutorun)
+#if !UNITY_WSA
+		if (PupilTools.Connection.isAutorun)
 			RunConnect ();
+#else
+		RunConnect();
+#endif
 	}
 
 	#endregion
@@ -291,10 +303,51 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void RunConnect()
 	{
-		if (Settings.connection.isLocal)
-			PupilTools.RunServiceAtPath ();
+#if !UNITY_WSA
+		if (PupilTools.Connection.isLocal)
+			RunServiceAtPath ();
+#endif
 		
 		StartCoroutine (PupilTools.Connect (retry: true, retryDelay: 5f));
+	}
+
+	public static void RunServiceAtPath (bool runEyeProcess = false)
+	{
+#if !UNITY_WSA
+		string servicePath = PupilSettings.Instance.pupilServiceApp.servicePath;
+		if (File.Exists (servicePath))
+		{
+			if ( (Process.GetProcessesByName ("pupil_capture").Length > 0) || (Process.GetProcessesByName ("pupil_service").Length > 0) )
+			{
+				UnityEngine.Debug.LogWarning (" Pupil Capture/Service is already running ! ");
+			} else
+			{
+				Process serviceProcess = new Process ();
+				serviceProcess.StartInfo.Arguments = servicePath;
+				serviceProcess.StartInfo.FileName = servicePath;
+				//				serviceProcess.StartInfo.CreateNoWindow = true;
+				//				serviceProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+				//				serviceProcess.StartInfo.UseShellExecute = false;
+				//				serviceProcess.StartInfo.RedirectStandardOutput = true;     
+
+				if (File.Exists (servicePath))
+				{
+					serviceProcess.Start ();
+				} else
+				{
+					UnityEngine.Debug.LogWarning ("Pupil Service could not start! There is a problem with the file path. The file does not exist at given path");
+				}
+			}
+		} else
+		{
+			if (servicePath == "")
+			{
+				UnityEngine.Debug.LogWarning ("Pupil Service filename is not specified ! Please configure it under the Pupil plugin settings");
+			}
+		}
+#else
+		print("Process can not be started in UWP environment");
+#endif
 	}
 
 	#region packet
@@ -305,18 +358,20 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void StartVisualizingGaze ()
 	{
-		OnUpdate += VisualizeGaze;
+		Instance.OnUpdate += VisualizeGaze;
 
-		if ( !PupilMarker.TryToReset(_markerLeftEye,Camera.main) )
-			_markerLeftEye= new PupilMarker("LeftEye_2D",Color.green,Camera.main);
-		if ( !PupilMarker.TryToReset(_markerRightEye,Camera.main) )
-			_markerRightEye = new PupilMarker("RightEye_2D",Color.blue,Camera.main);
-		if ( !PupilMarker.TryToReset(_markerGazeCenter,Camera.main) )
-			_markerGazeCenter = new PupilMarker("Gaze_2D",Color.red,Camera.main);
-		if ( !PupilMarker.TryToReset(_gaze3D,Camera.main) )
-			_gaze3D = new PupilMarker("Gaze_3D", Color.yellow, Camera.main);
+        PupilSettings.Instance.currentCamera = Camera.main;
 
-		Settings.DataProcessState = PupilSettings.EStatus.ProcessingGaze;
+        if ( !PupilMarker.TryToReset(_markerLeftEye) )
+			_markerLeftEye= new PupilMarker("LeftEye_2D",Color.green);
+		if ( !PupilMarker.TryToReset(_markerRightEye) )
+			_markerRightEye = new PupilMarker("RightEye_2D",Color.blue);
+		if ( !PupilMarker.TryToReset(_markerGazeCenter) )
+			_markerGazeCenter = new PupilMarker("Gaze_2D",Color.red);
+		if ( !PupilMarker.TryToReset(_gaze3D) )
+			_gaze3D = new PupilMarker("Gaze_3D", Color.yellow);
+
+		PupilTools.DataProcessState = EStatus.ProcessingGaze;
 		PupilTools.SubscribeTo("gaze");
 	}
 
@@ -324,7 +379,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void StopVisualizingGaze ()
 	{
-		OnUpdate -= VisualizeGaze;
+		Instance.OnUpdate -= VisualizeGaze;
 
 		_markerLeftEye.SetActive (false);
 		_markerRightEye.SetActive (false);
@@ -336,9 +391,9 @@ public class PupilGazeTracker:MonoBehaviour
 
 	void VisualizeGaze ()
 	{
-		if (Settings.DataProcessState == PupilSettings.EStatus.ProcessingGaze)
+		if (PupilTools.DataProcessState == EStatus.ProcessingGaze)
 		{
-			if (Settings.calibration.currentMode == Calibration.Mode._2D)
+			if (PupilTools.CalibrationMode == Calibration.Mode._2D)
 			{
 				var eyeID = PupilData.currentEyeID;
 				if (eyeID == GazeSource.LeftEye || eyeID == GazeSource.RightEye)
@@ -351,7 +406,7 @@ public class PupilGazeTracker:MonoBehaviour
 				_markerRightEye.UpdatePosition (PupilData._2D.GetEyeGaze (GazeSource.RightEye));
 				_markerGazeCenter.UpdatePosition (PupilData._2D.GetEyeGaze (GazeSource.BothEyes));
 			}
-			else if (Settings.calibration.currentMode == Calibration.Mode._3D)
+			else if (PupilTools.CalibrationMode == Calibration.Mode._3D)
 			{
 				_gaze3D.UpdatePosition(PupilData._3D.GazePosition);
 			}
@@ -361,7 +416,8 @@ public class PupilGazeTracker:MonoBehaviour
 	#endregion
 
 	void OnGUI ()
-	{
+    {
+#if !UNITY_WSA
 		if (!isOperatorMonitor)
 		{
 			string str = "Capture Rate=" + FPS;
@@ -369,49 +425,41 @@ public class PupilGazeTracker:MonoBehaviour
 			str += "\nRight Eye:" + PupilData._2D.GetEyeGaze(GazeSource.RightEye).ToString ();
 			GUI.TextArea (new Rect (50, 50, 200, 50), str);
 		}
-
+#endif
 	}
 
-	#region Recording
+#region Recording
 
 	public void OnRecording ()
 	{
 	}
 
-	#endregion
+#endregion
 
 	void OnApplicationQuit()
 	{
 		CloseShop ();
 	}
 
-	void CloseShop ()
+	public void CloseShop ()
 	{
-		#if UNITY_EDITOR // Operator window will only be available in Editor mode
+#if UNITY_EDITOR // Operator window will only be available in Editor mode
 		if (OperatorWindow.Instance != null)
 			OperatorWindow.Instance.Close ();
-		#endif
+#endif
 
-		if (Settings.DataProcessState == PupilSettings.EStatus.Calibration)
-			PupilTools.StopCalibration ();
-
-		PupilTools.StopEyeProcesses ();
-
-		Thread.Sleep (1);
-
-		Settings.connection.CloseSockets();
+		PupilTools.Disconnect ();
 			
 		StopAllCoroutines ();
-
+#if !UNITY_WSA
 		if (Recorder.isRecording)
 		{
 			Recorder.Stop ();
 		}
-
+#endif
 		PupilTools.RepaintGUI ();
 
-		Pupil.processStatus.eyeProcess0 = false;
-		Pupil.processStatus.eyeProcess1 = false;
-
+		processStatus.eyeProcess0 = false;
+		processStatus.eyeProcess1 = false;
 	}
 }
