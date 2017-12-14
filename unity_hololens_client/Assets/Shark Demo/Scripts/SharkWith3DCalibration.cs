@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Pupil;
 
-public class MarketWith3DCalibration : MonoBehaviour 
+public class SharkWith3DCalibration : MonoBehaviour 
 {
 	public Transform marker;
 	// Use this for initialization

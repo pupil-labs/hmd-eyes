@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Pupil;
 
-public class MarketWith2DCalibration : MonoBehaviour 
+public class SharkWith2DCalibration : MonoBehaviour 
 {
 	private Vector2 gazePointCenter;
 
