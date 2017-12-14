@@ -198,7 +198,7 @@ public class PupilTools : MonoBehaviour
 	public static bool IsConnected
 	{
 		get { return Connection.isConnected; }
-		set { Connection.isConnected = false; }
+		set { Connection.isConnected = value; }
 	}
 	public static IEnumerator Connect(bool retry = false, float retryDelay = 5f)
 	{

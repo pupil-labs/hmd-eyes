@@ -138,7 +138,13 @@ public static class PupilData
 	{
 		public static Vector3 GazePosition
 		{
-			get { return gazePoint.Average3D; }
+			get 
+			{
+				if (calculateMovingAverage)
+					return gazePoint.Average3D;
+				else
+					return gazePoint.Raw3D;
+			}
 		}
 
 		public static Vector3 LeftEyeCenter

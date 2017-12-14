@@ -132,7 +132,8 @@ namespace FFmpegOut
         {
             return _options[(int)codec];
         }
-		public string GetLastIncrement(string path){
+		public string GetLastIncrement(string path)
+		{
 			string[] directories = Directory.GetDirectories (path);
 			List<int> directoryIncrements = new List<int> ();
 			foreach (string directory in directories) 
