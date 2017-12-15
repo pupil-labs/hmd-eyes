@@ -5,9 +5,10 @@ The purpose of this repository is do demonstrates how to implement Pupil with Un
 
 ## Content
 This repository contains two separate Unity projects.
+Please consult the Readme.md located in each project folder for specifics.
 1. The main project `unity_pupil_plugin_vr` intended for use with VR headsets
 2. The HoloLens project `unity_pupil_plugin_hololens`, a version adapted to the UWP environment (requires a Pupil version >= 1.2)
-Please consult the Readme.md placed in each project folder for specifics.
+
 	
 ## Connect
 
