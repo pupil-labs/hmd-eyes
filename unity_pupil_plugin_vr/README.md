@@ -72,6 +72,13 @@ For users who do not need gaze data or want a simple example on how to subscribe
 * While dictionary setup is usually kept within PupilTools, BlinkDemoManager contains all blink-specific variants to give a better overview of what is involved
 * This includes starting/stoping the plugin, un-/subscribing to "blinks" and receiving the dictionary packages from Pupil
 	
+## Spherical Video demo
+As many users asked for this feature, we now include a demo that can load a 360 degree video. Combined with Pupil, this allows to observe what the user is looking at.
+* Uses ffmpeg to access videoframes at runtime. Depending on the machine it is running on and if it is running in Unity Editor or standalone, this can be slow
+* Select the `VideoSphere` gameobject and click the `Select new video..` button to set the `File Path` variable of the FFmpegPlayer script component
+* The video will start after the obligatory calibration has succeeded
+* Gaze visualization will also start at this time (triggered by the CalibrationDemo script component also attached to `VideoSphere`)
+	
 ## Connect
 
 Chat with the hmd-eyes community on [Discord](https://discord.gg/PahDtSH).

@@ -14,7 +14,6 @@ using FFmpegOut;
 public class FFmpegPlayer : MonoBehaviour 
 {
 	public string FilePath;
-	public Material material;
 
 	Process _subprocess;
 	YUVReader _yuvReader;
@@ -26,8 +25,18 @@ public class FFmpegPlayer : MonoBehaviour
 	Texture2D UTexture;
 	Texture2D VTexture;
 
+	Material material;
+
 	void Start () 
 	{
+		material = gameObject.GetComponent<MeshRenderer> ().sharedMaterial;
+
+		if (!File.Exists (FilePath))
+		{
+			UnityEngine.Debug.Log ("No file at given path");
+			return;
+		}
+
 		var opt = String.Format("-i \"{0}\"", FilePath);
 		opt += " -f yuv4mpegpipe";
 		opt += " -pix_fmt yuv444p";
