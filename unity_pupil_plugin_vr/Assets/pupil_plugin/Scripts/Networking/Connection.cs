@@ -200,7 +200,7 @@ public class Connection
 			if (subscriptionSocketForTopic [keys [i]].HasIn)
 				subscriptionSocketForTopic [keys [i]].Poll ();
 		}
-		for (int i = 0; i < subscriptionSocketToBeClosed.Count; i++)
+		for (int i = subscriptionSocketToBeClosed.Count - 1; i >= 0; i--)
 		{
 			var toBeClosed = subscriptionSocketToBeClosed [i];
 			if (subscriptionSocketForTopic.ContainsKey (toBeClosed))
