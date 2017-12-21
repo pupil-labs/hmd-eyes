@@ -44,8 +44,10 @@ namespace FFmpegOut
             if (_setResolution.hasMultipleDifferentValues || _setResolution.boolValue)
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_width);
-                EditorGUILayout.PropertyField(_height);
+				if (_width != null)
+                	EditorGUILayout.PropertyField(_width);
+				if (_height != null)
+					EditorGUILayout.PropertyField(_height);
                 EditorGUI.indentLevel--;
             }
 

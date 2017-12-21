@@ -37,6 +37,7 @@ public class Recorder
 
 		RecorderGO.AddComponent<FFmpegOut.CameraCapture> ();
 		Camera c = RecorderGO.GetComponent<Camera> ();
+		c.clearFlags = CameraClearFlags.Color;
 		c.targetDisplay = 1;
 		c.stereoTargetEye = StereoTargetEyeMask.None;
 		#if UNITY_5_6_OR_NEWER

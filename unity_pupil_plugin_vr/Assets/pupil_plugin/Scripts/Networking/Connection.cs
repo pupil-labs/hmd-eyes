@@ -211,7 +211,7 @@ public class Connection
 			subscriptionSocketToBeClosed.Remove (toBeClosed);
 		}
 	}
-	private List<string> subscriptionSocketToBeClosed;
+	private List<string> subscriptionSocketToBeClosed = new List<string> ();
 	public void CloseSubscriptionSocket (string topic)
 	{
 		if ( subscriptionSocketToBeClosed == null )
