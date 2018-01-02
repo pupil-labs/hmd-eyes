@@ -18,50 +18,48 @@ public class UDPCommunication : Singleton<UDPCommunication>
 {
 	private readonly  Queue<Action> ExecuteOnMainThread = new Queue<Action>();
 
-
-	#if !UNITY_EDITOR
-
-	//Send an UDP-Packet
-	public async void SendUDPMessage(byte[] data)
-	{
-        UnityEngine.Debug.Log("UDP data head " + (char)data[0]);
-        await _SendUDPMessage(data);
-	}
+#if !UNITY_EDITOR
 
     DatagramSocket socket;
 
 	async void Start()
 	{
+		Debug.Log("Waiting for a connection...");
 
-	Debug.Log("Waiting for a connection...");
+		socket = new DatagramSocket();
+		socket.MessageReceived += Socket_MessageReceived;
 
-	socket = new DatagramSocket();
-	socket.MessageReceived += Socket_MessageReceived;
+		HostName IP = null;
+		try
+		{
+		    var icp = NetworkInformation.GetInternetConnectionProfile();
 
-	HostName IP = null;
-	try
+		    IP = Windows.Networking.Connectivity.NetworkInformation.GetHostNames()
+		    .SingleOrDefault(
+		    hn =>
+		    hn.IPInformation?.NetworkAdapter != null && hn.IPInformation.NetworkAdapter.NetworkAdapterId
+		    == icp.NetworkAdapter.NetworkAdapterId);
+
+		await socket.BindEndpointAsync(IP, PupilSettings.Instance.connection.pupilRemotePort);
+		}
+		catch (Exception e)
+		{
+		    Debug.Log(e.ToString());
+		    Debug.Log(SocketError.GetStatus(e.HResult).ToString());
+		    return;
+		}
+	}
+
+	//Send an UDP-Packet
+	public async void SendUDPMessage(byte[] data)
 	{
-	    var icp = NetworkInformation.GetInternetConnectionProfile();
+		UnityEngine.Debug.Log("UDP data head " + (char)data[0]);
+		await _SendUDPMessage(data);
+	}
 
-	    IP = Windows.Networking.Connectivity.NetworkInformation.GetHostNames()
-	    .SingleOrDefault(
-	    hn =>
-	    hn.IPInformation?.NetworkAdapter != null && hn.IPInformation.NetworkAdapter.NetworkAdapterId
-	    == icp.NetworkAdapter.NetworkAdapterId);
-
-	await socket.BindEndpointAsync(IP, PupilSettings.Instance.connection.pupilRemotePort);
-	}
-	catch (Exception e)
-	{
-	    Debug.Log(e.ToString());
-	    Debug.Log(SocketError.GetStatus(e.HResult).ToString());
-	    return;
-	}
-	}
-    
 	private async System.Threading.Tasks.Task _SendUDPMessage(byte[] data)
 	{
-	using (var stream = await socket.GetOutputStreamAsync(new Windows.Networking.HostName(PupilSettings.Instance.connection.pupilRemoteIP), PupilSettings.Instance.connection.pupilRemotePort))
+		using (var stream = await socket.GetOutputStreamAsync(new Windows.Networking.HostName(PupilSettings.Instance.connection.pupilRemoteIP), PupilSettings.Instance.connection.pupilRemotePort))
 	    {
 	        using (var writer = new Windows.Storage.Streams.DataWriter(stream))
 	        {
@@ -72,21 +70,117 @@ public class UDPCommunication : Singleton<UDPCommunication>
 	    }
 	}
 
+	static MemoryStream ToMemoryStream(Stream input)
+	{
+		try
+		{                                         // Read and write in
+			byte[] block = new byte[0x1000];       // blocks of 4K.
+			MemoryStream ms = new MemoryStream();
+			while (true)
+			{
+				int bytesRead = input.Read(block, 0, block.Length);
+				if (bytesRead == 0) return ms;
+				ms.Write(block, 0, bytesRead);
+			}
+		}
+		finally { }
+	}
 
-	#else
+	private void Socket_MessageReceived(Windows.Networking.Sockets.DatagramSocket sender, Windows.Networking.Sockets.DatagramSocketMessageReceivedEventArgs args)
+	{
+		//Read the message that was received from the UDP  client.
+		Stream streamIn = args.GetDataStream().AsStreamForRead();
+		MemoryStream ms = ToMemoryStream(streamIn);
+		byte[] msgData = ms.ToArray();
+
+
+		if (ExecuteOnMainThread.Count == 0)
+		{
+			ExecuteOnMainThread.Enqueue(() => { InterpreteUDPData(msgData); });
+		}
+	}
+
+#else
+
+	System.Threading.Thread udpThread;
+	System.Net.Sockets.UdpClient udpClient;
+	System.Net.IPEndPoint _remoteEndPoint;
+	System.Net.IPEndPoint remoteEndPoint
+	{
+		get 
+		{
+			if ( _remoteEndPoint == null )
+				_remoteEndPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Parse(PupilSettings.Instance.connection.pupilRemoteIP), int.Parse(PupilSettings.Instance.connection.pupilRemotePort));
+			return _remoteEndPoint;
+		}
+	}
+
+	// Needs a separate port if Pupil Capture and Editor are running on the same machine
+	public int editorModeUDPPort = 50022;
+
 	// to make Unity-Editor happy :-)
 	void Start()
 	{
+		Debug.Log("Waiting for a connection...");
 
+		// create thread for reading UDP messages
+		udpThread = new System.Threading.Thread(new System.Threading.ThreadStart(Listen));
+		udpThread.IsBackground = true;
+		udpThread.Start();
+	}
+
+	private void Listen()
+	{
+		try
+		{
+			udpClient = new System.Net.Sockets.UdpClient(editorModeUDPPort);
+			print ("Started UDP client on port: " + editorModeUDPPort);
+
+			while (true)
+			{
+				// receive bytes
+				byte[] data = udpClient.Receive(ref _remoteEndPoint);
+				if (ExecuteOnMainThread.Count == 0)
+				{
+					ExecuteOnMainThread.Enqueue(() => { InterpreteUDPData(data); });
+				}
+			}
+		}
+		catch (Exception err)
+		{
+			print(err.ToString());
+		}
 	}
 
 	public void SendUDPMessage(byte[] data)
 	{
-
+		try
+		{
+			udpClient.Send (data, data.Length, remoteEndPoint);
+		}
+		catch (Exception e)
+		{
+			UnityEngine.Debug.Log (e.ToString ());
+		}
 	}
 
-	#endif
-	// Update is called once per frame
+	private void StopUDPThread()
+	{
+		if (udpThread != null && udpThread.IsAlive)
+		{
+			udpThread.Abort();
+		}
+		if (udpClient != null)
+			udpClient.Close();
+	}
+
+	void OnDisable()
+	{
+		StopUDPThread ();
+	}
+
+#endif
+
 	void Update()
 	{
 		while (ExecuteOnMainThread.Count > 0)
@@ -147,20 +241,20 @@ public class UDPCommunication : Singleton<UDPCommunication>
 						var leftEyePosition = FloatArrayFromPacket (data, 4);
 						PupilData._2D.LeftEyePosUDP.x = leftEyePosition [0];
 						PupilData._2D.LeftEyePosUDP.y = leftEyePosition [1];
-					    UnityEngine.Debug.Log ("Left eye position: " + PupilData._2D.LeftEyePosUDP.ToString());
+//					    UnityEngine.Debug.Log ("Left eye position: " + PupilData._2D.LeftEyePosUDP.ToString());
 					} else if (data [3] == (byte)'0')
 					{
 						//UnityEngine.Debug.Log("Right eye position received");
 						var rightEyePosition = FloatArrayFromPacket (data, 4);
 						PupilData._2D.RightEyePosUDP.x = rightEyePosition [0];
 						PupilData._2D.RightEyePosUDP.y = rightEyePosition [1];
-					    UnityEngine.Debug.Log ("Right Eye Position: " + PupilData._2D.RightEyePosUDP.ToString());
+//					    UnityEngine.Debug.Log ("Right Eye Position: " + PupilData._2D.RightEyePosUDP.ToString());
 					} else if (data [3] == (byte)'2')
 					{
 						var gaze2DPosition = FloatArrayFromPacket (data, 4);
 						PupilData._2D.Gaze2DPosUDP.x = gaze2DPosition [0];
 						PupilData._2D.Gaze2DPosUDP.y = gaze2DPosition [1];
-					    UnityEngine.Debug.Log ("Gazepoint 2D: " + PupilData._2D.Gaze2DPosUDP.ToString());
+//					    UnityEngine.Debug.Log ("Gazepoint 2D: " + PupilData._2D.Gaze2DPosUDP.ToString());
 					}
 					else
 						UnityEngine.Debug.Log ("Unknown gaze 2d data");
@@ -170,7 +264,7 @@ public class UDPCommunication : Singleton<UDPCommunication>
 					PupilData._3D.Gaze3DPosUDP.x = gaze3DPosition [0] / PupilSettings.PupilUnitScalingFactor;
 					PupilData._3D.Gaze3DPosUDP.y = gaze3DPosition [1] / PupilSettings.PupilUnitScalingFactor;
 					PupilData._3D.Gaze3DPosUDP.z = gaze3DPosition [2] / PupilSettings.PupilUnitScalingFactor;
-					UnityEngine.Debug.Log ("Gazepoint 3D: " + PupilData._3D.Gaze3DPosUDP.ToString());
+//					UnityEngine.Debug.Log ("Gazepoint 3D: " + PupilData._3D.Gaze3DPosUDP.ToString());
 				} else
 					UnityEngine.Debug.Log ("Unknown gaze event");
 				break;
@@ -215,39 +309,4 @@ public class UDPCommunication : Singleton<UDPCommunication>
 		}
 		return Encoding.ASCII.GetString (message);
 	}
-
-	#if !UNITY_EDITOR
-
-	static MemoryStream ToMemoryStream(Stream input)
-	{
-	    try
-	    {                                         // Read and write in
-	        byte[] block = new byte[0x1000];       // blocks of 4K.
-	        MemoryStream ms = new MemoryStream();
-	        while (true)
-	        {
-	            int bytesRead = input.Read(block, 0, block.Length);
-	            if (bytesRead == 0) return ms;
-	            ms.Write(block, 0, bytesRead);
-	        }
-	    }
-	    finally { }
-	}
-
-	private void Socket_MessageReceived(Windows.Networking.Sockets.DatagramSocket sender,
-	Windows.Networking.Sockets.DatagramSocketMessageReceivedEventArgs args)
-	{
-	    //Read the message that was received from the UDP  client.
-	    Stream streamIn = args.GetDataStream().AsStreamForRead();
-	    MemoryStream ms = ToMemoryStream(streamIn);
-	    byte[] msgData = ms.ToArray();
-
-
-	    if (ExecuteOnMainThread.Count == 0)
-	    {
-	        ExecuteOnMainThread.Enqueue(() => { InterpreteUDPData(msgData); });
-	    }
-	}
-
-	#endif
 }
