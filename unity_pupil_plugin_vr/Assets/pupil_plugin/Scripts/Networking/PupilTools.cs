@@ -37,7 +37,7 @@ public class PupilTools : MonoBehaviour
 	public static event GUIRepaintAction WantRepaint;
 	public static event OnCalibrationStartDeleg OnCalibrationStarted;
 	public static event OnCalibrationEndDeleg OnCalibrationEnded;
-	public static event OnCalibrationEndDeleg OnCalibrationFailed;
+	public static event OnCalibrationFailedDeleg OnCalibrationFailed;
 	public static event OnConnectedDelegate OnConnected;
 	public static event OnDisconnectingDelegate OnDisconnecting;
 	public static event OnReceiveDataDelegate OnReceiveData;
