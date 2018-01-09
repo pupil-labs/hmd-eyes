@@ -240,14 +240,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		{
 			EditorGUI.BeginChangeCheck ();
 
-			if (Recorder.isProcessing)
-			{
-				GUI.enabled = false;
-				Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, "Processing ... ", "Button", GUILayout.Height (50));
-			} else
-			{
-				Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, "Recording", "Button", GUILayout.Height (50));
-			}
+			Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, "Recording", "Button", GUILayout.Height (50));
 
 			GUI.enabled = true;
 			GUI.backgroundColor = Color.white;

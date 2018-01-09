@@ -37,11 +37,6 @@ namespace FFmpegOut
         RenderTexture _tempTarget;
         GameObject _tempBlitter;
 
-		Thread RecorderThread;
-
-		List<byte[]> renderPipeQueue = new List<byte[]>();
-//		object datalock = new object();
-
 		int renderedFrameCount = 0;
 		int writtenFrameCount = 0;
 
@@ -74,8 +69,6 @@ namespace FFmpegOut
                 );
                 enabled = false;
             }
-			RecorderThread = new Thread (RecorderThreadMethod);
-			RecorderThread.Start ();
         }
 
 //        void OnDisable()
@@ -121,30 +114,6 @@ namespace FFmpegOut
 			Recorder.isRecording = false;
 			PupilTools.StopPupilServiceRecording ();
 			_recorderState = RecorderState.PROCESSING;
-			Recorder.isProcessing = true;
-		}
-
-		void RecorderThreadMethod(){
-			renderPipeQueue.Clear();
-			while (true){
-				Thread.Sleep (1);
-
-				if (renderPipeQueue.Count > 0) {
-					_pipe.Write (renderPipeQueue [0]);
-					writtenFrameCount++;
-					renderPipeQueue.RemoveAt (0);
-//					print ("writing data. Remaining : " + renderPipeQueue.Count);
-				} else {
-					if (_recorderState == RecorderState.PROCESSING) {
-						Recorder.isProcessing = false;
-						_recorderState = RecorderState.STOPPING;
-						RecorderThread.Join ();
-					}
-				}
-
-			}
-
-
 		}
 
         void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -159,19 +128,13 @@ namespace FFmpegOut
 					Debug.LogWarning ("Material for the recorder is null, fix this!");
 				}
 
-
                 var tempTex = new Texture2D(source.width, source.height, TextureFormat.RGB24, false);
                 tempTex.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0, false);
                 tempTex.Apply();
 
-
-
-				renderPipeQueue.Add (tempTex.GetRawTextureData ());
-				renderedFrameCount++;
-
 				// With the winter 2017 release of this plugin, Pupil timestamp is set to Unity time when connecting
 				timeStampList.Add (Time.time);
-                //_pipe.Write(tempTex.GetRawTextureData());
+                _pipe.Write(tempTex.GetRawTextureData());
 
                 Destroy(tempTex);
                 RenderTexture.ReleaseTemporary(tempRT);
@@ -188,7 +151,6 @@ namespace FFmpegOut
         {
             if (_pipe != null) return;
 
-			renderPipeQueue.Clear ();
 			timeStampList = new List<double> ();
 
             var camera = GetComponent<Camera>();
@@ -250,7 +212,7 @@ namespace FFmpegOut
             // Close the output stream.
             if (_pipe != null)
             {
-				Debug.Log ("Capture ended (" + _pipe.Filename + ")" + ". Rendered frame count on MainThread : " + renderedFrameCount + ". Written out frame count on SecondaryThread : " + writtenFrameCount + ". Leftover : " + renderPipeQueue.Count);
+				Debug.Log ("Capture ended (" + _pipe.Filename + ").");
 
 				// Write pupil timestamps to a file
 				string timeStampFileName = "Unity_" + PupilSettings.Instance.currentCamera.name;

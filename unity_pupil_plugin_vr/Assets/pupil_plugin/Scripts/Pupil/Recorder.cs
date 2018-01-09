@@ -10,7 +10,6 @@ public class Recorder
 {
 	public static GameObject RecorderGO;
 	public static bool isRecording;
-	public static bool isProcessing;
 #if !UNITY_WSA
 	public FFmpegOut.FFmpegPipe.Codec codec;
 	public FFmpegOut.FFmpegPipe.Resolution resolution;
