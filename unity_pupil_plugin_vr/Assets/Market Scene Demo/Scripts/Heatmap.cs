@@ -39,6 +39,8 @@ public class Heatmap : MonoBehaviour
 			PupilSettings.Instance.currentCamera.cullingMask &= ~(1 << heatmapLayer);
 
 		heatmapPixelsToBeRemoved = new Dictionary<Vector2, float> ();
+
+		InitializeHeatmapSphere ();
 	}
 
 	void OnDisable()
@@ -62,6 +64,16 @@ public class Heatmap : MonoBehaviour
 
 		heatmapTexture.SetPixels (cleared);
 		heatmapTexture.Apply ();
+	}
+
+	void InitializeHeatmapSphere()
+	{
+		var sphereMesh = GetComponent<MeshFilter> ().sharedMesh;
+		if (sphereMesh.triangles [0] == 0)
+		{
+			Debug.Log ("Sphere-mesh needed to be inverted");
+			sphereMesh.triangles = sphereMesh.triangles.Reverse ().ToArray ();
+		}
 	}
 
 	Dictionary<Vector2,float> heatmapPixelsToBeRemoved;
