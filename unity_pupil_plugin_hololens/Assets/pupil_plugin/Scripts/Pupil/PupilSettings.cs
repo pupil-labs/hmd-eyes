@@ -53,7 +53,7 @@ public class PupilSettings:ScriptableObject
 	[Serializable]
 	public class DebugVars
 	{
-		public bool printSampling;
+		public bool printCalibration;
 		public bool printMessage;
 		public bool printMessageType;
 	}

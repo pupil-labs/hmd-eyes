@@ -205,7 +205,7 @@ public class PupilTools : MonoBehaviour
 			}
 		});
 
-		if (Settings.debug.printSampling)
+		if (Settings.debug.printCalibration)
 		{
 			print ("Sending ref_data");
 

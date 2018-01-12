@@ -109,7 +109,8 @@ public class Connection
             data[1 + i] = message[i];
 
         }
-//        UnityEngine.Debug.Log(dictionary["subject"]);
+		if (PupilSettings.Instance.debug.printCalibration)
+        	UnityEngine.Debug.Log(dictionary["subject"]);
 		UDPCommunication.Instance.SendUDPMessage (data);
 	}
 }

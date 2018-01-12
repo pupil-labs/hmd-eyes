@@ -123,7 +123,7 @@ public class Calibration
 			if ( currentCalibrationSamples > samplesToIgnoreForEyeMovement )
 				PupilTools.AddCalibrationPointReferencePosition (currentCalibrationPointPosition, t);
 			
-			if (PupilSettings.Instance.debug.printSampling)
+			if (PupilSettings.Instance.debug.printCalibration)
 				Debug.Log ("Point: " + currentCalibrationPoint + ", " + "Sampling at : " + currentCalibrationSamples + ". On the position : " + currentCalibrationPointPosition [0] + " | " + currentCalibrationPointPosition [1]);
 
 			currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
