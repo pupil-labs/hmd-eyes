@@ -13,9 +13,11 @@ The purpose of this repository is do demonstrates how to implement Pupil with Un
 ## Setup
 
 1. Make sure that you have [Pupil Capture or Pupil Service](https://github.com/pupil-labs/pupil/releases/latest) on a Linux, macOS, or Windows 10 machine. 
-2. The Unity3D sample project contains three scenes: `pupil_plugin/Calibration.unity` and `Market Scene Demo/2D Calibration Demo.unity` respectively `Market Scene Demo/3D Calibration Demo.unity`
-3. The former contains only the `PupilGazeTracker` gameobject - which lets you adapt settings - and can be used to test the calibration process. The latter two serve as a starting point on how the eye tracking can be implemented with either a 2D or 3D calibration.
-4. On Windows 10 and with the standard project settings, the path is set to `C:/Program Files/Pupil Service/pupil_service.exe`. If you have a different setup, please adapt it as follows 
+2. The Unity3D sample project contains multiple scenes: `pupil_plugin/Calibration.unity`, `pupil_plugin/Blink.unity`, `Market Scene Demo/2D Calibration Demo.unity`, `Market Scene Demo/3D Calibration Demo.unity`, `Market Scene Demo/Heatmap.unity` and `Market Scene Demo/SphericalVideo.unity`
+3. The former two represent barebone examples with an implementation of the calibration process (needed for gaze tracking) and a simpler variant that accesses Pupil to get blink information
+4. The latter ones are all based on the market scene assets available for free on the Unity Asset Store and serve as a starting point on how eye tracking can be implemented with either a 2D or 3D calibration
+5. Before you start any scene, make sure you either have Pupil Capture already running or that the path to Pupil Service is set correctly.
+6. On Windows 10 and with the standard project settings, the path is set to `C:/Program Files/Pupil Service/pupil_service.exe`. If you have a different setup, please adapt it as follows 
 
 ## Changing standard settings via PupilGazeTracker
 1. Connection
@@ -31,12 +33,12 @@ The purpose of this repository is do demonstrates how to implement Pupil with Un
 		
 2. Auto-run Pupil App settings - If auto-run is enabled, Pupil Service will run automatically when your Unity3d scene is in play mode. You can disable this behavior by turning off auto-run in `Settings>Pupil App` and manually Start or Stop Pupil Service.
 3. Confirm connection - Make sure that the plugin status (below the Pupil Labs logotype) displays the word "connected" and that both of the eye icons are green. The green eye icons signify that the eye processes are running.
-4. Once you press `Play`, Unity will try to connect based on your settings and two `Pupil Service` windows should appear (one for either eye). Please make sure Unity is in focus/the foreground app after this process.
+4. Once you press `Play`, Unity will try to connect based on your settings and two Pupil windows should appear (one for either eye). Please make sure Unity is in focus/the foreground app after this process.
 
 ## Calibration
 
 1. Starting with versions released after mid November 2017 and in addition to 2D calibration, we also support 3D calibration. This requires a Pupil version >= 1.0
-2. Calibration is the first step for both Calibration and Market Scene Demo scenes, after the connection has been established.
+2. Calibration is the first step for both the Calibration and all Market Scene Demos, after the connection has been established.
 3. This would be a good point to put your headset on.
 4. As should be displayed on screen, press the key `c` to start the calbration process
 5. Follow the markers as their position changes
@@ -73,12 +75,23 @@ For users who do not need gaze data or want a simple example on how to subscribe
 * This includes starting/stoping the plugin, un-/subscribing to "blinks" and receiving the dictionary packages from Pupil
 	
 ## Spherical Video demo
-As many users asked for this feature, we now include a demo that can load a 360 degree video. Combined with Pupil, this allows to observe what the user is looking at.
-* Uses ffmpeg to access videoframes at runtime. Depending on the machine it is running on and if it is running in Unity Editor or standalone, this can be slow
-* Select the `VideoSphere` gameobject and click the `Select new video..` button to set the `File Path` variable of the FFmpegPlayer script component
+As many users asked for this feature, we now include a demo that can load and display a 360 degree video. Combined with Pupil, this allows to visualize what the user is looking at.
+* There are two ways to load a spherical video
+	1. Using Unity's internal player, for which the video has to be part of the project files. The included example is based on the Market Demo scene
+	2. Using ffmpeg to load external videos and access videoframes at runtime. Depending on the machine it is running on and if it is running in Unity Editor or standalone, this can be slow
+* Select the `VideoSphere` gameobject to toggle between the two video modes.
 * The video will start after the obligatory calibration has succeeded
-* Gaze visualization will also start at this time (triggered by the CalibrationDemo script component also attached to `VideoSphere`)
-	
+* Gaze visualization will also start at this time (triggered by the CalibrationDemo script component also attached to the main camera)
+
+## Heatmap demo
+The heatmap demo allows to export gaze visualization to a spherical video. Eye tracking positions are translated to coordinates on a spherical texture, which is overlayed on the 3d scene. The heatmap is available as Prefab, as well, and can be added to existing scenes by draging it onto the main camera of that scene. 
+* A few variables can change how the heatmap behaves. To change them select the Heatmap gameobject
+* "Highlight Color": Depending on your scene, a fitting highlight color can be set
+* "Display on Headset": This option makes sense for debugging, but when in actual use, the heatmap should not distract the users be only visible in the resulting video
+* "Remove Highlight Pixels After Time": Set after how many seconds an old tracking position should no longer be visualized
+* "Highlight Size": The size of pixels on the heatmap
+
+
 ## Connect
 
 Chat with the hmd-eyes community on [Discord](https://discord.gg/PahDtSH).
