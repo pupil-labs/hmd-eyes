@@ -284,7 +284,7 @@ public class UDPCommunication : Singleton<UDPCommunication>
 			UnityEngine.Debug.Log ("Forcing 2D calibration mode (Pupil version < 1 detected)");
 			PupilTools.CalibrationMode = Calibration.Mode._2D;
 			break;
-		case 'R':
+		case (byte) 'R':
 			if (PupilSettings.Instance.debug.printCalibration)
 				Debug.Log ("Reference points received");
 			break;
