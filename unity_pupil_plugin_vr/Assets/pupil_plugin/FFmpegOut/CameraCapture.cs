@@ -170,7 +170,9 @@ namespace FFmpegOut
             }
 
             // Open an output stream.
-			_pipe = new FFmpegPipe(PupilSettings.Instance.recorder.filePath, width, height, _frameRate, PupilSettings.Instance.recorder.codec);
+
+			var name = "Unity_" + PupilSettings.Instance.currentCamera.name;
+			_pipe = new FFmpegPipe(name, width, height, _frameRate, PupilSettings.Instance.recorder.codec);
 
             // Change the application frame rate.
             if (Time.captureFramerate == 0)

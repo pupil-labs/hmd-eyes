@@ -76,7 +76,7 @@ public class MarketWith2DCalibration : MonoBehaviour
 	{
 		if (monoColorMode)
 		{
-			shaderMaterial.SetFloat ("_highlightThreshold", 0.1f);
+			shaderMaterial.SetFloat ("_highlightThreshold", 0.05f);
 			switch (sceneCamera.stereoActiveEye)
 			{
 			case Camera.MonoOrStereoscopicEye.Left:

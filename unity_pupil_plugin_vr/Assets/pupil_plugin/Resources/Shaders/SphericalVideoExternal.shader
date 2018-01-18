@@ -1,5 +1,5 @@
 ﻿// Based on Unlit shader, but culls the front faces instead of the back
-Shader "Pupil/SphericalVideo" 
+Shader "Pupil/SphericalVideoExternal" 
 {
 	Properties
 	{

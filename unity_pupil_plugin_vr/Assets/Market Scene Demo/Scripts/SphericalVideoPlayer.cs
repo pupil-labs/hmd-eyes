@@ -6,14 +6,16 @@ using System.IO;
 using System.Diagnostics;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Video;
 using FFmpegUtils;
 using FFmpegOut;
 
 // Based on this GitHub repository: https://github.com/ousttrue/FFMPEG_Texture
 
-public class FFmpegPlayer : MonoBehaviour 
+public class SphericalVideoPlayer : MonoBehaviour 
 {
 	public string FilePath;
+	public bool UseExternalVideo;
 
 	Process _subprocess;
 	YUVReader _yuvReader;
@@ -25,12 +27,18 @@ public class FFmpegPlayer : MonoBehaviour
 	Texture2D UTexture;
 	Texture2D VTexture;
 
-	Material material;
-
 	void Start () 
 	{
-		material = gameObject.GetComponent<MeshRenderer> ().sharedMaterial;
+		if (UseExternalVideo)
+		{
+			InitializeExternalPlayer ();
+			GetComponent<MeshRenderer> ().material = Resources.Load<Material> ("SphericalVideoExternal");
+			GetComponent<VideoPlayer> ().enabled = false;
+		}
+	}
 
+	void InitializeExternalPlayer()
+	{
 		if (!File.Exists (FilePath))
 		{
 			UnityEngine.Debug.Log ("No file at given path");
@@ -40,7 +48,7 @@ public class FFmpegPlayer : MonoBehaviour
 		var opt = String.Format("-i \"{0}\"", FilePath);
 		opt += " -f yuv4mpegpipe";
 		opt += " -pix_fmt yuv444p";
-//		opt += " -filter:v \"setpts=0.25*PTS\"";
+		//		opt += " -filter:v \"setpts=0.25*PTS\"";
 		opt += " -";
 
 		var info = new ProcessStartInfo(FFmpegConfig.BinaryPath, opt);
@@ -61,10 +69,9 @@ public class FFmpegPlayer : MonoBehaviour
 
 		lastFrameNumber = -1;
 	}
-	
-	// Update is called once per frame
+
 	private int lastFrameNumber;
-	void Update () 
+	void UpdateExternalPlayer()
 	{
 		var error = ErrorHandling.Dequeue();
 		if (error.Any())
@@ -78,11 +85,11 @@ public class FFmpegPlayer : MonoBehaviour
 			if (_yuvReader != null && _yuvReader.Header != null)
 			{
 				Texture = new Texture2D(_yuvReader.Header.Width, _yuvReader.Header.Height, TextureFormat.Alpha8, false);
-				material.mainTexture = Texture;
+				GetComponent<MeshRenderer> ().material.mainTexture = Texture;
 				UTexture = new Texture2D(_yuvReader.Header.Width, _yuvReader.Header.Height, TextureFormat.Alpha8, false);
-				material.SetTexture("_UTex", UTexture);
+				GetComponent<MeshRenderer> ().material.SetTexture("_UTex", UTexture);
 				VTexture = new Texture2D(_yuvReader.Header.Width, _yuvReader.Header.Height, TextureFormat.Alpha8, false);
-				material.SetTexture("_VTex", VTexture);
+				GetComponent<MeshRenderer> ().material.SetTexture("_VTex", VTexture);
 			}
 		}
 		else
@@ -100,6 +107,12 @@ public class FFmpegPlayer : MonoBehaviour
 				lastFrameNumber = frame.FrameNumber;
 			}
 		}
+	}
+
+	void Update () 
+	{
+		if (UseExternalVideo)
+			UpdateExternalPlayer ();
 	}
 
 	void OnDisable()
