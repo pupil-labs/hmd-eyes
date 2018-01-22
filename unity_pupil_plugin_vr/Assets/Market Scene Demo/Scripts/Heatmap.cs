@@ -204,13 +204,13 @@ public class Heatmap : MonoBehaviour
 		// Keep heatmap collider rotation constant. '-90' derives from the sphere mesh normals we construct above
 		transform.eulerAngles = Vector3.up * -90f;
 
-//		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
-//		{
-//			Vector2 gazePosition = PupilData._2D.GetEyeGaze (GazeSource.BothEyes);
+		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
+		{
+			Vector2 gazePosition = PupilData._2D.GetEyeGaze (GazeSource.BothEyes);
 
 			RaycastHit hit;
-			if (Input.GetMouseButton(0) && Physics.Raycast(cam.ScreenPointToRay (Input.mousePosition), out hit, 1f, (int) collisionLayer))
-//			if (Physics.Raycast(cam.ViewportPointToRay (gazePosition), out hit, 1f, (int)collisionLayer))
+//			if (Input.GetMouseButton(0) && Physics.Raycast(cam.ScreenPointToRay (Input.mousePosition), out hit, 1f, (int) collisionLayer))
+			if (Physics.Raycast(cam.ViewportPointToRay (gazePosition), out hit, 1f, (int)collisionLayer))
 			{
 				if ( hit.collider.gameObject != gameObject )
 					return;
@@ -230,7 +230,7 @@ public class Heatmap : MonoBehaviour
 						highlightPixelsToBeRemoved.Add (pixelUV, Time.time + removeHighlightPixelsAfterTimeInterval);
 				}
 			}
-//		}
+		}
 		var removablePixels = highlightPixelsToBeRemoved.Where(p => p.Value < Time.time);
 		for (int i = 0; i < removablePixels.Count() ; i++)
 		{
@@ -254,7 +254,6 @@ public class Heatmap : MonoBehaviour
 		
 		if (recording)
 		{
-			
 			if (infoText.gameObject.activeInHierarchy)
 				infoText.gameObject.SetActive (false);
 			
