@@ -239,7 +239,7 @@ public class PupilGazeTracker:MonoBehaviour
 		if (PupilGazeTracker._Instance == null)
 			PupilGazeTracker._Instance = this;
 
-		PupilData.calculateMovingAverage = true;
+		PupilData.calculateMovingAverage = false;
 
 		//make sure that if the toggles are on it functions as the toggle requires it
 		if (isOperatorMonitor && OnOperatorMonitor == null)

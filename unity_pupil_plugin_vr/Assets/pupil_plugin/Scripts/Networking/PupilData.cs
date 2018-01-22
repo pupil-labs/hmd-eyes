@@ -149,20 +149,44 @@ public static class PupilData
 
 		public static Vector3 LeftEyeCenter
 		{
-			get { return leftEyeCenter.Average3D; }
+			get 
+			{
+				if (calculateMovingAverage)
+					return leftEyeCenter.Average3D;
+				else
+					return leftEyeCenter.Raw3D;
+			}
 		}
 		public static Vector3 RightEyeCenter
 		{
-			get { return rightEyeCenter.Average3D; }
+			get 
+			{
+				if (calculateMovingAverage)
+					return rightEyeCenter.Average3D; 
+				else
+					return rightEyeCenter.Raw3D;
+			}
 		}
 
 		public static Vector3 LeftGazeNormal
 		{
-			get { return leftGazeNormal.Average3D; }
+			get 
+			{
+				if (calculateMovingAverage)
+					return leftGazeNormal.Average3D; 
+				else
+					return leftGazeNormal.Raw3D;
+			}
 		}
 		public static Vector3 RightGazeNormal
 		{
-			get { return rightGazeNormal.Average3D; }
+			get 
+			{
+				if (calculateMovingAverage)
+					return rightGazeNormal.Average3D; 
+				else
+					return rightGazeNormal.Raw3D;
+			}
 		}
 
 		public static class Circle
@@ -194,12 +218,26 @@ public static class PupilData
 	{
 		private static Vector2 LeftEyePos
 		{
-			get{ return leftEye.Average2D; }
+			get
+			{
+				if (calculateMovingAverage)
+					return leftEye.Average2D;
+				else
+					return leftEye.Raw2D;
+				 
+			}
 		}
 
 		private static Vector2 RightEyePos
 		{
-			get{ return rightEye.Average2D; }
+			get
+			{
+				if (calculateMovingAverage)
+					return rightEye.Average2D;
+				else
+					return rightEye.Raw2D;
+
+			}
 		}
 
 		private static Vector2 GazePosition

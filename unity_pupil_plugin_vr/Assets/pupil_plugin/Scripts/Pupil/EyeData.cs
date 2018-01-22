@@ -71,7 +71,7 @@ public class EyeData
 	{
 		get
 		{
-			if (data.Length != 2)
+			if (data == null || data.Length != 2)
 				return Vector2.zero;
 			_average2D.x = data [0].Value;
 			_average2D.y = data [1].Value;
@@ -83,7 +83,7 @@ public class EyeData
 	{
 		get
 		{
-			if (data.Length != 3)
+			if (data == null || data.Length != 3)
 				return Vector3.zero;
 			_average3D.x = data [0].Value;
 			_average3D.y = -data [1].Value;
@@ -96,7 +96,7 @@ public class EyeData
 	{
 		get
 		{
-			if (raw.Length != 2)
+			if (raw == null || raw.Length != 2)
 				return Vector2.zero;
 			_raw2D.x = raw [0];
 			_raw2D.y = raw [1];
@@ -108,7 +108,7 @@ public class EyeData
 	{
 		get
 		{
-			if (raw.Length != 3)
+			if (raw == null || raw.Length != 3)
 				return Vector3.zero;
 			_raw3D.x = raw [0];
 			_raw3D.y = -raw [1];

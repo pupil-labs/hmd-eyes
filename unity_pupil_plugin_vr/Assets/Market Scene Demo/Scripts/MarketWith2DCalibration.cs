@@ -18,7 +18,7 @@ public class MarketWith2DCalibration : MonoBehaviour
 
 	void Start () 
 	{
-		PupilData.calculateMovingAverage = true;
+		PupilData.calculateMovingAverage = false;
 
 		sceneCamera = gameObject.GetComponent<Camera> ();
 		calibrationDemo = gameObject.GetComponent<CalibrationDemo> ();
