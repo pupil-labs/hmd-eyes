@@ -25,7 +25,7 @@ SubShader {
             struct appdata_t {
                 float4 vertex : POSITION;
                 float2 texcoord : TEXCOORD0;
-//    			float3 normal : NORMAL;
+    			float3 normal : NORMAL;
     			float4 color : COLOR;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
@@ -34,7 +34,7 @@ SubShader {
                 float4 vertex : SV_POSITION;
                 float4 color : COLOR;
                 float2 texcoord : TEXCOORD0;
-//            	float3 normal: TEXCOORD1;
+            	float3 normal: TEXCOORD1;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -49,7 +49,7 @@ SubShader {
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.texcoord = TRANSFORM_TEX(v.texcoord, _MainTex);
-//                o.normal = v.normal;
+                o.normal = v.normal;
                 o.color = v.color;
                 return o;
             }
@@ -57,7 +57,8 @@ SubShader {
             fixed4 frag (v2f i) : SV_Target
             {
                 fixed4 highlight = tex2D(_MainTex, i.texcoord);
-				fixed4 cubemap = texCUBE(_Cubemap, i.color.rgb);
+//				fixed4 cubemap = texCUBE(_Cubemap, i.color.rgb);
+				fixed4 cubemap = texCUBE(_Cubemap, i.normal);
 
                 return lerp (cubemap,highlight,highlight.a);
             }

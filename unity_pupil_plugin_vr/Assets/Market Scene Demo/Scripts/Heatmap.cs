@@ -101,7 +101,6 @@ public class Heatmap : MonoBehaviour
 	}
 
 	public TextMesh infoText;
-	public MeshFilter RenderingMeshFilter;
 	public Camera RenderingCamera;
 	Material heatmapMaterial;
 	Material renderingMaterial;
@@ -115,61 +114,103 @@ public class Heatmap : MonoBehaviour
 		}
 		gameObject.AddComponent<MeshCollider> ();
 
-		if (RenderingMeshFilter != null)
+		if (RenderingCamera != null)
 		{
-			var mesh = RenderingMeshFilter.mesh;
+			RenderingCamera.aspect = 2;
+			renderingTexture = new RenderTexture (2048, 1024, 0);
+			RenderingCamera.targetTexture = renderingTexture;
 
-			var normals = mesh.normals;
-			Color[] colors = new Color[normals.Length];
-			for (int i = 0; i < colors.Length; i++)
-			{
-				var normal = normals [i].normalized;
-				colors [i] = new Color (normal.x, normal.y, normal.z);
-			}
-			mesh.colors = colors;
-
-			var newCoordsFromUV = mesh.uv;
-			Vector3[] newCoords = new Vector3[newCoordsFromUV.Length];
-			Vector3[] newNormals = new Vector3[newCoordsFromUV.Length];
-			for (int i = 0; i < newCoordsFromUV.Length; i++)
-			{
-				newCoords [i] = newCoordsFromUV [i] - Vector2.one * 0.5f;
-				newCoords [i].x *= 2;
-				newNormals [i] = Vector3.forward;
-			}
-			mesh.vertices = newCoords;
-			mesh.RecalculateNormals ();
-
-			renderingMaterial = RenderingMeshFilter.gameObject.GetComponent<MeshRenderer> ().material;
+			var meshFilter = RenderingCamera.GetComponentInChildren<MeshFilter> ();
+			meshFilter.mesh = GeneratePlaneWithSphereNormals ();
+			renderingMaterial = RenderingCamera.GetComponentInChildren<MeshRenderer> ().material;
 			renderingMaterial.SetTexture ("_MainTex", highlightTexture);
 			renderingMaterial.SetTexture ("_Cubemap", Cubemap);
 			renderingMaterial.SetColor ("_highlightColor", highlightColor);
 
-			if (RenderingCamera != null)
-			{
-				RenderingCamera.aspect = 2;
-				renderingTexture = new RenderTexture (2048, 1024, 0);
-				RenderingCamera.targetTexture = renderingTexture;
-			}
-
-			RenderingMeshFilter.gameObject.transform.parent = null;
+			RenderingCamera.gameObject.transform.parent = null;
 		}
 	}
+
+	int sphereMeshHeight = 32;
+	int sphereMeshWidth = 32;
+	Vector2 sphereMeshCenterOffset = Vector2.one * 0.5f;
+	Mesh GeneratePlaneWithSphereNormals()
+	{
+		Mesh result = new Mesh ();
+
+		var vertices = new Vector3[sphereMeshHeight * sphereMeshWidth];
+		var normals = new Vector3[sphereMeshHeight * sphereMeshWidth];
+		var uvs = new Vector2[sphereMeshHeight * sphereMeshWidth];
+
+		List<int> triangles = new List<int> ();
+
+		for (int i = 0; i < sphereMeshHeight; i++)
+		{
+			for (int j = 0; j < sphereMeshWidth; j++)
+			{
+				Vector2 uv = new Vector2 ((float)j / (float)(sphereMeshWidth - 1), (float)i / (float)(sphereMeshHeight - 1));
+				uvs [j + i * sphereMeshWidth] = new Vector2(1f - uv.x, 1f - uv.y);
+				normals [j + i * sphereMeshWidth] = NormalForUV (uv);
+				uv -= sphereMeshCenterOffset;
+				uv.x *= RenderingCamera.aspect;
+				uv.y *= RenderingCamera.orthographicSize * 2f;
+				vertices [j + i * sphereMeshWidth] = uv;
+
+				if (i > 0 && j > 0)
+				{
+					triangles.Add ((j - 1) + (i - 1) * sphereMeshWidth);
+					triangles.Add (j + i * sphereMeshWidth);
+					triangles.Add ((j - 1) + i * sphereMeshWidth);
+					triangles.Add ((j - 1) + (i - 1) * sphereMeshWidth);
+					triangles.Add (j + (i - 1) * sphereMeshWidth);
+					triangles.Add (j + i * sphereMeshWidth);
+				}
+			}
+		}
+		result.vertices = vertices;
+		result.normals = normals;
+		result.triangles = triangles.ToArray ().Reverse().ToArray();
+		result.uv = uvs;
+
+		return result;
+	}
+
+	Vector3 NormalForUV (Vector2 uv)
+	{
+		var normal = Vector3.zero;
+		if (uv.x <= 0.25f)
+			normal = Vector3.Slerp (Vector3.back, Vector3.left, uv.x * 4f);
+		else if (uv.x <= 0.5f)
+			normal = Vector3.Slerp (Vector3.left, Vector3.forward, (uv.x - 0.25f) * 4f);
+		else if (uv.x <= 0.75f)
+			normal = Vector3.Slerp (Vector3.forward, Vector3.right, (uv.x - 0.5f) * 4f);
+		else //if (uv.x <= 1f)
+			normal = Vector3.Slerp (Vector3.right, Vector3.back, (uv.x - 0.75f) * 4f);
+
+		if (uv.y <= 0.5f)
+			normal = Vector3.Slerp (Vector3.up, normal, uv.y * 2f);
+		else //if (uv.y <= 1f)
+			normal = Vector3.Slerp (normal, Vector3.down, (uv.y - 0.5f) * 2f);
+
+		return normal;
+	}
+
 
 	Dictionary<Vector2,float> highlightPixelsToBeRemoved;
 	bool updateHighlightTexture = false;
 	Texture2D temporaryTexture;
 	void Update () 
 	{
-		transform.rotation = Quaternion.identity;
+		// Keep heatmap collider rotation constant. '-90' derives from the sphere mesh normals we construct above
+		transform.eulerAngles = Vector3.up * -90f;
 
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
-		{
-			Vector2 gazePosition = PupilData._2D.GetEyeGaze (GazeSource.BothEyes);
+//		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
+//		{
+//			Vector2 gazePosition = PupilData._2D.GetEyeGaze (GazeSource.BothEyes);
 
 			RaycastHit hit;
-//			if (Input.GetMouseButton(0) && Physics.Raycast(cam.ScreenPointToRay (Input.mousePosition), out hit, 1f, (int) collisionLayer))
-			if (Physics.Raycast(cam.ViewportPointToRay (gazePosition), out hit, 1f, (int)collisionLayer))
+			if (Input.GetMouseButton(0) && Physics.Raycast(cam.ScreenPointToRay (Input.mousePosition), out hit, 1f, (int) collisionLayer))
+//			if (Physics.Raycast(cam.ViewportPointToRay (gazePosition), out hit, 1f, (int)collisionLayer))
 			{
 				if ( hit.collider.gameObject != gameObject )
 					return;
@@ -189,7 +230,7 @@ public class Heatmap : MonoBehaviour
 						highlightPixelsToBeRemoved.Add (pixelUV, Time.time + removeHighlightPixelsAfterTimeInterval);
 				}
 			}
-		}
+//		}
 		var removablePixels = highlightPixelsToBeRemoved.Where(p => p.Value < Time.time);
 		for (int i = 0; i < removablePixels.Count() ; i++)
 		{
@@ -208,10 +249,11 @@ public class Heatmap : MonoBehaviour
 		if (Input.GetKeyUp (KeyCode.H))
 			recording = !recording;
 
+		if ( renderingMaterial != null)
+			cam.RenderToCubemap (Cubemap);
+		
 		if (recording)
 		{
-			if ( renderingMaterial != null)
-				cam.RenderToCubemap (Cubemap);
 			
 			if (infoText.gameObject.activeInHierarchy)
 				infoText.gameObject.SetActive (false);
