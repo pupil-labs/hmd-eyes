@@ -2,7 +2,6 @@
 {
 	Properties 
 	{
-    	_MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
     	_Cubemap ("Reflection Probe", CUBE) = "white" {}
 	}
 
@@ -38,8 +37,6 @@ SubShader {
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
             samplerCUBE _Cubemap;
 
             v2f vert (appdata_t v)
@@ -56,11 +53,9 @@ SubShader {
 
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed4 highlight = tex2D(_MainTex, i.texcoord);
-//				fixed4 cubemap = texCUBE(_Cubemap, i.color.rgb);
 				fixed4 cubemap = texCUBE(_Cubemap, i.normal);
 
-                return lerp (cubemap,highlight,highlight.a);
+                return cubemap;
             }
         ENDCG
     }

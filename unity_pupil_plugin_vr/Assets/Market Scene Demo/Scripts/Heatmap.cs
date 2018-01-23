@@ -10,12 +10,15 @@ public class Heatmap : MonoBehaviour
 {
 	public Color highlightColor;
 	public bool displayOnHeadset = false;
-	public float removeHighlightPixelsAfterTimeInterval = 10;
+	public float removeParticleAfterTimeInterval = 10;
+	public TextMesh infoText;
 
+	int heatmapLayer;
 	LayerMask collisionLayer;
 	EStatus previousEStatus;
 
 	Camera cam;
+	Camera RenderingCamera;
 	// Use this for initialization
 	void OnEnable () 
 	{
@@ -30,23 +33,14 @@ public class Heatmap : MonoBehaviour
 		}
 
 		cam = GetComponentInParent<Camera> ();
+		RenderingCamera = GetComponentInChildren<Camera> ();
+
 		transform.localPosition = Vector3.zero;
 
-		InitializeHighlightTexture ();
-
-		int heatmapLayer = LayerMask.NameToLayer ("Heatmap");
+		heatmapLayer = LayerMask.NameToLayer ("Heatmap");
 		collisionLayer = (1 << heatmapLayer);
 
-		GetComponent<MeshRenderer> ().enabled = displayOnHeadset;
-
-//		if (displayOnHeadset)
-//			cam.cullingMask = cam.cullingMask | (1 << heatmapLayer);
-//		else
-//			cam.cullingMask &= ~(1 << heatmapLayer);
-
-		highlightPixelsToBeRemoved = new Dictionary<Vector2, float> ();
-
-		InitializeSpheres ();
+		InitializeMeshes ();
 	}
 
 	void OnDisable()
@@ -62,27 +56,7 @@ public class Heatmap : MonoBehaviour
 	}
 
 	[Range(0.125f,1f)]
-	public float highlightSize = 1;
-	int highlightTextureHeight = 128;
-	Texture2D highlightTexture;
-	void InitializeHighlightTexture()
-	{
-		highlightTextureHeight = (int)(128f / highlightSize);
-
-		highlightTexture = new Texture2D (2*highlightTextureHeight, highlightTextureHeight,TextureFormat.ARGB32,false);
-		Color[] cleared = new Color[highlightTexture.width * highlightTexture.height];
-		for (int i = 0; i < cleared.Length; i++)
-			cleared [i] = Color.clear;
-
-		highlightTexture.SetPixels (cleared);
-		highlightTexture.Apply ();
-
-		heatmapMaterial = GetComponent<MeshRenderer> ().material;
-		heatmapMaterial.SetTexture ("_MainTex", highlightTexture);
-
-		if (highlightColor.a != 1)
-			highlightColor.a = 1;
-	}
+	public float particleSize = 1;
 
 	private RenderTexture _cubemap;
 	public RenderTexture Cubemap
@@ -100,12 +74,10 @@ public class Heatmap : MonoBehaviour
 		}
 	}
 
-	public TextMesh infoText;
-	public Camera RenderingCamera;
-	Material heatmapMaterial;
+	MeshFilter RenderingMeshFilter;
 	Material renderingMaterial;
 	RenderTexture renderingTexture;
-	void InitializeSpheres()
+	void InitializeMeshes()
 	{
 		var sphereMesh = GetComponent<MeshFilter> ().mesh;
 		if (sphereMesh.triangles [0] == 0)
@@ -113,6 +85,7 @@ public class Heatmap : MonoBehaviour
 			sphereMesh.triangles = sphereMesh.triangles.Reverse ().ToArray ();
 		}
 		gameObject.AddComponent<MeshCollider> ();
+		visualization = GetComponentInChildren<ParticleSystem> ();
 
 		if (RenderingCamera != null)
 		{
@@ -120,14 +93,12 @@ public class Heatmap : MonoBehaviour
 			renderingTexture = new RenderTexture (2048, 1024, 0);
 			RenderingCamera.targetTexture = renderingTexture;
 
-			var meshFilter = RenderingCamera.GetComponentInChildren<MeshFilter> ();
-			meshFilter.mesh = GeneratePlaneWithSphereNormals ();
+			RenderingMeshFilter = RenderingCamera.GetComponentInChildren<MeshFilter> ();
+			RenderingMeshFilter.mesh = GeneratePlaneWithSphereNormals ();
 			renderingMaterial = RenderingCamera.GetComponentInChildren<MeshRenderer> ().material;
-			renderingMaterial.SetTexture ("_MainTex", highlightTexture);
 			renderingMaterial.SetTexture ("_Cubemap", Cubemap);
-			renderingMaterial.SetColor ("_highlightColor", highlightColor);
 
-			RenderingCamera.gameObject.transform.parent = null;
+			RenderingCamera.transform.parent = null;
 		}
 	}
 
@@ -151,28 +122,34 @@ public class Heatmap : MonoBehaviour
 				Vector2 uv = new Vector2 ((float)j / (float)(sphereMeshWidth - 1), (float)i / (float)(sphereMeshHeight - 1));
 				uvs [j + i * sphereMeshWidth] = new Vector2(1f - uv.x, 1f - uv.y);
 				normals [j + i * sphereMeshWidth] = NormalForUV (uv);
-				uv -= sphereMeshCenterOffset;
-				uv.x *= RenderingCamera.aspect;
-				uv.y *= RenderingCamera.orthographicSize * 2f;
-				vertices [j + i * sphereMeshWidth] = uv;
+				vertices [j + i * sphereMeshWidth] = PositionForUV(uv);
 
 				if (i > 0 && j > 0)
 				{
-					triangles.Add ((j - 1) + (i - 1) * sphereMeshWidth);
 					triangles.Add (j + i * sphereMeshWidth);
-					triangles.Add ((j - 1) + i * sphereMeshWidth);
 					triangles.Add ((j - 1) + (i - 1) * sphereMeshWidth);
+					triangles.Add ((j - 1) + i * sphereMeshWidth);
 					triangles.Add (j + (i - 1) * sphereMeshWidth);
+					triangles.Add ((j - 1) + (i - 1) * sphereMeshWidth);
 					triangles.Add (j + i * sphereMeshWidth);
 				}
 			}
 		}
 		result.vertices = vertices;
 		result.normals = normals;
-		result.triangles = triangles.ToArray ().Reverse().ToArray();
+		result.triangles = triangles.ToArray ();
 		result.uv = uvs;
 
 		return result;
+	}
+
+	Vector3 PositionForUV (Vector2 uv)
+	{
+		Vector2 position = uv;
+		position -= sphereMeshCenterOffset;
+		position.x *= RenderingCamera.aspect;
+		position.y *= RenderingCamera.orthographicSize * 2f;
+		return position;
 	}
 
 	Vector3 NormalForUV (Vector2 uv)
@@ -195,56 +172,43 @@ public class Heatmap : MonoBehaviour
 		return normal;
 	}
 
+	ParticleSystem visualization;
+	ParticleSystem.EmitParams particleSystemParameters = new ParticleSystem.EmitParams ();
 
-	Dictionary<Vector2,float> highlightPixelsToBeRemoved;
-	bool updateHighlightTexture = false;
 	Texture2D temporaryTexture;
 	void Update () 
 	{
 		// Keep heatmap collider rotation constant. '-90' derives from the sphere mesh normals we construct above
 		transform.eulerAngles = Vector3.up * -90f;
 
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
-		{
-			Vector2 gazePosition = PupilData._2D.GetEyeGaze (GazeSource.BothEyes);
+//		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
+//		{
+//			Vector2 gazePosition = PupilData._2D.GetEyeGaze (GazeSource.BothEyes);
 
 			RaycastHit hit;
-//			if (Input.GetMouseButton(0) && Physics.Raycast(cam.ScreenPointToRay (Input.mousePosition), out hit, 1f, (int) collisionLayer))
-			if (Physics.Raycast(cam.ViewportPointToRay (gazePosition), out hit, 1f, (int)collisionLayer))
+			if (Input.GetMouseButton(0) && Physics.Raycast(cam.ScreenPointToRay (Input.mousePosition), out hit, 1f, (int) collisionLayer))
+//			if (Physics.Raycast(cam.ViewportPointToRay (gazePosition), out hit, 1f, (int)collisionLayer))
 			{
 				if ( hit.collider.gameObject != gameObject )
 					return;
-			
-				Vector2 pixelUV = hit.textureCoord;
-				pixelUV.x = (int) (pixelUV.x*highlightTexture.width);
-				pixelUV.y = (int) (pixelUV.y*highlightTexture.height);
 
-				highlightTexture.SetPixel ((int)pixelUV.x, (int)pixelUV.y, highlightColor);
-				updateHighlightTexture = true;
-
-				if (removeHighlightPixelsAfterTimeInterval > 0)
+				particleSystemParameters.startLifetime = removeParticleAfterTimeInterval;
+				particleSystemParameters.startColor = highlightColor;
+				if (displayOnHeadset)
 				{
-					if (highlightPixelsToBeRemoved.ContainsKey (pixelUV))
-						highlightPixelsToBeRemoved [pixelUV] = Time.time + removeHighlightPixelsAfterTimeInterval;
-					else
-						highlightPixelsToBeRemoved.Add (pixelUV, Time.time + removeHighlightPixelsAfterTimeInterval);
+					visualization.gameObject.layer = 0;
+					particleSystemParameters.startSize = particleSize * 0.05f;
+					particleSystemParameters.position = hit.point;
 				}
+				else
+				{
+					visualization.gameObject.layer = heatmapLayer;
+					particleSystemParameters.startSize = particleSize * 0.033f;
+					particleSystemParameters.position = RenderingMeshFilter.transform.localToWorldMatrix.MultiplyPoint3x4 (PositionForUV (Vector2.one - hit.textureCoord) - Vector3.forward * 0.001f);
+				}
+				visualization.Emit (particleSystemParameters, 1);
 			}
-		}
-		var removablePixels = highlightPixelsToBeRemoved.Where(p => p.Value < Time.time);
-		for (int i = 0; i < removablePixels.Count() ; i++)
-		{
-			var pixel = removablePixels.ElementAt (i);
-			highlightTexture.SetPixel ((int)pixel.Key.x, (int)pixel.Key.y, Color.clear);
-			updateHighlightTexture = true;
-			highlightPixelsToBeRemoved.Remove (pixel.Key);
-		}
-
-		if (updateHighlightTexture)
-		{
-			highlightTexture.Apply ();
-			updateHighlightTexture = false;
-		}
+//		}
 
 		if (Input.GetKeyUp (KeyCode.H))
 			recording = !recording;
