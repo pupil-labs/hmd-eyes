@@ -86,10 +86,11 @@ As many users asked for this feature, we now include a demo that can load and di
 ## Heatmap demo
 The heatmap demo allows to export gaze visualization to a spherical video. Eye tracking positions are translated to coordinates on a spherical texture, which is overlayed on the 3d scene. The heatmap is available as Prefab, as well, and can be added to existing scenes by draging it onto the main camera of that scene. 
 * A few variables can change how the heatmap behaves. To change them select the Heatmap gameobject
-* "Highlight Color": Depending on your scene, a fitting highlight color can be set
-* "Display on Headset": This option makes sense for debugging, but when in actual use, the heatmap should not distract the users be only visible in the resulting video
-* "Remove Highlight Pixels After Time": Set after how many seconds an old tracking position should no longer be visualized
-* "Highlight Size": The size of pixels on the heatmap
+* "Size Of Element": The size of a single gaze visualising element
+* "Remove After Time Interval": Set how many seconds an element should be visualized
+* "Mode": 'Particle' will color the area the user is looking at. 'Highlight' will black out the area not looked at.
+* "Particle Color": The color a particle should have.
+* "Display Particles On Headset": This option is mainly intended for debugging, but when in actual use, the particles should not distract the users and probably be only visible in the resulting video
 
 
 ## Connect

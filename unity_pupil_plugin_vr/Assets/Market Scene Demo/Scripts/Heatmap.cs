@@ -8,9 +8,19 @@ using FFmpegOut;
 
 public class Heatmap : MonoBehaviour 
 {
-	public Color highlightColor;
-	public bool displayOnHeadset = false;
-	public float removeParticleAfterTimeInterval = 10;
+	[Range(0.125f,1f)]
+	public float sizeOfElement = 1;
+	public float removeAfterTimeInterval = 10;
+
+	public enum HeatmapMode
+	{
+		Particle,
+		Highlight
+	}
+	public HeatmapMode mode;
+	public Color particleColor;
+	public bool displayParticlesOnHeadset = false;
+
 	public TextMesh infoText;
 
 	int heatmapLayer;
@@ -43,6 +53,57 @@ public class Heatmap : MonoBehaviour
 		InitializeMeshes ();
 	}
 
+	Dictionary<Vector3,float> _highlightPointsToBeRemoved;
+	Dictionary<Vector3,float> highlightPointsToBeRemoved
+	{
+		get
+		{
+			if (_highlightPointsToBeRemoved == null)
+				_highlightPointsToBeRemoved = new Dictionary<Vector3, float> ();
+			return _highlightPointsToBeRemoved;
+		}
+	}
+	bool updateHighlight = false;
+	void AddPointToHighlight(Vector3 point)
+	{
+		updateHighlight = true;
+
+		if (removeAfterTimeInterval > 0)
+		{			
+			if (highlightPointsToBeRemoved.ContainsKey (point))
+				highlightPointsToBeRemoved [point] = Time.time + removeAfterTimeInterval;
+			else
+				highlightPointsToBeRemoved.Add (point, Time.time + removeAfterTimeInterval);
+		}
+	}
+	void UpdateHighlight()
+	{
+		var removablePoints = highlightPointsToBeRemoved.Where(p => p.Value < Time.time);
+		for (int i = 0; i < removablePoints.Count() ; i++)
+		{
+			var point = removablePoints.ElementAt (i);
+			updateHighlight = true;
+			highlightPointsToBeRemoved.Remove (point.Key);
+		}
+
+		if (updateHighlight)
+		{
+			var vertices = RenderingMeshFilter.mesh.vertices;
+			var colors = RenderingMeshFilter.mesh.colors;
+			for (int i = 0; i < colors.Length; i++)
+			{
+				colors [i] = Color.black;
+				foreach (var pixel in highlightPointsToBeRemoved.Keys)
+				{
+					var lerpFactor = 20f / sizeOfElement * Vector3.Distance (vertices [i], pixel);
+					colors [i] = Color.Lerp (Color.white, colors [i], lerpFactor);
+				}
+			}
+			RenderingMeshFilter.mesh.colors = colors;
+			updateHighlight = false;
+		}
+	}
+
 	void OnDisable()
 	{
 		if (previousEStatus != EStatus.ProcessingGaze)
@@ -54,9 +115,6 @@ public class Heatmap : MonoBehaviour
 		if ( _pipe != null)
 			ClosePipe ();
 	}
-
-	[Range(0.125f,1f)]
-	public float particleSize = 1;
 
 	private RenderTexture _cubemap;
 	public RenderTexture Cubemap
@@ -102,15 +160,15 @@ public class Heatmap : MonoBehaviour
 		}
 	}
 
-	int sphereMeshHeight = 32;
-	int sphereMeshWidth = 32;
+	int sphereMeshHeight = 64;
+	int sphereMeshWidth = 128;
 	Vector2 sphereMeshCenterOffset = Vector2.one * 0.5f;
 	Mesh GeneratePlaneWithSphereNormals()
 	{
 		Mesh result = new Mesh ();
 
 		var vertices = new Vector3[sphereMeshHeight * sphereMeshWidth];
-		var normals = new Vector3[sphereMeshHeight * sphereMeshWidth];
+		var colors = new Color[sphereMeshHeight * sphereMeshWidth];
 		var uvs = new Vector2[sphereMeshHeight * sphereMeshWidth];
 
 		List<int> triangles = new List<int> ();
@@ -121,8 +179,8 @@ public class Heatmap : MonoBehaviour
 			{
 				Vector2 uv = new Vector2 ((float)j / (float)(sphereMeshWidth - 1), (float)i / (float)(sphereMeshHeight - 1));
 				uvs [j + i * sphereMeshWidth] = new Vector2(1f - uv.x, 1f - uv.y);
-				normals [j + i * sphereMeshWidth] = NormalForUV (uv);
 				vertices [j + i * sphereMeshWidth] = PositionForUV(uv);
+				colors [j + i * sphereMeshWidth] = Color.white;
 
 				if (i > 0 && j > 0)
 				{
@@ -136,9 +194,10 @@ public class Heatmap : MonoBehaviour
 			}
 		}
 		result.vertices = vertices;
-		result.normals = normals;
-		result.triangles = triangles.ToArray ();
+		result.colors = colors;
 		result.uv = uvs;
+		result.triangles = triangles.ToArray ();
+		result.RecalculateNormals ();
 
 		return result;
 	}
@@ -152,34 +211,12 @@ public class Heatmap : MonoBehaviour
 		return position;
 	}
 
-	Vector3 NormalForUV (Vector2 uv)
-	{
-		var normal = Vector3.zero;
-		if (uv.x <= 0.25f)
-			normal = Vector3.Slerp (Vector3.back, Vector3.left, uv.x * 4f);
-		else if (uv.x <= 0.5f)
-			normal = Vector3.Slerp (Vector3.left, Vector3.forward, (uv.x - 0.25f) * 4f);
-		else if (uv.x <= 0.75f)
-			normal = Vector3.Slerp (Vector3.forward, Vector3.right, (uv.x - 0.5f) * 4f);
-		else //if (uv.x <= 1f)
-			normal = Vector3.Slerp (Vector3.right, Vector3.back, (uv.x - 0.75f) * 4f);
-
-		if (uv.y <= 0.5f)
-			normal = Vector3.Slerp (Vector3.up, normal, uv.y * 2f);
-		else //if (uv.y <= 1f)
-			normal = Vector3.Slerp (normal, Vector3.down, (uv.y - 0.5f) * 2f);
-
-		return normal;
-	}
-
 	ParticleSystem visualization;
 	ParticleSystem.EmitParams particleSystemParameters = new ParticleSystem.EmitParams ();
-
 	Texture2D temporaryTexture;
 	void Update () 
 	{
-		// Keep heatmap collider rotation constant. '-90' derives from the sphere mesh normals we construct above
-		transform.eulerAngles = Vector3.up * -90f;
+		transform.eulerAngles = Vector3.zero;
 
 		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
 		{
@@ -192,33 +229,40 @@ public class Heatmap : MonoBehaviour
 				if ( hit.collider.gameObject != gameObject )
 					return;
 
-				particleSystemParameters.startLifetime = removeParticleAfterTimeInterval;
-				particleSystemParameters.startColor = highlightColor;
-				if (displayOnHeadset)
+				if (mode == HeatmapMode.Particle)
 				{
-					visualization.gameObject.layer = 0;
-					particleSystemParameters.startSize = particleSize * 0.05f;
-					particleSystemParameters.position = hit.point;
+					particleSystemParameters.startLifetime = removeAfterTimeInterval;
+					particleSystemParameters.startColor = particleColor;
+					if (displayParticlesOnHeadset)
+					{
+						visualization.gameObject.layer = 0;
+						particleSystemParameters.startSize = sizeOfElement * 0.05f;
+						particleSystemParameters.position = hit.point;
+					} else
+					{
+						visualization.gameObject.layer = heatmapLayer;
+						particleSystemParameters.startSize = sizeOfElement * 0.033f;
+						particleSystemParameters.position = RenderingMeshFilter.transform.localToWorldMatrix.MultiplyPoint3x4 (PositionForUV (Vector2.one - hit.textureCoord) - Vector3.forward * 0.001f);
+					}
+					visualization.Emit (particleSystemParameters, 1);
 				}
-				else
-				{
-					visualization.gameObject.layer = heatmapLayer;
-					particleSystemParameters.startSize = particleSize * 0.033f;
-					particleSystemParameters.position = RenderingMeshFilter.transform.localToWorldMatrix.MultiplyPoint3x4 (PositionForUV (Vector2.one - hit.textureCoord) - Vector3.forward * 0.001f);
-				}
-				visualization.Emit (particleSystemParameters, 1);
+				else //if (mode == HeatmapMode.Highlight)
+					AddPointToHighlight (PositionForUV (Vector2.one - hit.textureCoord));
 			}
 		}
 
-		if (Input.GetKeyUp (KeyCode.H))
-			recording = !recording;
+		if (mode == HeatmapMode.Highlight)
+			UpdateHighlight ();
 
 		if ( renderingMaterial != null)
 			cam.RenderToCubemap (Cubemap);
 		
+		if (Input.GetKeyUp (KeyCode.H))
+			recording = !recording;
+				
 		if (recording)
 		{
-			if (infoText.gameObject.activeInHierarchy)
+			if (infoText != null && infoText.gameObject.activeInHierarchy)
 				infoText.gameObject.SetActive (false);
 			
 			if (_pipe == null)
@@ -287,7 +331,7 @@ public class Heatmap : MonoBehaviour
 
 		_pipe = null;
 
-		if (!infoText.gameObject.activeInHierarchy)
+		if (infoText != null && !infoText.gameObject.activeInHierarchy)
 			infoText.gameObject.SetActive (true);
 	}
 }
