@@ -3,6 +3,7 @@
 	Properties 
 	{
     	_Cubemap ("Reflection Probe", CUBE) = "white" {}
+    	_Mask ("Mask", 2D) = "black" {}
 	}
 
 SubShader {
@@ -24,19 +25,18 @@ SubShader {
             struct appdata_t {
                 float4 vertex : POSITION;
 				float2 texcoord : TEXCOORD0;
-    			float4 color : COLOR;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct v2f {
                 float4 vertex : SV_POSITION;
 				float2 texcoord : TEXCOORD0;
-                float4 color : COLOR;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
             samplerCUBE _Cubemap;
 			float4 _Cubemap_ST;
+            sampler2D _Mask;
 
             v2f vert (appdata_t v)
             {
@@ -45,7 +45,6 @@ SubShader {
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.vertex = UnityObjectToClipPos(v.vertex);
 				o.texcoord = TRANSFORM_TEX(v.texcoord, _Cubemap);
-                o.color = v.color;
                 return o;
             }
 
@@ -61,8 +60,9 @@ SubShader {
             fixed4 frag (v2f i) : SV_Target
             {
 				fixed4 cubemap = texCUBE(_Cubemap, NormalForUV(i.texcoord));
+				fixed4 mask = tex2D(_Mask,i.texcoord);
 
-				return lerp(black,cubemap,i.color.r);
+				return lerp(cubemap,mask,length(mask.rgb));
             }
         ENDCG
     }

@@ -13424,6 +13424,16 @@ Transform:
   m_Father: {fileID: 24314631}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &633161767 stripped
+Transform:
+  m_PrefabParentObject: {fileID: 4879733196258468, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+    type: 2}
+  m_PrefabInternal: {fileID: 2008492629}
+--- !u!20 &633161768 stripped
+Camera:
+  m_PrefabParentObject: {fileID: 20249219059141966, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+    type: 2}
+  m_PrefabInternal: {fileID: 2008492629}
 --- !u!1 &633676265
 GameObject:
   m_ObjectHideFlags: 0
@@ -23778,6 +23788,73 @@ MonoBehaviour:
   delay: 4
   gameObject: {fileID: 0}
   activeState: 1
+--- !u!1 &1352671281
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 1348229705554506, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+    type: 2}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1352671282}
+  - component: {fileID: 1352671283}
+  m_Layer: 10
+  m_Name: MaskingCamera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1352671282
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 4879733196258468, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+    type: 2}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1352671281}
+  m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 633161767}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
+--- !u!20 &1352671283
+Camera:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 20249219059141966, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+    type: 2}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1352671281}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1
+  field of view: 60
+  orthographic: 1
+  orthographic size: 0.5
+  m_Depth: -1
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 0
+  m_AllowMSAA: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 0
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
 --- !u!1 &1352768058
 GameObject:
   m_ObjectHideFlags: 0
@@ -26341,7 +26418,7 @@ TextMesh:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1557409688}
-  m_Text: Press 'h' to start recording
+  m_Text: Press 'h' to capture
   m_OffsetZ: 0
   m_CharacterSize: 1
   m_LineSpacing: 1
@@ -31211,6 +31288,90 @@ Prefab:
       propertyPath: infoText
       value: 
       objectReference: {fileID: 1557409690}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: RenderingCamera
+      value: 
+      objectReference: {fileID: 633161768}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: LayeringCamera
+      value: 
+      objectReference: {fileID: 1352671283}
+    - target: {fileID: 1892549553425398, guid: 20acf7dd93e0bfd4899bb7146097c4d7, type: 2}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: MaskingCamera
+      value: 
+      objectReference: {fileID: 1352671283}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: displayParticlesOnHeadset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: particleColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: particleColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: particleColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: particleColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: removeAfterTimeInterval
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 198884370515827636, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: InitialModule.maxNumParticles
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 198884370515827636, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: randomSeed
+      value: 513048113
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: particleColorFinal.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: particleColorFinal.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: particleColorFinal.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916010422156110, guid: 20acf7dd93e0bfd4899bb7146097c4d7,
+        type: 2}
+      propertyPath: particleColorFinal.a
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 20acf7dd93e0bfd4899bb7146097c4d7, type: 2}
   m_IsPrefabParent: 0

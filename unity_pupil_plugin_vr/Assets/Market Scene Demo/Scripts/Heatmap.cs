@@ -15,20 +15,22 @@ public class Heatmap : MonoBehaviour
 	public enum HeatmapMode
 	{
 		Particle,
-		Highlight
+		ParticleDebug,
+		Highlight,
+		Image
 	}
 	public HeatmapMode mode;
 	public Color particleColor;
-	public bool displayParticlesOnHeadset = false;
+	public Color particleColorFinal;
 
 	public TextMesh infoText;
 
-	int heatmapLayer;
 	LayerMask collisionLayer;
 	EStatus previousEStatus;
 
 	Camera cam;
-	Camera RenderingCamera;
+	public Camera RenderingCamera;
+	public Camera MaskingCamera;
 	// Use this for initialization
 	void OnEnable () 
 	{
@@ -43,64 +45,39 @@ public class Heatmap : MonoBehaviour
 		}
 
 		cam = GetComponentInParent<Camera> ();
-		RenderingCamera = GetComponentInChildren<Camera> ();
 
 		transform.localPosition = Vector3.zero;
 
-		heatmapLayer = LayerMask.NameToLayer ("Heatmap");
-		collisionLayer = (1 << heatmapLayer);
+		collisionLayer = (1 << LayerMask.NameToLayer ("HeatmapMesh"));
 
 		InitializeMeshes ();
-	}
 
-	Dictionary<Vector3,float> _highlightPointsToBeRemoved;
-	Dictionary<Vector3,float> highlightPointsToBeRemoved
-	{
-		get
+		switch (mode)
 		{
-			if (_highlightPointsToBeRemoved == null)
-				_highlightPointsToBeRemoved = new Dictionary<Vector3, float> ();
-			return _highlightPointsToBeRemoved;
-		}
-	}
-	bool updateHighlight = false;
-	void AddPointToHighlight(Vector3 point)
-	{
-		updateHighlight = true;
-
-		if (removeAfterTimeInterval > 0)
-		{			
-			if (highlightPointsToBeRemoved.ContainsKey (point))
-				highlightPointsToBeRemoved [point] = Time.time + removeAfterTimeInterval;
-			else
-				highlightPointsToBeRemoved.Add (point, Time.time + removeAfterTimeInterval);
-		}
-	}
-	void UpdateHighlight()
-	{
-		var removablePoints = highlightPointsToBeRemoved.Where(p => p.Value < Time.time);
-		for (int i = 0; i < removablePoints.Count() ; i++)
-		{
-			var point = removablePoints.ElementAt (i);
-			updateHighlight = true;
-			highlightPointsToBeRemoved.Remove (point.Key);
-		}
-
-		if (updateHighlight)
-		{
-			var vertices = RenderingMeshFilter.mesh.vertices;
-			var colors = RenderingMeshFilter.mesh.colors;
-			for (int i = 0; i < colors.Length; i++)
-			{
-				colors [i] = Color.black;
-				foreach (var pixel in highlightPointsToBeRemoved.Keys)
-				{
-					var lerpFactor = 20f / sizeOfElement * Vector3.Distance (vertices [i], pixel);
-					colors [i] = Color.Lerp (Color.white, colors [i], lerpFactor);
-				}
-			}
-			RenderingMeshFilter.mesh.colors = colors;
-			updateHighlight = false;
+		case HeatmapMode.Highlight:
+			if (MaskingCamera != null)
+				MaskingCamera.backgroundColor = Color.white;
+			particleSystemParameters.startColor = Color.black;
+			particleSystemParameters.startSize = sizeOfElement * 0.1f;
+			particleSystemParameters.startLifetime = removeAfterTimeInterval;
+			break;
+		case HeatmapMode.ParticleDebug:
+			particleSystemParameters.startColor = particleColor;
+			particleSystemParameters.startSize = sizeOfElement * 0.05f;
+			particleSystemParameters.startLifetime = removeAfterTimeInterval;
+			currentVisualization.gameObject.layer = 0;
+			break;
+		case HeatmapMode.Image:
+			particleSystemParameters.startColor = particleColor;
+			particleSystemParameters.startSize = sizeOfElement * 0.033f;
+			particleSystemParameters.startLifetime = float.MaxValue;
+			visualizationParticles = new ParticleSystem.Particle[currentVisualization.main.maxParticles];
+			break;
+		default:
+			particleSystemParameters.startColor = particleColor;
+			particleSystemParameters.startSize = sizeOfElement * 0.033f;
+			particleSystemParameters.startLifetime = removeAfterTimeInterval;
+			break;
 		}
 	}
 
@@ -135,6 +112,7 @@ public class Heatmap : MonoBehaviour
 	MeshFilter RenderingMeshFilter;
 	Material renderingMaterial;
 	RenderTexture renderingTexture;
+	RenderTexture maskingTexture;
 	void InitializeMeshes()
 	{
 		var sphereMesh = GetComponent<MeshFilter> ().mesh;
@@ -143,7 +121,9 @@ public class Heatmap : MonoBehaviour
 			sphereMesh.triangles = sphereMesh.triangles.Reverse ().ToArray ();
 		}
 		gameObject.AddComponent<MeshCollider> ();
-		visualization = GetComponentInChildren<ParticleSystem> ();
+		currentVisualization = GetComponentInChildren<ParticleSystem> ();
+		visualizations = new List<ParticleSystem> ();
+		visualizations.Add (currentVisualization);
 
 		if (RenderingCamera != null)
 		{
@@ -157,18 +137,25 @@ public class Heatmap : MonoBehaviour
 			renderingMaterial.SetTexture ("_Cubemap", Cubemap);
 
 			RenderingCamera.transform.parent = null;
+
+			if (MaskingCamera != null)
+			{
+				MaskingCamera.aspect = 2;
+				maskingTexture = new RenderTexture (2048, 1024, 0);
+				MaskingCamera.targetTexture = maskingTexture;
+				renderingMaterial.SetTexture ("_Mask", maskingTexture);
+			}
 		}
 	}
 
-	int sphereMeshHeight = 64;
-	int sphereMeshWidth = 128;
+	int sphereMeshHeight = 32;
+	int sphereMeshWidth = 32;
 	Vector2 sphereMeshCenterOffset = Vector2.one * 0.5f;
 	Mesh GeneratePlaneWithSphereNormals()
 	{
 		Mesh result = new Mesh ();
 
 		var vertices = new Vector3[sphereMeshHeight * sphereMeshWidth];
-		var colors = new Color[sphereMeshHeight * sphereMeshWidth];
 		var uvs = new Vector2[sphereMeshHeight * sphereMeshWidth];
 
 		List<int> triangles = new List<int> ();
@@ -180,7 +167,6 @@ public class Heatmap : MonoBehaviour
 				Vector2 uv = new Vector2 ((float)j / (float)(sphereMeshWidth - 1), (float)i / (float)(sphereMeshHeight - 1));
 				uvs [j + i * sphereMeshWidth] = new Vector2(1f - uv.x, 1f - uv.y);
 				vertices [j + i * sphereMeshWidth] = PositionForUV(uv);
-				colors [j + i * sphereMeshWidth] = Color.white;
 
 				if (i > 0 && j > 0)
 				{
@@ -194,7 +180,6 @@ public class Heatmap : MonoBehaviour
 			}
 		}
 		result.vertices = vertices;
-		result.colors = colors;
 		result.uv = uvs;
 		result.triangles = triangles.ToArray ();
 		result.RecalculateNormals ();
@@ -211,9 +196,45 @@ public class Heatmap : MonoBehaviour
 		return position;
 	}
 
-	ParticleSystem visualization;
+	ParticleSystem currentVisualization;
+	List<ParticleSystem> visualizations;
+	ParticleSystem.Particle[] visualizationParticles;
 	ParticleSystem.EmitParams particleSystemParameters = new ParticleSystem.EmitParams ();
-	Texture2D temporaryTexture;
+	void Add(Vector3 point)
+	{
+		particleSystemParameters.position = point;
+		currentVisualization.Emit (particleSystemParameters, 1);
+		if (currentVisualization.particleCount == currentVisualization.main.maxParticles)
+		{
+			Debug.Log ("Approaching maximum number of particles. Will instantiate additional particle system. If this continues to occur, please increase the number in Unity Editor");
+			var newViz = GameObject.Instantiate<ParticleSystem> (currentVisualization, currentVisualization.transform);
+			newViz.Clear ();
+			visualizations.Add (newViz);
+			currentVisualization = newViz;
+		}
+
+		if (mode == HeatmapMode.Image)
+		{
+			int numberOfOverallParticles = 0;
+			foreach (var visualization in visualizations)
+			{
+				numberOfOverallParticles += visualization.particleCount;
+			}
+			int currentOverallParticleCounter = 0;
+			for (int i = 0; i < visualizations.Count; i++)
+			{
+				var visualization = visualizations [i];
+				int numberOfParticlesAlive = visualization.GetParticles (visualizationParticles);
+				for (int j = 0; j < numberOfParticlesAlive; j++)
+				{
+					visualizationParticles [j].startColor = Color32.Lerp (particleColorFinal, particleColor, (float)(currentOverallParticleCounter) / (float)(numberOfOverallParticles - 1));
+					currentOverallParticleCounter += 1;
+				}
+				visualization.SetParticles (visualizationParticles, numberOfParticlesAlive);
+			}
+		}
+	}
+
 	void Update () 
 	{
 		transform.eulerAngles = Vector3.zero;
@@ -229,61 +250,46 @@ public class Heatmap : MonoBehaviour
 				if ( hit.collider.gameObject != gameObject )
 					return;
 
-				if (mode == HeatmapMode.Particle)
-				{
-					particleSystemParameters.startLifetime = removeAfterTimeInterval;
-					particleSystemParameters.startColor = particleColor;
-					if (displayParticlesOnHeadset)
-					{
-						visualization.gameObject.layer = 0;
-						particleSystemParameters.startSize = sizeOfElement * 0.05f;
-						particleSystemParameters.position = hit.point;
-					} else
-					{
-						visualization.gameObject.layer = heatmapLayer;
-						particleSystemParameters.startSize = sizeOfElement * 0.033f;
-						particleSystemParameters.position = RenderingMeshFilter.transform.localToWorldMatrix.MultiplyPoint3x4 (PositionForUV (Vector2.one - hit.textureCoord) - Vector3.forward * 0.001f);
-					}
-					visualization.Emit (particleSystemParameters, 1);
-				}
-				else //if (mode == HeatmapMode.Highlight)
-					AddPointToHighlight (PositionForUV (Vector2.one - hit.textureCoord));
+				if (mode == HeatmapMode.ParticleDebug)
+					Add (hit.point);
+				else
+					Add (RenderingMeshFilter.transform.localToWorldMatrix.MultiplyPoint3x4 (PositionForUV (Vector2.one - hit.textureCoord) - Vector3.forward * 0.001f));
 			}
 		}
-
-		if (mode == HeatmapMode.Highlight)
-			UpdateHighlight ();
 
 		if ( renderingMaterial != null)
 			cam.RenderToCubemap (Cubemap);
 		
 		if (Input.GetKeyUp (KeyCode.H))
-			recording = !recording;
-				
-		if (recording)
 		{
+			capturing = !capturing;
 			if (infoText != null && infoText.gameObject.activeInHierarchy)
 				infoText.gameObject.SetActive (false);
-			
-			if (_pipe == null)
-				OpenPipe ();
+		}
+				
+		
+	}
+
+	void LateUpdate()
+	{
+		if (capturing)
+		{
+			if (mode == HeatmapMode.Image)
+			{
+				string path = PupilSettings.Instance.recorder.GetRecordingPath ();
+				System.IO.File.WriteAllBytes (path + string.Format ("/Heatmap_{0}.jpg", Time.time), CaptureCurrentView ().EncodeToJPG ());
+				capturing = false;
+			}
 			else
 			{
-				previouslyActiveRenderTexture = RenderTexture.active;
-
-				RenderTexture.active = renderingTexture;
-				if (temporaryTexture == null)
+				if (_pipe == null)
+					OpenPipe ();
+				else
 				{
-					temporaryTexture = new Texture2D (renderingTexture.width, renderingTexture.height, TextureFormat.RGB24, false);
+					// With the winter 2017 release of this plugin, Pupil timestamp is set to Unity time when connecting
+					timeStampList.Add (Time.time);
+					_pipe.Write (CaptureCurrentView ().GetRawTextureData ());
 				}
-				temporaryTexture.ReadPixels (new Rect (0, 0, renderingTexture.width, renderingTexture.height), 0, 0, false);
-				temporaryTexture.Apply ();
-
-				// With the winter 2017 release of this plugin, Pupil timestamp is set to Unity time when connecting
-				timeStampList.Add (Time.time);
-				_pipe.Write (temporaryTexture.GetRawTextureData ());
-
-				RenderTexture.active = previouslyActiveRenderTexture;
 			}
 		} else
 		{
@@ -292,8 +298,24 @@ public class Heatmap : MonoBehaviour
 		}
 	}
 
-	bool recording = false;
+	bool capturing = false;
 	RenderTexture previouslyActiveRenderTexture;
+	Texture2D temporaryTexture;
+	Texture2D CaptureCurrentView()
+	{
+		previouslyActiveRenderTexture = RenderTexture.active;
+		RenderTexture.active = renderingTexture;
+		if (temporaryTexture == null)
+		{
+			temporaryTexture = new Texture2D (renderingTexture.width, renderingTexture.height, TextureFormat.RGB24, false);
+		}
+		temporaryTexture.ReadPixels (new Rect (0, 0, renderingTexture.width, renderingTexture.height), 0, 0, false);
+		temporaryTexture.Apply ();
+
+		RenderTexture.active = previouslyActiveRenderTexture;
+
+		return temporaryTexture;
+	}
 
 	FFmpegPipe _pipe;
 	List<double> timeStampList = new List<double>();

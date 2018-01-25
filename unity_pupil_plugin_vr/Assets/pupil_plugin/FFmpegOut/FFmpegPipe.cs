@@ -32,16 +32,7 @@ namespace FFmpegOut
         {
 			PupilGazeTracker pupilTracker = PupilGazeTracker.Instance;
 
-			string date = DateTime.Now.ToString ("yyyy_MM_dd");
-			string path = Application.dataPath + "/" + date;
-
-			if (PupilSettings.Instance.recorder.isCustomPath)
-				path = PupilSettings.Instance.recorder.filePath + "/" + date;
-
-			path = path.Replace ("Assets/", "");
-
-			if (!Directory.Exists (path))
-				Directory.CreateDirectory (path);
+			string path = PupilSettings.Instance.recorder.GetRecordingPath ();
 			
 			UnityEngine.Debug.Log (path);
 			PupilTools.StartPupilServiceRecording (path);

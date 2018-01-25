@@ -53,6 +53,22 @@ public class Recorder
 		GameObject.Destroy (RecorderGO);
 		PupilTools.RepaintGUI ();
 	}
+
+	public string GetRecordingPath()
+	{
+		string date = DateTime.Now.ToString ("yyyy_MM_dd");
+		string path = Application.dataPath + "/" + date;
+
+		if (isCustomPath)
+			path = filePath + "/" + date;
+
+		path = path.Replace ("Assets/", "");
+
+		if (!System.IO.Directory.Exists (path))
+			System.IO.Directory.CreateDirectory (path);
+
+		return path;
+	}
 }
 
 #endif
