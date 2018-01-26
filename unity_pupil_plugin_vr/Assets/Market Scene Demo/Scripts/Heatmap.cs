@@ -8,10 +8,6 @@ using FFmpegOut;
 
 public class Heatmap : MonoBehaviour 
 {
-	[Range(0.125f,1f)]
-	public float sizeOfElement = 1;
-	public float removeAfterTimeInterval = 10;
-
 	public enum HeatmapMode
 	{
 		Particle,
@@ -20,6 +16,9 @@ public class Heatmap : MonoBehaviour
 		Image
 	}
 	public HeatmapMode mode;
+	[Range(0.125f,1f)]
+	public float particleSize = 1;
+	public float removeParticleAfterXSeconds = 10;
 	public Color particleColor;
 	public Color particleColorFinal;
 
@@ -58,25 +57,25 @@ public class Heatmap : MonoBehaviour
 			if (MaskingCamera != null)
 				MaskingCamera.backgroundColor = Color.white;
 			particleSystemParameters.startColor = Color.black;
-			particleSystemParameters.startSize = sizeOfElement * 0.1f;
-			particleSystemParameters.startLifetime = removeAfterTimeInterval;
+			particleSystemParameters.startSize = particleSize * 0.1f;
+			particleSystemParameters.startLifetime = removeParticleAfterXSeconds;
 			break;
 		case HeatmapMode.ParticleDebug:
 			particleSystemParameters.startColor = particleColor;
-			particleSystemParameters.startSize = sizeOfElement * 0.05f;
-			particleSystemParameters.startLifetime = removeAfterTimeInterval;
+			particleSystemParameters.startSize = particleSize * 0.05f;
+			particleSystemParameters.startLifetime = removeParticleAfterXSeconds;
 			currentVisualization.gameObject.layer = 0;
 			break;
 		case HeatmapMode.Image:
 			particleSystemParameters.startColor = particleColor;
-			particleSystemParameters.startSize = sizeOfElement * 0.033f;
+			particleSystemParameters.startSize = particleSize * 0.033f;
 			particleSystemParameters.startLifetime = float.MaxValue;
 			visualizationParticles = new ParticleSystem.Particle[currentVisualization.main.maxParticles];
 			break;
 		default:
 			particleSystemParameters.startColor = particleColor;
-			particleSystemParameters.startSize = sizeOfElement * 0.033f;
-			particleSystemParameters.startLifetime = removeAfterTimeInterval;
+			particleSystemParameters.startSize = particleSize * 0.033f;
+			particleSystemParameters.startLifetime = removeParticleAfterXSeconds;
 			break;
 		}
 	}
@@ -261,13 +260,7 @@ public class Heatmap : MonoBehaviour
 			cam.RenderToCubemap (Cubemap);
 		
 		if (Input.GetKeyUp (KeyCode.H))
-		{
 			capturing = !capturing;
-			if (infoText != null && infoText.gameObject.activeInHierarchy)
-				infoText.gameObject.SetActive (false);
-		}
-				
-		
 	}
 
 	void LateUpdate()
@@ -298,7 +291,19 @@ public class Heatmap : MonoBehaviour
 		}
 	}
 
-	bool capturing = false;
+	bool _capturing = false;
+	bool capturing
+	{
+		get { return _capturing; }
+		set
+		{
+			_capturing = value;
+
+			if (infoText != null)
+				infoText.gameObject.SetActive (!_capturing);
+		}
+
+	}
 	RenderTexture previouslyActiveRenderTexture;
 	Texture2D temporaryTexture;
 	Texture2D CaptureCurrentView()
@@ -352,8 +357,5 @@ public class Heatmap : MonoBehaviour
 		}
 
 		_pipe = null;
-
-		if (infoText != null && !infoText.gameObject.activeInHierarchy)
-			infoText.gameObject.SetActive (true);
 	}
 }

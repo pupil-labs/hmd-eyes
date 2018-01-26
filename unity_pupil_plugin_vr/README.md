@@ -84,13 +84,18 @@ As many users asked for this feature, we now include a demo that can load and di
 * Gaze visualization will also start at this time (triggered by the CalibrationDemo script component also attached to the main camera)
 
 ## Heatmap demo
-The heatmap demo allows to export gaze visualization to a spherical video. Eye tracking positions are translated to coordinates on a spherical texture, which is overlayed on the 3d scene. The heatmap is available as Prefab, as well, and can be added to existing scenes by draging it onto the main camera of that scene. 
+The heatmap demo allows to export gaze visualization to a spherical video or image. Eye tracking positions are translated to particles on a spherical texture, which is overlayed on the 3d scene. The heatmap is available as Prefab, as well, and can be added to existing scenes by draging it onto the main camera of that scene. 
+* Press `h` to start recording the output video or to capture the current view to an image. The output path defined by the settings for PupilGazeTracker recordings
 * A few variables can change how the heatmap behaves. To change them select the Heatmap gameobject
-* "Size Of Element": The size of a single gaze visualising element
-* "Remove After Time Interval": Set how many seconds an element should be visualized
-* "Mode": 'Particle' will color the area the user is looking at. 'Highlight' will black out the area not looked at.
-* "Particle Color": The color a particle should have.
-* "Display Particles On Headset": This option is mainly intended for debugging, but when in actual use, the particles should not distract the users and probably be only visible in the resulting video
+* `Mode`
+	1. 'Particle' will color the area the user is looking at
+	2. 'ParticleDebug' will show it for the user, as well
+	3. 'Highlight' will only fill-in the area looked at
+	4. 'Image' will keep all particles and color code them based on the time of creation
+* `Particle Size`: The size of a single gaze visualising particle
+* `Remove Particle After X Seconds`: Set how many seconds a particle should be visualized (not used for Image mode)
+* `Particle Color`: The color a particle should have.
+* `Particle Color Final`: Color for oldest particle in Image mode. Every color in between will be interpolated
 
 
 ## Connect
