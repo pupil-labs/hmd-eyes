@@ -165,7 +165,14 @@ public class Connection
 					case "pupil.0":
 					case "pupil.1":
 						var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
-						if (PupilTools.ConfidenceForDictionary(dictionary) > 0.6f) 
+						var confidence = PupilTools.ConfidenceForDictionary(dictionary);
+						if ( PupilTools.DataProcessState == Pupil.EStatus.Calibration )
+						{
+							string eyeID = PupilTools.EyeIDForDictionary(dictionary);
+							PupilTools.UpdateCalibrationMarkerColor(eyeID,confidence);
+							break;
+						}
+						if (confidence > 0.6f) 
 						{
 							if (msgType == "gaze")
 								PupilTools.gazeDictionary = dictionary;

@@ -120,8 +120,7 @@ public class PupilTools : MonoBehaviour
 		string id = "";
 
 		if (gazeDictionary != null)
-			if (gazeDictionary.TryGetValue ("id", out IDo))
-				id = IDo.ToString ();
+			id = EyeIDForDictionary (gazeDictionary);
 			
 		PupilData.UpdateCurrentEyeID(id);
 	}
@@ -175,6 +174,14 @@ public class PupilTools : MonoBehaviour
 			return ConfidenceForDictionary (pupil1Dictionary); 
 		else
 			return 0;
+	}
+
+	public static string EyeIDForDictionary(Dictionary<string,object> dictionary)
+	{
+		string id = "";
+		if (dictionary.TryGetValue ("id", out IDo))
+			id = IDo.ToString ();
+		return id;
 	}
 
 	public static Dictionary<object,object> BaseData ()
@@ -290,6 +297,7 @@ public class PupilTools : MonoBehaviour
 		DataProcessState = EStatus.Calibration;
 		SubscribeTo ("notify.calibration.successful");
 		SubscribeTo ("notify.calibration.failed");
+		SubscribeTo ("gaze");
 
 		Send (new Dictionary<string,object> {
 			{ "subject","start_plugin" },
@@ -340,6 +348,7 @@ public class PupilTools : MonoBehaviour
 
 		UnSubscribeFrom ("notify.calibration.successful");
 		UnSubscribeFrom ("notify.calibration.failed");
+		UnSubscribeFrom ("gaze");
 
 		if (OnCalibrationEnded != null)
 			OnCalibrationEnded ();
@@ -417,6 +426,16 @@ public class PupilTools : MonoBehaviour
 			{ "timestamp", timestamp },
 			{ "id", PupilData.rightEyeID }
 		});
+	}
+
+	public static void UpdateCalibrationMarkerColor( string eyeID, float value )
+	{
+		var currentColor = Calibration.Marker.color;
+		if (eyeID == "0")
+			currentColor.g = value;
+		else if (eyeID == "1")
+			currentColor.b = value;
+		Calibration.Marker.color = currentColor;
 	}
 
 	#endregion
