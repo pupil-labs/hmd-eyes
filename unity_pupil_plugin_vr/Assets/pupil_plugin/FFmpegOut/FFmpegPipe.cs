@@ -20,22 +20,15 @@ namespace FFmpegOut
         public string Error { get; private set; }
 		public string FilePath;
 
-
         #endregion
 
         #region Public methods
-
-
-
 
         public FFmpegPipe(string name, int width, int height, int framerate, Codec codec)
         {
 			PupilGazeTracker pupilTracker = PupilGazeTracker.Instance;
 
 			string path = PupilSettings.Instance.recorder.GetRecordingPath ();
-			
-			UnityEngine.Debug.Log (path);
-			PupilTools.StartPupilServiceRecording (path);
 
 			Thread.Sleep (200);//Waiting for Pupil Service to create the incremented folder
 

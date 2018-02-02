@@ -67,6 +67,7 @@ public class Recorder
 		if (!System.IO.Directory.Exists (path))
 			System.IO.Directory.CreateDirectory (path);
 
+		UnityEngine.Debug.Log ("Recording path: " + path);
 		return path;
 	}
 }

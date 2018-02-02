@@ -77,8 +77,8 @@ public class Calibration
 		radius = currentCalibrationType.vectorDepthRadiusScale[currentCalibrationDepth].y;
 		if (currentCalibrationPoint > 0 && currentCalibrationPoint < currentCalibrationType.points)
 		{	
-			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
-			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
+			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f));
+			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f));
 		}
 		Marker.UpdatePosition (currentCalibrationPointPosition);
 		Marker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);

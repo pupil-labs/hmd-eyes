@@ -44,9 +44,10 @@ public class PupilTools : MonoBehaviour
 
 	#region Recording
 
-	public static void StartPupilServiceRecording (string path)
+	private static bool isRecording = false;
+	public static void StartRecording ()
 	{
-		var _p = path.Substring (2);
+		var _p = Settings.recorder.GetRecordingPath ().Substring (2);
 
 		Send (new Dictionary<string,object> {
 			{ "subject","recording.should_start" },
@@ -56,11 +57,45 @@ public class PupilTools : MonoBehaviour
 			}
 		});
 
+		isRecording = true;
+
+		recordingString = "Timestamp,Identifier,PupilPositionX,PupilPositionY,PupilPositionZ,UnityWorldPositionX,UnityWorldPositionY,UnityWorldPositionZ\n";
 	}
 
-	public static void StopPupilServiceRecording ()
+	private static string recordingString;
+
+	public static void StopRecording ()
 	{
 		Send (new Dictionary<string,object> { { "subject","recording.should_stop" } });
+
+		isRecording = false;
+	}
+
+	private static Vector3 unityWorldPosition;
+	private static void AddToRecording( string identifier, Vector3 position, bool isViewportPosition = false )
+	{
+		var timestamp = TimestampForDictionary (gazeDictionary);
+
+		if (isViewportPosition)
+			unityWorldPosition = Settings.currentCamera.ViewportToWorldPoint (position + Vector3.forward);
+		else
+			unityWorldPosition = Settings.currentCamera.cameraToWorldMatrix.MultiplyPoint3x4 (position);
+
+		if (!isViewportPosition)
+			position.y *= -1;				// Pupil y axis is inverted
+
+		recordingString += string.Format ( "{0},{1},{2},{3},{4},{5},{6},{7}\n"
+			,timestamp.ToString ("F4")
+			,identifier
+			,position.x.ToString ("F4"),position.y.ToString ("F4"),position.z.ToString ("F4")
+			,unityWorldPosition.x.ToString ("F4"),unityWorldPosition.y.ToString ("F4"),unityWorldPosition.z.ToString ("F4")
+		);
+	}
+
+	public static void SaveRecording(string toPath)
+	{
+		string filePath = toPath + "/" + "UnityGazeExport.csv";
+		File.WriteAllText(filePath, recordingString);
 	}
 
 	#endregion
@@ -93,8 +128,11 @@ public class PupilTools : MonoBehaviour
 				switch (key)
 				{
 				case "norm_pos": // 2D case
-					eyeDataKey = key + "_" + stringForEyeID(); // we add the identifier to the key
-					PupilData.AddGazeToEyeData(eyeDataKey,Position(gazeDictionary[key],false));
+					eyeDataKey = key + "_" + stringForEyeID (); // we add the identifier to the key
+					var position2D = Position (gazeDictionary [key], false);
+					PupilData.AddGazeToEyeData (eyeDataKey, position2D);
+					if (isRecording)
+						AddToRecording (eyeDataKey, position2D, true);
 					break;
 				case "eye_centers_3d":
 				case "gaze_normals_3d":
@@ -103,11 +141,17 @@ public class PupilTools : MonoBehaviour
 						foreach (var item in (gazeDictionary[key] as Dictionary<object,object>))
 						{
 							eyeDataKey = key + "_" + item.Key.ToString ();
-							PupilData.AddGazeToEyeData (eyeDataKey, Position (item.Value,true));
+							var position = Position (item.Value, true);
+							position.y *= -1f;							// Pupil y axis is inverted
+							PupilData.AddGazeToEyeData (eyeDataKey,position);
 						}
 					break;
 				default:
-					PupilData.AddGazeToEyeData(key,Position(gazeDictionary[key],true));
+					var position3D = Position (gazeDictionary [key], true);
+					position3D.y *= -1f;								// Pupil y axis is inverted
+					PupilData.AddGazeToEyeData (key, position3D);
+					if (isRecording)
+						AddToRecording (key, position3D);
 					break;
 				}
 			}
@@ -145,18 +189,29 @@ public class PupilTools : MonoBehaviour
 	}
 
 	private static object[] position_o;
-	private static float[] Position (object position, bool applyScaling)
+	private static Vector3 Position (object position, bool applyScaling)
 	{
 		position_o = position as object[];
-		float[] position_f = new float[position_o.Length];
-		for (int i = 0; i < position_o.Length; i++)
+		Vector3 result = Vector3.zero;
+		if (position_o.Length != 2 && position_o.Length != 3)
+			UnityEngine.Debug.Log ("Array length not supported");
+		else
 		{
-			position_f [i] = (float)(double)position_o [i];
+			result.x = (float)(double)position_o [0];
+			result.y = (float)(double)position_o [1];
+			if ( position_o.Length == 3)
+				result.z = (float)(double)position_o [2];
 		}
 		if (applyScaling)
-			for (int i = 0; i < position_f.Length; i++)
-				position_f [i] /= PupilSettings.PupilUnitScalingFactor;
-		return position_f;
+			result /= PupilSettings.PupilUnitScalingFactor;
+		return result;
+	}
+
+	public static float TimestampForDictionary(Dictionary<string,object> dictionary)
+	{
+		object timestamp;
+		dictionary.TryGetValue ("timestamp", out timestamp);
+		return (float)(double)timestamp;
 	}
 
 	public static float ConfidenceForDictionary(Dictionary<string,object> dictionary)

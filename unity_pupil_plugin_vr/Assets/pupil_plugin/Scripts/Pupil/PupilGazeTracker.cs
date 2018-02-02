@@ -448,15 +448,16 @@ public class PupilGazeTracker:MonoBehaviour
 			OperatorWindow.Instance.Close ();
 #endif
 
-		PupilTools.Disconnect ();
-			
-		StopAllCoroutines ();
 #if !UNITY_WSA
 		if (Recorder.isRecording)
 		{
 			Recorder.Stop ();
 		}
 #endif
+		PupilTools.Disconnect ();
+
+		StopAllCoroutines ();
+
 		PupilTools.RepaintGUI ();
 
 		processStatus.eyeProcess0 = false;

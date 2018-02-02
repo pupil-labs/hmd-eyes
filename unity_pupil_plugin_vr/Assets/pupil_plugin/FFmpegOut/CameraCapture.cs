@@ -85,6 +85,8 @@ namespace FFmpegOut
         void Start()
         {
 			_material = new Material (Shader.Find ("Hidden/FFmpegOut/CameraCapture"));
+
+			PupilTools.StartRecording ();
         }
 
         void Update()
@@ -112,7 +114,7 @@ namespace FFmpegOut
 		public void Stop()
 		{
 			Recorder.isRecording = false;
-			PupilTools.StopPupilServiceRecording ();
+			PupilTools.StopRecording ();
 			_recorderState = RecorderState.PROCESSING;
 		}
 
@@ -220,6 +222,8 @@ namespace FFmpegOut
 				string timeStampFileName = "Unity_" + PupilSettings.Instance.currentCamera.name;
 				byte[] timeStampByteArray = PupilConversions.doubleArrayToByteArray (timeStampList.ToArray ());
 				File.WriteAllBytes(_pipe.FilePath + "/" + timeStampFileName + ".time", timeStampByteArray);
+
+				PupilTools.SaveRecording (_pipe.FilePath);
 
 				_pipe.Close();
 

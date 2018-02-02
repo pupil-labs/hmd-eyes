@@ -19,7 +19,7 @@ public static class PupilData
 		get
 		{
 			if (!eyeData.ContainsKey(leftEyeKey))
-				eyeData.Add(leftEyeKey, new EyeData(SamplesCount,2));
+				eyeData.Add(leftEyeKey, new EyeData(SamplesCount));
 			return eyeData [leftEyeKey]; 
 		}
 	}
@@ -32,7 +32,7 @@ public static class PupilData
 		get
 		{
 			if (!eyeData.ContainsKey(rightEyeKey))
-				eyeData.Add(rightEyeKey, new EyeData(SamplesCount,2));
+				eyeData.Add(rightEyeKey, new EyeData(SamplesCount));
 			return eyeData [rightEyeKey]; 
 		}
 	}
@@ -42,7 +42,7 @@ public static class PupilData
 		get
 		{
 			if (!eyeData.ContainsKey(gazePointKey))
-				eyeData.Add(gazePointKey, new EyeData(SamplesCount,3));
+				eyeData.Add(gazePointKey, new EyeData(SamplesCount));
 			return eyeData [gazePointKey]; 
 		}
 	}
@@ -52,7 +52,7 @@ public static class PupilData
 		get
 		{
 			if (!eyeData.ContainsKey(leftGazeNormalKey))
-				eyeData.Add(leftGazeNormalKey, new EyeData(SamplesCount,3));
+				eyeData.Add(leftGazeNormalKey, new EyeData(SamplesCount));
 			return eyeData [leftGazeNormalKey]; 
 		}
 	}
@@ -62,7 +62,7 @@ public static class PupilData
 		get
 		{
 			if (!eyeData.ContainsKey(rightGazeNormalKey))
-				eyeData.Add(rightGazeNormalKey, new EyeData(SamplesCount,3));
+				eyeData.Add(rightGazeNormalKey, new EyeData(SamplesCount));
 			return eyeData [rightGazeNormalKey]; 
 		}
 	}
@@ -72,7 +72,7 @@ public static class PupilData
 		get
 		{
 			if (!eyeData.ContainsKey(leftEyeCenterKey))
-				eyeData.Add(leftEyeCenterKey, new EyeData(SamplesCount,3));
+				eyeData.Add(leftEyeCenterKey, new EyeData(SamplesCount));
 			return eyeData [leftEyeCenterKey]; 
 		}
 	}
@@ -82,20 +82,16 @@ public static class PupilData
 		get
 		{
 			if (!eyeData.ContainsKey(rightEyeCenterKey))
-				eyeData.Add(rightEyeCenterKey, new EyeData(SamplesCount,3));
+				eyeData.Add(rightEyeCenterKey, new EyeData(SamplesCount));
 			return eyeData [rightEyeCenterKey]; 
 		}
 	}
-
-	public static void AddGazeToEyeData(string key, float[] position)
+		
+	public static void AddGazeToEyeData(string key, Vector3 position)
 	{
 		if (!eyeData.ContainsKey (key))
-		{
-			if (key.StartsWith ("norm_pos"))
-				eyeData.Add (key, new EyeData (SamplesCount, 2));
-			else
-				eyeData.Add (key, new EyeData (SamplesCount, 3));
-		}
+			eyeData.Add (key, new EyeData (SamplesCount));
+		
 		eyeData[key].AddGaze(position,calculateMovingAverage);
 	}
 
@@ -141,9 +137,9 @@ public static class PupilData
 			get 
 			{
 				if (calculateMovingAverage)
-					return gazePoint.Average3D;
+					return gazePoint.Average;
 				else
-					return gazePoint.Raw3D;
+					return gazePoint.Raw;
 			}
 		}
 
@@ -152,9 +148,9 @@ public static class PupilData
 			get 
 			{
 				if (calculateMovingAverage)
-					return leftEyeCenter.Average3D;
+					return leftEyeCenter.Average;
 				else
-					return leftEyeCenter.Raw3D;
+					return leftEyeCenter.Raw;
 			}
 		}
 		public static Vector3 RightEyeCenter
@@ -162,9 +158,9 @@ public static class PupilData
 			get 
 			{
 				if (calculateMovingAverage)
-					return rightEyeCenter.Average3D; 
+					return rightEyeCenter.Average; 
 				else
-					return rightEyeCenter.Raw3D;
+					return rightEyeCenter.Raw;
 			}
 		}
 
@@ -173,9 +169,9 @@ public static class PupilData
 			get 
 			{
 				if (calculateMovingAverage)
-					return leftGazeNormal.Average3D; 
+					return leftGazeNormal.Average; 
 				else
-					return leftGazeNormal.Raw3D;
+					return leftGazeNormal.Raw;
 			}
 		}
 		public static Vector3 RightGazeNormal
@@ -183,9 +179,9 @@ public static class PupilData
 			get 
 			{
 				if (calculateMovingAverage)
-					return rightGazeNormal.Average3D; 
+					return rightGazeNormal.Average; 
 				else
-					return rightGazeNormal.Raw3D;
+					return rightGazeNormal.Raw;
 			}
 		}
 
@@ -221,9 +217,9 @@ public static class PupilData
 			get
 			{
 				if (calculateMovingAverage)
-					return leftEye.Average2D;
+					return leftEye.Average;
 				else
-					return leftEye.Raw2D;
+					return leftEye.Raw;
 				 
 			}
 		}
@@ -233,9 +229,9 @@ public static class PupilData
 			get
 			{
 				if (calculateMovingAverage)
-					return rightEye.Average2D;
+					return rightEye.Average;
 				else
-					return rightEye.Raw2D;
+					return rightEye.Raw;
 
 			}
 		}
