@@ -100,17 +100,16 @@ public class Connection
 
 	public void CloseSockets()
 	{
-		if (requestSocket != null && isConnected) 
-		{
+		if (requestSocket != null)
 			requestSocket.Close ();
-			isConnected = false;
-		}
-
+		
 		foreach (var socketKey in subscriptionSocketForTopic.Keys)
 			CloseSubscriptionSocket (socketKey);
 		UpdateSubscriptionSockets ();
 
 		TerminateContext ();
+
+		isConnected = false;
 	}
 
 	private MemoryStream mStream;

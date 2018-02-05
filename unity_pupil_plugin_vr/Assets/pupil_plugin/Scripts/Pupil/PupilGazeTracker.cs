@@ -436,11 +436,6 @@ public class PupilGazeTracker:MonoBehaviour
 
 #endregion
 
-	void OnApplicationQuit()
-	{
-		CloseShop ();
-	}
-
 	public void CloseShop ()
 	{
 #if UNITY_EDITOR // Operator window will only be available in Editor mode
