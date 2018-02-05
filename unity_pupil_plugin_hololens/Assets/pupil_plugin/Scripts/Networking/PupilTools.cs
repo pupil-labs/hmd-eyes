@@ -42,6 +42,87 @@ public class PupilTools : MonoBehaviour
 	public static event OnDisconnectingDelegate OnDisconnecting;
 	public static event OnReceiveDataDelegate OnReceiveData;
 
+	#region Recording
+
+	public static bool isRecording = false;
+	private static string recordingString;
+	public static void StartRecording ()
+	{
+		isRecording = true;
+
+		recordingString = "Timestamp,Identifier,PupilPositionX,PupilPositionY,PupilPositionZ,UnityWorldPositionX,UnityWorldPositionY,UnityWorldPositionZ\n";
+	}
+
+	public static void StopRecording ()
+	{
+		isRecording = false;
+	}
+
+	private static Vector3 unityWorldPosition;
+	private static void AddToRecording( string identifier, Vector3 position, bool isViewportPosition = false )
+	{
+		var timestamp = Time.time;
+
+		if (isViewportPosition)
+			unityWorldPosition = Settings.currentCamera.ViewportToWorldPoint (position + Vector3.forward);
+		else
+			unityWorldPosition = Settings.currentCamera.cameraToWorldMatrix.MultiplyPoint3x4 (position);
+
+//		if (!isViewportPosition)
+//			position.y *= -1;				// Pupil y axis is inverted
+
+		recordingString += string.Format ( "{0},{1},{2},{3},{4},{5},{6},{7}\n"
+			,timestamp.ToString ("F4")
+			,identifier
+			,position.x.ToString ("F4"),position.y.ToString ("F4"),position.z.ToString ("F4")
+			,unityWorldPosition.x.ToString ("F4"),unityWorldPosition.y.ToString ("F4"),unityWorldPosition.z.ToString ("F4")
+		);
+	}
+
+	public static void SaveRecording(string toPath)
+	{
+		string filePath = toPath + "/" + "UnityGazeExport.csv";
+		File.WriteAllText(filePath, recordingString);
+	}
+
+	#endregion
+
+	public static void UpdateGazePostion( string key, float[] position )
+	{
+		switch (key)
+		{
+		case PupilSettings.gaze2DLeftEyeKey:
+			PupilData._2D.LeftEyePosUDP.x = position [0];
+			PupilData._2D.LeftEyePosUDP.y = position [1];
+			if (isRecording)
+				AddToRecording (key, PupilData._2D.LeftEyePosUDP, true);
+//		    UnityEngine.Debug.Log ("Left eye position: " + PupilData._2D.LeftEyePosUDP.ToString());
+			break;
+		case PupilSettings.gaze2DRightEyeKey:
+			PupilData._2D.RightEyePosUDP.x = position [0];
+			PupilData._2D.RightEyePosUDP.y = position [1];
+			if (isRecording)
+				AddToRecording (key, PupilData._2D.RightEyePosUDP, true);
+//			UnityEngine.Debug.Log ("Right Eye Position: " + PupilData._2D.RightEyePosUDP.ToString());
+			break;
+		case PupilSettings.gaze2DKey:
+			PupilData._2D.Gaze2DPosUDP.x = position [0];
+			PupilData._2D.Gaze2DPosUDP.y = position [1];
+			if (isRecording)
+				AddToRecording (key, PupilData._2D.Gaze2DPosUDP, true);
+//		    UnityEngine.Debug.Log ("Gazepoint 2D: " + PupilData._2D.Gaze2DPosUDP.ToString());
+			break;
+		default:	// PupilSettings.gaze3DKey
+			PupilData._3D.Gaze3DPosUDP.x = position [0] / PupilSettings.PupilUnitScalingFactor;
+			PupilData._3D.Gaze3DPosUDP.y = position [1] / PupilSettings.PupilUnitScalingFactor;
+			PupilData._3D.Gaze3DPosUDP.z = position [2] / PupilSettings.PupilUnitScalingFactor;
+			if (isRecording)
+				AddToRecording (key, PupilData._3D.Gaze3DPosUDP);
+//			UnityEngine.Debug.Log ("Gazepoint 3D: " + PupilData._3D.Gaze3DPosUDP.ToString());
+			break;
+		}
+	}
+
 #region Calibration
 
 	public static void RepaintGUI ()

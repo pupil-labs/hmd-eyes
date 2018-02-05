@@ -15,7 +15,6 @@ MonoBehaviour:
     printSampling: 0
     printMessage: 0
     printMessageType: 0
-  DataProcessState: 0
   connection:
     pupilRemotePort: 50021
     pupilRemoteIP: 192.168.1.12

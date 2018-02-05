@@ -76,5 +76,9 @@ public class PupilSettings:ScriptableObject
 	public static int numberOfMessages = 6;
 
 	public static float PupilUnitScalingFactor = 1000;	// Pupil is currently operating in mm
+	public const string gaze2DLeftEyeKey = "norm_pos_1";
+	public const string gaze2DRightEyeKey = "norm_pos_0";
+	public const string gaze2DKey = "gaze_point_2d";
+	public const string gaze3DKey = "gaze_point_3d";
 }
 

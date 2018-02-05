@@ -188,7 +188,7 @@ public class UDPCommunication : Singleton<UDPCommunication>
 			ExecuteOnMainThread.Dequeue().Invoke();
 		}
 	}
-		
+
 	public void InterpreteUDPData(byte[] data)
 	{
 		switch (data[0])
@@ -238,33 +238,20 @@ public class UDPCommunication : Singleton<UDPCommunication>
 					if (data [3] == (byte)'1')
 					{
 						//UnityEngine.Debug.Log("Left eye position received");
-						var leftEyePosition = FloatArrayFromPacket (data, 4);
-						PupilData._2D.LeftEyePosUDP.x = leftEyePosition [0];
-						PupilData._2D.LeftEyePosUDP.y = leftEyePosition [1];
-//					    UnityEngine.Debug.Log ("Left eye position: " + PupilData._2D.LeftEyePosUDP.ToString());
+						PupilTools.UpdateGazePostion (PupilSettings.gaze2DLeftEyeKey, FloatArrayFromPacket (data, 4));
 					} else if (data [3] == (byte)'0')
 					{
 						//UnityEngine.Debug.Log("Right eye position received");
-						var rightEyePosition = FloatArrayFromPacket (data, 4);
-						PupilData._2D.RightEyePosUDP.x = rightEyePosition [0];
-						PupilData._2D.RightEyePosUDP.y = rightEyePosition [1];
-//					    UnityEngine.Debug.Log ("Right Eye Position: " + PupilData._2D.RightEyePosUDP.ToString());
+						PupilTools.UpdateGazePostion (PupilSettings.gaze2DRightEyeKey, FloatArrayFromPacket (data, 4));
 					} else if (data [3] == (byte)'2')
 					{
-						var gaze2DPosition = FloatArrayFromPacket (data, 4);
-						PupilData._2D.Gaze2DPosUDP.x = gaze2DPosition [0];
-						PupilData._2D.Gaze2DPosUDP.y = gaze2DPosition [1];
-//					    UnityEngine.Debug.Log ("Gazepoint 2D: " + PupilData._2D.Gaze2DPosUDP.ToString());
+						PupilTools.UpdateGazePostion (PupilSettings.gaze2DKey, FloatArrayFromPacket (data, 4));
 					}
 					else
 						UnityEngine.Debug.Log ("Unknown gaze 2d data");
 				} else if (data [2] == (byte)'3')
 				{
-					var gaze3DPosition = FloatArrayFromPacket (data, 4);
-					PupilData._3D.Gaze3DPosUDP.x = gaze3DPosition [0] / PupilSettings.PupilUnitScalingFactor;
-					PupilData._3D.Gaze3DPosUDP.y = gaze3DPosition [1] / PupilSettings.PupilUnitScalingFactor;
-					PupilData._3D.Gaze3DPosUDP.z = gaze3DPosition [2] / PupilSettings.PupilUnitScalingFactor;
-//					UnityEngine.Debug.Log ("Gazepoint 3D: " + PupilData._3D.Gaze3DPosUDP.ToString());
+					PupilTools.UpdateGazePostion (PupilSettings.gaze3DKey, FloatArrayFromPacket (data, 4));
 				} else
 					UnityEngine.Debug.Log ("Unknown gaze event");
 				break;
