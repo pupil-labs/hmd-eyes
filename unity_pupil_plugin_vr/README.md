@@ -15,7 +15,7 @@ The purpose of this repository is do demonstrates how to implement Pupil with Un
 1. Make sure that you have [Pupil Capture or Pupil Service](https://github.com/pupil-labs/pupil/releases/latest) on a Linux, macOS, or Windows 10 machine. 
 2. The Unity3D sample project contains multiple scenes: `pupil_plugin/Calibration.unity`, `pupil_plugin/Blink.unity`, `Market Scene Demo/2D Calibration Demo.unity`, `Market Scene Demo/3D Calibration Demo.unity`, `Market Scene Demo/Heatmap.unity` and `Market Scene Demo/SphericalVideo.unity`
 3. The former two represent barebone examples with an implementation of the calibration process (needed for gaze tracking) and a simpler variant that accesses Pupil to get blink information
-4. The latter ones are all based on the market scene assets available for free on the Unity Asset Store and serve as a starting point on how eye tracking can be implemented with either a 2D or 3D calibration
+4. The latter ones are all based on the market scene assets available for free on the Unity Asset Store (http://u3d.as/DRi) and serve as a starting point on how eye tracking can be implemented with either a 2D or 3D calibration
 5. Before you start any scene, make sure you either have Pupil Capture already running or that the path to Pupil Service is set correctly.
 6. On Windows 10 and with the standard project settings, the path is set to `C:/Program Files/Pupil Service/pupil_service.exe`. If you have a different setup, please adapt it as follows 
 
