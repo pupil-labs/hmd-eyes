@@ -305,13 +305,14 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 #if !UNITY_WSA
 		if (PupilTools.Connection.isLocal)
-			RunServiceAtPath ();
+		if ( !RunServiceAtPath() )
+			return;
 #endif
-		
+
 		StartCoroutine (PupilTools.Connect (retry: true, retryDelay: 5f));
 	}
 
-	public static void RunServiceAtPath (bool runEyeProcess = false)
+	public static bool RunServiceAtPath (bool runEyeProcess = false)
 	{
 #if !UNITY_WSA
 		string servicePath = PupilSettings.Instance.pupilServiceApp.servicePath;
@@ -330,13 +331,7 @@ public class PupilGazeTracker:MonoBehaviour
 				//				serviceProcess.StartInfo.UseShellExecute = false;
 				//				serviceProcess.StartInfo.RedirectStandardOutput = true;     
 
-				if (File.Exists (servicePath))
-				{
-					serviceProcess.Start ();
-				} else
-				{
-					UnityEngine.Debug.LogWarning ("Pupil Service could not start! There is a problem with the file path. The file does not exist at given path");
-				}
+				serviceProcess.Start ();
 			}
 		} else
 		{
@@ -344,10 +339,16 @@ public class PupilGazeTracker:MonoBehaviour
 			{
 				UnityEngine.Debug.LogWarning ("Pupil Service filename is not specified ! Please configure it under the Pupil plugin settings");
 			}
+			else
+			{
+				UnityEngine.Debug.LogWarning ("Pupil Service could not start! There is a problem with the file path. The file does not exist at given path");
+			}
+			return false;
 		}
 #else
 		print("Process can not be started in UWP environment");
 #endif
+		return true;
 	}
 
 	#region packet
