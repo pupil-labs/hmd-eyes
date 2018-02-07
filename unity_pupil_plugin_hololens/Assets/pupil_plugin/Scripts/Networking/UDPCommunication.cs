@@ -272,7 +272,7 @@ public class UDPCommunication : Singleton<UDPCommunication>
 			PupilTools.CalibrationMode = Calibration.Mode._2D;
 			break;
 		case (byte) 'R':
-			if (PupilSettings.Instance.debug.printCalibration)
+			if (PupilSettings.Instance.debug.printSampling)
 				Debug.Log ("Reference points received");
 			break;
 		default:

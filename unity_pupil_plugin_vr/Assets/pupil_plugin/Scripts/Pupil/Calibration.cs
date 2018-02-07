@@ -64,6 +64,9 @@ public class Calibration
 	private float radius;
 	public void UpdateCalibrationPoint()
 	{
+		if (previousCalibrationDepth == currentCalibrationDepth && previousCalibrationPoint == currentCalibrationPoint)
+			return;
+		
 		currentCalibrationPointPosition = new float[]{0};
 		switch (PupilTools.CalibrationMode)
 		{
@@ -82,12 +85,17 @@ public class Calibration
 		}
 		Marker.UpdatePosition (currentCalibrationPointPosition);
 		Marker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
+
+		previousCalibrationDepth = currentCalibrationDepth;
+		previousCalibrationPoint = currentCalibrationPoint;
 	}
 
 	public PupilMarker Marker;
 	int currentCalibrationPoint;
+	int previousCalibrationPoint;
 	int currentCalibrationSamples;
 	int currentCalibrationDepth;
+	int previousCalibrationDepth;
 	float[] currentCalibrationPointPosition;
 	public void InitializeCalibration ()
 	{
@@ -96,6 +104,8 @@ public class Calibration
 		currentCalibrationPoint = 0;
 		currentCalibrationSamples = 0;
 		currentCalibrationDepth = 0;
+		previousCalibrationDepth = -1;
+		previousCalibrationPoint = -1;
 
 		if (!PupilMarker.TryToReset (Marker))
 			Marker = new PupilMarker ("Calibraton Marker", Color.white);

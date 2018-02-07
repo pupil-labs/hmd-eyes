@@ -4,8 +4,20 @@ using Pupil;
 public class PupilMarker
 {
 	public string name;
-	private Color color = Color.white;
+	private Color _color = Color.white;
+	public Color color
+	{
+		get { return _color; }
+		set
+		{
+			_color = value;
+
+			if (material != null)
+				material.SetColor ("_EmissionColor", _color);
+		}
+	}
 	public Vector3 position;
+	private Material material;
 	private GameObject _gameObject;
 	private GameObject gameObject
 	{
@@ -15,9 +27,10 @@ public class PupilMarker
 			{
 				_gameObject = GameObject.Instantiate (Resources.Load<GameObject> ("MarkerObject"));
 				_gameObject.name = this.name;
-				_gameObject.GetComponent<MeshRenderer> ().material = new Material (Resources.Load<Material> ("MarkerMaterial"));
-				_gameObject.GetComponent<MeshRenderer> ().material.SetColor ("_EmissionColor", this.color);
+				material = new Material (Resources.Load<Material> ("Materials/MarkerMaterial"));
+				_gameObject.GetComponent<MeshRenderer> ().material = material;
 				_gameObject.transform.parent = this.camera.transform;
+				material.SetColor ("_EmissionColor", this.color);
 			}
 			return _gameObject;
 		}

@@ -10,7 +10,6 @@ public class Recorder
 {
 	public static GameObject RecorderGO;
 	public static bool isRecording;
-	public static bool isProcessing;
 #if !UNITY_WSA
 	public FFmpegOut.FFmpegPipe.Codec codec;
 	public FFmpegOut.FFmpegPipe.Resolution resolution;
@@ -37,6 +36,7 @@ public class Recorder
 
 		RecorderGO.AddComponent<FFmpegOut.CameraCapture> ();
 		Camera c = RecorderGO.GetComponent<Camera> ();
+		c.clearFlags = CameraClearFlags.Color;
 		c.targetDisplay = 1;
 		c.stereoTargetEye = StereoTargetEyeMask.None;
 		#if UNITY_5_6_OR_NEWER
@@ -52,6 +52,23 @@ public class Recorder
 		RecorderGO.GetComponent<FFmpegOut.CameraCapture> ().Stop ();
 		GameObject.Destroy (RecorderGO);
 		PupilTools.RepaintGUI ();
+	}
+
+	public string GetRecordingPath()
+	{
+		string date = DateTime.Now.ToString ("yyyy_MM_dd");
+		string path = Application.dataPath + "/" + date;
+
+		if (isCustomPath)
+			path = filePath + "/" + date;
+
+		path = path.Replace ("Assets/", "");
+
+		if (!System.IO.Directory.Exists (path))
+			System.IO.Directory.CreateDirectory (path);
+
+		UnityEngine.Debug.Log ("Recording path: " + path);
+		return path;
 	}
 }
 

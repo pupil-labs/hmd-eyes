@@ -435,11 +435,6 @@ public class PupilGazeTracker:MonoBehaviour
 
 #endregion
 
-	void OnApplicationQuit()
-	{
-		CloseShop ();
-	}
-
 	public void CloseShop ()
 	{
 #if UNITY_EDITOR // Operator window will only be available in Editor mode
@@ -447,15 +442,16 @@ public class PupilGazeTracker:MonoBehaviour
 			OperatorWindow.Instance.Close ();
 #endif
 
-		PupilTools.Disconnect ();
-			
-		StopAllCoroutines ();
 #if !UNITY_WSA
 		if (Recorder.isRecording)
 		{
 			Recorder.Stop ();
 		}
 #endif
+		PupilTools.Disconnect ();
+
+		StopAllCoroutines ();
+
 		PupilTools.RepaintGUI ();
 
 		processStatus.eyeProcess0 = false;

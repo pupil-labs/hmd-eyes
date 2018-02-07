@@ -64,6 +64,9 @@ public class Calibration
 	private float radius;
 	public void UpdateCalibrationPoint()
 	{
+		if (previousCalibrationDepth == currentCalibrationDepth && previousCalibrationPoint == currentCalibrationPoint)
+			return;
+		
 		currentCalibrationPointPosition = new float[]{0};
 		switch (PupilTools.CalibrationMode)
 		{
@@ -77,17 +80,22 @@ public class Calibration
 		radius = currentCalibrationType.vectorDepthRadiusScale[currentCalibrationDepth].y;
 		if (currentCalibrationPoint > 0 && currentCalibrationPoint < currentCalibrationType.points)
 		{	
-			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
-			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (currentCalibrationPoint - 1) / (currentCalibrationType.points-1));
+			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f));
+			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f));
 		}
 		Marker.UpdatePosition (currentCalibrationPointPosition);
 		Marker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
+
+		previousCalibrationDepth = currentCalibrationDepth;
+		previousCalibrationPoint = currentCalibrationPoint;
 	}
 
 	public PupilMarker Marker;
 	int currentCalibrationPoint;
+	int previousCalibrationPoint;
 	int currentCalibrationSamples;
 	int currentCalibrationDepth;
+	int previousCalibrationDepth;
 	float[] currentCalibrationPointPosition;
 	public void InitializeCalibration ()
 	{
@@ -96,6 +104,8 @@ public class Calibration
 		currentCalibrationPoint = 0;
 		currentCalibrationSamples = 0;
 		currentCalibrationDepth = 0;
+		previousCalibrationDepth = -1;
+		previousCalibrationPoint = -1;
 
 		if (!PupilMarker.TryToReset (Marker))
 			Marker = new PupilMarker ("Calibraton Marker", Color.white);
@@ -123,7 +133,7 @@ public class Calibration
 			if ( currentCalibrationSamples > samplesToIgnoreForEyeMovement )
 				PupilTools.AddCalibrationPointReferencePosition (currentCalibrationPointPosition, t);
 			
-			if (PupilSettings.Instance.debug.printCalibration)
+			if (PupilSettings.Instance.debug.printSampling)
 				Debug.Log ("Point: " + currentCalibrationPoint + ", " + "Sampling at : " + currentCalibrationSamples + ". On the position : " + currentCalibrationPointPosition [0] + " | " + currentCalibrationPointPosition [1]);
 
 			currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
