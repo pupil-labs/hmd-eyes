@@ -205,7 +205,7 @@ public class Heatmap : MonoBehaviour
 		currentVisualization.Emit (particleSystemParameters, 1);
 		if (currentVisualization.particleCount == currentVisualization.main.maxParticles)
 		{
-			Debug.Log ("Approaching maximum number of particles. Will instantiate additional particle system. If this continues to occur, please increase the number in Unity Editor");
+			Debug.Log ("Approaching maximum number of particles. Will instantiate additional particle system. If this continues to occur, please increase the 'Max Particles' number in Unity Editor");
 			var newViz = GameObject.Instantiate<ParticleSystem> (currentVisualization, currentVisualization.transform);
 			newViz.Clear ();
 			visualizations.Add (newViz);
@@ -270,7 +270,15 @@ public class Heatmap : MonoBehaviour
 			if (mode == HeatmapMode.Image)
 			{
 				string path = PupilSettings.Instance.recorder.GetRecordingPath ();
-				System.IO.File.WriteAllBytes (path + string.Format ("/Heatmap_{0}.jpg", Time.time), CaptureCurrentView ().EncodeToJPG ());
+
+				var texture = CaptureCurrentView ();
+				var pixels = texture.GetPixels ();
+				var mirrored = new Color[pixels.Length];
+				for (int i = 0; i < texture.height; i++)
+					for (int j = 0; j < texture.width; j++)
+						mirrored [j + texture.width * i] = pixels [j + texture.width * ((texture.height - 1) - i)];
+				texture.SetPixels (mirrored);
+				System.IO.File.WriteAllBytes (path + string.Format ("/Heatmap_{0}.jpg", Time.time), texture.EncodeToJPG ());
 				capturing = false;
 			}
 			else

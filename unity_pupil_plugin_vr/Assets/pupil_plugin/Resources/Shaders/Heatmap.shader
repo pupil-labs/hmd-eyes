@@ -54,7 +54,12 @@ SubShader {
             {
             	float2 angle = float2( (uv.x-0.5f) * 2.0f * PI, (1.0f - uv.y) * PI );
 
-            	return float3 ( sin(angle.y)*cos(angle.x), cos(angle.y), sin(angle.y)*sin(angle.x) );
+            	// Spherical rendering
+            	float sinAngleY = sin(angle.y);
+            	return float3 ( sinAngleY*cos(angle.x), cos(angle.y), sinAngleY*sin(angle.x) );
+
+				// Cylindrical rendering
+//            	return float3 ( cos(angle.x), 2.0f*(uv.y-0.5f), sin(angle.x) );
             }
 
             fixed4 frag (v2f i) : SV_Target
