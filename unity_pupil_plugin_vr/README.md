@@ -76,12 +76,9 @@ For users who do not need gaze data or want a simple example on how to subscribe
 	
 ## Spherical Video demo
 As many users asked for this feature, we now include a demo that can load and display a 360 degree video. Combined with Pupil, this allows to visualize what the user is looking at.
-* There are two ways to load a spherical video
-	1. Using Unity's internal player, for which the video has to be part of the project files. The included example is based on the Market Demo scene
-	2. Using ffmpeg to load external videos and access videoframes at runtime. Depending on the machine it is running on and if it is running in Unity Editor or standalone, this can be slow
-* Select the `VideoSphere` gameobject to toggle between the two video modes.
-* The video will start after the obligatory calibration has succeeded
-* Gaze visualization will also start at this time (triggered by the CalibrationDemo script component also attached to the main camera)
+Starting February 12th, we switched to using Unity's internal solution to play spherical videos. This requires Unity3D v 2017.3. Please revert to the previous implementation if you plan not to update Unity to the newest release.
+* To load a video, select the `VideoSphere` gameobject and click the "Set path.." button, shown in Inspector
+* Alternatively, you can set the path through the public string variable `FilePath` of `SphericalVideoPlayer.cs`
 
 ## Heatmap demo
 The heatmap demo allows to export gaze visualization to a spherical video or image. Eye tracking positions are translated to particles on a spherical texture, which is overlayed on the 3d scene. The heatmap is available as Prefab, as well, and can be added to existing scenes by draging it onto the main camera of that scene. 
