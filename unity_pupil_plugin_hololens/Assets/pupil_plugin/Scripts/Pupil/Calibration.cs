@@ -62,32 +62,29 @@ public class Calibration
 	public float[] leftEyeTranslation;
 
 	private float radius;
+	private double offset;
 	public void UpdateCalibrationPoint()
 	{
-		if (previousCalibrationDepth == currentCalibrationDepth && previousCalibrationPoint == currentCalibrationPoint)
-			return;
-		
 		currentCalibrationPointPosition = new float[]{0};
 		switch (PupilTools.CalibrationMode)
 		{
 		case Mode._3D:
-			currentCalibrationPointPosition = new float[]{ 0f, 0f, currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].x };
+			currentCalibrationPointPosition = new float[] {0f,0f,currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].x};
+			offset = 0.25f * Math.PI;
 			break;
 		default:
 			currentCalibrationPointPosition = new float[]{ 0.5f, 0.5f };
+			offset = 0f;
 			break;
 		}
 		radius = currentCalibrationType.vectorDepthRadiusScale[currentCalibrationDepth].y;
 		if (currentCalibrationPoint > 0 && currentCalibrationPoint < currentCalibrationType.points)
 		{	
-			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f));
-			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f));
+			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f) + offset);
+			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f) + offset);
 		}
 		Marker.UpdatePosition (currentCalibrationPointPosition);
 		Marker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
-
-		previousCalibrationDepth = currentCalibrationDepth;
-		previousCalibrationPoint = currentCalibrationPoint;
 	}
 
 	public PupilMarker Marker;

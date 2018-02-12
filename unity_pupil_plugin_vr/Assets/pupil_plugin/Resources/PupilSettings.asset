@@ -20,12 +20,12 @@ MonoBehaviour:
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
     PORT: 50020
-    subport: 54549
+    subport: 57195
     isLocal: 1
-    PupilVersion: 1.1.2
-    PupilVersionNumbers: 010000000100000002000000
+    PupilVersion: 1.3.9
+    PupilVersionNumbers: 010000000300000009000000
   pupilServiceApp:
-    servicePath: C:/Users/office/Downloads/pupil_v1.1.2_windows_x64_2/pupil_v1.1.2_windows_x64/pupil_service_windows_x64_v1.1.2/pupil_service.exe
+    servicePath: C:/Users/office/Downloads/pupil_v1.3.9_windows_x64/pupil_service_windows_x64_v1.3.9/pupil_service.exe
   calibration:
     CalibrationType2D:
       name: 2d
@@ -46,24 +46,24 @@ MonoBehaviour:
       - 0
       - 0
       - 0
-      points: 8
+      points: 5
       vectorDepthRadiusScale:
-      - {x: 1, y: 0.36, z: 0.05}
-      - {x: 5, y: 1.2, z: 0.2}
-      - {x: 10, y: 1.4, z: 0.3}
-      samplesPerDepth: 40
+      - {x: 0.6, y: 0.18, z: 0.04}
+      - {x: 1, y: 0.24, z: 0.04}
+      - {x: 2, y: 0.38, z: 0.04}
+      samplesPerDepth: 70
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:
-    - 32.661583
+    - 31.832918
     - 0
     - 0
     leftEyeTranslation:
-    - -32.661583
+    - -31.832918
     - 0
     - 0
   customGUIVariables:
     tabs:
-      mainTab: 1
+      mainTab: 0
     bools:
       isAdvanced: 1
   debugView:

@@ -8,15 +8,14 @@ public class MarketWith3DCalibration : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-		PupilData.calculateMovingAverage = false;
+		PupilData.calculateMovingAverage = true;
 	}
 
 	void OnEnable()
 	{
 		if (PupilTools.IsConnected)
 		{
-			PupilTools.DataProcessState = Pupil.EStatus.ProcessingGaze;
-			PupilTools.SubscribeTo ("gaze");
+			PupilGazeTracker.Instance.StartVisualizingGaze ();		
 		}	
 	}
 	

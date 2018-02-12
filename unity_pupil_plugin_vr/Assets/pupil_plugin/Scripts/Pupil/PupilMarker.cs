@@ -13,7 +13,7 @@ public class PupilMarker
 			_color = value;
 
 			if (material != null)
-				material.SetColor ("_EmissionColor", _color);
+				material.color = _color;
 		}
 	}
 	public Vector3 position;
@@ -30,7 +30,7 @@ public class PupilMarker
 				material = new Material (Resources.Load<Material> ("Materials/MarkerMaterial"));
 				_gameObject.GetComponent<MeshRenderer> ().material = material;
 				_gameObject.transform.parent = this.camera.transform;
-				material.SetColor ("_EmissionColor", this.color);
+				material.color = this.color;
 			}
 			return _gameObject;
 		}
