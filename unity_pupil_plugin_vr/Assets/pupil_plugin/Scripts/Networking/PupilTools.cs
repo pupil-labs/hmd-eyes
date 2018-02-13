@@ -352,7 +352,7 @@ public class PupilTools : MonoBehaviour
 		DataProcessState = EStatus.Calibration;
 		SubscribeTo ("notify.calibration.successful");
 		SubscribeTo ("notify.calibration.failed");
-		SubscribeTo ("gaze");
+		SubscribeTo ("pupil.");
 
 		Send (new Dictionary<string,object> {
 			{ "subject","start_plugin" },
@@ -403,7 +403,7 @@ public class PupilTools : MonoBehaviour
 
 		UnSubscribeFrom ("notify.calibration.successful");
 		UnSubscribeFrom ("notify.calibration.failed");
-		UnSubscribeFrom ("gaze");
+		UnSubscribeFrom ("pupil.");
 
 		if (OnCalibrationEnded != null)
 			OnCalibrationEnded ();
