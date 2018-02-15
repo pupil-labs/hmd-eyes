@@ -24,6 +24,11 @@ public class OperatorMonitor : MonoBehaviour
 
 	TextMesh gazeInfo;
 
+	LineRenderer leftEyeConfidenceLevel;
+	LineRenderer rightEyeConfidenceLevel;
+	float confidenceLevelScaling = 0.05f;
+	float yOffset = -0.24f;
+
 	void Awake()
 	{
 		pupilTracker = PupilGazeTracker.Instance;
@@ -32,9 +37,10 @@ public class OperatorMonitor : MonoBehaviour
 
 	public void Start()
 	{
-		pupilTracker = PupilGazeTracker.Instance;
 		graphTime = Time.time;
-			
+
+		gazeInfo = GetComponentInChildren<TextMesh> ();
+
 		confidenceLeftEyeList.Capacity = graphLength + 1;
 		confidenceLeftEyePosition = new Vector3[graphLength];
 		confidenceRightEyeList.Capacity = graphLength + 1;
@@ -47,26 +53,8 @@ public class OperatorMonitor : MonoBehaviour
 			confidenceRightEyePosition [i] = position;
 		}
 
-		var leftEyeRenderingObject = GameObject.CreatePrimitive (PrimitiveType.Plane);
-		GameObject.Destroy (leftEyeRenderingObject.GetComponent<Collider> ());
-		leftEyeRenderingObject.transform.eulerAngles = Vector3.left * 90f;
-		leftEyeRenderingObject.transform.localScale *= 0.05f;
-		var rightEyeRenderingObject = GameObject.Instantiate (leftEyeRenderingObject);
-
-		leftEyeRenderingObject.transform.parent = gameObject.transform;
-		leftEyeRenderingObject.transform.localPosition = new Vector3 (0.3f,0f,2f);
-		MeshRenderer leftEyeRenderer = leftEyeRenderingObject.GetComponent<MeshRenderer> ();
-		leftEyeRenderer.material = pupilSettings.framePublishing.eye1ImageMaterial;
-
-		rightEyeRenderingObject.transform.parent = gameObject.transform;
-		rightEyeRenderingObject.transform.localPosition = new Vector3 (-0.3f,0f,2f);
-		MeshRenderer rightEyeRenderer = rightEyeRenderingObject.GetComponent<MeshRenderer> ();
-		rightEyeRenderer.material = pupilSettings.framePublishing.eye0ImageMaterial;
-
-		gazeInfo = GetComponentInChildren<TextMesh> ();
-
-		InitializeLineRenderer (forEye: "Left", parent: leftEyeRenderingObject.transform);
-		InitializeLineRenderer (forEye: "Right", parent: rightEyeRenderingObject.transform);
+		InitializeEyeVisualization (forEye: "Left");
+		InitializeEyeVisualization (forEye: "Right");
 
 		PupilTools.SubscribeTo ("pupil.");
 		PupilTools.StartFramePublishing ();
@@ -74,8 +62,6 @@ public class OperatorMonitor : MonoBehaviour
 
 	void Update()
 	{
-		pupilSettings.framePublishing.UpdateEyeTextures ();
-
 		//Construct the Text box string for data display on the Operator Monitor view
 		string str = 
 			string.Format("Gaze Point : ( X: {0} Y: {1} Z: {2} )",PupilData._3D.GazePosition.x,PupilData._3D.GazePosition.y,PupilData._3D.GazePosition.z)
@@ -85,38 +71,53 @@ public class OperatorMonitor : MonoBehaviour
 			;
 		gazeInfo.text = str;
 
+		pupilSettings.framePublishing.UpdateEyeTextures ();
 		if ((Time.time - graphTime) > updateConfidenceEveryXSeconds)
 		{
-			UpdateLineRenderers ();
+			UpdateEyeVisualization ();
 			graphTime = Time.time;
 		}
 	}
 
-	LineRenderer leftEyeConfidenceLevel;
-	LineRenderer rightEyeConfidenceLevel;
-	float confidenceLevelScaling = 0.05f;
-	void InitializeLineRenderer(string forEye, Transform parent)
+	void InitializeEyeVisualization(string forEye)
 	{
-		var go = new GameObject (forEye + " Eye Confidence Level");
-		go.transform.parent = parent;
-		go.transform.localPosition = Vector3.left * 4;
+		GameObject go = GameObject.CreatePrimitive (PrimitiveType.Plane);
+		go.name = forEye + " Eye Rendering Plane";
+		GameObject.Destroy (go.GetComponent<Collider> ());
+		go.transform.eulerAngles = Vector3.left * 90f;
+		go.transform.localScale *= 0.05f;
+		go.transform.parent = gameObject.transform;
+		go.transform.localPosition = new Vector3 (0.3f,0.1f,2f);
+		if (forEye == "Right")
+			go.transform.localPosition = new Vector3 (-0.3f,0.1f,2f);
+		MeshRenderer mr = go.GetComponent<MeshRenderer> ();
+		mr.material = (forEye == "Right") ? pupilSettings.framePublishing.eye0ImageMaterial : pupilSettings.framePublishing.eye1ImageMaterial;
 
-		LineRenderer lr = go.AddComponent<LineRenderer> ();
+		TextMesh tm = GameObject.Instantiate (gazeInfo);
+		tm.name = forEye + " Eye Text";
+		tm.transform.parent = go.transform;
+		tm.transform.localPosition = Vector3.forward * 7;
+		tm.transform.localScale = Vector3.one * 0.2f;
+		tm.text = forEye + " Eye";
+
+		var lrGO = new GameObject (forEye + " Eye Confidence Level");
+		lrGO.transform.parent = go.transform;
+		lrGO.transform.localPosition = Vector3.left * 4;
+		LineRenderer lr = lrGO.AddComponent<LineRenderer> ();
 		lr.material = new Material (Shader.Find ("Unlit/Color"));
 		lr.material.color = (forEye == "Right") ? PupilSettings.rightEyeColor : PupilSettings.leftEyeColor;
 		lr.positionCount = graphLength;
 		lr.useWorldSpace = false;
 		lr.startWidth = 0.005f;
 		lr.endWidth = 0.005f;
-
+		lr.receiveShadows = false;
 		if (forEye == "Left")
 			leftEyeConfidenceLevel = lr;
 		else
 			rightEyeConfidenceLevel = lr;
 	}
 
-	float yOffset = -0.24f;
-	public void UpdateLineRenderers()
+	public void UpdateEyeVisualization()
 	{
 		confidenceLeftEyeList.Add (PupilTools.Confidence(PupilData.leftEyeID));
 		if (confidenceLeftEyeList.Count > graphLength)
