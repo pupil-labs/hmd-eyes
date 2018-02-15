@@ -80,5 +80,8 @@ public class PupilSettings:ScriptableObject
 	public const string gaze2DRightEyeKey = "norm_pos_0";
 	public const string gaze2DKey = "gaze_point_2d";
 	public const string gaze3DKey = "gaze_point_3d";
+
+	public static Color leftEyeColor = Color.green;
+	public static Color rightEyeColor = Color.blue;
 }
 

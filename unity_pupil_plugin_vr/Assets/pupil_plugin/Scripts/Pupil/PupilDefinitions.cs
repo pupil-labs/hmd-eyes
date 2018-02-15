@@ -104,38 +104,6 @@ namespace Pupil
 		Calibration
 	}
 }
-namespace Operator
-{
-	[Serializable]
-	public class properties
-	{
-		public int id;
-		[HideInInspector]
-		public Vector3 positionOffset = new Vector3 ();
-		[HideInInspector]
-		public Vector3 rotationOffset = new Vector3 ();
-		[HideInInspector]
-		public Vector3 scaleOffset = Vector3.one;
-		[HideInInspector]
-		public Vector2 graphScale = new Vector2 (1, 1);
-		[HideInInspector]
-		public float gapSize = 1;
-		[HideInInspector]
-		public int graphLength = 20;
-		public float confidence = 0.2f;
-		public float refreshDelay;
-		[HideInInspector]
-		public long graphTime = DateTime.Now.Ticks;
-		[HideInInspector]
-		public bool update = false;
-		[HideInInspector]
-		public List<float> confidenceList = new List<float> ();
-		[HideInInspector]
-		public Camera OperatorCamera;
-		[HideInInspector]
-		public static properties[] Properties = default(Operator.properties[]);
-	}
-}
 
 namespace DebugView
 {

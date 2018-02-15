@@ -271,14 +271,19 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		////////////////////////////OPERATOR MONITOR BUTTON////////////////////////////
 		EditorGUI.BeginChangeCheck ();
 		pupilTracker.isOperatorMonitor = GUILayout.Toggle (pupilTracker.isOperatorMonitor, "Operator Monitor", "Button", GUILayout.MinWidth (100), GUILayout.Height (50));
-		if (EditorGUI.EndChangeCheck ()) {
-			if (pupilTracker.isOperatorMonitor) {
+		if (EditorGUI.EndChangeCheck ()) 
+		{
+			if (pupilTracker.isOperatorMonitor) 
+			{
 				pupilTracker.debugInstance.CloseCalibrationDebugView();
-				//				Debug.Log("instantiate operator monitor");
-				OperatorMonitor.Instantiate ();
-			} else {
-				if (pupilTracker.OperatorMonitorProperties[0].OperatorCamera != null)
-					OperatorMonitor.Instance.ExitOperatorMonitor ();				
+				if (pupilTracker.OperatorMonitor == null)
+					pupilTracker.OperatorMonitor = GameObject.Instantiate<OperatorMonitor> (Resources.Load<OperatorMonitor> ("OperatorCamera"));
+				else
+					pupilTracker.OperatorMonitor.gameObject.SetActive (true);
+			} else 
+			{
+				if (pupilTracker.OperatorMonitor != null)
+					pupilTracker.OperatorMonitor.ExitOperatorMonitor ();				
 			}
 		}
 		////////////////////////////OPERATOR MONITOR BUTTON////////////////////////////
@@ -464,10 +469,12 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 				pupilSettings.debugView.active = GUILayout.Toggle (pupilSettings.debugView.active, "Calibration Debug Mode", "Button");
 				GUI.enabled = true;
-				if (EditorGUI.EndChangeCheck ()) {
-					if (pupilSettings.debugView.active) {
-						if (pupilTracker.OperatorMonitorProperties [0].OperatorCamera != null)
-							OperatorMonitor.Instance.ExitOperatorMonitor ();
+				if (EditorGUI.EndChangeCheck ()) 
+				{
+					if (pupilSettings.debugView.active)
+					{
+						if (pupilTracker.OperatorMonitor != null)
+							pupilTracker.OperatorMonitor.ExitOperatorMonitor ();
 						pupilTracker.debugInstance.StartCalibrationDebugView ();
 
 					} else {

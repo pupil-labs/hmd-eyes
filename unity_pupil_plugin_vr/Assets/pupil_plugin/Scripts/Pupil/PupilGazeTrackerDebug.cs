@@ -224,6 +224,9 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 
 	public void CloseCalibrationDebugView ()
 	{
+		if (OffsetTransforms == null || OffsetTransforms.Length == 0)
+			return;
+		
 		var a = (from tr in OffsetTransforms
 			where tr.name == "Debug View Origin Matrix"
 			select tr).FirstOrDefault () as DebugView._Transform;

@@ -47,8 +47,6 @@ public class OperatorWindow : EditorWindow {
 //		Camera _cam = _camGO.GetComponent<Camera> ();
 		pupilTracker = PupilGazeTracker.Instance;
 
-		Operator.properties.Properties = pupilTracker.OperatorMonitorProperties;
-
 //		Operator.properties.Properties [0].OperatorCamera = _cam;
 //		_cam.stereoTargetEye = StereoTargetEyeMask.None;
 //		//		_cam.backgroundColor = Color.gray;
@@ -60,8 +58,8 @@ public class OperatorWindow : EditorWindow {
 //		PupilSettings.Instance.currentCamera.targetDisplay = 1;
 
 
-		Operator.properties.Properties [0].confidenceList.Capacity = Operator.properties.Properties [0].graphLength + 1;
-		Operator.properties.Properties [1].confidenceList.Capacity = Operator.properties.Properties [1].graphLength + 1;
+//		pupilTracker.OperatorMonitorProperties.confidenceList.Capacity = Operator.properties.Properties [0].graphLength + 1;
+//		pupilTracker.OperatorMonitorProperties.confidenceList.Capacity = Operator.properties.Properties [1].graphLength + 1;
 
 		_offsetMatrix = new Matrix4x4 ();
 
@@ -70,38 +68,38 @@ public class OperatorWindow : EditorWindow {
 		PupilTools.StartFramePublishing ();
 	}
 
-	public void DrawGraph( Operator.properties _props ){
-
-		//Enabling the graph data to update with a certain delay, definec under the static Operator.properties
-		if (TimeSpan.FromTicks(DateTime.Now.Ticks - _props.graphTime).TotalSeconds > (_props.refreshDelay/100)) {
-			_props.update = true;
-			_props.graphTime = DateTime.Now.Ticks;
-		}
-
-		//if update is allowed add the current confidence level for the current eye in the relevant confidence level list;
-		if (_props.update) {
-			_props.update = false;
-			_props.confidenceList.Insert (0, _props.confidence);
-
-			if (_props.confidenceList.Count > _props.graphLength)//limit the confidence level list to the graph length variable. If exceeded cut the last one.
-				_props.confidenceList.RemoveAt (_props.confidenceList.Count - 1);
-		}
-
-		//if the current confidence level list reached the size required start drawing the graph. (this might be subject to change)
-		if (_props.confidenceList.Count >= _props.graphLength) {
-
-			//TODO: clean this up!
-			pupilTracker.Styles [2].normal.background = _texture;
-			Color _c = new Color (1,1,1,1);
-			GUI.matrix = Matrix4x4.TRS (new Vector3((Screen.width/2)*_props.positionOffset.x,(Screen.height/2)*_props.positionOffset.y,1), Quaternion.Euler (_props.rotationOffset), new Vector3(Screen.width*_props.scaleOffset.x,Screen.height*_props.scaleOffset.y,1));
-			for (int i = 0; i < _props.graphLength; i++) {
-				_c.a = Mathf.InverseLerp (0, (_props.graphLength / 2), (_props.graphLength / 2) - Mathf.Abs ((i - (_props.graphLength / 2))));
-				GUI.color = _c;
-				GUI.Box (new Rect ((i * _props.gapSize), 0, _props.graphScale.x, _props.confidenceList [i] * _props.graphScale.y),"", pupilTracker.Styles [2]);
-			}
-		}
-
-	}
+//	public void DrawGraph( Operator.Properties _props )
+//	{
+//		//Enabling the graph data to update with a certain delay, definec under the static Operator.properties
+//		if (TimeSpan.FromTicks(DateTime.Now.Ticks - _props.graphTime).TotalSeconds > (_props.refreshDelay/100)) {
+//			_props.update = true;
+//			_props.graphTime = DateTime.Now.Ticks;
+//		}
+//
+//		//if update is allowed add the current confidence level for the current eye in the relevant confidence level list;
+//		if (_props.update) 
+//		{
+//			_props.update = false;
+//			_props.confidenceLeftEyeList.Insert (0, _props.confidenceLeftEye);
+//			if (_props.confidenceLeftEyeList.Count > _props.graphLength)//limit the confidence level list to the graph length variable. If exceeded cut the last one.
+//				_props.confidenceLeftEyeList.RemoveAt (_props.confidenceLeftEyeList.Count - 1);
+//		}
+//
+//		//if the current confidence level list reached the size required start drawing the graph. (this might be subject to change)
+//		if (_props.confidenceLeftEyeList.Count >= _props.graphLength) 
+//		{
+//			//TODO: clean this up!
+//			pupilTracker.Styles [2].normal.background = _texture;
+//			Color _c = new Color (1,1,1,1);
+//			GUI.matrix = Matrix4x4.TRS (new Vector3((Screen.width/2)*_props.positionOffset.x,(Screen.height/2)*_props.positionOffset.y,1), Quaternion.Euler (_props.rotationOffset), new Vector3(Screen.width*_props.scaleOffset.x,Screen.height*_props.scaleOffset.y,1));
+//			for (int i = 0; i < _props.graphLength; i++) {
+//				_c.a = Mathf.InverseLerp (0, (_props.graphLength / 2), (_props.graphLength / 2) - Mathf.Abs ((i - (_props.graphLength / 2))));
+//				GUI.color = _c;
+//				GUI.Box (new Rect ((i * _props.gapSize), 0, _props.graphScale.x, _props.confidenceLeftEyeList [i] * _props.graphScale.y),"", pupilTracker.Styles [2]);
+//			}
+//		}
+//
+//	}
 
 	void OnGUI()
 	{

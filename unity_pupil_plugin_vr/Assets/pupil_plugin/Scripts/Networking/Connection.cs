@@ -181,6 +181,14 @@ public class Connection
 								PupilTools.pupil1Dictionary = dictionary;
 						}
 						break;
+					case "frame.eye.0":
+						if (m.FrameCount >= 3)
+							PupilTools.UpdateFramePublishingImage(0,m[2].ToByteArray());
+						break;
+					case "frame.eye.1":
+						if (m.FrameCount >= 3)
+							PupilTools.UpdateFramePublishingImage(1,m[2].ToByteArray());
+						break;
 					default: 
 						Debug.Log(msgType);
 	//					foreach (var item in MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream))

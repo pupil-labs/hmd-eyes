@@ -223,9 +223,9 @@ public class PupilTools : MonoBehaviour
 
 	public static float Confidence (int eyeID)
 	{
-		if (eyeID == PupilData.rightEyeID)
+		if (eyeID == PupilData.rightEyeID && pupil0Dictionary != null)
 			return ConfidenceForDictionary (pupil0Dictionary);
-		else if (eyeID == PupilData.leftEyeID)
+		else if (eyeID == PupilData.leftEyeID && pupil1Dictionary != null)
 			return ConfidenceForDictionary (pupil1Dictionary); 
 		else
 			return 0;
@@ -573,11 +573,19 @@ public class PupilTools : MonoBehaviour
 		Settings.framePublishing.StreamCameraImages = true;
 		Settings.framePublishing.InitializeFramePublishing ();
 
-		Send (new Dictionary<string,object> { { "subject","plugin_started" }, { "name","Frame_Publisher" } });
+		Send (new Dictionary<string,object> { { "subject","start_plugin" }, { "name","Frame_Publisher" } });
 
 		SubscribeTo ("frame.");
 		//		print ("frame publish start");
 		//Send (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
+	}
+
+	public static void UpdateFramePublishingImage (int eyeID, byte[] rawData)
+	{
+		if (eyeID == 0)
+			Settings.framePublishing.raw0 = rawData;
+		else
+			Settings.framePublishing.raw1 = rawData;
 	}
 
 	public static void StopFramePublishing ()
@@ -586,7 +594,6 @@ public class PupilTools : MonoBehaviour
 
 		Settings.framePublishing.StreamCameraImages = false;
 
-		//Andre: No sendRequest??
-		//Send (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
+		Send (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
 	}
 }
