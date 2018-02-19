@@ -76,8 +76,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 	[HideInInspector]
 	public bool isOperatorMonitor;
-
-	public Operator.properties[] OperatorMonitorProperties;
+	public OperatorMonitor OperatorMonitor;
 
 	#endregion
 
@@ -111,7 +110,13 @@ public class PupilGazeTracker:MonoBehaviour
 	public string PupilServiceFileName = "";
 
 	[HideInInspector]
-	public List<GUIStyle> Styles = new List<GUIStyle> ();
+	public List<GUIStyle> Styles
+	{
+		get
+		{
+			return Settings.GUIStyles;
+		}
+	}
 	[HideInInspector]
 	public GUIStyle FoldOutStyle = new GUIStyle ();
 	[HideInInspector]
@@ -137,8 +142,6 @@ public class PupilGazeTracker:MonoBehaviour
 	#region Update
 	void Update ()
 	{
-		Settings.framePublishing.UpdateEyeTextures ();
-
 		if (PupilTools.DataProcessState == EStatus.Calibration)
 		{
 			PupilTools.Calibration.UpdateCalibration ();
@@ -228,26 +231,20 @@ public class PupilGazeTracker:MonoBehaviour
 
 		Settings = PupilSettings.Instance;
 
-
 		string str = PupilConversions.ReadStringFromFile ("camera_intrinsics");
 		PupilConversions.ReadCalibrationData(str,ref PupilData.CalibrationData);
 
-		Settings.framePublishing.StreamCameraImages = false;
-		if (Settings.framePublishing.StreamCameraImages)
-			Settings.framePublishing.InitializeFramePublishing ();
-
 		if (PupilGazeTracker._Instance == null)
 			PupilGazeTracker._Instance = this;
-
 #if !UNITY_WSA
-		PupilData.calculateMovingAverage = true;
+		PupilData.calculateMovingAverage = false;
 #endif
 		//make sure that if the toggles are on it functions as the toggle requires it
 		if (isOperatorMonitor && OnOperatorMonitor == null)
 		{
-			OperatorMonitor.Instantiate ();
+			OperatorMonitor = GameObject.Instantiate<OperatorMonitor> (Resources.Load<OperatorMonitor> ("OperatorCamera"));
 		}
-		//OnOperatorMonitor += DrawOperatorMonitor;
+
 		if (Settings.debugView.active)
 			debugInstance.StartCalibrationDebugView ();
 
@@ -286,9 +283,9 @@ public class PupilGazeTracker:MonoBehaviour
         PupilSettings.Instance.currentCamera = Camera.main;
 
         if ( !PupilMarker.TryToReset(_markerLeftEye) )
-			_markerLeftEye= new PupilMarker("LeftEye_2D",Color.green);
+			_markerLeftEye= new PupilMarker("LeftEye_2D",PupilSettings.leftEyeColor);
 		if ( !PupilMarker.TryToReset(_markerRightEye) )
-			_markerRightEye = new PupilMarker("RightEye_2D",Color.blue);
+			_markerRightEye = new PupilMarker("RightEye_2D",PupilSettings.rightEyeColor);
 		if ( !PupilMarker.TryToReset(_markerGazeCenter) )
 			_markerGazeCenter = new PupilMarker("Gaze_2D",Color.red);
 		if ( !PupilMarker.TryToReset(_gaze3D) )
@@ -297,8 +294,6 @@ public class PupilGazeTracker:MonoBehaviour
 		PupilTools.DataProcessState = EStatus.ProcessingGaze;
 		PupilTools.SubscribeTo("gaze");
 	}
-
-	
 
 	public void StopVisualizingGaze ()
 	{
@@ -309,7 +304,7 @@ public class PupilGazeTracker:MonoBehaviour
 		_markerGazeCenter.SetActive (false);
 		_gaze3D.SetActive (false);
 
-		PupilTools.UnSubscribeFrom("gaze");
+//		PupilTools.UnSubscribeFrom("gaze");
 	}
 
 	void VisualizeGaze ()

@@ -32,16 +32,18 @@ public class FramePublishing
 		}
 		eye0Image = new Texture2D (100, 100);
 		eye1Image = new Texture2D (100, 100);
+
+		lastUpdate = Time.time;
 	}
 
-	long lastTick = DateTime.Now.Ticks;
+	float lastUpdate;
 	float elapsedTime = 0;
 	public void UpdateEyeTextures()
 	{
 		if (StreamCameraImages)
 		{
 			//Put this in a function and delegate it to the OnUpdate delegate
-			elapsedTime = (float)TimeSpan.FromTicks (DateTime.Now.Ticks - lastTick).TotalSeconds;
+			elapsedTime = Time.time - lastUpdate;
 			if (elapsedTime >= (1f / targetFPS))
 			{
 				//Limiting the MainThread calls to framePublishFramePerSecondLimit to avoid issues. 20-30 ideal.
@@ -49,7 +51,8 @@ public class FramePublishing
 				eye0ImageMaterial.mainTexture = eye0Image;
 				eye1Image.LoadImage (raw1);
 				eye1ImageMaterial.mainTexture = eye1Image;
-				lastTick = DateTime.Now.Ticks;
+				eye1ImageMaterial.mainTextureScale = new Vector2 (-1, -1);
+				lastUpdate = Time.time;
 			}
 		}
 	}

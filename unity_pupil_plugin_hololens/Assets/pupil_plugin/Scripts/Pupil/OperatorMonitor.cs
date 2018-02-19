@@ -5,81 +5,175 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class OperatorMonitor : MonoBehaviour {
+public class OperatorMonitor : MonoBehaviour 
+{
+	float graphLineOffset = 0.5f;
+	float graphWidth = 0.42f;
+	int graphLength = 50;
+	float graphTime;
+	float updateConfidenceEveryXSeconds = 0.1f;
+	float confidenceRightEye = 0.2f;
+	float confidenceLeftEye = 0.2f;
+	List<float> confidenceLeftEyeList = new List<float> ();
+	Vector3[] confidenceLeftEyePosition;
+	List<float> confidenceRightEyeList = new List<float> ();
+	Vector3[] confidenceRightEyePosition;
 
 	private static PupilGazeTracker pupilTracker;
-	private PupilSettings pupilSettings;
+	private static PupilSettings pupilSettings;
 
-	private static Texture2D _texture;
-	private int MainCameraTargetDisplay = 0;
+	TextMesh gazeInfo;
 
-	public static Matrix4x4 _offsetMatrix;
-	public Vector3 _v3 = Vector3.one;
-	public Vector3 _s3 = Vector3.one;
-	public Vector3 _r3 = Vector3.one;
+	LineRenderer leftEyeConfidenceLevel;
+	LineRenderer rightEyeConfidenceLevel;
+	float confidenceLevelScaling = 0.05f;
+	float yOffset = -0.24f;
 
-	public float[] confidences = new float[]{ 0f, 0f };
-
-	static OperatorMonitor _Instance;
-	public static OperatorMonitor Instance
+	void Awake()
 	{
-		get{
-			return _Instance;
+		pupilTracker = PupilGazeTracker.Instance;
+		pupilSettings = pupilTracker.Settings;
+	}
+
+	public void Start()
+	{
+		graphTime = Time.time;
+
+		gazeInfo = GetComponentInChildren<TextMesh> ();
+
+		confidenceLeftEyeList.Capacity = graphLength + 1;
+		confidenceLeftEyePosition = new Vector3[graphLength];
+		confidenceRightEyeList.Capacity = graphLength + 1;
+		confidenceRightEyePosition = new Vector3[graphLength];
+		for (int i = 0; i < graphLength; i++)
+		{
+			var relative = (float)i / (float)(graphLength - 1);
+			var position = Vector3.right * relative * graphWidth;
+			confidenceLeftEyePosition [i] =  position;
+			confidenceRightEyePosition [i] = position;
+		}
+
+		InitializeEyeVisualization (forEye: "Left");
+		InitializeEyeVisualization (forEye: "Right");
+
+		PupilTools.SubscribeTo ("pupil.");
+		PupilTools.StartFramePublishing ();
+	}
+
+	void Update()
+	{
+		//Construct the Text box string for data display on the Operator Monitor view
+		string str = 
+			string.Format("Gaze Point : ( X: {0} Y: {1} Z: {2} )",PupilData._3D.GazePosition.x,PupilData._3D.GazePosition.y,PupilData._3D.GazePosition.z)
+			+ string.Format("\nEyeball 0 Center : ( X: {0} Y: {1} Z: {2} )",PupilData._3D.RightEyeCenter.x,PupilData._3D.RightEyeCenter.y,PupilData._3D.RightEyeCenter.z)
+			+ string.Format("\nEyeball 1 Center : ( X: {0} Y: {1} Z: {2} )",PupilData._3D.LeftEyeCenter.x,PupilData._3D.LeftEyeCenter.y,PupilData._3D.LeftEyeCenter.z)
+			+ string.Format("\nPupil Diameter : {0}",PupilData.Diameter ())
+			;
+		gazeInfo.text = str;
+
+		pupilSettings.framePublishing.UpdateEyeTextures ();
+		if ((Time.time - graphTime) > updateConfidenceEveryXSeconds)
+		{
+			UpdateEyeVisualization ();
+			graphTime = Time.time;
 		}
 	}
 
-	public static void Instantiate(){
+	void InitializeEyeVisualization(string forEye)
+	{
+		GameObject go = GameObject.CreatePrimitive (PrimitiveType.Plane);
+		go.name = forEye + " Eye Rendering Plane";
+		GameObject.Destroy (go.GetComponent<Collider> ());
+		go.transform.eulerAngles = Vector3.left * 90f;
+		go.transform.localScale *= 0.05f;
+		go.transform.parent = gameObject.transform;
+		go.transform.localPosition = new Vector3 (0.3f,0.1f,2f);
+		if (forEye == "Right")
+			go.transform.localPosition = new Vector3 (-0.3f,0.1f,2f);
+		MeshRenderer mr = go.GetComponent<MeshRenderer> ();
+		mr.material = (forEye == "Right") ? pupilSettings.framePublishing.eye0ImageMaterial : pupilSettings.framePublishing.eye1ImageMaterial;
 
-		_texture = new Texture2D (1, 6);
-		_texture.SetPixel (0, 0, new Color (1, 1, 1, .6f));
-		_texture.SetPixel (0, 1, new Color (1, 1, 1, .5f));
-		_texture.SetPixel (0, 2, new Color (1, 1, 1, .4f));
-		_texture.SetPixel (0, 3, new Color (1, 1, 1, .3f));
-		_texture.SetPixel (0, 4, new Color (1, 1, 1, .2f));
-		_texture.SetPixel (0, 5, new Color (1, 1, 1, .1f));
-		_texture.Apply ();
+		TextMesh tm = GameObject.Instantiate (gazeInfo);
+		tm.name = forEye + " Eye Text";
+		tm.transform.parent = go.transform;
+		tm.transform.localPosition = Vector3.forward * 7;
+		tm.transform.localScale = Vector3.one * 0.2f;
+		tm.text = forEye + " Eye";
 
-		GameObject _camGO = new GameObject ();
-		_camGO.name = "Operator Camera";
-		OperatorMonitor _opscript = _camGO.AddComponent<OperatorMonitor> ();
-		Camera _cam = _camGO.GetComponent<Camera> ();
-		pupilTracker = PupilGazeTracker.Instance;
-
-		Operator.properties.Properties = pupilTracker.OperatorMonitorProperties;
-
-		Operator.properties.Properties [0].OperatorCamera = _cam;
-		_cam.stereoTargetEye = StereoTargetEyeMask.None;
-//		_cam.backgroundColor = Color.gray;
-		_cam.transform.parent = PupilSettings.Instance.currentCamera.transform;
-		_cam.transform.localPosition = Vector3.zero;
-		_cam.transform.localEulerAngles = Vector3.zero;
-		_cam.fieldOfView = PupilSettings.Instance.currentCamera.fieldOfView;
-		_cam.clearFlags = CameraClearFlags.Depth;
-
-		_opscript.MainCameraTargetDisplay = PupilSettings.Instance.currentCamera.targetDisplay;
-		//		PupilSettings.Instance.currentCamera.targetDisplay = 1;
-
-
-		Operator.properties.Properties [0].confidenceList.Capacity = Operator.properties.Properties [0].graphLength + 1;
-		Operator.properties.Properties [1].confidenceList.Capacity = Operator.properties.Properties [1].graphLength + 1;
-
-		_offsetMatrix = new Matrix4x4 ();
-
-		PupilTools.SubscribeTo ("pupil.");
-
-		PupilTools.StartFramePublishing ();
+		var lrGO = new GameObject (forEye + " Eye Confidence Level");
+		lrGO.transform.parent = go.transform;
+		lrGO.transform.localPosition = Vector3.left * 4;
+		LineRenderer lr = lrGO.AddComponent<LineRenderer> ();
+		lr.material = new Material (Shader.Find ("Unlit/Color"));
+		lr.material.color = (forEye == "Right") ? PupilSettings.rightEyeColor : PupilSettings.leftEyeColor;
+		lr.positionCount = graphLength;
+		lr.useWorldSpace = false;
+		lr.startWidth = 0.005f;
+		lr.endWidth = 0.005f;
+		lr.receiveShadows = false;
+		if (forEye == "Left")
+			leftEyeConfidenceLevel = lr;
+		else
+			rightEyeConfidenceLevel = lr;
 	}
-//	void OnDestroy(){
-//		pupilTracker.StopFramePublishing ();
-//		pupilTracker.isOperatorMonitor = false;
-	//		PupilSettings.Instance.currentCamera.targetDisplay = MainCameraTargetDisplay;
-//	}
 
-	void Awake(){
-		pupilTracker = PupilGazeTracker.Instance;
-		pupilSettings = pupilTracker.Settings;
-		PupilSettings.Instance.currentCamera.SetReplacementShader (CameraShader, null);	
-		_Instance = this;
+	public void UpdateEyeVisualization()
+	{
+#if !UNITY_WSA
+		confidenceLeftEyeList.Add (PupilTools.Confidence(PupilData.leftEyeID));
+		if (confidenceLeftEyeList.Count > graphLength)
+			confidenceLeftEyeList.RemoveAt (0);
+
+		confidenceRightEyeList.Add (PupilTools.Confidence (PupilData.rightEyeID));
+		if (confidenceRightEyeList.Count > graphLength)
+			confidenceRightEyeList.RemoveAt (0);
+		
+		for (int i = 0; i < confidenceLeftEyeList.Count; i++)
+		{
+			confidenceLeftEyePosition [i].y = confidenceLeftEyeList [i] * confidenceLevelScaling + yOffset;
+			confidenceRightEyePosition [i].y = confidenceRightEyeList [i] * confidenceLevelScaling + yOffset;
+
+		}
+		leftEyeConfidenceLevel.SetPositions (confidenceLeftEyePosition);
+		rightEyeConfidenceLevel.SetPositions (confidenceRightEyePosition);
+#endif
+	}
+
+	ParticleSystem confidenceVisualization;
+	ParticleSystem.Particle[] visualizationParticles;
+	void InitializeParticleVisualization()
+	{
+		confidenceVisualization = GetComponent<ParticleSystem> ();
+		if (confidenceVisualization == null)
+			return;
+		
+		visualizationParticles = new ParticleSystem.Particle[confidenceVisualization.main.maxParticles];
+		ParticleSystem.EmitParams particleSystemParameters = new ParticleSystem.EmitParams ();
+		particleSystemParameters.startLifetime = float.MaxValue;
+		particleSystemParameters.startColor = Color.black;
+		for (int j = 0; j < graphLength; j++)
+		{
+			float radius = 1f - (float)j / (float) (graphLength-1);
+			float size = (1f - radius) * 0.05f;
+			radius *= 2f;
+			float angle = Mathf.Deg2Rad * 360 * radius;
+			if (j < graphLength-1)
+				radius = (radius + 1f) * 0.03f;
+			particleSystemParameters.position = new Vector3 (radius * Mathf.Sin (angle), radius * Mathf.Cos (angle), 2);
+			if (j == graphLength-1)
+				size *= 1.5f;
+			particleSystemParameters.startSize = size;
+			// Vector3.left * j * 0.1f + Vector3.forward * 2f;
+			confidenceVisualization.Emit (particleSystemParameters, 1);
+		}
+	}
+	void UpdateParticleVisualization()
+	{
+		int numberOfParticlesAlive = confidenceVisualization.GetParticles (visualizationParticles);
+		for (int j = 0; j < numberOfParticlesAlive; j++)
+			if (j < confidenceLeftEyeList.Count)
+				visualizationParticles [j].startColor = Color.Lerp (Color.white, PupilSettings.leftEyeColor, confidenceLeftEyeList[j]);
+		confidenceVisualization.SetParticles (visualizationParticles, numberOfParticlesAlive);
 	}
 
 	public void ExitOperatorMonitor()
@@ -91,87 +185,6 @@ public class OperatorMonitor : MonoBehaviour {
 			PupilTools.StopFramePublishing ();
 		}
 		pupilTracker.isOperatorMonitor = false;
-		PupilSettings.Instance.currentCamera.targetDisplay = MainCameraTargetDisplay;
 		Destroy (gameObject);
 	}
-
-//	bool requestUpdate = false;
-//	bool isMouseDown = false;
-	public Shader CameraShader;
-	void OnGUI()
-	{
-#if !UNITY_WSA
-		string str;
-
-//		print ("confidence 0 in op mon : " + Pupil.values.Confidences [0]);
-		Operator.properties.Properties [0].confidence = PupilTools.Confidence(PupilData.leftEyeID);
-		Operator.properties.Properties [1].confidence = PupilTools.Confidence (PupilData.rightEyeID);
-
-//		print (Pupil.values.Confidences [0]);
-
-		GUI.color = new Color (1, 1, 1, .5f);
-
-		float imageHeight = (Screen.width / 2) / 1.333f; //for 4:3 ratio
-		float imageVerticalPosition = (Screen.height-imageHeight)/2;	
-
-		GUI.DrawTexture (new Rect (0, imageVerticalPosition, Screen.width / 2, imageHeight), pupilSettings.framePublishing.eye0Image);
-		GUI.DrawTexture (new Rect (Screen.width / 2, imageVerticalPosition, Screen.width / 2, imageHeight), pupilSettings.framePublishing.eye1Image);
-
-		Operator.properties.Properties [0].OperatorCamera.Render ();
-
-
-		//Construct the Text box string for data display on the Operator Monitor view
-		str = "Gaze Point : " + " ( X: " + PupilData._3D.GazePosition.x + " Y: " + PupilData._3D.GazePosition.y + " Z: " + PupilData._3D.GazePosition.z + " ) ";
-		str += "\nEyeball 0 Center : " + " ( X: " + PupilData._3D.RightEyeCenter.x + " Y: " + PupilData._3D.RightEyeCenter.y + " Z: " + PupilData._3D.RightEyeCenter.z + " ) ";
-		str += "\nEyeball 1 Center : " + " ( X: " + PupilData._3D.LeftEyeCenter.x + " Y: " + PupilData._3D.LeftEyeCenter.y + " Z: " + PupilData._3D.LeftEyeCenter.z + " ) ";
-		str += "\nPupil Diameter : " + PupilData.Diameter ();
-
-
-		//Use the predefined style for the TextArea
-		GUIStyle _s = pupilTracker.Styles.Find (x => x.name == "OpMon_textArea");
-		GUI.TextArea (new	 Rect (0, 0, Screen.width, 200), str, _s);
-
-		//This is the call to draw both Confidence Graphs for each eyes
-		DrawGraph (Operator.properties.Properties[0]);
-		DrawGraph (Operator.properties.Properties[1]);
-#endif
-	}
-		
-	#region operator_monitor.functions
-
-//	private int similarIndex = 0;
-//	private float lastConfidence = 0f;
-	public void DrawGraph( Operator.properties _props ){
-
-		//Enabling the graph data to update with a certain delay, definec under the static Operator.properties
-		if (TimeSpan.FromTicks(DateTime.Now.Ticks - _props.graphTime).TotalSeconds > (_props.refreshDelay/100)) {
-			_props.update = true;
-			_props.graphTime = DateTime.Now.Ticks;
-		}
-
-		//if update is allowed add the current confidence level for the current eye in the relevant confidence level list;
-		if (_props.update) {
-			_props.update = false;
-			_props.confidenceList.Insert (0, _props.confidence);
-
-			if (_props.confidenceList.Count > _props.graphLength)//limit the confidence level list to the graph length variable. If exceeded cut the last one.
-				_props.confidenceList.RemoveAt (_props.confidenceList.Count - 1);
-		}
-	
-		//if the current confidence level list reached the size required start drawing the graph. (this might be subject to change)
-		if (_props.confidenceList.Count >= _props.graphLength) {
-
-			//TODO: clean this up!
-			pupilTracker.Styles [2].normal.background = _texture;
-			Color _c = new Color (1,1,1,1);
-			GUI.matrix = Matrix4x4.TRS (new Vector3((Screen.width/2)*_props.positionOffset.x,(Screen.height/2)*_props.positionOffset.y,1), Quaternion.Euler (_props.rotationOffset), new Vector3(Screen.width*_props.scaleOffset.x,Screen.height*_props.scaleOffset.y,1));
-			for (int i = 0; i < _props.graphLength; i++) {
-				_c.a = Mathf.InverseLerp (0, (_props.graphLength / 2), (_props.graphLength / 2) - Mathf.Abs ((i - (_props.graphLength / 2))));
-				GUI.color = _c;
-				GUI.Box (new Rect ((i * _props.gapSize), 0, _props.graphScale.x, _props.confidenceList [i] * _props.graphScale.y),"", pupilTracker.Styles [2]);
-			}
-		}
-
-	}
-	#endregion
 }
