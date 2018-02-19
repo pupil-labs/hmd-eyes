@@ -567,33 +567,4 @@ public class PupilTools : MonoBehaviour
 	{
 		return Send (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", CalibrationType.name } });
 	}
-
-	public static void StartFramePublishing ()
-	{
-		Settings.framePublishing.StreamCameraImages = true;
-		Settings.framePublishing.InitializeFramePublishing ();
-
-		Send (new Dictionary<string,object> { { "subject","start_plugin" }, { "name","Frame_Publisher" } });
-
-		SubscribeTo ("frame.");
-		//		print ("frame publish start");
-		//Send (new Dictionary<string,object> { { "subject","frame_publishing.started" } });
-	}
-
-	public static void UpdateFramePublishingImage (int eyeID, byte[] rawData)
-	{
-		if (eyeID == 0)
-			Settings.framePublishing.raw0 = rawData;
-		else
-			Settings.framePublishing.raw1 = rawData;
-	}
-
-	public static void StopFramePublishing ()
-	{
-		UnSubscribeFrom ("frame.");
-
-		Settings.framePublishing.StreamCameraImages = false;
-
-		Send (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
-	}
 }

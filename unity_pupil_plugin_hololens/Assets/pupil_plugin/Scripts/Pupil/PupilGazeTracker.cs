@@ -72,14 +72,6 @@ public class PupilGazeTracker:MonoBehaviour
 
 	#endregion
 
-	#region operator_monitor_vars
-
-	[HideInInspector]
-	public bool isOperatorMonitor;
-	public OperatorMonitor OperatorMonitor;
-
-	#endregion
-
 	//	[HideInInspector]
 	//	public int ServicePort=50020;
 	[HideInInspector]
@@ -236,14 +228,10 @@ public class PupilGazeTracker:MonoBehaviour
 
 		if (PupilGazeTracker._Instance == null)
 			PupilGazeTracker._Instance = this;
+		
 #if !UNITY_WSA
 		PupilData.calculateMovingAverage = false;
 #endif
-		//make sure that if the toggles are on it functions as the toggle requires it
-		if (isOperatorMonitor && OnOperatorMonitor == null)
-		{
-			OperatorMonitor = GameObject.Instantiate<OperatorMonitor> (Resources.Load<OperatorMonitor> ("OperatorCamera"));
-		}
 
 		if (Settings.debugView.active)
 			debugInstance.StartCalibrationDebugView ();
@@ -333,19 +321,6 @@ public class PupilGazeTracker:MonoBehaviour
 
 	#endregion
 
-	void OnGUI ()
-    {
-#if !UNITY_WSA
-		if (!isOperatorMonitor)
-		{
-			string str = "Capture Rate=" + FPS;
-			str += "\nLeft Eye:" + PupilData._2D.GetEyeGaze(GazeSource.LeftEye).ToString ();
-			str += "\nRight Eye:" + PupilData._2D.GetEyeGaze(GazeSource.RightEye).ToString ();
-			GUI.TextArea (new Rect (50, 50, 200, 50), str);
-		}
-#endif
-	}
-
 #region Recording
 
 	public void OnRecording ()
@@ -356,11 +331,6 @@ public class PupilGazeTracker:MonoBehaviour
 
 	public void CloseShop ()
 	{
-#if UNITY_EDITOR // Operator window will only be available in Editor mode
-		if (OperatorWindow.Instance != null)
-			OperatorWindow.Instance.Close ();
-#endif
-
 #if !UNITY_WSA
 		if (Recorder.isRecording)
 		{

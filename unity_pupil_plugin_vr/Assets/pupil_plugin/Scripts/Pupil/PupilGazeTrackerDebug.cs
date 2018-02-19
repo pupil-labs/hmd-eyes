@@ -232,10 +232,6 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 			select tr).FirstOrDefault () as DebugView._Transform;
 		if (a.GO != null)
 			a.GO.SetActive (false);
-		if (!PupilSettings.Instance.debugView.active && !pupilGazeTracker.isOperatorMonitor)
-		{	
-			PupilTools.StopFramePublishing ();
-		}
 		pupilGazeTracker.OnUpdate -= CalibrationDebugInteraction;
 		pupilGazeTracker.OnCalibDebug -= DrawCalibrationDebugView;
 		PupilSettings.Instance.debugView.active = false;
@@ -257,7 +253,6 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 			pupilGazeTracker.OnUpdate -= CalibrationDebugInteraction;
 			pupilGazeTracker.OnUpdate += CalibrationDebugInteraction;
 
-			PupilTools.StartFramePublishing ();
 		} else
 		{
 			UnityEngine.Debug.LogWarning ("Please assign a Debug Eye Mesh under the Settings Debug View Variables. Accessable in Developer Mode!");
@@ -350,11 +345,6 @@ public class PupilGazeTrackerDebug : MonoBehaviour
 		DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix1, position: _pupil0Center, size: _pupil0Radius, sphereColor: Color.black, forward: _pupil0Normal, wired: false);
 		DrawDebugSphere (originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, offsetMatrix: CalibrationData.eye_camera_to_world_matrix0, position: _pupil1Center, size: _pupil1Radius, sphereColor: Color.black, forward: eye0Norm, wired: false);
 		////////////////Draw 3D pupils////////////////
-
-		////////////////Draw eye camera frustums////////////////
-		DrawCameraFrustum (origin: CalibrationData.eye_camera_to_world_matrix0, fieldOfView: 90, aspect: aspectRatios.FOURBYTHREE, minViewDistance: 0.001f, maxViewDistance: 30, frustumColor: Color.black, drawEye: true, eyeID: 1, transformOffset: OffsetTransforms [1].GO.transform, drawCameraImage: true, eyeMaterial: Settings.framePublishing.eye1ImageMaterial, eyeImageRotation: 0);
-		DrawCameraFrustum (origin: CalibrationData.eye_camera_to_world_matrix1, fieldOfView: 90, aspect: aspectRatios.FOURBYTHREE, minViewDistance: 0.001f, maxViewDistance: 30, frustumColor: Color.white, drawEye: true, eyeID: 0, transformOffset: OffsetTransforms [1].GO.transform, drawCameraImage: true, eyeMaterial: Settings.framePublishing.eye0ImageMaterial, eyeImageRotation: 0);
-		////////////////Draw eye camera frustums/////////////////// 
 
 		////////////////Draw 3D eyeballs////////////////
 		DrawDebugSphere (position: eye0Pos, eyeID: 0, forward: eye0Norm, isEye: true, norm_length: gazePoint.magnitude * DebugVariables.value0, sphereColor: Color.white, norm_color: Color.red, size: DebugViewVariables.EyeSize, originMatrix: OffsetTransforms [1].GO.transform.localToWorldMatrix, wired: false);//eye0

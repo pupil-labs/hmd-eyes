@@ -240,29 +240,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUI.enabled = true;
 		////////////////////////////RECORDING BUTTON////////////////////////////
 
-		/// 
-		GUILayout.Space (5);
-
-		////////////////////////////OPERATOR MONITOR BUTTON////////////////////////////
-		EditorGUI.BeginChangeCheck ();
-		pupilTracker.isOperatorMonitor = GUILayout.Toggle (pupilTracker.isOperatorMonitor, "Operator Monitor", "Button", GUILayout.MinWidth (100), GUILayout.Height (50));
-		if (EditorGUI.EndChangeCheck ()) 
-		{
-			if (pupilTracker.isOperatorMonitor) 
-			{
-				pupilTracker.debugInstance.CloseCalibrationDebugView();
-				if (pupilTracker.OperatorMonitor == null)
-					pupilTracker.OperatorMonitor = GameObject.Instantiate<OperatorMonitor> (Resources.Load<OperatorMonitor> ("OperatorCamera"));
-				else
-					pupilTracker.OperatorMonitor.gameObject.SetActive (true);
-			} else 
-			{
-				if (pupilTracker.OperatorMonitor != null)
-					pupilTracker.OperatorMonitor.ExitOperatorMonitor ();				
-			}
-		}
-		////////////////////////////OPERATOR MONITOR BUTTON////////////////////////////
-
 		GUILayout.Space (10);
 
 		GUI.skin = default(GUISkin);
@@ -428,8 +405,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				{
 					if (pupilSettings.debugView.active)
 					{
-						if (pupilTracker.OperatorMonitor != null)
-							pupilTracker.OperatorMonitor.ExitOperatorMonitor ();
 						pupilTracker.debugInstance.StartCalibrationDebugView ();
 
 					} else {

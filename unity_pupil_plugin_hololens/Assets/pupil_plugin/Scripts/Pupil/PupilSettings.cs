@@ -58,7 +58,6 @@ public class PupilSettings:ScriptableObject
 	public Calibration calibration;
 	public CustomGUIVariables customGUIVariables;
 	public DebugView debugView;
-	public FramePublishing framePublishing;
 	public bool visualizeGaze;
 	public Camera currentCamera;
 #if !UNITY_WSA
