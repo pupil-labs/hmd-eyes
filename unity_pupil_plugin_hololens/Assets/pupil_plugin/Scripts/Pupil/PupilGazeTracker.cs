@@ -34,19 +34,6 @@ public class PupilGazeTracker:MonoBehaviour
 		}
 	}
 
-	static PupilGazeTrackerDebug _debugInstance;
-	public PupilGazeTrackerDebug debugInstance
-	{
-		get
-		{
-			if (_debugInstance == null)
-			{
-				_debugInstance = new GameObject ("").AddComponent<PupilGazeTrackerDebug> ();
-			}
-			return _debugInstance;
-		}
-	}
-
 	public string ProjectName;
 
 	#region delegates
@@ -232,9 +219,6 @@ public class PupilGazeTracker:MonoBehaviour
 #if !UNITY_WSA
 		PupilData.calculateMovingAverage = false;
 #endif
-
-		if (Settings.debugView.active)
-			debugInstance.StartCalibrationDebugView ();
 
 		PupilGazeTracker.Instance.ProjectName = Application.productName;
 

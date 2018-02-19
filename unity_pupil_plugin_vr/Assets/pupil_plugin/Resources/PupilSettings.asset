@@ -74,6 +74,8 @@ MonoBehaviour:
     StreamCameraImages: 1
     eye0ImageMaterial: {fileID: 0}
     eye1ImageMaterial: {fileID: 0}
+    rightEye: {fileID: 0}
+    leftEye: {fileID: 0}
   visualizeGaze: 1
   currentCamera: {fileID: 0}
   recorder:

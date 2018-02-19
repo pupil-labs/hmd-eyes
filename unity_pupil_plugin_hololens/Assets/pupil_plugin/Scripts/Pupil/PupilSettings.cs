@@ -39,12 +39,6 @@ public class PupilSettings:ScriptableObject
 	}
 
 	[Serializable]
-	public class DebugView
-	{
-		public bool active = false;
-	}
-
-	[Serializable]
 	public class DebugVars
 	{
 		public bool printSampling;
@@ -57,8 +51,6 @@ public class PupilSettings:ScriptableObject
 	public Connection connection;
 	public Calibration calibration;
 	public CustomGUIVariables customGUIVariables;
-	public DebugView debugView;
-	public bool visualizeGaze;
 	public Camera currentCamera;
 #if !UNITY_WSA
 	public Recorder recorder;
