@@ -236,9 +236,11 @@ public class PupilGazeTracker:MonoBehaviour
 
 		if (PupilGazeTracker._Instance == null)
 			PupilGazeTracker._Instance = this;
-
+		
+#if !UNITY_WSA
 		PupilData.calculateMovingAverage = false;
-
+#endif
+		
 		//make sure that if the toggles are on it functions as the toggle requires it
 		if (isOperatorMonitor && OnOperatorMonitor == null)
 		{
@@ -259,95 +261,16 @@ public class PupilGazeTracker:MonoBehaviour
 		PupilTools.Calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
 
 #if !UNITY_WSA
-		if (PupilTools.Connection.isAutorun)
-			RunConnect ();
-#else
-		RunConnect();
+		RunConnect ();
 #endif
-	}
-
-	#endregion
-
-	//Check platform dependent path for pupil service, only if there is no custom PupilServicePathSet
-	[Serializable]
-	public struct Platform
-	{
-		public RuntimePlatform platform;
-		public string DefaultPath;
-		public string FileName;
-	}
-	[HideInInspector]
-	public Platform[] Platforms;
-	[HideInInspector]
-	public Dictionary<RuntimePlatform, string[]> PlatformsDictionary;
-	public void AdjustPath ()
-	{
-		PlatformsDictionary = new Dictionary<RuntimePlatform, string[]> ();
-		foreach (Platform p in Platforms) 
-		{
-			PlatformsDictionary.Add (p.platform, new string[]{ p.DefaultPath, p.FileName });
-		}
-		if (PupilServicePath == "" && PlatformsDictionary.ContainsKey (Application.platform)) 
-		{
-			PupilServicePath = PlatformsDictionary [Application.platform] [0];
-			PupilServiceFileName = PlatformsDictionary [Application.platform] [1];
-			print ("Pupil service path is set to the default : " + PupilServicePath);
-		} 
-		else if (!PlatformsDictionary.ContainsKey (Application.platform)) 
-		{
-			print ("There is no platform default path set for " + Application.platform + ". Please set it under Settings/Platforms!");
-		}
 	}
 
 	public void RunConnect()
 	{
-#if !UNITY_WSA
-		if (PupilTools.Connection.isLocal)
-		if ( !RunServiceAtPath() )
-			return;
-#endif
-
 		StartCoroutine (PupilTools.Connect (retry: true, retryDelay: 5f));
 	}
 
-	public static bool RunServiceAtPath (bool runEyeProcess = false)
-	{
-#if !UNITY_WSA
-		string servicePath = PupilSettings.Instance.pupilServiceApp.servicePath;
-		if (File.Exists (servicePath))
-		{
-			if ( (Process.GetProcessesByName ("pupil_capture").Length > 0) || (Process.GetProcessesByName ("pupil_service").Length > 0) )
-			{
-				UnityEngine.Debug.LogWarning (" Pupil Capture/Service is already running ! ");
-			} else
-			{
-				Process serviceProcess = new Process ();
-				serviceProcess.StartInfo.Arguments = servicePath;
-				serviceProcess.StartInfo.FileName = servicePath;
-				//				serviceProcess.StartInfo.CreateNoWindow = true;
-				//				serviceProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-				//				serviceProcess.StartInfo.UseShellExecute = false;
-				//				serviceProcess.StartInfo.RedirectStandardOutput = true;     
-
-				serviceProcess.Start ();
-			}
-		} else
-		{
-			if (servicePath == "")
-			{
-				UnityEngine.Debug.LogWarning ("Pupil Service filename is not specified ! Please configure it under the Pupil plugin settings");
-			}
-			else
-			{
-				UnityEngine.Debug.LogWarning ("Pupil Service could not start! There is a problem with the file path. The file does not exist at given path");
-			}
-			return false;
-		}
-#else
-		print("Process can not be started in UWP environment");
-#endif
-		return true;
-	}
+	#endregion
 
 	#region packet
 	PupilMarker _markerLeftEye;
@@ -373,8 +296,6 @@ public class PupilGazeTracker:MonoBehaviour
 		PupilTools.DataProcessState = EStatus.ProcessingGaze;
 		PupilTools.SubscribeTo("gaze");
 	}
-
-	
 
 	public void StopVisualizingGaze ()
 	{

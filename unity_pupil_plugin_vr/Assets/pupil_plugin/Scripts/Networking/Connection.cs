@@ -15,7 +15,6 @@ public class Connection
 		get { return _isConnected; }
 		set { _isConnected = value; }
 	}
-	public bool isAutorun = true;
 	public string IP = "127.0.0.1";
 	public string IPHeader = ">tcp://127.0.0.1:";
 	public int PORT = 50020;

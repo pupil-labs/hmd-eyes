@@ -19,12 +19,6 @@ public class PupilSettings:ScriptableObject
 	}
 
 	[Serializable]
-	public class PupilServiceApp
-	{
-		public string servicePath;
-	}
-
-	[Serializable]
 	public class CustomGUIVariables
 	{
 		[Serializable]
@@ -61,7 +55,6 @@ public class PupilSettings:ScriptableObject
 	public DebugVars debug;
 
 	public Connection connection;
-	public PupilServiceApp pupilServiceApp;
 	public Calibration calibration;
 	public CustomGUIVariables customGUIVariables;
 	public DebugView debugView;

@@ -37,31 +37,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		Repaint ();
 	}
 
-	public static void AutoRunLayout(){
-
-		PupilSettings pupilSettings = PupilSettings.Instance;
-
-		////////////////////////////TOGGLE AUTO MODE////////////////////////////
-		GUI.enabled = !Application.isPlaying;
-		PupilTools.Connection.isAutorun = GUILayout.Toggle (PupilTools.Connection.isAutorun, "Auto-connect to Pupil", "Button");
-		GUI.enabled = Application.isPlaying;
-		if (!PupilTools.Connection.isAutorun && Application.isPlaying) 
-		{
-			GUILayout.BeginHorizontal ();
-			GUI.enabled = !PupilTools.IsConnected;
-			if (GUILayout.Button ("Start")) 
-			{
-				PupilGazeTracker.Instance.RunConnect ();
-			}
-			GUI.enabled = PupilTools.IsConnected;
-			if (GUILayout.Button ("Stop"))
-				PupilGazeTracker.Instance.CloseShop ();
-			GUILayout.EndHorizontal ();
-		}
-		GUI.enabled = true;
-		////////////////////////////TOGGLE AUTO MODE////////////////////////////
-	}
-
 	public override void OnInspectorGUI()
 	{
 		if (pupilTracker == null) 
@@ -347,10 +322,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 				GUI.enabled = false;
 			}
 
-			GUILayout.Space (10);
-
-			AutoRunLayout ();
-
 			GUILayout.Space (20);
 
 			////////////////////////////CONNECTION MODE////////////////////////////
@@ -371,22 +342,6 @@ public class CustomPupilGazeTrackerInspector : Editor {
 					PupilTools.Connection.IP = tempServerIP;
 				}
 			}
-
-			////////////////////////////CONNECTION MODE////////////////////////////
-			GUILayout.Space (5);
-			if (PupilTools.Connection.isLocal) {//LOCAL CONNECTION MODE//
-				////////////////////////////PUPIL APP PATH////////////////////////////
-				GUILayout.BeginHorizontal ();
-				GUILayout.Label ("path : ", pupilSettings.GUIStyles[5], GUILayout.MinWidth (50));
-
-				PupilSettings.Instance.pupilServiceApp.servicePath = EditorGUILayout.TextArea (PupilSettings.Instance.pupilServiceApp.servicePath, pupilSettings.GUIStyles[6], GUILayout.MinWidth (100), GUILayout.Height (22));
-				if (GUILayout.Button ("Browse")) {
-					PupilSettings.Instance.pupilServiceApp.servicePath = EditorUtility.OpenFilePanel ("Select Pupil service application file", PupilSettings.Instance.pupilServiceApp.servicePath, "exe");
-				}
-				GUILayout.EndHorizontal ();
-				////////////////////////////PUPIL APP PATH////////////////////////////
-			}
-
 			if (pupilSettings.customGUIVariables.bools.isAdvanced){//ADVANCED SETTING
 
 				////////////////////////////SERVICE PORT////////////////////////////
