@@ -42,7 +42,7 @@ public class BlinkDemoManager : MonoBehaviour
 		PupilTools.UnSubscribeFrom ("blinks");
 	}
 
-	void CustomReceiveData(string topic, Dictionary<string,object> dictionary)
+	void CustomReceiveData(string topic, Dictionary<string,object> dictionary, byte[] thirdFrame = null)
 	{
 		if (topic == "blinks")
 		{
@@ -63,6 +63,6 @@ public class BlinkDemoManager : MonoBehaviour
 		PupilTools.OnConnected -= StartBlinkSubscription;
 		PupilTools.OnDisconnecting -= StopBlinkSubscription;
 
-		PupilTools.OnReceiveData += CustomReceiveData;
+		PupilTools.OnReceiveData -= CustomReceiveData;
 	}
 }

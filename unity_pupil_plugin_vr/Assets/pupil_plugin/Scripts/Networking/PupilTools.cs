@@ -32,7 +32,7 @@ public class PupilTools : MonoBehaviour
 	public delegate void OnCalibrationFailedDeleg ();
 	public delegate void OnConnectedDelegate ();
 	public delegate void OnDisconnectingDelegate ();
-	public delegate void OnReceiveDataDelegate (string topic, Dictionary<string,object> dictionary);
+	public delegate void OnReceiveDataDelegate (string topic, Dictionary<string,object> dictionary, byte[] thirdFrame = null);
 
 	public static event GUIRepaintAction WantRepaint;
 	public static event OnCalibrationStartDeleg OnCalibrationStarted;
@@ -530,10 +530,10 @@ public class PupilTools : MonoBehaviour
 	}
 
 	public static bool ReceiveDataIsSet { get { return OnReceiveData != null; } }
-	public static void ReceiveData (string topic, Dictionary<string,object> dictionary)
+	public static void ReceiveData (string topic, Dictionary<string,object> dictionary, byte[] thirdFrame = null)
 	{
 		if (OnReceiveData != null)
-			OnReceiveData (topic, dictionary);
+			OnReceiveData (topic, dictionary, thirdFrame);
 		else
 			UnityEngine.Debug.Log ("OnReceiveData is not set");
 	}

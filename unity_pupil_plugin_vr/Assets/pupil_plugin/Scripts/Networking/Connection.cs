@@ -133,10 +133,13 @@ public class Connection
 					// We read all the messages from the socket, but disregard the ones after a certain point
 	//				if ( i > PupilSettings.numberOfMessages ) // 6)
 	//					continue;
-					mStream = new MemoryStream(m[1].ToByteArray());
 
 					string msgType = m[0].ConvertToString();
-
+					mStream = new MemoryStream(m[1].ToByteArray());
+					byte[] thirdFrame = null;
+					if (m.FrameCount >= 3)
+						thirdFrame = m[2].ToByteArray();
+					
 					if (PupilSettings.Instance.debug.printMessageType)
 						Debug.Log(msgType);
 
@@ -145,7 +148,7 @@ public class Connection
 
 					if ( PupilTools.ReceiveDataIsSet )
 					{
-						PupilTools.ReceiveData( msgType, MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream) );
+						PupilTools.ReceiveData( msgType, MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream), thirdFrame);
 						continue;
 					}
 
@@ -182,11 +185,11 @@ public class Connection
 						break;
 					case "frame.eye.0":
 						if (m.FrameCount >= 3)
-							PupilTools.UpdateFramePublishingImage(0,m[2].ToByteArray());
+							PupilTools.UpdateFramePublishingImage(0,thirdFrame);
 						break;
 					case "frame.eye.1":
 						if (m.FrameCount >= 3)
-							PupilTools.UpdateFramePublishingImage(1,m[2].ToByteArray());
+							PupilTools.UpdateFramePublishingImage(1,thirdFrame);
 						break;
 					default: 
 						Debug.Log(msgType);
