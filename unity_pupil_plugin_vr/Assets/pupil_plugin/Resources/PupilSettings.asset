@@ -19,7 +19,7 @@ MonoBehaviour:
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
     PORT: 50020
-    subport: 57603
+    subport: 51872
     isLocal: 1
     PupilVersion: 1.4.1
     PupilVersionNumbers: 010000000400000001000000
@@ -32,8 +32,9 @@ MonoBehaviour:
       - 0
       - 0
       points: 8
-      vectorDepthRadiusScale:
-      - {x: 2, y: 0.07, z: 0.05}
+      markerScale: 0.05
+      vectorDepthRadius:
+      - {x: 2, y: 0.07}
       samplesPerDepth: 120
     CalibrationType3D:
       name: 3d
@@ -44,18 +45,19 @@ MonoBehaviour:
       - 0
       - 0
       points: 5
-      vectorDepthRadiusScale:
-      - {x: 0.6, y: 0.18, z: 0.04}
-      - {x: 1, y: 0.24, z: 0.04}
-      - {x: 2, y: 0.38, z: 0.04}
+      markerScale: 0.04
+      vectorDepthRadius:
+      - {x: 0.6, y: 0.18}
+      - {x: 1, y: 0.24}
+      - {x: 2, y: 0.38}
       samplesPerDepth: 70
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:
-    - 31.341255
+    - 28.806686
     - 0
     - 0
     leftEyeTranslation:
-    - -31.341259
+    - -28.806686
     - 0
     - 0
   customGUIVariables:

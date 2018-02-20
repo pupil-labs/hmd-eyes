@@ -64,7 +64,7 @@ public class PupilMarker
 	{		
 		position.x = newPosition.x;
 		position.y = newPosition.y;
-		position.z = PupilTools.CalibrationType.vectorDepthRadiusScale[0].x;
+		position.z = PupilTools.CalibrationType.vectorDepthRadius[0].x;
 		gameObject.transform.position = camera.ViewportToWorldPoint(position);
 		UpdateOrientation ();
 	}
@@ -82,7 +82,7 @@ public class PupilMarker
 			{
 				position.x = newPosition[0];
 				position.y = newPosition[1];
-				position.z = PupilTools.CalibrationType.vectorDepthRadiusScale[0].x;
+				position.z = PupilTools.CalibrationType.vectorDepthRadius[0].x;
 				gameObject.transform.position = camera.ViewportToWorldPoint(position);
 			} 
 			else

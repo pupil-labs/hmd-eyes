@@ -156,28 +156,4 @@ public class Calibration
 			}
 		}
 	}
-
-	[Serializable]
-	public class data
-	{
-		public string camera_intrinsics_str;
-		public Vector3[] cal_ref_points_3d;
-		public Vector3[] cal_gaze_points0_3d;
-		public Vector3[] cal_gaze_points1_3d;
-		public Vector3[] cal_points_3d;
-		public Matrix4x4 eye_camera_to_world_matrix0;
-		public Matrix4x4 eye_camera_to_world_matrix1;
-		public cam_intrinsics camera_intrinsics;
-	}
-
-	[Serializable]
-	public class cam_intrinsics
-	{
-		public double[] resolution;
-		public string camera_name;
-		public Vector3[] camera_matrix;
-		public double[][] dist_coefs;
-		//figure this out if needed.
-		public int intt;
-	}
 }

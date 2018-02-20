@@ -646,12 +646,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Settings: {fileID: 11400000, guid: 19e52fef3bed37e4f9089d08d7c1773e, type: 2}
   ProjectName: 
-  isOperatorMonitor: 0
-  OperatorMonitor: {fileID: 0}
   CanvasWidth: 640
   CanvasHeight: 480
   saved: 0
-  SettingsTab: 0
+  SettingsTab: 1
   Codec: 1
   PupilServicePath: 
   PupilServiceFileName: 
