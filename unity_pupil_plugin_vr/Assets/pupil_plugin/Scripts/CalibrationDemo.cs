@@ -14,7 +14,7 @@ public class CalibrationDemo : MonoBehaviour
 	}
 	void OnDisable()
 	{
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == Pupil.EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.IsGazing)
 		{
 			PupilGazeTracker.Instance.StopVisualizingGaze ();		
 			print ("We stopped gazing");

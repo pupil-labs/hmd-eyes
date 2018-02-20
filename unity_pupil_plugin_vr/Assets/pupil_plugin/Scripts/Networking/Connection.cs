@@ -167,7 +167,7 @@ public class Connection
 					case "pupil.1":
 						var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
 						var confidence = PupilTools.ConfidenceForDictionary(dictionary);
-						if ( PupilTools.DataProcessState == Pupil.EStatus.Calibration )
+						if ( PupilTools.IsCalibrating )
 						{
 							string eyeID = PupilTools.EyeIDForDictionary(dictionary);
 							PupilTools.UpdateCalibrationMarkerColor(eyeID,confidence);

@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Pupil;
 
 public class SharkWith2DCalibration : MonoBehaviour 
 {
@@ -17,7 +16,7 @@ public class SharkWith2DCalibration : MonoBehaviour
 	{
 		if (PupilTools.IsConnected)
 		{
-			PupilTools.DataProcessState = EStatus.ProcessingGaze;
+			PupilTools.IsGazing = true;
 			PupilTools.SubscribeTo ("gaze");
 		}
 	}
@@ -26,9 +25,9 @@ public class SharkWith2DCalibration : MonoBehaviour
 
 	void Update()
 	{
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.IsGazing)
 		{
-			gazePointCenter = PupilData._2D.GetEyeGaze (GazeSource.BothEyes);
+			gazePointCenter = PupilData._2D.GazePosition;
 		}
 	}
 

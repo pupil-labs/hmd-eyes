@@ -1,6 +1,5 @@
 ﻿using System;
-using UnityEngine;
-using Pupil;
+using UnityEngine;
 
 [Serializable]
 public class Calibration

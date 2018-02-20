@@ -29,7 +29,7 @@ public class MarketWith2DCalibration : MonoBehaviour
 	{
 		if (PupilTools.IsConnected)
 		{
-			PupilTools.DataProcessState = Pupil.EStatus.ProcessingGaze;
+			PupilTools.IsGazing = true;
 			PupilTools.SubscribeTo ("gaze");
 		}
 	}
@@ -40,11 +40,11 @@ public class MarketWith2DCalibration : MonoBehaviour
 	{
 		Vector3 viewportPoint = standardViewportPoint;
 
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == Pupil.EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.IsGazing)
 		{
-			gazePointLeft = PupilData._2D.GetEyePosition (sceneCamera, Pupil.GazeSource.LeftEye);
-			gazePointRight = PupilData._2D.GetEyePosition (sceneCamera, Pupil.GazeSource.RightEye);
-			gazePointCenter = PupilData._2D.GetEyeGaze (Pupil.GazeSource.BothEyes);
+			gazePointLeft = PupilData._2D.GetEyePosition (sceneCamera, PupilData.leftEyeID);
+			gazePointRight = PupilData._2D.GetEyePosition (sceneCamera, PupilData.rightEyeID);
+			gazePointCenter = PupilData._2D.GazePosition;
 			viewportPoint = new Vector3 (gazePointCenter.x, gazePointCenter.y, 1f);
 		}
 

@@ -22,7 +22,7 @@ public class MarketWith3DCalibration : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == Pupil.EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.IsGazing)
 		{
 			marker.localPosition = PupilData._3D.GazePosition;
 		}
@@ -30,7 +30,7 @@ public class MarketWith3DCalibration : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == Pupil.EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.IsGazing)
 		{
 			PupilTools.UnSubscribeFrom("gaze");	
 			print ("We stopped gazing");

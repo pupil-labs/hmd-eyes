@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
-using UnityEngine;
-using Pupil;
+using UnityEngine;
 
 public class PupilTools : MonoBehaviour
 {
@@ -11,19 +10,8 @@ public class PupilTools : MonoBehaviour
 	{
 		get { return PupilSettings.Instance; }
 	}
-
-	private static EStatus _dataProcessState = EStatus.Idle;
-	public static EStatus DataProcessState
-	{
-		get { return _dataProcessState; }
-		set
-		{
-			_dataProcessState = value;
-			if (Calibration.Marker != null)
-				Calibration.Marker.SetActive (_dataProcessState == EStatus.Calibration);
-		}
-	}
-	static EStatus stateBeforeCalibration = EStatus.Idle;
+		
+	#region Delegates
 
 	//InspectorGUI repaint
 	public delegate void GUIRepaintAction ();
@@ -41,6 +29,52 @@ public class PupilTools : MonoBehaviour
 	public static event OnConnectedDelegate OnConnected;
 	public static event OnDisconnectingDelegate OnDisconnecting;
 	public static event OnReceiveDataDelegate OnReceiveData;
+
+	#endregion
+
+	#region EStatus
+
+	private enum EStatus { Idle, ProcessingGaze, Calibration }
+	private static EStatus _dataProcessState = EStatus.Idle;
+	private static EStatus DataProcessState
+	{
+		get { return _dataProcessState; }
+		set
+		{
+			_dataProcessState = value;
+			if (Calibration.Marker != null)
+				Calibration.Marker.SetActive (_dataProcessState == EStatus.Calibration);
+		}
+	}
+	private static EStatus previousState = EStatus.Idle;
+	public static bool IsIdle
+	{
+		get { return DataProcessState == EStatus.Idle; }
+		set { SetProcessState(!value, EStatus.Idle); }
+	}
+	public static bool IsGazing
+	{
+		get { return DataProcessState == EStatus.ProcessingGaze; }
+		set { SetProcessState(!value, EStatus.ProcessingGaze); }
+	}
+	public static bool IsCalibrating
+	{
+		get { return DataProcessState == EStatus.Calibration; }
+		set { SetProcessState(!value, EStatus.Calibration); }
+	}
+
+	private static void SetProcessState (bool toOldState, EStatus newState)
+	{
+		if (toOldState)
+			DataProcessState = previousState;
+		else
+		{
+			previousState = DataProcessState;
+			DataProcessState = newState;
+		}
+	}
+
+	#endregion
 
 	#region Recording
 
@@ -100,6 +134,8 @@ public class PupilTools : MonoBehaviour
 
 	#endregion
 
+	#region Dictionary processing
+
 	public static Dictionary<string, object> pupil0Dictionary;
 	public static Dictionary<string, object> pupil1Dictionary;
 	private static Dictionary<string, object> _gazeDictionary;
@@ -113,7 +149,6 @@ public class PupilTools : MonoBehaviour
 		{
 			_gazeDictionary = value;
 			UpdateGaze ();
-			UpdateEyeID ();
 		}
 	}
 
@@ -159,19 +194,8 @@ public class PupilTools : MonoBehaviour
 	}
 
 	private static object IDo;
-	private static void UpdateEyeID ()
-	{
-		string id = "";
-
-		if (gazeDictionary != null)
-			id = EyeIDForDictionary (gazeDictionary);
-			
-		PupilData.UpdateCurrentEyeID(id);
-	}
-
 	public static string stringForEyeID ()
 	{
-		object IDo;
 		if (gazeDictionary == null)
 			return null;
 
@@ -245,6 +269,9 @@ public class PupilTools : MonoBehaviour
 		gazeDictionary.TryGetValue ("base_data", out o);
 		return o as Dictionary<object,object>;
 	}
+
+	#endregion
+
 	#region Calibration
 
 	public static void RepaintGUI ()
@@ -348,8 +375,7 @@ public class PupilTools : MonoBehaviour
 
 		Calibration.InitializeCalibration ();
 
-		stateBeforeCalibration = DataProcessState;
-		DataProcessState = EStatus.Calibration;
+		IsCalibrating = true;
 		SubscribeTo ("notify.calibration.successful");
 		SubscribeTo ("notify.calibration.failed");
 		SubscribeTo ("pupil.");
@@ -391,13 +417,13 @@ public class PupilTools : MonoBehaviour
 
 	public static void StopCalibration ()
 	{
-		DataProcessState = stateBeforeCalibration;
+		IsCalibrating = false;
 		Send (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
 	}
 
 	public static void CalibrationFinished ()
 	{
-		DataProcessState = EStatus.Idle;
+		IsIdle = true;
 
 		print ("Calibration finished");
 
@@ -415,7 +441,7 @@ public class PupilTools : MonoBehaviour
 
 	public static void CalibrationFailed ()
 	{
-		DataProcessState = EStatus.Idle;
+		IsIdle = true;
 
 		if (OnCalibrationFailed != null)
 			OnCalibrationFailed ();
@@ -495,6 +521,9 @@ public class PupilTools : MonoBehaviour
 
 	#endregion
 
+	public static bool eyeProcess0;
+	public static bool eyeProcess1;
+
 	public static bool StartEyeProcesses ()
 	{
 		var startLeftEye = new Dictionary<string,object> {
@@ -508,11 +537,21 @@ public class PupilTools : MonoBehaviour
 			{ "delay", 0.2f }
 		};
 
-		if ( SetDetectionMode() )
-			if ( Send (startLeftEye) )
-				if ( Send (startRightEye) )
-					return true;
+		eyeProcess0 = false;
+		eyeProcess1 = false;
 
+		if (SetDetectionMode ())
+		{
+			if (Send (startLeftEye))
+			{
+				eyeProcess1 = true;
+				if (Send (startRightEye))
+				{
+					eyeProcess0 = true;
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
@@ -521,7 +560,7 @@ public class PupilTools : MonoBehaviour
 		if (OnDisconnecting != null)
 			OnDisconnecting ();
 		
-		if (DataProcessState == EStatus.Calibration)
+		if (IsCalibrating)
 			StopCalibration ();
 		
 		StopEyeProcesses ();
@@ -551,10 +590,15 @@ public class PupilTools : MonoBehaviour
 			{ "delay", 0.2f }
 		};
 
-		if ( Send (stopLeftEye) )
-			if ( Send (stopRightEye) )
+		if (Send (stopLeftEye))
+		{
+			eyeProcess1 = false;
+			if (Send (stopRightEye))
+			{
+				eyeProcess0 = false;
 				return true;
-
+			}
+		}
 		return false;
 	}
 

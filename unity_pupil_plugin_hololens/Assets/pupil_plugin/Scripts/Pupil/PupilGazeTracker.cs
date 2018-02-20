@@ -11,8 +11,6 @@ using System.Net;
 using System.Threading;
 using System.IO;
 using System;
-using Pupil;
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -38,90 +36,59 @@ public class PupilGazeTracker:MonoBehaviour
 
 	#region delegates
 
-	public delegate void OnCalibrationStartedDeleg (PupilGazeTracker manager);
-	public delegate void OnCalibrationDoneDeleg (PupilGazeTracker manager);
-	public delegate void OnEyeGazeDeleg (PupilGazeTracker manager);
-	public delegate void OnCalibrationGLDeleg ();
 	public delegate void OnUpdateDeleg ();
 	public delegate void DrawMenuDeleg ();
-	public delegate void OnCalibDebugDeleg ();
-	public delegate void OnOperatorMonitorDeleg ();
-	public delegate void OnDrawGizmoDeleg ();
-
-	public event OnEyeGazeDeleg OnEyeGaze;
 
 	public DrawMenuDeleg DrawMenu;
-	public OnCalibrationGLDeleg OnCalibrationGL;
-	public OnCalibDebugDeleg OnCalibDebug;
-	public OnOperatorMonitorDeleg OnOperatorMonitor;
-	public OnDrawGizmoDeleg OnDrawGizmo;
 	public OnUpdateDeleg OnUpdate;
 
 	#endregion
-
-	//	[HideInInspector]
-	//	public int ServicePort=50020;
-	[HideInInspector]
-	public float CanvasWidth = 640;
-	[HideInInspector]
-	public float CanvasHeight = 480;
-	//	[HideInInspector]
-	//	public int ServiceStartupDelay = 7000;//Time to allow the Service to start before connecting to Server.
-	//	bool _serviceStarted = false;
-	//	bool _calibPointTimeOut = true;
-
-	//CUSTOM EDITOR VARIABLES
-
-	[HideInInspector]
-	public bool saved = false;
-
-	[HideInInspector]
-	public int SettingsTab;
-
-	[HideInInspector]
-	public int Codec = 1;
-
-	//[HideInInspector]
-	//public bool AdvancedSettings;
-	[HideInInspector]
-	public string PupilServicePath = "";
-	[HideInInspector]
-	public string PupilServiceFileName = "";
-
-	[HideInInspector]
-	public List<GUIStyle> Styles
-	{
-		get
-		{
-			return Settings.GUIStyles;
-		}
-	}
-	[HideInInspector]
-	public GUIStyle FoldOutStyle = new GUIStyle ();
-	[HideInInspector]
-	public GUIStyle ButtonStyle = new GUIStyle ();
-	[HideInInspector]
-	public GUIStyle TextField = new GUIStyle ();
-	[HideInInspector]
-	public GUIStyle CalibRowStyle = new GUIStyle ();
-
-	int _currentFps = 0;
-	DateTime _lastT;
-
-	public int FPS
-	{
-		get{ return _currentFps; }
-	}
 
 	public PupilGazeTracker ()
 	{
 		_Instance = this;
 	}
-		
-	#region Update
+
+#region Start
+
+	void Start ()
+	{
+		Settings = PupilSettings.Instance;
+
+		if (PupilGazeTracker._Instance == null)
+			PupilGazeTracker._Instance = this;
+
+		#if !UNITY_WSA
+		PupilData.calculateMovingAverage = false;
+		#endif
+
+		PupilGazeTracker.Instance.ProjectName = Application.productName;
+
+		PupilTools.IsConnected = false;
+		PupilTools.IsIdle = true;
+
+		var relativeRightEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.RightEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
+		PupilTools.Calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
+		var relativeLeftEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.LeftEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
+		PupilTools.Calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
+
+		#if !UNITY_WSA
+		RunConnect ();
+		#endif
+	}
+
+	public void RunConnect()
+	{
+		StartCoroutine (PupilTools.Connect (retry: true, retryDelay: 5f));
+	}
+
+#endregion
+
+#region Update
+
 	void Update ()
 	{
-		if (PupilTools.DataProcessState == EStatus.Calibration)
+		if (PupilTools.IsCalibrating)
 		{
 			PupilTools.Calibration.UpdateCalibration ();
 		} 
@@ -130,7 +97,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 		if (Input.GetKeyUp (KeyCode.C))
 		{
-			if (PupilTools.DataProcessState == EStatus.Calibration)
+			if (PupilTools.IsCalibrating)
 			{
 				PupilTools.StopCalibration ();
 			} else
@@ -161,22 +128,7 @@ public class PupilGazeTracker:MonoBehaviour
 			Instance.OnUpdate ();
 	}
 
-	#endregion
-
-	public virtual void OnDrawGizmos ()
-	{
-		if (Instance.OnDrawGizmo != null)
-			Instance.OnDrawGizmo ();
-	}
-
-	public void OnRenderObject ()
-	{
-		if (Instance.OnCalibDebug != null)
-			Instance.OnCalibDebug ();
-
-		if (Instance.OnCalibrationGL != null)
-			Instance.OnCalibrationGL ();
-	}
+#endregion
 
 	void OnEnable ()
 	{
@@ -193,6 +145,21 @@ public class PupilGazeTracker:MonoBehaviour
 		SavePupilSettings (ref pupilSettings);
 	}
 
+	public void CloseShop ()
+	{
+		#if !UNITY_WSA
+		if (Recorder.isRecording)
+		{
+			Recorder.Stop ();
+		}
+		#endif
+		PupilTools.Disconnect ();
+
+		StopAllCoroutines ();
+
+		PupilTools.RepaintGUI ();
+	}
+
 	public static void SavePupilSettings (ref PupilSettings pupilSettings)
 	{
 #if UNITY_EDITOR
@@ -200,49 +167,10 @@ public class PupilGazeTracker:MonoBehaviour
 		EditorUtility.SetDirty (pupilSettings);
 		AssetDatabase.SaveAssets ();
 #endif
-
-	}
-	#region Start();
-
-	void Start ()
-	{
-//		print ("Start of pupil gaze tracker");
-
-		Settings = PupilSettings.Instance;
-
-		string str = PupilConversions.ReadStringFromFile ("camera_intrinsics");
-		PupilConversions.ReadCalibrationData(str,ref PupilData.CalibrationData);
-
-		if (PupilGazeTracker._Instance == null)
-			PupilGazeTracker._Instance = this;
-		
-#if !UNITY_WSA
-		PupilData.calculateMovingAverage = false;
-#endif
-
-		PupilGazeTracker.Instance.ProjectName = Application.productName;
-
-		PupilTools.IsConnected = false;
-		PupilTools.DataProcessState = EStatus.Idle;
-
-		var relativeRightEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.RightEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
-		PupilTools.Calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
-		var relativeLeftEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.LeftEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
-		PupilTools.Calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
-
-#if !UNITY_WSA
-		RunConnect ();
-#endif
 	}
 
-	public void RunConnect()
-	{
-		StartCoroutine (PupilTools.Connect (retry: true, retryDelay: 5f));
-	}
+#region Gaze Visualization
 
-	#endregion
-
-	#region packet
 	PupilMarker _markerLeftEye;
 	PupilMarker _markerRightEye;
 	PupilMarker _markerGazeCenter;
@@ -263,7 +191,7 @@ public class PupilGazeTracker:MonoBehaviour
 		if ( !PupilMarker.TryToReset(_gaze3D) )
 			_gaze3D = new PupilMarker("Gaze_3D", Color.yellow);
 
-		PupilTools.DataProcessState = EStatus.ProcessingGaze;
+		PupilTools.IsGazing = true;
 		PupilTools.SubscribeTo("gaze");
 	}
 
@@ -281,20 +209,13 @@ public class PupilGazeTracker:MonoBehaviour
 
 	void VisualizeGaze ()
 	{
-		if (PupilTools.DataProcessState == EStatus.ProcessingGaze)
+		if (PupilTools.IsGazing)
 		{
 			if (PupilTools.CalibrationMode == Calibration.Mode._2D)
 			{
-				var eyeID = PupilData.currentEyeID;
-				if (eyeID == GazeSource.LeftEye || eyeID == GazeSource.RightEye)
-				{
-					if (OnEyeGaze != null)
-						OnEyeGaze (this);
-				}
-
-				_markerLeftEye.UpdatePosition(PupilData._2D.GetEyeGaze (GazeSource.LeftEye));
-				_markerRightEye.UpdatePosition (PupilData._2D.GetEyeGaze (GazeSource.RightEye));
-				_markerGazeCenter.UpdatePosition (PupilData._2D.GetEyeGaze (GazeSource.BothEyes));
+				_markerLeftEye.UpdatePosition(PupilData._2D.LeftEyePosition);
+				_markerRightEye.UpdatePosition (PupilData._2D.RightEyePosition);
+				_markerGazeCenter.UpdatePosition (PupilData._2D.GazePosition);
 			}
 			else if (PupilTools.CalibrationMode == Calibration.Mode._3D)
 			{
@@ -303,31 +224,5 @@ public class PupilGazeTracker:MonoBehaviour
 		} 
 	}
 
-	#endregion
-
-#region Recording
-
-	public void OnRecording ()
-	{
-	}
-
 #endregion
-
-	public void CloseShop ()
-	{
-#if !UNITY_WSA
-		if (Recorder.isRecording)
-		{
-			Recorder.Stop ();
-		}
-#endif
-		PupilTools.Disconnect ();
-
-		StopAllCoroutines ();
-
-		PupilTools.RepaintGUI ();
-
-		processStatus.eyeProcess0 = false;
-		processStatus.eyeProcess1 = false;
-	}
 }

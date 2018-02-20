@@ -55,7 +55,7 @@ public class PupilDemoManager : MonoBehaviour
 
 	public void OnCalibrationButtonClicked()
 	{
-		if (PupilTools.DataProcessState == Pupil.EStatus.Calibration)
+		if (PupilTools.IsCalibrating)
 		{
 			PupilTools.StopCalibration ();
 		}

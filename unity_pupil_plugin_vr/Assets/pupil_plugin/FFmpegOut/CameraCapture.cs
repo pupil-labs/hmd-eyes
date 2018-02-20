@@ -40,7 +40,7 @@ namespace FFmpegOut
 		int renderedFrameCount = 0;
 		int writtenFrameCount = 0;
 
-		List<double> timeStampList = new List<double>();
+		List<byte> timeStampList = new List<byte>();
 //		StringBuilder strBuilder;
 
 		public Camera RecordedMainCamera;
@@ -135,7 +135,7 @@ namespace FFmpegOut
                 tempTex.Apply();
 
 				// With the winter 2017 release of this plugin, Pupil timestamp is set to Unity time when connecting
-				timeStampList.Add (Time.time);
+				timeStampList.AddRange ( System.BitConverter.GetBytes(Time.time));
                 _pipe.Write(tempTex.GetRawTextureData());
 
                 Destroy(tempTex);
@@ -153,7 +153,7 @@ namespace FFmpegOut
         {
             if (_pipe != null) return;
 
-			timeStampList = new List<double> ();
+			timeStampList = new List<byte> ();
 
             var camera = GetComponent<Camera>();
 			var width = PupilSettings.Instance.recorder.resolutions [(int)PupilSettings.Instance.recorder.resolution] [0];
@@ -220,7 +220,7 @@ namespace FFmpegOut
 
 				// Write pupil timestamps to a file
 				string timeStampFileName = "Unity_" + PupilSettings.Instance.currentCamera.name;
-				byte[] timeStampByteArray = PupilConversions.doubleArrayToByteArray (timeStampList.ToArray ());
+				byte[] timeStampByteArray = timeStampList.ToArray ();
 				File.WriteAllBytes(_pipe.FilePath + "/" + timeStampFileName + ".time", timeStampByteArray);
 
 				PupilTools.SaveRecording (_pipe.FilePath);

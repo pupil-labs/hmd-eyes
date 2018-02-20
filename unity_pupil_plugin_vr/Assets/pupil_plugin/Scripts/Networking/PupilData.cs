@@ -1,17 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using Pupil;
+using UnityEngine;
 
 public static class PupilData
 {
-	public static Calibration.data CalibrationData;
-
 	private static int SamplesCount = 4;
 
 	private static Dictionary<string,EyeData> eyeData = new Dictionary<string,EyeData>();
 
-	public static int leftEyeID = 1;
+	public const int leftEyeID = 1;
 	private const string stringForLeftEyeID = "1";
 	private static string leftEyeKey = "norm_pos" + "_" + stringForLeftEyeID;
 	public static EyeData leftEye
@@ -24,7 +21,7 @@ public static class PupilData
 		}
 	}
 
-	public static int rightEyeID = 0;
+	public const int rightEyeID = 0;
 	private const string stringForRightEyeID = "0";
 	private static string rightEyeKey = "norm_pos" + "_" + stringForRightEyeID;
 	public static EyeData rightEye
@@ -93,23 +90,6 @@ public static class PupilData
 			eyeData.Add (key, new EyeData (SamplesCount));
 		
 		eyeData[key].AddGaze(position,calculateMovingAverage);
-	}
-
-	public static GazeSource currentEyeID;
-	public static void UpdateCurrentEyeID(string id)
-	{
-		switch (id)
-		{
-		case stringForLeftEyeID:
-			currentEyeID = GazeSource.LeftEye;
-			break;
-		case stringForRightEyeID:
-			currentEyeID = GazeSource.RightEye;
-			break;
-		default:
-			currentEyeID = GazeSource.GazeOnly;
-			break;
-		}
 	}
 
 	private static bool _calculateMovingAverage = false;
@@ -212,7 +192,7 @@ public static class PupilData
 
 	public class _2D
 	{
-		private static Vector2 LeftEyePos
+		public static Vector2 LeftEyePosition
 		{
 			get
 			{
@@ -220,11 +200,10 @@ public static class PupilData
 					return leftEye.Average;
 				else
 					return leftEye.Raw;
-				 
 			}
 		}
 
-		private static Vector2 RightEyePos
+		public static Vector2 RightEyePosition
 		{
 			get
 			{
@@ -232,13 +211,12 @@ public static class PupilData
 					return rightEye.Average;
 				else
 					return rightEye.Raw;
-
 			}
 		}
 
-		private static Vector2 GazePosition
+		public static Vector2 GazePosition
 		{
-			get { return 0.5f * (LeftEyePos + RightEyePos); }
+			get { return 0.5f * (LeftEyePosition + RightEyePosition); }
 		}
 
 		static Camera _sceneCamera;
@@ -270,17 +248,17 @@ public static class PupilData
 			frustumOffsetsRightEye.y /= frustumWidthHeight.y;
 		}
 
-		public static Vector2 ApplyFrustumOffset(Vector2 position,GazeSource gazeSource)
+		public static Vector2 ApplyFrustumOffset(Vector2 position,int eyeID)
 		{
 			Vector2 offsetPoint = position;
 
-			switch (gazeSource)
+			switch (eyeID)
 			{
-			case GazeSource.LeftEye:
-				offsetPoint -= (frustumOffsetsLeftEye - standardFrustumCenter);
-				break;
-			case GazeSource.RightEye:
+			case rightEyeID:
 				offsetPoint -= (frustumOffsetsRightEye - standardFrustumCenter);
+				break;
+			case leftEyeID:
+				offsetPoint -= (frustumOffsetsLeftEye - standardFrustumCenter);
 				break;
 			default:
 				break;
@@ -288,36 +266,24 @@ public static class PupilData
 			return offsetPoint;
 		}
 
-		public static Vector2 GetEyePosition (Camera sceneCamera, GazeSource gazeSource)
+		public static Vector2 GetEyePosition (Camera sceneCamera, int eyeID)
 		{
 			if (_sceneCamera == null || _sceneCamera != sceneCamera)
 			{
 				_sceneCamera = sceneCamera;
 				InitializeFrustumEyeOffset ();
 			}
-			return ApplyFrustumOffset (GetEyeGaze(gazeSource), gazeSource);
+			return ApplyFrustumOffset (GetEyeGaze(eyeID), eyeID);
 		}
 
-		public static Vector2 GetEyeGaze (GazeSource s)
-		{
-			switch (s)
-			{
-			case GazeSource.LeftEye:
-				return LeftEyePos;
-			case GazeSource.RightEye:
-				return RightEyePos;
-			default:
-				return GazePosition;
-			}
-		}
-		public static Vector2 GetEyeGaze (string eyeID)
+		public static Vector2 GetEyeGaze (int eyeID)
 		{
 			switch (eyeID)
 			{
-			case "0":
-				return GetEyeGaze(GazeSource.RightEye);
-			case "1":
-				return GetEyeGaze(GazeSource.LeftEye);
+			case rightEyeID:
+				return RightEyePosition;
+			case leftEyeID:
+				return LeftEyePosition;
 			default:
 				return Vector2.zero;
 			}

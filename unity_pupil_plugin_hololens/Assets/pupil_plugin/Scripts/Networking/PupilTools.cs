@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using UnityEngine;
-using Pupil;
 
 public class PupilTools : MonoBehaviour
 {
@@ -12,18 +11,7 @@ public class PupilTools : MonoBehaviour
 		get { return PupilSettings.Instance; }
 	}
 
-	private static EStatus _dataProcessState = EStatus.Idle;
-	public static EStatus DataProcessState
-	{
-		get { return _dataProcessState; }
-		set
-		{
-			_dataProcessState = value;
-			if (Calibration.Marker != null)
-				Calibration.Marker.SetActive (_dataProcessState == EStatus.Calibration);
-		}
-	}
-	static EStatus stateBeforeCalibration = EStatus.Idle;
+	#region Delegates
 
 	//InspectorGUI repaint
 	public delegate void GUIRepaintAction ();
@@ -41,6 +29,52 @@ public class PupilTools : MonoBehaviour
 	public static event OnConnectedDelegate OnConnected;
 	public static event OnDisconnectingDelegate OnDisconnecting;
 	public static event OnReceiveDataDelegate OnReceiveData;
+
+	#endregion
+
+	#region EStatus
+
+	private enum EStatus { Idle, ProcessingGaze, Calibration }
+	private static EStatus _dataProcessState = EStatus.Idle;
+	private static EStatus DataProcessState
+	{
+		get { return _dataProcessState; }
+		set
+		{
+			_dataProcessState = value;
+			if (Calibration.Marker != null)
+				Calibration.Marker.SetActive (_dataProcessState == EStatus.Calibration);
+		}
+	}
+	private static EStatus previousState = EStatus.Idle;
+	public static bool IsIdle
+	{
+		get { return DataProcessState == EStatus.Idle; }
+		set { SetProcessState(!value, EStatus.Idle); }
+	}
+	public static bool IsGazing
+	{
+		get { return DataProcessState == EStatus.ProcessingGaze; }
+		set { SetProcessState(!value, EStatus.ProcessingGaze); }
+	}
+	public static bool IsCalibrating
+	{
+		get { return DataProcessState == EStatus.Calibration; }
+		set { SetProcessState(!value, EStatus.Calibration); }
+	}
+
+	private static void SetProcessState (bool toOldState, EStatus newState)
+	{
+		if (toOldState)
+			DataProcessState = previousState;
+		else
+		{
+			previousState = DataProcessState;
+			DataProcessState = newState;
+		}
+	}
+
+	#endregion
 
 	#region Recording
 
@@ -87,22 +121,24 @@ public class PupilTools : MonoBehaviour
 
 	#endregion
 
+	#region Gaze Processing
+
 	public static void UpdateGazePostion( string key, float[] position )
 	{
 		switch (key)
 		{
 		case PupilSettings.gaze2DLeftEyeKey:
-			PupilData._2D.LeftEyePosUDP.x = position [0];
-			PupilData._2D.LeftEyePosUDP.y = position [1];
+			PupilData._2D.LeftEyePosition.x = position [0];
+			PupilData._2D.LeftEyePosition.y = position [1];
 			if (isRecording)
-				AddToRecording (key, PupilData._2D.LeftEyePosUDP, true);
+				AddToRecording (key, PupilData._2D.LeftEyePosition, true);
 //		    UnityEngine.Debug.Log ("Left eye position: " + PupilData._2D.LeftEyePosUDP.ToString());
 			break;
 		case PupilSettings.gaze2DRightEyeKey:
-			PupilData._2D.RightEyePosUDP.x = position [0];
-			PupilData._2D.RightEyePosUDP.y = position [1];
+			PupilData._2D.RightEyePosition.x = position [0];
+			PupilData._2D.RightEyePosition.y = position [1];
 			if (isRecording)
-				AddToRecording (key, PupilData._2D.RightEyePosUDP, true);
+				AddToRecording (key, PupilData._2D.RightEyePosition, true);
 //			UnityEngine.Debug.Log ("Right Eye Position: " + PupilData._2D.RightEyePosUDP.ToString());
 			break;
 		case PupilSettings.gaze2DKey:
@@ -113,17 +149,19 @@ public class PupilTools : MonoBehaviour
 //		    UnityEngine.Debug.Log ("Gazepoint 2D: " + PupilData._2D.Gaze2DPosUDP.ToString());
 			break;
 		default:	// PupilSettings.gaze3DKey
-			PupilData._3D.Gaze3DPosUDP.x = position [0] / PupilSettings.PupilUnitScalingFactor;
-			PupilData._3D.Gaze3DPosUDP.y = position [1] / PupilSettings.PupilUnitScalingFactor;
-			PupilData._3D.Gaze3DPosUDP.z = position [2] / PupilSettings.PupilUnitScalingFactor;
+			PupilData._3D.GazePosition.x = position [0] / PupilSettings.PupilUnitScalingFactor;
+			PupilData._3D.GazePosition.y = position [1] / PupilSettings.PupilUnitScalingFactor;
+			PupilData._3D.GazePosition.z = position [2] / PupilSettings.PupilUnitScalingFactor;
 			if (isRecording)
-				AddToRecording (key, PupilData._3D.Gaze3DPosUDP);
+				AddToRecording (key, PupilData._3D.GazePosition);
 //			UnityEngine.Debug.Log ("Gazepoint 3D: " + PupilData._3D.Gaze3DPosUDP.ToString());
 			break;
 		}
 	}
 
-#region Calibration
+	#endregion
+
+	#region Calibration
 
 	public static void RepaintGUI ()
 	{
@@ -213,8 +251,7 @@ public class PupilTools : MonoBehaviour
 
 		Settings.calibration.InitializeCalibration ();
 
-		stateBeforeCalibration = DataProcessState;
-		DataProcessState = EStatus.Calibration;
+		IsCalibrating = true;
 
 		byte[] calibrationData = new byte[ 1 + 2 * sizeof(ushort) + sizeof(float) ];
 		calibrationData [0] = (byte) 'C';
@@ -242,7 +279,7 @@ public class PupilTools : MonoBehaviour
 
 	public static void StopCalibration ()
 	{
-		DataProcessState = stateBeforeCalibration;
+		IsCalibrating = false;
 		Settings.connection.sendCommandKey ('c');
 	}
 

@@ -107,14 +107,14 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		GUI.color = Color.white;
 
 		Texture2D eyeIcon = Resources.Load("eye") as Texture2D;
-		if (Pupil.processStatus.eyeProcess0) {
+		if ( PupilTools.eyeProcess0) {
 			GUI.color = Color.green;
 		} else {
 			GUI.color = Color.gray;
 		}
 		GUILayout.Label (eyeIcon as Texture2D, pupilSettings.GUIStyles[2], GUILayout.Width (20), GUILayout.Height (20));
 		GUILayout.Space (5);
-		if (Pupil.processStatus.eyeProcess1) {
+		if (PupilTools.eyeProcess1) {
 			GUI.color = Color.green;
 		} else {
 			GUI.color = Color.gray;
@@ -170,7 +170,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		////////////////////////////CALIBRATE BUTTON////////////////////////////
 		if (PupilTools.IsConnected) 
 		{
-			if (PupilTools.DataProcessState != Pupil.EStatus.Calibration) 
+			if (!PupilTools.IsCalibrating) 
 			{
 				if (GUILayout.Button ("Calibrate", GUILayout.Height (50))) 
 				{
@@ -262,7 +262,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 
 		////////////////////////////CONNECTION MODE////////////////////////////
 
-		if (PupilTools.DataProcessState == Pupil.EStatus.Calibration)
+		if (PupilTools.IsCalibrating)
 		{
 			GUI.enabled = false;
 		}

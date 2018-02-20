@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Pupil;
 
 public class SharkWith3DCalibration : MonoBehaviour 
 {
@@ -15,7 +14,7 @@ public class SharkWith3DCalibration : MonoBehaviour
 	{
 		if (PupilTools.IsConnected)
 		{
-			PupilTools.DataProcessState = EStatus.ProcessingGaze;
+			PupilTools.IsGazing = true;
 			PupilTools.SubscribeTo ("gaze");
 		}	
 	}
@@ -23,7 +22,7 @@ public class SharkWith3DCalibration : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.IsGazing)
 		{
 			marker.localPosition = PupilData._3D.GazePosition;
 		}
@@ -31,7 +30,7 @@ public class SharkWith3DCalibration : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.IsGazing)
 		{
 			PupilTools.UnSubscribeFrom("gaze");	
 			print ("We stopped gazing");

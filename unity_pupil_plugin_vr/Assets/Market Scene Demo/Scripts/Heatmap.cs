@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using UnityEngine;
-using Pupil;
 using FFmpegOut;
 
 public class Heatmap : MonoBehaviour 
@@ -25,7 +24,8 @@ public class Heatmap : MonoBehaviour
 	public TextMesh infoText;
 
 	LayerMask collisionLayer;
-	EStatus previousEStatus;
+
+	bool wasAlreadyGazing = false;
 
 	Camera cam;
 	public Camera RenderingCamera;
@@ -35,10 +35,10 @@ public class Heatmap : MonoBehaviour
 	{
 		if (PupilTools.IsConnected)
 		{
-			if (PupilTools.DataProcessState != EStatus.ProcessingGaze)
+			wasAlreadyGazing = PupilTools.IsGazing;
+			if (!wasAlreadyGazing)
 			{
-				previousEStatus = PupilTools.DataProcessState;
-				PupilTools.DataProcessState = EStatus.ProcessingGaze;
+				PupilTools.IsGazing = true;
 				PupilTools.SubscribeTo ("gaze");
 			}
 		}
@@ -82,9 +82,9 @@ public class Heatmap : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (previousEStatus != EStatus.ProcessingGaze)
+		if (!wasAlreadyGazing)
 		{
-			PupilTools.DataProcessState = previousEStatus;
+			PupilTools.IsGazing = false;
 			PupilTools.UnSubscribeFrom ("gaze");
 		}
 
@@ -238,9 +238,9 @@ public class Heatmap : MonoBehaviour
 	{
 		transform.eulerAngles = Vector3.zero;
 
-		if (PupilTools.IsConnected && PupilTools.DataProcessState == EStatus.ProcessingGaze)
+		if (PupilTools.IsConnected && PupilTools.IsGazing)
 		{
-			Vector2 gazePosition = PupilData._2D.GetEyeGaze (GazeSource.BothEyes);
+			Vector2 gazePosition = PupilData._2D.GazePosition;
 
 			RaycastHit hit;
 //			if (Input.GetMouseButton(0) && Physics.Raycast(cam.ScreenPointToRay (Input.mousePosition), out hit, 1f, (int) collisionLayer))
@@ -288,7 +288,7 @@ public class Heatmap : MonoBehaviour
 				else
 				{
 					// With the winter 2017 release of this plugin, Pupil timestamp is set to Unity time when connecting
-					timeStampList.Add (Time.time);
+					timeStampList.AddRange( System.BitConverter.GetBytes(Time.time));
 					_pipe.Write (CaptureCurrentView ().GetRawTextureData ());
 				}
 			}
@@ -331,12 +331,12 @@ public class Heatmap : MonoBehaviour
 	}
 
 	FFmpegPipe _pipe;
-	List<double> timeStampList = new List<double>();
+	List<byte> timeStampList = new List<byte>();
 	int _frameRate = 30;
 
 	void OpenPipe()
 	{
-		timeStampList = new List<double> ();
+		timeStampList = new List<byte> ();
 
 		// Open an output stream.
 		_pipe = new FFmpegPipe("Heatmap", renderingTexture.width, renderingTexture.height, _frameRate, PupilSettings.Instance.recorder.codec);
@@ -351,7 +351,7 @@ public class Heatmap : MonoBehaviour
 
 		// Write pupil timestamps to a file
 		string timeStampFileName = "Heatmap_Timestamps";
-		byte[] timeStampByteArray = PupilConversions.doubleArrayToByteArray (timeStampList.ToArray ());
+		byte[] timeStampByteArray = timeStampList.ToArray ();
 		File.WriteAllBytes(_pipe.FilePath + "/" + timeStampFileName + ".time", timeStampByteArray);
 
 		_pipe.Close();
