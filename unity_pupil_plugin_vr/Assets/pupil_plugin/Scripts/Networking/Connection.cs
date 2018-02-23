@@ -183,6 +183,9 @@ public class Connection
 								PupilTools.pupil1Dictionary = dictionary;
 						}
 						break;
+					case "frame.eye.0":
+					case "frame.eye.1":
+						break;
 					default: 
 						Debug.Log(msgType);
 	//					foreach (var item in MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream))

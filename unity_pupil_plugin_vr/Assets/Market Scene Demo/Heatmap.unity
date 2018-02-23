@@ -20782,6 +20782,11 @@ Prefab:
       propertyPath: calibrationMode
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114039770744552444, guid: 1a363ebd9791e7d48a02435c46d956ab,
+        type: 2}
+      propertyPath: CalibrationPointExtendPreview
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 1a363ebd9791e7d48a02435c46d956ab, type: 2}
   m_IsPrefabParent: 0

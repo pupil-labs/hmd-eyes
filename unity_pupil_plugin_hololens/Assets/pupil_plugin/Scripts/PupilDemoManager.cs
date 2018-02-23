@@ -179,8 +179,13 @@ public class PupilDemoManager : MonoBehaviour
 		if (Input.GetKeyUp (KeyCode.S)) 
 			StartDemo ();
 
+		// If you are using Holographic Emulation mode and have no gamepad available, you can use these keyboard commands
 		if (Input.GetKeyUp (KeyCode.M))
 			ResetCanvasUI (!canvasUI.gameObject.activeInHierarchy);
+		if (Input.GetKeyUp (KeyCode.X))
+			OnConnectionButtonClicked ();
+		if (Input.GetKeyUp (KeyCode.Y))
+			OnCalibrationButtonClicked ();
 
 		if (menuCamera != null && canvasUI.gameObject.activeInHierarchy)
 		{

@@ -245,6 +245,14 @@ public class PupilTools : MonoBehaviour
 		return (float)(double)conf0;
 	}
 
+	public static Dictionary<object,object> DictionaryFromDictionary(Dictionary<string,object> source, string key)
+	{
+		if (source.ContainsKey(key))
+			return source[key] as Dictionary<object,object>;
+		else
+			return null;
+	}
+
 	public static float Confidence (int eyeID)
 	{
 		if (eyeID == PupilData.rightEyeID && pupil0Dictionary != null)
