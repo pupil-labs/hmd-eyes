@@ -95,7 +95,7 @@ public class PupilGazeTracker:MonoBehaviour
 
 		PupilTools.Connection.UpdateSubscriptionSockets ();
 
-		if (Input.GetKeyUp (KeyCode.C))
+		if (PupilTools.IsConnected && Input.GetKeyUp (KeyCode.C))
 		{
 			if (PupilTools.IsCalibrating)
 			{

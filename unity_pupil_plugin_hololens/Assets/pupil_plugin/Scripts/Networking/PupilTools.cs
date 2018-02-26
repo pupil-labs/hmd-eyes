@@ -150,7 +150,7 @@ public class PupilTools : MonoBehaviour
 			break;
 		default:	// PupilSettings.gaze3DKey
 			PupilData._3D.GazePosition.x = position [0] / PupilSettings.PupilUnitScalingFactor;
-			PupilData._3D.GazePosition.y = position [1] / PupilSettings.PupilUnitScalingFactor;
+			PupilData._3D.GazePosition.y = - position [1] / PupilSettings.PupilUnitScalingFactor;
 			PupilData._3D.GazePosition.z = position [2] / PupilSettings.PupilUnitScalingFactor;
 			if (isRecording)
 				AddToRecording (key, PupilData._3D.GazePosition);
