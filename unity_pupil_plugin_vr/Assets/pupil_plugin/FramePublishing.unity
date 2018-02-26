@@ -141,10 +141,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 91685828}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd02482bcfc36964a9f4b3a7a07459cb, type: 3}
+  m_Script: {fileID: 11500000, guid: d6d31336d6e3b25459bb0dfbf704d2d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visualizeSphereProjection: 0
 --- !u!114 &91685830
 MonoBehaviour:
   m_ObjectHideFlags: 0
