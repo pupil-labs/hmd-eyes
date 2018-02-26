@@ -84,7 +84,8 @@ public class PupilTools : MonoBehaviour
 		var _p = Settings.recorder.GetRecordingPath ().Substring (2);
 
 		Send (new Dictionary<string,object> {
-			{ "subject","recording.should_start" },
+			{ "subject","recording.should_start" }
+			,
 			 {
 				"session_name",
 				_p
@@ -321,7 +322,7 @@ public class PupilTools : MonoBehaviour
 			} 
 			//yield return null;
         }
-        UnityEngine.Debug.Log(" Succesfully connected to Pupil Service ! ");
+        UnityEngine.Debug.Log(" Succesfully connected to Pupil! ");
 
         StartEyeProcesses();
         RepaintGUI();
@@ -550,13 +551,16 @@ public class PupilTools : MonoBehaviour
 
 		if (SetDetectionMode ())
 		{
-			if (Send (startLeftEye))
+			if (ActivateFakeCapture ())
 			{
-				eyeProcess1 = true;
-				if (Send (startRightEye))
+				if (Send (startLeftEye))
 				{
-					eyeProcess0 = true;
-					return true;
+					eyeProcess1 = true;
+					if (Send (startRightEye))
+					{
+						eyeProcess0 = true;
+						return true;
+					}
 				}
 			}
 		}
@@ -618,5 +622,21 @@ public class PupilTools : MonoBehaviour
 	public static bool SetDetectionMode()
 	{
 		return Send (new Dictionary<string,object> { { "subject", "set_detection_mapping_mode" }, { "mode", CalibrationType.name } });
+	}
+
+	public static bool ActivateFakeCapture()
+	{
+		return Send (
+			new Dictionary<string,object> { 
+				{ "subject","start_plugin" }
+				,{ "name","Fake_Source" }
+				,{ 
+					"args", new Dictionary<string,object> 
+					{
+						{ "frame_size", new int[] { 1280, 720 } }
+						,{ "frame_rate", 30 }
+					}
+				}
+			});
 	}
 }

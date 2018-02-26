@@ -172,7 +172,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		{
 			if (!PupilTools.IsCalibrating) 
 			{
-				if (GUILayout.Button ("Calibrate", GUILayout.Height (50))) 
+				if (GUILayout.Button ("Start Calibration", GUILayout.Height (50))) 
 				{
 					if (Application.isPlaying) 
 					{
@@ -192,7 +192,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		} else 
 		{
 			GUI.enabled = false;
-			GUILayout.Button ("Calibrate (Not Connected !)", GUILayout.Height (50));
+			GUILayout.Button ("Start Calibration (Requires Connection to Pupil)", GUILayout.Height (50));
 		}
 		GUI.enabled = true;
 		////////////////////////////CALIBRATE BUTTON////////////////////////////
@@ -204,7 +204,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		{
 			EditorGUI.BeginChangeCheck ();
 
-			Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, "Recording", "Button", GUILayout.Height (50));
+			Recorder.isRecording = GUILayout.Toggle (Recorder.isRecording, !Recorder.isRecording ? "Start Recording" : "Stop Recording", "Button", GUILayout.Height (50));
 
 			GUI.enabled = true;
 			GUI.backgroundColor = Color.white;
@@ -224,7 +224,7 @@ public class CustomPupilGazeTrackerInspector : Editor {
 		else 
 		{
 			GUI.enabled = false;
-			GUILayout.Button ("Recording (Not Connected !)", GUILayout.Height (50));
+			GUILayout.Button ("Start Recording (Requires Connection to Pupil)", GUILayout.Height (50));
 		}
 		GUI.enabled = true;
 		////////////////////////////RECORDING BUTTON////////////////////////////
