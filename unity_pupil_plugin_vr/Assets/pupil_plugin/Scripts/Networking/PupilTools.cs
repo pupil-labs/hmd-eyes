@@ -551,16 +551,13 @@ public class PupilTools : MonoBehaviour
 
 		if (SetDetectionMode ())
 		{
-			if (ActivateFakeCapture ())
+			if (Send (startLeftEye))
 			{
-				if (Send (startLeftEye))
+				eyeProcess1 = true;
+				if (Send (startRightEye))
 				{
-					eyeProcess1 = true;
-					if (Send (startRightEye))
-					{
-						eyeProcess0 = true;
-						return true;
-					}
+					eyeProcess0 = true;
+					return true;
 				}
 			}
 		}
