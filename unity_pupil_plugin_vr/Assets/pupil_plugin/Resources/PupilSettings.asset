@@ -19,7 +19,7 @@ MonoBehaviour:
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
     PORT: 50020
-    subport: 58675
+    subport: 58261
     isLocal: 1
     PupilVersion: 1.4.1
     PupilVersionNumbers: 010000000400000001000000
@@ -31,11 +31,12 @@ MonoBehaviour:
       ref_data:
       - 0
       - 0
-      points: 8
+      points: 9
       markerScale: 0.05
+      centerPoint: {x: 0.5, y: 0.48}
       vectorDepthRadius:
       - {x: 2, y: 0.07}
-      samplesPerDepth: 120
+      samplesPerDepth: 80
     CalibrationType3D:
       name: 3d
       pluginName: HMD_Calibration_3D
@@ -45,24 +46,25 @@ MonoBehaviour:
       - 0
       - 0
       points: 5
-      markerScale: 0.04
+      markerScale: 0.03
+      centerPoint: {x: 0, y: -0.025}
       vectorDepthRadius:
-      - {x: 0.6, y: 0.18}
+      - {x: 0.6, y: 0.16}
       - {x: 1, y: 0.24}
-      - {x: 2, y: 0.38}
+      - {x: 2, y: 0.4}
       samplesPerDepth: 70
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:
-    - 29.92195
+    - 29.003128
     - 0
     - 0
     leftEyeTranslation:
-    - -29.922009
+    - -29.003143
     - 0
     - 0
   customGUIVariables:
     tabs:
-      mainTab: 0
+      mainTab: 1
     bools:
       isAdvanced: 1
   currentCamera: {fileID: 0}

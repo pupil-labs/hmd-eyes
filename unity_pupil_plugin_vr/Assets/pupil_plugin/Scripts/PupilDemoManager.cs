@@ -64,11 +64,19 @@ public class PupilDemoManager : MonoBehaviour
 		calibrationPointPreviewCircles = new List<Transform> ();
 		calibrationPointRadii = new List<float> ();
 		previewCircleRadii = new List<float> ();
-		foreach (var vector in PupilTools.CalibrationType.vectorDepthRadius)
+		var type = PupilTools.CalibrationType;
+		var camera = PupilSettings.Instance.currentCamera;
+		Vector3 centerPoint = PupilTools.CalibrationType.centerPoint;
+		if (PupilTools.CalibrationMode == Calibration.Mode._2D)
+		{
+			centerPoint.z = type.vectorDepthRadius [0].x;
+			centerPoint = camera.worldToCameraMatrix.MultiplyPoint3x4 (camera.ViewportToWorldPoint (centerPoint));
+		}
+		foreach (var vector in type.vectorDepthRadius)
 		{
 			Transform previewCircle = GameObject.Instantiate<Transform> (Resources.Load<Transform> ("CalibrationPointExtendPreview"));
-			previewCircle.parent = PupilSettings.Instance.currentCamera.transform;
-			previewCircle.localPosition = Vector3.forward * vector.x;
+			previewCircle.parent = camera.transform;
+			previewCircle.localPosition = new Vector3(centerPoint.x, centerPoint.y, vector.x);
 			previewCircle.localEulerAngles = Vector3.zero;
 			calibrationPointPreviewCircles.Add (previewCircle);
 			calibrationPointRadii.Add (vector.y);
