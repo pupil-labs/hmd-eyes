@@ -18,7 +18,9 @@ public class Calibration
 		public string positionKey;
 		public double[] ref_data;
 		public float points;
-		public Vector3[] vectorDepthRadiusScale;
+		public float markerScale;
+		public Vector2 centerPoint;
+		public Vector2[] vectorDepthRadius;
 		public int samplesPerDepth;
 	}
 
@@ -29,7 +31,9 @@ public class Calibration
 		positionKey = "norm_pos",
 		ref_data = new double[]{ 0.0, 0.0 },
 		points = 8,
-		vectorDepthRadiusScale = new Vector3[] { new Vector3( 2f, 0.08f, 0.05f ) },
+		markerScale = 0.05f,
+		centerPoint = new Vector2(0.5f,0.5f),
+		vectorDepthRadius = new Vector2[] { new Vector2( 2f, 0.07f ) },
 		samplesPerDepth = 120
 	};
 
@@ -40,7 +44,9 @@ public class Calibration
 		positionKey = "mm_pos",
 		ref_data = new double[]{ 0.0, 0.0, 0.0 },
 		points = 10,
-		vectorDepthRadiusScale = new Vector3[] { new Vector3( 1f, 0.5f, 50 ) },
+		markerScale = 0.04f,
+		centerPoint = new Vector2(0,-0.05f),
+		vectorDepthRadius = new Vector2[] { new Vector2( 1f, 0.24f ) },
 		samplesPerDepth = 40
 	};
 
@@ -64,26 +70,29 @@ public class Calibration
 	private double offset;
 	public void UpdateCalibrationPoint()
 	{
+		var type = currentCalibrationType;
 		currentCalibrationPointPosition = new float[]{0};
 		switch (PupilTools.CalibrationMode)
 		{
 		case Mode._3D:
-			currentCalibrationPointPosition = new float[] {0f,0f,currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].x};
+			currentCalibrationPointPosition = new float[] {type.centerPoint.x,type.centerPoint.y,type.vectorDepthRadius [currentCalibrationDepth].x};
 			offset = 0.25f * Math.PI;
 			break;
 		default:
-			currentCalibrationPointPosition = new float[]{ 0.5f, 0.5f };
+			currentCalibrationPointPosition = new float[]{ type.centerPoint.x,type.centerPoint.y };
 			offset = 0f;
 			break;
 		}
-		radius = currentCalibrationType.vectorDepthRadiusScale[currentCalibrationDepth].y;
-		if (currentCalibrationPoint > 0 && currentCalibrationPoint < currentCalibrationType.points)
+		radius = type.vectorDepthRadius[currentCalibrationDepth].y;
+		if (currentCalibrationPoint > 0 && currentCalibrationPoint < type.points)
 		{	
-			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f) + offset);
-			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (currentCalibrationType.points-1f) + offset);
+			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (type.points-1f) + offset);
+			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (type.points-1f) + offset);
 		}
+		if (PupilTools.CalibrationMode == Mode._3D)
+			currentCalibrationPointPosition [1] /= PupilSettings.Instance.currentCamera.aspect;
 		Marker.UpdatePosition (currentCalibrationPointPosition);
-		Marker.SetScale (currentCalibrationType.vectorDepthRadiusScale [currentCalibrationDepth].z);
+		Marker.SetScale (type.markerScale);
 	}
 
 	public PupilMarker Marker;
@@ -139,7 +148,7 @@ public class Calibration
 				currentCalibrationSamples = 0;
 				currentCalibrationDepth++;
 
-				if (currentCalibrationDepth >= currentCalibrationType.vectorDepthRadiusScale.Length)
+				if (currentCalibrationDepth >= currentCalibrationType.vectorDepthRadius.Length)
 				{
 					currentCalibrationDepth = 0;
 					currentCalibrationPoint++;

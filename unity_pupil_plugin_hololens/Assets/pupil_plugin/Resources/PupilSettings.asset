@@ -17,9 +17,7 @@ MonoBehaviour:
     printMessageType: 0
   connection:
     pupilRemotePort: 50021
-    pupilRemoteIP: 192.168.1.12
-  pupilServiceApp:
-    servicePath: C:/Program Files/Pupil Service/pupil_service.exe
+    pupilRemoteIP: 172.29.235.81
   calibration:
     CalibrationType2D:
       name: 2d
@@ -28,9 +26,11 @@ MonoBehaviour:
       ref_data:
       - 0
       - 0
-      points: 8
-      vectorDepthRadiusScale:
-      - {x: 1, y: 0.32, z: 0.0125}
+      points: 9
+      markerScale: 0.0125
+      centerPoint: {x: 0.5, y: 0.5}
+      vectorDepthRadius:
+      - {x: 1, y: 0.32}
       samplesPerDepth: 60
     CalibrationType3D:
       name: 3d
@@ -41,10 +41,12 @@ MonoBehaviour:
       - 0
       - 0
       points: 5
-      vectorDepthRadiusScale:
-      - {x: 1, y: 0.125, z: 0.0125}
-      - {x: 5, y: 0.5, z: 0.06}
-      - {x: 10, y: 0.75, z: 0.125}
+      markerScale: 0.0125
+      centerPoint: {x: 0, y: 0}
+      vectorDepthRadius:
+      - {x: 0.6, y: 0.1}
+      - {x: 1, y: 0.14}
+      - {x: 2, y: 0.2}
       samplesPerDepth: 70
     samplesToIgnoreForEyeMovement: 10
     rightEyeTranslation:
@@ -60,18 +62,6 @@ MonoBehaviour:
       mainTab: 1
     bools:
       isAdvanced: 1
-  debugView:
-    active: 0
-  framePublishing:
-    targetFPS: 20
-    eye0Image: {fileID: 0}
-    eye1Image: {fileID: 0}
-    raw0: 
-    raw1: 
-    StreamCameraImages: 0
-    eye0ImageMaterial: {fileID: 0}
-    eye1ImageMaterial: {fileID: 0}
-  visualizeGaze: 1
   currentCamera: {fileID: 0}
   GUIStyles:
   - m_Name: Pupil Labs Logo
