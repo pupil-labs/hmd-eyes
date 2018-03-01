@@ -89,6 +89,8 @@ public class Calibration
 			currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (type.points-1f) + offset);
 			currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (type.points-1f) + offset);
 		}
+		if (PupilTools.CalibrationMode == Mode._3D)
+			currentCalibrationPointPosition [1] /= PupilSettings.Instance.currentCamera.aspect;
 		Marker.UpdatePosition (currentCalibrationPointPosition);
 		Marker.SetScale (type.markerScale);
 	}

@@ -106,7 +106,7 @@ public class FramePublishing : MonoBehaviour
 		go.transform.parent = parent;
 		go.transform.localEulerAngles = Vector3.left * 90;
 		go.transform.localScale = Vector3.one * 0.05f;
-		go.transform.localPosition = new Vector3 ((eyeIndex == 0 ? -0.3f : 0.3f), -0.5f, 2);
+		go.transform.localPosition = new Vector3 ((eyeIndex == 0 ? -0.3f : 0.3f), -0.5f, 1.9999f);
 
 		Destroy (go.GetComponent<Collider> ());
 

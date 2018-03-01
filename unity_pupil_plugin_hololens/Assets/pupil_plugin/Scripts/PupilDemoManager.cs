@@ -104,10 +104,8 @@ public class PupilDemoManager : MonoBehaviour
 		InitializeCalibrationPointPreview ();
 	}
 
-	private List<Transform> calibrationPointPreviewCircles;
 	void InitializeCalibrationPointPreview()
 	{
-		calibrationPointPreviewCircles = new List<Transform> ();
 		var type = PupilTools.CalibrationType;
 		var camera = PupilSettings.Instance.currentCamera;
 		Vector3 centerPoint = PupilTools.CalibrationType.centerPoint;
@@ -116,7 +114,6 @@ public class PupilDemoManager : MonoBehaviour
 			Transform previewCircle = GameObject.Instantiate<Transform> (Resources.Load<Transform> ("CalibrationPointExtendPreview"));
 			previewCircle.parent = camera.transform;
 			float scaleFactor = (centerPoint.x + vector.y) * 0.2f;
-//			previewCircle.localScale = new Vector3 (scaleFactor, scaleFactor, 1);
 			if (PupilTools.CalibrationMode == Calibration.Mode._2D)
 			{
 				centerPoint.z = type.vectorDepthRadius [0].x;
@@ -126,7 +123,6 @@ public class PupilDemoManager : MonoBehaviour
 			previewCircle.localScale = new Vector3 (scaleFactor, scaleFactor / PupilSettings.Instance.currentCamera.aspect, 1);
 			previewCircle.localPosition = new Vector3(centerPoint.x, centerPoint.y, vector.x);
 			previewCircle.localEulerAngles = Vector3.zero;
-			calibrationPointPreviewCircles.Add (previewCircle);
 		}
 	}
 
