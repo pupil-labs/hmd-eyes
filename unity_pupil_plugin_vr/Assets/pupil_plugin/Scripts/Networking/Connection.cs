@@ -163,6 +163,8 @@ public class Connection
 						Debug.Log(msgType);
 						break;
 					case "gaze":
+					case "pupil.0":
+					case "pupil.1":
 						var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
 						var confidence = PupilTools.FloatFromDictionary(dictionary,"confidence");
 						if ( PupilTools.IsCalibrating )
