@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PupilDemoManager : MonoBehaviour 
+public class PupilManager : MonoBehaviour 
 {
 	public Calibration.Mode calibrationMode = Calibration.Mode._2D;
 	public bool displayEyeImages = true;

@@ -222,14 +222,14 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1508411167041054, guid: 1a363ebd9791e7d48a02435c46d956ab, type: 2}
       propertyPath: m_Name
-      value: Blink Demo
+      value: Pupil Demo
       objectReference: {fileID: 0}
     - target: {fileID: 114230679173381060, guid: 1a363ebd9791e7d48a02435c46d956ab,
         type: 2}
       propertyPath: m_Text
       value: 'Example on how to
 
-        subscribe to ''blinks'''
+        subscribe to ''pupil.'''
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 114039770744552444, guid: 1a363ebd9791e7d48a02435c46d956ab, type: 2}
@@ -240,7 +240,7 @@ GameObject:
   m_PrefabParentObject: {fileID: 1508411167041054, guid: 1a363ebd9791e7d48a02435c46d956ab,
     type: 2}
   m_PrefabInternal: {fileID: 91685827}
---- !u!114 &91685829
+--- !u!114 &91685830
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -248,6 +248,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 91685828}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 659b02c9ed1b3df4caa7cc6eb88b4499, type: 3}
+  m_Script: {fileID: 11500000, guid: b5baa97d7b04b774d9cb276ed0a42915, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

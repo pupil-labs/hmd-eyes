@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FramePublishingDemoManager : MonoBehaviour 
+public class FramePublishingDemo : MonoBehaviour 
 {
 	FramePublishing publisher;
 

@@ -127,7 +127,7 @@ GameObject:
   - component: {fileID: 91685830}
   - component: {fileID: 91685829}
   m_Layer: 5
-  m_Name: Frame Publishing Demo Manager
+  m_Name: Frame Publishing Demo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

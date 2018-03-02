@@ -85,10 +85,12 @@ public class PupilTools : MonoBehaviour
 
 		Send (new Dictionary<string,object> {
 			{ "subject","recording.should_start" }
-			,
-			 {
-				"session_name",
-				_p
+			, { "session_name", _p }
+			,{ 
+				"args", new Dictionary<string,object> 
+				{
+					 { "record_eye",true}
+				}
 			}
 		});
 
@@ -109,7 +111,7 @@ public class PupilTools : MonoBehaviour
 	private static Vector3 unityWorldPosition;
 	private static void AddToRecording( string identifier, Vector3 position, bool isViewportPosition = false )
 	{
-		var timestamp = TimestampForDictionary (gazeDictionary);
+		var timestamp = FloatFromDictionary (gazeDictionary,"timestamp");
 
 		if (isViewportPosition)
 			unityWorldPosition = Settings.currentCamera.ViewportToWorldPoint (position + Vector3.forward);
@@ -137,8 +139,6 @@ public class PupilTools : MonoBehaviour
 
 	#region Dictionary processing
 
-	public static Dictionary<string, object> pupil0Dictionary;
-	public static Dictionary<string, object> pupil1Dictionary;
 	private static Dictionary<string, object> _gazeDictionary;
 	public static Dictionary<string, object> gazeDictionary
 	{
@@ -164,7 +164,7 @@ public class PupilTools : MonoBehaviour
 				switch (key)
 				{
 				case "norm_pos": // 2D case
-					eyeDataKey = key + "_" + stringForEyeID (); // we add the identifier to the key
+					eyeDataKey = key + "_" + StringFromDictionary(gazeDictionary,"id"); // we add the identifier to the key
 					var position2D = Position (gazeDictionary [key], false);
 					PupilData.AddGazeToEyeData (eyeDataKey, position2D);
 					if (isRecording)
@@ -194,29 +194,10 @@ public class PupilTools : MonoBehaviour
 		}
 	}
 
-	private static object IDo;
-	public static string stringForEyeID ()
-	{
-		if (gazeDictionary == null)
-			return null;
-
-		bool isID = gazeDictionary.TryGetValue ("id", out IDo);
-
-		if (isID)
-		{
-			return IDo.ToString ();
-
-		}
-		else
-		{
-			return null;
-		}
-	}
-
 	private static object[] position_o;
-	private static Vector3 Position (object position, bool applyScaling)
+	public static Vector3 ObjectToVector (object source)
 	{
-		position_o = position as object[];
+		position_o = source as object[];
 		Vector3 result = Vector3.zero;
 		if (position_o.Length != 2 && position_o.Length != 3)
 			UnityEngine.Debug.Log ("Array length not supported");
@@ -227,49 +208,42 @@ public class PupilTools : MonoBehaviour
 			if ( position_o.Length == 3)
 				result.z = (float)(double)position_o [2];
 		}
+		return result;
+	}
+	private static Vector3 Position (object position, bool applyScaling)
+	{
+		Vector3 result = ObjectToVector (position);
 		if (applyScaling)
 			result /= PupilSettings.PupilUnitScalingFactor;
 		return result;
 	}
-
-	public static float TimestampForDictionary(Dictionary<string,object> dictionary)
+	public static Vector3 VectorFromDictionary(Dictionary<string,object> source, string key)
 	{
-		object timestamp;
-		dictionary.TryGetValue ("timestamp", out timestamp);
-		return (float)(double)timestamp;
+		if (source.ContainsKey (key))
+			return Position (source [key], false);
+		else
+			return Vector3.zero;
 	}
-
-	public static float ConfidenceForDictionary(Dictionary<string,object> dictionary)
+	public static float FloatFromDictionary(Dictionary<string,object> source, string key)
 	{
-		object conf0;
-		dictionary.TryGetValue ("confidence", out conf0);
-		return (float)(double)conf0;
+		object value_o;
+		source.TryGetValue ("confidence", out value_o);
+		return (float)(double)value_o;
 	}
-
+	private static object IDo;
+	public static string StringFromDictionary(Dictionary<string,object> source, string key)
+	{
+		string result = "";
+		if (source.TryGetValue (key, out IDo))
+			result = IDo.ToString ();
+		return result;
+	}
 	public static Dictionary<object,object> DictionaryFromDictionary(Dictionary<string,object> source, string key)
 	{
 		if (source.ContainsKey(key))
 			return source[key] as Dictionary<object,object>;
 		else
 			return null;
-	}
-
-	public static float Confidence (int eyeID)
-	{
-		if (eyeID == PupilData.rightEyeID && pupil0Dictionary != null)
-			return ConfidenceForDictionary (pupil0Dictionary);
-		else if (eyeID == PupilData.leftEyeID && pupil1Dictionary != null)
-			return ConfidenceForDictionary (pupil1Dictionary); 
-		else
-			return 0;
-	}
-
-	public static string EyeIDForDictionary(Dictionary<string,object> dictionary)
-	{
-		string id = "";
-		if (dictionary.TryGetValue ("id", out IDo))
-			id = IDo.ToString ();
-		return id;
 	}
 
 	public static Dictionary<object,object> BaseData ()

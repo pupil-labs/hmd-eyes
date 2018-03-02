@@ -74,7 +74,7 @@ GameObject:
   - component: {fileID: 114940176711967110}
   - component: {fileID: 114039770744552444}
   m_Layer: 5
-  m_Name: Pupil Demo Manager
+  m_Name: Pupil Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -192,11 +192,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   calibrationMode: 0
-  calibrationPointRadii: []
   displayEyeImages: 1
   gameObjectsToEnable:
   - {fileID: 0}
   - {fileID: 0}
+  cameraObject: {fileID: 0}
+  calibrationText: {fileID: 0}
 --- !u!114 &114230679173381060
 MonoBehaviour:
   m_ObjectHideFlags: 1

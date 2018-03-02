@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BlinkDemoManager : MonoBehaviour 
+public class BlinkDemo : MonoBehaviour 
 {
 	// Use this for initialization
 	void Start () 

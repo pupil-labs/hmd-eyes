@@ -163,36 +163,22 @@ public class Connection
 						Debug.Log(msgType);
 						break;
 					case "gaze":
-					case "pupil.0":
-					case "pupil.1":
 						var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
-						var confidence = PupilTools.ConfidenceForDictionary(dictionary);
+						var confidence = PupilTools.FloatFromDictionary(dictionary,"confidence");
 						if ( PupilTools.IsCalibrating )
 						{
-							string eyeID = PupilTools.EyeIDForDictionary(dictionary);
+							string eyeID = PupilTools.StringFromDictionary(dictionary,"id");
 							PupilTools.UpdateCalibrationMarkerColor(eyeID,confidence);
 							break;
 						}
 						if (confidence > 0.6f) 
-						{
-							if (msgType == "gaze")
-								PupilTools.gazeDictionary = dictionary;
-							else if (msgType == "pupil.0")
-								PupilTools.pupil0Dictionary = dictionary;
-							else if (msgType == "pupil.1")
-								PupilTools.pupil1Dictionary = dictionary;
-						}
+							PupilTools.gazeDictionary = dictionary;
 						break;
 					case "frame.eye.0":
 					case "frame.eye.1":
 						break;
 					default: 
 						Debug.Log(msgType);
-	//					foreach (var item in MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream))
-	//					{
-	//						Debug.Log(item.Key);
-	//						Debug.Log(item.Value.ToString());
-	//					}
 						break;
 					}
 
