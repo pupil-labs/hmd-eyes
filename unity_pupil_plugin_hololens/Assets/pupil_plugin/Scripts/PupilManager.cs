@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.WSA.Input;
 
-public class PupilDemoManager : MonoBehaviour 
+public class PupilManager : MonoBehaviour 
 {
 	public Calibration.Mode calibrationMode = Calibration.Mode._2D;
 	public List<GameObject> gameObjectsToEnable;
