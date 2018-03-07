@@ -86,12 +86,7 @@ public class PupilTools : MonoBehaviour
 		Send (new Dictionary<string,object> {
 			{ "subject","recording.should_start" }
 			, { "session_name", _p }
-			,{ 
-				"args", new Dictionary<string,object> 
-				{
-					 { "record_eye",true}
-				}
-			}
+			, { "record_eye",true}
 		});
 
 		isRecording = true;
