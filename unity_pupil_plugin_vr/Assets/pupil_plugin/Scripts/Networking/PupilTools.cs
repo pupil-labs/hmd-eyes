@@ -152,6 +152,7 @@ public class PupilTools : MonoBehaviour
 	private static string eyeDataKey;
 	private static void UpdateGaze()
 	{
+		CheckModeConsistency ();
 		foreach (var key in gazeKeys)
 		{
 			if (gazeDictionary.ContainsKey (key))
@@ -187,6 +188,13 @@ public class PupilTools : MonoBehaviour
 				}
 			}
 		}
+	}
+
+	private static void CheckModeConsistency()
+	{
+		var topic = StringFromDictionary (gazeDictionary, "topic");
+		if (topic.StartsWith ("gaze.2D") && CalibrationMode == Calibration.Mode._3D)
+			UnityEngine.Debug.Log ("We are receiving 2D gaze information while expecting 3D data");
 	}
 
 	private static object[] position_o;
@@ -241,6 +249,13 @@ public class PupilTools : MonoBehaviour
 			return null;
 	}
 
+	public static string TopicsForDictionary(Dictionary<string,object> dictionary)
+	{
+		string topics = "";
+		foreach (var key in dictionary.Keys)
+			topics += key + ",";
+		return topics;
+	}
 	public static Dictionary<object,object> BaseData ()
 	{
 		object o;
@@ -474,25 +489,38 @@ public class PupilTools : MonoBehaviour
 		if (CalibrationMode == Calibration.Mode._3D)
 			for (int i = 0; i < position.Length; i++)
 				position [i] *= PupilSettings.PupilUnitScalingFactor;
-		
+
 		_calibrationData.Add ( new Dictionary<string,object> () {
 			{ CalibrationType.positionKey, position }, 
 			{ "timestamp", timestamp },
-			{ "id", PupilData.leftEyeID }
+			{ "id", int.Parse(PupilData.rightEyeID) }
 		});
 		_calibrationData.Add ( new Dictionary<string,object> () {
 			{ CalibrationType.positionKey, position }, 
 			{ "timestamp", timestamp },
-			{ "id", PupilData.rightEyeID }
+			{ "id", int.Parse(PupilData.leftEyeID) }
 		});
 	}
 
-	public static void UpdateCalibrationMarkerColor( string eyeID, float value )
+	private static Dictionary<string,float> calibrationConfidenceForEye;
+	public static void UpdateCalibrationConfidence( string eyeID, float confidence )
+	{
+		if (calibrationConfidenceForEye == null)
+			calibrationConfidenceForEye = new Dictionary<string, float> ();
+		if (!calibrationConfidenceForEye.ContainsKey (eyeID))
+			calibrationConfidenceForEye.Add (eyeID, confidence);
+		else
+			calibrationConfidenceForEye [eyeID] = confidence;
+
+		UpdateCalibrationMarkerColor (eyeID, confidence);
+	}
+
+	private static void UpdateCalibrationMarkerColor( string eyeID, float value )
 	{
 		var currentColor = Calibration.Marker.color;
-		if (eyeID == "0")
+		if (eyeID == PupilData.rightEyeID)
 			currentColor.g = value;
-		else if (eyeID == "1")
+		else if (eyeID == PupilData.leftEyeID)
 			currentColor.b = value;
 		Calibration.Marker.color = currentColor;
 	}
@@ -506,12 +534,12 @@ public class PupilTools : MonoBehaviour
 	{
 		var startLeftEye = new Dictionary<string,object> {
 			{ "subject","eye_process.should_start." + PupilData.leftEyeID.ToString() },
-			{ "eye_id", PupilData.leftEyeID	}, 
+			{ "eye_id", int.Parse(PupilData.leftEyeID)	}, 
 			{ "delay", 0.1f }
 		};
 		var startRightEye = new Dictionary<string,object> {
 			{ "subject","eye_process.should_start."  + PupilData.rightEyeID.ToString() }, 
-			{ "eye_id", PupilData.rightEyeID },
+			{ "eye_id", int.Parse(PupilData.rightEyeID) },
 			{ "delay", 0.2f }
 		};
 

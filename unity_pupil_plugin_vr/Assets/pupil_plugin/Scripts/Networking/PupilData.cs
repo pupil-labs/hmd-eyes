@@ -8,9 +8,8 @@ public static class PupilData
 
 	private static Dictionary<string,EyeData> eyeData = new Dictionary<string,EyeData>();
 
-	public const int leftEyeID = 1;
-	private const string stringForLeftEyeID = "1";
-	private static string leftEyeKey = "norm_pos" + "_" + stringForLeftEyeID;
+	public const string leftEyeID = "1";
+	private static string leftEyeKey = "norm_pos" + "_" + leftEyeID;
 	public static EyeData leftEye
 	{
 		get
@@ -21,9 +20,8 @@ public static class PupilData
 		}
 	}
 
-	public const int rightEyeID = 0;
-	private const string stringForRightEyeID = "0";
-	private static string rightEyeKey = "norm_pos" + "_" + stringForRightEyeID;
+	public const string rightEyeID = "0";
+	private static string rightEyeKey = "norm_pos" + "_" + rightEyeID;
 	public static EyeData rightEye
 	{
 		get
@@ -43,7 +41,7 @@ public static class PupilData
 			return eyeData [gazePointKey]; 
 		}
 	}
-	private static string leftGazeNormalKey = "gaze_normals_3d" + "_" + stringForLeftEyeID;
+	private static string leftGazeNormalKey = "gaze_normals_3d" + "_" + leftEyeID;
 	public static EyeData leftGazeNormal
 	{
 		get
@@ -53,7 +51,7 @@ public static class PupilData
 			return eyeData [leftGazeNormalKey]; 
 		}
 	}
-	private static string rightGazeNormalKey = "gaze_normals_3d" + "_" + stringForRightEyeID;
+	private static string rightGazeNormalKey = "gaze_normals_3d" + "_" + rightEyeID;
 	public static EyeData rightGazeNormal
 	{
 		get
@@ -63,7 +61,7 @@ public static class PupilData
 			return eyeData [rightGazeNormalKey]; 
 		}
 	}
-	private static string leftEyeCenterKey = "eye_centers_3d" + "_" + stringForLeftEyeID;
+	private static string leftEyeCenterKey = "eye_centers_3d" + "_" + leftEyeID;
 	public static EyeData leftEyeCenter
 	{
 		get
@@ -73,7 +71,7 @@ public static class PupilData
 			return eyeData [leftEyeCenterKey]; 
 		}
 	}
-	private static string rightEyeCenterKey = "eye_centers_3d" + "_" + stringForRightEyeID;
+	private static string rightEyeCenterKey = "eye_centers_3d" + "_" + rightEyeID;
 	public static EyeData rightEyeCenter
 	{
 		get
@@ -248,7 +246,7 @@ public static class PupilData
 			frustumOffsetsRightEye.y /= frustumWidthHeight.y;
 		}
 
-		public static Vector2 ApplyFrustumOffset(Vector2 position,int eyeID)
+		public static Vector2 ApplyFrustumOffset(Vector2 position,string eyeID)
 		{
 			Vector2 offsetPoint = position;
 
@@ -266,7 +264,7 @@ public static class PupilData
 			return offsetPoint;
 		}
 
-		public static Vector2 GetEyePosition (Camera sceneCamera, int eyeID)
+		public static Vector2 GetEyePosition (Camera sceneCamera, string eyeID)
 		{
 			if (_sceneCamera == null || _sceneCamera != sceneCamera)
 			{
@@ -276,7 +274,7 @@ public static class PupilData
 			return ApplyFrustumOffset (GetEyeGaze(eyeID), eyeID);
 		}
 
-		public static Vector2 GetEyeGaze (int eyeID)
+		public static Vector2 GetEyeGaze (string eyeID)
 		{
 			switch (eyeID)
 			{

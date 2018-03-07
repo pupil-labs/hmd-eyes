@@ -170,10 +170,10 @@ public class Connection
 						if ( PupilTools.IsCalibrating )
 						{
 							string eyeID = PupilTools.StringFromDictionary(dictionary,"id");
-							PupilTools.UpdateCalibrationMarkerColor(eyeID,confidence);
+							PupilTools.UpdateCalibrationConfidence(eyeID,confidence);
 							break;
 						}
-						if (confidence > 0.6f) 
+						if (confidence > 0.6f && msgType == "gaze") 
 							PupilTools.gazeDictionary = dictionary;
 						break;
 					case "frame.eye.0":
