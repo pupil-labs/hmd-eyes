@@ -27,13 +27,4 @@ public class MarketWith3DCalibration : MonoBehaviour
 			marker.localPosition = PupilData._3D.GazePosition;
 		}
 	}
-
-	void OnDisable()
-	{
-		if (PupilTools.IsConnected && PupilTools.IsGazing)
-		{
-			PupilTools.UnSubscribeFrom("gaze");	
-			print ("We stopped gazing");
-		}
-	}
 }

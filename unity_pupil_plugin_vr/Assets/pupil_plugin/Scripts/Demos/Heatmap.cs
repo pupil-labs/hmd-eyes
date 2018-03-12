@@ -25,8 +25,6 @@ public class Heatmap : MonoBehaviour
 
 	LayerMask collisionLayer;
 
-	bool wasAlreadyGazing = false;
-
 	Camera cam;
 	public Camera RenderingCamera;
 	public Camera MaskingCamera;
@@ -35,12 +33,8 @@ public class Heatmap : MonoBehaviour
 	{
 		if (PupilTools.IsConnected)
 		{
-			wasAlreadyGazing = PupilTools.IsGazing;
-			if (!wasAlreadyGazing)
-			{
-				PupilTools.IsGazing = true;
-				PupilTools.SubscribeTo ("gaze");
-			}
+			PupilTools.IsGazing = true;
+			PupilTools.SubscribeTo ("gaze");
 		}
 
 		cam = GetComponentInParent<Camera> ();
@@ -82,12 +76,6 @@ public class Heatmap : MonoBehaviour
 
 	void OnDisable()
 	{
-		if (!wasAlreadyGazing)
-		{
-			PupilTools.IsGazing = false;
-			PupilTools.UnSubscribeFrom ("gaze");
-		}
-
 		if ( _pipe != null)
 			ClosePipe ();
 	}

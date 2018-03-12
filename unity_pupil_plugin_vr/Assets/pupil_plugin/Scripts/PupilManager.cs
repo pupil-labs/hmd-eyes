@@ -1,14 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UI;using UnityEngine.SceneManagement;
 
 public class PupilManager : MonoBehaviour 
 {
 	public Calibration.Mode calibrationMode = Calibration.Mode._2D;
 	public bool displayEyeImages = true;
-
-	public List<GameObject> gameObjectsToEnable;
 
 	GameObject cameraObject;
 	Text calibrationText;
@@ -86,14 +84,12 @@ public class PupilManager : MonoBehaviour
 		cameraObject.SetActive (true);
 		PupilSettings.Instance.currentCamera = cameraObject.GetComponent<Camera> ();
 		calibrationText.text = "";
-			
-		foreach (GameObject go in gameObjectsToEnable) 
-		{
-			go.SetActive (false);
-		}
 
 		if (displayEyeImages)
 			GetComponent<FramePublishing> ().enabled = false;
+
+		if (loadedSceneIndex != -1)
+			StartCoroutine (UnloadCurrentScene());
 	}
 		
 	void OnCalibrationEnded()
@@ -111,12 +107,34 @@ public class PupilManager : MonoBehaviour
 			GetComponent<FramePublishing> ().enabled = true;
 	}
 
+	public string[] availableScenes;
+	public int currentSceneIndex;
+	private int loadedSceneIndex = -1;
+	IEnumerator LoadCurrentScene()
+	{
+		AsyncOperation asyncScene = SceneManager.LoadSceneAsync(availableScenes[currentSceneIndex],LoadSceneMode.Additive);
+
+		while (!asyncScene.isDone)
+		{
+			yield return null;
+		}
+		loadedSceneIndex = currentSceneIndex;
+	}
+	IEnumerator UnloadCurrentScene()
+	{
+		AsyncOperation asyncLoad = SceneManager.UnloadSceneAsync(availableScenes[loadedSceneIndex]);
+
+		while (!asyncLoad.isDone)
+		{
+			yield return null;
+		}
+		loadedSceneIndex = -1;
+	}
+
 	void StartDemo()
 	{
-		foreach (GameObject go in gameObjectsToEnable) 
-		{
-			go.SetActive (true);
-		}
+		StartCoroutine (LoadCurrentScene());
+
 		cameraObject.SetActive (false);
 	}
 

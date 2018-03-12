@@ -193,11 +193,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   calibrationMode: 0
   displayEyeImages: 1
-  gameObjectsToEnable:
-  - {fileID: 0}
-  - {fileID: 0}
-  cameraObject: {fileID: 0}
-  calibrationText: {fileID: 0}
+  availableScenes:
+  - Empty Scene Example
+  currentSceneIndex: 0
 --- !u!114 &114230679173381060
 MonoBehaviour:
   m_ObjectHideFlags: 1
