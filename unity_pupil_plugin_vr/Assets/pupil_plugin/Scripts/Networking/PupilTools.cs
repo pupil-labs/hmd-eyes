@@ -533,12 +533,12 @@ public class PupilTools : MonoBehaviour
 	public static bool StartEyeProcesses ()
 	{
 		var startLeftEye = new Dictionary<string,object> {
-			{ "subject","eye_process.should_start." + PupilData.leftEyeID.ToString() },
+			{ "subject","eye_process.should_start." + PupilData.leftEyeID },
 			{ "eye_id", int.Parse(PupilData.leftEyeID)	}, 
 			{ "delay", 0.1f }
 		};
 		var startRightEye = new Dictionary<string,object> {
-			{ "subject","eye_process.should_start."  + PupilData.rightEyeID.ToString() }, 
+			{ "subject","eye_process.should_start."  + PupilData.rightEyeID }, 
 			{ "eye_id", int.Parse(PupilData.rightEyeID) },
 			{ "delay", 0.2f }
 		};
@@ -586,13 +586,13 @@ public class PupilTools : MonoBehaviour
 	public static bool StopEyeProcesses ()
 	{
 		var stopLeftEye = new Dictionary<string,object> {
-			{ "subject","eye_process.should_stop." + PupilData.leftEyeID.ToString() },
-			{ "eye_id", PupilData.leftEyeID	}, 
+			{ "subject","eye_process.should_stop." + PupilData.leftEyeID },
+			{ "eye_id", int.Parse(PupilData.leftEyeID)	}, 
 			{ "delay", 0.1f }
 		};
 		var stopRightEye = new Dictionary<string,object> {
-			{ "subject","eye_process.should_stop." + PupilData.rightEyeID.ToString() }, 
-			{ "eye_id", PupilData.rightEyeID },
+			{ "subject","eye_process.should_stop." + PupilData.rightEyeID }, 
+			{ "eye_id", int.Parse(PupilData.rightEyeID) },
 			{ "delay", 0.2f }
 		};
 
