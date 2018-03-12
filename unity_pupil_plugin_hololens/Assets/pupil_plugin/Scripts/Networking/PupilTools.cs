@@ -42,8 +42,7 @@ public class PupilTools : MonoBehaviour
 		set
 		{
 			_dataProcessState = value;
-			if (Calibration.Marker != null)
-				Calibration.Marker.SetActive (_dataProcessState == EStatus.Calibration);
+			PupilMarker.TryToSetActive(Calibration.Marker,_dataProcessState == EStatus.Calibration);
 		}
 	}
 	private static EStatus previousState = EStatus.Idle;
@@ -242,6 +241,9 @@ public class PupilTools : MonoBehaviour
 
 	public static void StartCalibration ()
 	{
+		if (IsGazing)
+			PupilGazeTracker.Instance.StopVisualizingGaze ();
+		
 		if (OnCalibrationStarted != null)
 			OnCalibrationStarted ();
 		else

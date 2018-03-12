@@ -14,3 +14,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/pupil_plugin/Calibration.unity
     guid: fad12140ef2b4a94c81325c8109f6458
+  - enabled: 1
+    path: Assets/pupil_plugin/Empty Scene Example.unity
+    guid: ad2e28d0858e8884c95cf4197dc692fb
+  - enabled: 1
+    path: Assets/Shark Demo/SceneManager Scenes/Shark with 2D Calibration.unity
+    guid: 382c169de5543d64486f6484375c590f
+  - enabled: 1
+    path: Assets/Shark Demo/SceneManager Scenes/Shark with 3D Calibration.unity
+    guid: a3c549f7e598c084a89d7b12f1fd29a0

@@ -199,11 +199,12 @@ public class PupilGazeTracker:MonoBehaviour
 	{
 		Instance.OnUpdate -= VisualizeGaze;
 
-		_markerLeftEye.SetActive (false);
-		_markerRightEye.SetActive (false);
-		_markerGazeCenter.SetActive (false);
-		_gaze3D.SetActive (false);
+		PupilMarker.TryToSetActive(_markerLeftEye,false);
+		PupilMarker.TryToSetActive(_markerRightEye,false);
+		PupilMarker.TryToSetActive(_markerGazeCenter,false);
+		PupilMarker.TryToSetActive(_gaze3D,false);
 
+		PupilTools.IsIdle = true;
 //		PupilTools.UnSubscribeFrom("gaze");
 	}
 

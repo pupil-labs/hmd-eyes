@@ -122,10 +122,15 @@ public class PupilMarker
 //		//				gameObject.hideFlags = HideFlags.HideInHierarchy;
 //	}
 
-	public void SetActive(bool toggle)
+	public static bool TryToSetActive(PupilMarker marker, bool toggle)
 	{
-		if (_gameObject != null)
-			gameObject.SetActive (toggle);
+		if (marker != null)
+		{
+			if (marker.gameObject != null)
+				marker.gameObject.SetActive (toggle);
+			return true;
+		}
+		return false;
 	}
 
 	public void SetScale (float value)

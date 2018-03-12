@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.WSA.Input;
 
 public class PupilManager : MonoBehaviour 
 {
 	public Calibration.Mode calibrationMode = Calibration.Mode._2D;
-	public List<GameObject> gameObjectsToEnable;
 	public Transform canvasUI;
 	public Button connectionButton;
 	public Button calibrationButton;
@@ -143,10 +143,8 @@ public class PupilManager : MonoBehaviour
 
 		PupilSettings.Instance.currentCamera = cameraObject.GetComponent<Camera> ();
 
-		foreach (GameObject go in gameObjectsToEnable) 
-		{
-			go.SetActive (false);
-		}
+		if (loadedSceneIndex != -1)
+			StartCoroutine (UnloadCurrentScene());
 	}
 
 	void ResetCanvasUI(bool visible)
@@ -186,12 +184,34 @@ public class PupilManager : MonoBehaviour
         ResetCanvasUI(true);
 	}
 
+	public string[] availableScenes;
+	public int currentSceneIndex;
+	private int loadedSceneIndex = -1;
+	IEnumerator LoadCurrentScene()
+	{
+		AsyncOperation asyncScene = SceneManager.LoadSceneAsync(availableScenes[currentSceneIndex],LoadSceneMode.Additive);
+
+		while (!asyncScene.isDone)
+		{
+			yield return null;
+		}
+		loadedSceneIndex = currentSceneIndex;
+	}
+	IEnumerator UnloadCurrentScene()
+	{
+		AsyncOperation asyncLoad = SceneManager.UnloadSceneAsync(availableScenes[loadedSceneIndex]);
+
+		while (!asyncLoad.isDone)
+		{
+			yield return null;
+		}
+		loadedSceneIndex = -1;
+	}
+
 	void StartDemo()
 	{
-		foreach (GameObject go in gameObjectsToEnable) 
-		{
-			go.SetActive (true);
-		}
+		StartCoroutine (LoadCurrentScene ());
+
 		cameraObject.SetActive (false);
 		canvasUI.gameObject.SetActive (false);
 	}

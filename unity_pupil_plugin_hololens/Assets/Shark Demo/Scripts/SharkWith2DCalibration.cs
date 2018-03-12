@@ -42,10 +42,4 @@ public class SharkWith2DCalibration : MonoBehaviour
 			Graphics.Blit (source, destination);
 
 	}
-
-	void OnDisable()
-	{
-		if (PupilTools.IsConnected)
-			PupilTools.UnSubscribeFrom ("gaze");
-	}
 }
