@@ -139,6 +139,9 @@ public class PupilManager : MonoBehaviour
 
 	void ResetDemo()
 	{
+		if (PupilTools.IsGazing)
+			PupilGazeTracker.Instance.StopVisualizingGaze ();
+		
 		cameraObject.SetActive (true);
 
 		PupilSettings.Instance.currentCamera = cameraObject.GetComponent<Camera> ();
