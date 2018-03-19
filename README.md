@@ -8,16 +8,20 @@ The purpose of this repository is do demonstrates how to implement Pupil with Un
 This document will guide you through the installation and use of the Unity plugin for the Pupil Labs eye tracking solution. 
 
 If you have everything up and running and just want to get started with some demos, load these Unity scenes (descriptions available at the end of this document)
-- Scenes that will run you through a calibration
+- VR scenes that will run you through a calibration
 	- `pupil_plugin/Calibration`
 	- `Market Scene Demo/2D Calibration Demo`
 	- `Market Scene Demo/3D Calibration Demo`
 	- `Market Scene Demo/Heatmap Demo`
 	- `Market Scene Demo/Spherical Video Demo`
-- Scenes that run without calibration
+- VR scenes that run without calibration
 	- `pupil_plugin/Pupil`
 	- `pupil_plugin/Blink`
 	- `pupil_plugin/FramePublishing`
+- HoloLens scenes that will run you through a calibration
+	- `pupil_plugin/Calibration`
+	- `Shark Demo/2D Calibration Demo`
+	- `Shark Demo/3D Calibration Demo`
 
 All other scenes are meant to be loaded as additional content, once a calibration was successful. This is done by the `Pupil Manager`, also described below.
 
