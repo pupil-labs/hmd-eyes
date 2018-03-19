@@ -1,0 +1,2 @@
+These scene serve as example on how to load new scenes after a successful calibration.
+They are loaded automatically from the scenes available in the parent folder "Market Scene Demo".
