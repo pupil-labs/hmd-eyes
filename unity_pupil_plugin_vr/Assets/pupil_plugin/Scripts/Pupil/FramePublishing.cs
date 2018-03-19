@@ -170,7 +170,7 @@ public class FramePublishing : MonoBehaviour
 
 	void OnDisable()
 	{
-		UnityEngine.Debug.Log ("Disconnected");
+		UnityEngine.Debug.Log ("Disabling Frame Publisher");
 
 		PupilTools.Send (new Dictionary<string,object> { { "subject","stop_plugin" }, { "name", "Frame_Publisher" } });
 

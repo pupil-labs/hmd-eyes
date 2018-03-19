@@ -14,7 +14,7 @@ public class PupilManager : MonoBehaviour
 	void Start()
 	{	
 		PupilTools.OnConnected += OnConnected;
-		PupilTools.OnDisconnecting += OnDisconnected;
+		PupilTools.OnDisconnecting += OnDisconnecting;
 		PupilTools.OnCalibrationStarted += OnCalibtaionStarted;
 		PupilTools.OnCalibrationEnded += OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed += OnCalibrationFailed;
@@ -33,9 +33,12 @@ public class PupilManager : MonoBehaviour
 		calibrationText.text = "Trying to connect to Pupil.\nPlease start Pupil Service/Capture\n(if you have not done so, already)";
 	}
 
-	void OnDisconnected()
+	void OnDisconnecting()
 	{
 		ResetCalibrationText ();
+
+		if (displayEyeImages)
+			GetComponent<FramePublishing> ().enabled = false;
 	}
 
 	void OnConnected()
@@ -144,10 +147,10 @@ public class PupilManager : MonoBehaviour
 			StartDemo ();
 	}
 
-	void OnApplicationQuit()
+	void OnDisable()
 	{
 		PupilTools.OnConnected -= OnConnected;
-		PupilTools.OnDisconnecting -= OnDisconnected;
+		PupilTools.OnDisconnecting -= OnDisconnecting;
 		PupilTools.OnCalibrationStarted -= OnCalibtaionStarted;
 		PupilTools.OnCalibrationEnded -= OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed -= OnCalibrationFailed;
