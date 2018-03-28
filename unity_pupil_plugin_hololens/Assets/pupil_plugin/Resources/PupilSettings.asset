@@ -17,7 +17,7 @@ MonoBehaviour:
     printMessageType: 0
   connection:
     pupilRemotePort: 50021
-    pupilRemoteIP: 172.29.235.81
+    pupilRemoteIP: 127.0.0.1
   calibration:
     CalibrationType2D:
       name: 2d
