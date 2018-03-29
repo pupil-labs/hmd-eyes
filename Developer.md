@@ -48,7 +48,8 @@ The Unity scene `pupil_plugin/Calibration.unity`, which is included in both proj
 - HoloLens Settings
 
     1. `UDP` - Pupil Capture/Service does not run natively on HoloLens/UWP. Pupil Capture/Service must run on a remote PC. The `PupilGazeTracker` gameobject includes an additional component called `UDP Communication`. A secondary port (named `Editor Mode UDP Port`) can be set. It is required if you use `Holographic Emulation` and (at least on Windows machines) needs to be different from the main port. ![Pupil Gaze Tracker For HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilGazeTracker_HoloLens.png)
-    1. `IP` and `Port` - The HoloLens implementation relies on UDP to communicate data between the Unity plugin and Pupil Capture/Service. Select `PupilSettings` in the `Project` tab and set the IP of the PC Pupil is running on under `Connection`. Please also make sure the port set here corresponds with the one you set in the `HoloLens Relay` plugin in Pupil Capture. ![PupilSettings for HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings_HoloLens.png)
+    1. `IP` and `Port` - The HoloLens implementation relies on UDP to communicate data between the Unity plugin and Pupil Capture/Service. Select `PupilSettings` in the `Project` tab and set the IP of the PC Pupil is running on under `Connection`. Please also make sure the port set here corresponds with the one you set in the `HoloLens Relay` plugin in Pupil Capture. 
+		![PupilSettings for HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings_HoloLens.png)
 
 
 ## Calibration 
