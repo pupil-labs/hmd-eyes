@@ -44,14 +44,15 @@ The Unity scene `pupil_plugin/Calibration.unity`, which is included in both proj
 
     1. `Local` vs `Remote` - Select the `PupilGazeTracker` gameobject to access the custom Inspector GUI. `Local` is used to communicate with Pupil Capture/Service when the Unity project and Pupil software are running on the same machine. `Remote` is used to communicate with Pupil Capture/Service running on another machine over the network.
     ![Pupil Gaze Tracker](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilGazeTracker.png)
-    1. `IP` and `Port` - `PupilSettings`, which is located in `pupil_plugin/Resources` is used to save global settings that are not specific to a scene. Select `Connection`, which lets you set both the IP (in case of Pupil running remotely) as well as the port over which to communicate. If the standard port of 50020 does not work for you, please set an alternative here and also make sure that the same port is set in Pupil Capture (more on that, later). ![PupilSettings](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings.png)
+    1. `IP` and `Port` - `PupilSettings`, which is located in `pupil_plugin/Resources` is used to save global settings that are not specific to a scene. Select `Connection`, which lets you set both the IP (in case of Pupil running remotely) as well as the port over which to communicate. If the standard port of 50020 does not work for you, please set an alternative here and also make sure that the same port is set in Pupil Capture (more on that, later).
+	![PupilSettings](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings.png)
 
 - HoloLens Settings
 
     1. `UDP` - Pupil Capture/Service does not run natively on HoloLens/UWP. Pupil Capture/Service must run on a remote PC. The `PupilGazeTracker` gameobject includes an additional component called `UDP Communication`. A secondary port (named `Editor Mode UDP Port`) can be set. It is required if you use `Holographic Emulation` and (at least on Windows machines) needs to be different from the main port.
     ![Pupil Gaze Tracker For HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilGazeTracker_HoloLens.png)
     1. `IP` and `Port` - The HoloLens implementation relies on UDP to communicate data between the Unity plugin and Pupil Capture/Service. Select `PupilSettings` in the `Project` tab and set the IP of the PC Pupil is running on under `Connection`. Please also make sure the port set here corresponds with the one you set in the `HoloLens Relay` plugin in Pupil Capture.
-    ![PupilSettings for HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings_HoloLens.png)
+	![PupilSettings for HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings_HoloLens.png)
 
 
 ## Calibration 
@@ -128,14 +129,14 @@ PupilTools.SubscribeTo(string topic)
 
 Once messages on a subscribed topic are available, the receiving socket is polled (`Connection.cs`, [line 199](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L199))
 
-```
+```c#
 if (subscriptionSocketForTopic [keys [i]].HasIn)    // key[i] being the 'topic' 
     subscriptionSocketForTopic [keys [i]].Poll ();
 ```
 
 Message interpretation is handled inside the code block starting in [line 127](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L127) of `Connection.cs`
 
-```
+```c#
 subscriptionSocketForTopic\[topic\].ReceiveReady += (s, a) =>
 ```
 
@@ -143,7 +144,7 @@ subscriptionSocketForTopic\[topic\].ReceiveReady += (s, a) =>
 
 After a successful calibration, `gaze` topic messages will be received. These messages contain dictionaries. These dictionaries are deserialized using the `MessagePackSerializer` classes ([line 167](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L167), `Connection.cs`) and stored to `PupilTools.gazeDictionary`
 
-```
+```c#
 var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);  
 var confidence = PupilTools.FloatFromDictionary(dictionary,"confidence");  
 [..]  
@@ -153,13 +154,13 @@ if (confidence > 0.6f && msgType == "gaze")
 
 Changes to `gazeDictionary` trigger 
 
-```
+```c#
 PupilTools.UpdateGaze()
 ```
 
 which goes through the data, storing relevant information (e.g. the gaze positions) through 
 
-```
+```c#
 PupilData.AddGazeToEyeData(string key, float[] position)
 ```
 Based on the chosen calibration type, this can either be 2D or 3D. To access the data, use 
@@ -172,13 +173,13 @@ Based on the chosen calibration type, this can either be 2D or 3D. To access the
 
 Working with 2D calibration and viewport coordinates, Unity provides methods to translate these to 3D space, e.g. `PupilMarker.UpdatePosition(Vector2 newPosition)`, line 56 
 
-```
+```c#
 gameObject.transform.position = camera.ViewportToWorldPoint(position); 
 ```
 
 An alternative is used by the laser pointer implementation in the `2D Calibration Demo` scene `MarketWith2DCalibration.Update()`, line 63 
 
-```
+```c#
 Ray ray = sceneCamera.ViewportPointToRay(viewportPoint); 
 ```
 
@@ -197,7 +198,7 @@ One of the most often asked for examples is getting values for pupil diameter.  
 
 Once data is being sent
 
-```
+```c#
 CustomReceiveData(string topic, Dictionary<string,object> dictionary, byte[] thirdFrame = null)
 ```
 will be called to interpret the result
