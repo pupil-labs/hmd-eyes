@@ -34,11 +34,11 @@ This guide walks you through a first time setup for your Pupil Labs VR add-on.
 1. Read more about Unity's `Holographic Emulation` [here](https://docs.unity3d.com/550/Documentation/Manual/windowsholographic-emulation.html).
 1. Start the `Holographic Remoting Player` on your HoloLens device. Enter the displayed device IP in the `Holographic` tab under `Remote machine`. Click the `Connect` button.
 1. Once connected, press `Play` in Unity Editor.
-1. Follow the on device instructions to open the menu (double air tap) and select `Connect to Pupil` by looking straight at the button and confirming with a single air tap. [HoloLens Menu](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/HoloLensMenu.png)
+1. Follow the on device instructions to open the menu (double air tap) and select `Connect to Pupil` by looking straight at the button and confirming with a single air tap. ![HoloLens Menu](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/HoloLensMenu.png)
 1. Once the connection between Unity3d and `Pupil Capture` is established two eye windows will open. Use these windows to adjust the eye cameras for good tracking.
 1. The `Start Calibration` will now be enabled on the HoloLens display.
 1. Calibrate - Start the calibration. Focus your gaze on the displayed marker for each displayed position.
-1. After a successful calibration, you should see a rotating 3D model  and a visualization of your gaze [Shark Demo with Gaze Visualization](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/2DDemoHoloLens.png)
+1. After a successful calibration, you should see a rotating 3D model  and a visualization of your gaze ![Shark Demo with Gaze Visualization](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/2DDemoHoloLens.png)
 
 ## Develop, integrate, and extend
 
