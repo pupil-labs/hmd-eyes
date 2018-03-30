@@ -11,7 +11,7 @@ This guide walks you through a first time setup for your Pupil Labs VR add-on.
 1. [HTC Vive Add-on setup](https://docs.pupil-labs.com/#htc-vive-add-on) - Install your Pupil eye tracking add-on into your HMD and connect the add-on to your computer. 
 1. [Download Pupil Software](https://github.com/pupil-labs/pupil/releases/latest). Extract the Pupil Service app to your Desktop.
 1. Start Pupil Service via the `pupil_service.exe` in the Pupil Service App folder. A window like this will appear when service is running. Service does pupil detection from eye images. ![Pupil Service with Eye Window](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/EyeWindow.png)
-1. [Download and start hmd-eyes demo app](https://github.com/pupil-labs/hmd-[](https://)eyes/releases/latest) - This demo runs a VR experience. The demo app talks to Pupil software in  the background. You will use it to calibrate and visualize gaze data within a demo scene. The demo app will start with settings dialog. <!-- insert image of app demo dialog -->
+1. [Download and start hmd-eyes demo app](https://github.com/pupil-labs/hmd-eyes/releases/latest) - This demo runs a VR experience. The demo app talks to Pupil software in  the background. You will use it to calibrate and visualize gaze data within a demo scene. The demo app will start with settings dialog. <!-- insert image of app demo dialog -->
 1. Start the demo with default values. You will see a view of the left eye of the hmd.
 1. This would be a good point to put said device on your head.
 2. Use the displayed realtime videos of your eyes to make sure they are as centered as possible and in focus.
@@ -32,11 +32,11 @@ This guide walks you through a first time setup for your Pupil Labs VR add-on.
 1. Read more about Unity's `Holographic Emulation` [here](https://docs.unity3d.com/550/Documentation/Manual/windowsholographic-emulation.html).
 1. Start the `Holographic Remoting Player` on your HoloLens device. Enter the displayed device IP in the `Holographic` tab under `Remote machine`. Click the `Connect` button.
 1. Once connected, press `Play` in Unity Editor.
-1. Follow the on device instructions to open the menu (double air tap) and select `Connect to Pupil` by looking straight at the button and confirming with a single air tap. 
+1. Follow the on device instructions to open the menu (double air tap) and select `Connect to Pupil` by looking straight at the button and confirming with a single air tap. [HoloLens Menu](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/HoloLensMenu.png)
 1. Once the connection between Unity3d and `Pupil Capture` is established two eye windows will open. Use these windows to adjust the eye cameras for good tracking.
 1. The `Start Calibration` will now be enabled on the HoloLens display.
 1. Calibrate - Start the calibration. Focus your gaze on the displayed marker for each displayed position.
-1. After a successful calibration, you should see a rotating 3D model  and a visualization of your gaze 
+1. After a successful calibration, you should see a rotating 3D model  and a visualization of your gaze [Shark Demo with Gaze Visualization](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/2DDemoHoloLens.png)
 
 ## Develop, integrate, and extend
 
