@@ -18,6 +18,7 @@ This guide walks you through a first time setup for your Pupil Labs VR add-on.
 1. Use the displayed realtime videos of your eyes to make sure they are as centered as possible and in focus.
 1. Press 'c' on your keyboard to start a calibration and focus your gaze on the displayed marker as it changes position.
 1. After a successful calibration, the market scene will be loaded.
+    
     ![Market Scene Demo](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/2DMarketScene.png)
 
 
