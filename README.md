@@ -10,13 +10,21 @@ This guide walks you through a first time setup for your Pupil Labs VR add-on.
 
 1. [HTC Vive Add-on setup](https://docs.pupil-labs.com/#htc-vive-add-on) - Install your Pupil eye tracking add-on into your HMD and connect the add-on to your computer. 
 1. [Download Pupil Software](https://github.com/pupil-labs/pupil/releases/latest). Extract the Pupil Service app to your Desktop.
+<<<<<<< HEAD
 1. Start Pupil Service via the `pupil_service.exe` in the Pupil Service App folder. A window like this will appear when service is running. Service does pupil detection from eye images. ![Pupil Service with Eye Window](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/EyeWindow.png)
 1. [Download and start hmd-eyes demo app](https://github.com/pupil-labs/hmd-eyes/releases/latest) - This demo runs a VR experience. The demo app talks to Pupil software in  the background. You will use it to calibrate and visualize gaze data within a demo scene. The demo app will start with settings dialog. <!-- insert image of app demo dialog -->
+=======
+1. Start Pupil Service via the `pupil_service.exe` in the Pupil Service App folder. A window like this will appear when service is running. Service does pupil detection from eye images. 
+    ![Pupil Service with Eye Window](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/EyeWindow.png)
+1. [Download and start hmd-eyes demo app](https://github.com/pupil-labs/hmd-[](https://)eyes/releases/latest) - This demo runs a VR experience. The demo app talks to Pupil software in  the background. You will use it to calibrate and visualize gaze data within a demo scene. The demo app will start with settings dialog. <!-- insert image of app demo dialog -->
+>>>>>>> b735f0fb6ae33fc7cf157914b5e081c9ddf97cec
 1. Start the demo with default values. You will see a view of the left eye of the hmd.
 1. This would be a good point to put said device on your head.
-2. Use the displayed realtime videos of your eyes to make sure they are as centered as possible and in focus.
-3. Press 'c' on your keyboard to start a calibration and focus your gaze on the displayed marker as it changes position.
-4. After a successful calibration, this scene will be loaded ![Market Scene Demo](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/2DMarketScene.png)
+1. Use the displayed realtime videos of your eyes to make sure they are as centered as possible and in focus.
+1. Press 'c' on your keyboard to start a calibration and focus your gaze on the displayed marker as it changes position.
+1. After a successful calibration, the market scene will be loaded.
+    
+    ![Market Scene Demo](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/2DMarketScene.png)
 
 
 ## HoloLens Getting Started
@@ -24,7 +32,8 @@ This guide walks you through a first time setup for your Pupil Labs VR add-on.
 1. [HoloLens Add-on setup](https://docs.pupil-labs.com/#hololens-add-on) - Set up the Pupil eye tracking add-on with your HMD and connect it to a PC.
 1. [Download Pupil Software](https://github.com/pupil-labs/pupil/releases/latest). Extract the Pupil Capture app to your Desktop.
 1. Start Pupil Capture via the `pupil_capture.exe` in the Pupil Capture App folder. A window like this will appear when service is running. Capture does pupil detection from eye images.
-1. Select the `Plugin Manager` in `Pupil Capture` and start the `HoloLens Relay` plugin ![Pupil Capture with HoloLens Relay](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilCaptureWithHoloLensRelay.png)
+1. Select the `Plugin Manager` in `Pupil Capture` and start the `HoloLens Relay` plugin 
+    ![Pupil Capture with HoloLens Relay](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilCaptureWithHoloLensRelay.png)
 1. [Download and install Unity 3D](https://store.unity.com/).
 1. [Download the hmd-eyes source code](https://github.com/pupil-labs/hmd-eyes/releases/latest). Extract the Unity project sources for HoloLens, located in `unity_pupil_plugin_hololens`.
 1. In Unity3d open the `unity_pupil_plugin_hololens` as a project. Double click the `Shark Demo/2D Calibration Demo` to load the scene and open the `Holographic Emulation` tab (`Menu/Window/Holographic Emulation`)

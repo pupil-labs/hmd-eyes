@@ -40,16 +40,21 @@ Use the demo scenes included in the Unity projects described here as an example 
 
 The Unity scene `pupil_plugin/Calibration.unity`, which is included in both projects, serves as a starting point for VR and HoloLens development. Use it to test connecting to Pupil.
 
-- VR Settings
+#### VR Settings
 
-    1. `Local` vs `Remote` - Select the `PupilGazeTracker` gameobject to access the custom Inspector GUI. `Local` is used to communicate with Pupil Capture/Service when the Unity project and Pupil software are running on the same machine. `Remote` is used to communicate with Pupil Capture/Service running on another machine over the network. ![Pupil Gaze Tracker](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilGazeTracker.png)
-    1. `IP` and `Port` - `PupilSettings`, which is located in `pupil_plugin/Resources` is used to save global settings that are not specific to a scene. Select `Connection`, which lets you set both the IP (in case of Pupil running remotely) as well as the port over which to communicate. If the standard port of 50020 does not work for you, please set an alternative here and also make sure that the same port is set in Pupil Capture (more on that, later). ![PupilSettings](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings.png)
+1. `Local` vs `Remote` - Select the `PupilGazeTracker` gameobject to access the custom Inspector GUI. `Local` is used to communicate with Pupil Capture/Service when the Unity project and Pupil software are running on the same machine. `Remote` is used to communicate with Pupil Capture/Service running on another machine over the network. 
+    ![Pupil Gaze Tracker](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilGazeTracker.png)
+1. `IP` and `Port` - `PupilSettings`, which is located in `pupil_plugin/Resources` is used to save global settings that are not specific to a scene. Select `Connection`, which lets you set both the IP (in case of Pupil running remotely) as well as the port over which to communicate. If the standard port of 50020 does not work for you, please set an alternative here and also make sure that the same port is set in Pupil Capture (more on that, later).
 
-- HoloLens Settings
+![PupilSettings](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings.png)
 
-    1. `UDP` - Pupil Capture/Service does not run natively on HoloLens/UWP. Pupil Capture/Service must run on a remote PC. The `PupilGazeTracker` gameobject includes an additional component called `UDP Communication`. A secondary port (named `Editor Mode UDP Port`) can be set. It is required if you use `Holographic Emulation` and (at least on Windows machines) needs to be different from the main port. ![Pupil Gaze Tracker For HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilGazeTracker_HoloLens.png)
-    1. `IP` and `Port` - The HoloLens implementation relies on UDP to communicate data between the Unity plugin and Pupil Capture/Service. Select `PupilSettings` in the `Project` tab and set the IP of the PC Pupil is running on under `Connection`. Please also make sure the port set here corresponds with the one you set in the `HoloLens Relay` plugin in Pupil Capture. 
-	![PupilSettings for HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings_HoloLens.png)
+#### HoloLens Settings
+
+1. `UDP` - Pupil Capture/Service does not run natively on HoloLens/UWP. Pupil Capture/Service must run on a remote PC. The `PupilGazeTracker` gameobject includes an additional component called `UDP Communication`. A secondary port (named `Editor Mode UDP Port`) can be set. It is required if you use `Holographic Emulation` and (at least on Windows machines) needs to be different from the main port. 
+    ![Pupil Gaze Tracker For HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilGazeTracker_HoloLens.png)
+1. `IP` and `Port` - The HoloLens implementation relies on UDP to communicate data between the Unity plugin and Pupil Capture/Service. Select `PupilSettings` in the `Project` tab and set the IP of the PC Pupil is running on under `Connection`. Please also make sure the port set here corresponds with the one you set in the `HoloLens Relay` plugin in Pupil Capture. 
+
+![PupilSettings for HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings_HoloLens.png)
 
 ## Calibration 
 
