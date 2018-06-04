@@ -1,4 +1,5 @@
-from zmq_tools import *
+import zmq
+from zmq_tools import Msg_Receiver
 
 
 ctx = zmq.Context()
@@ -10,6 +11,8 @@ ipc_sub_port = requester.recv_string()
 monitor = Msg_Receiver(ctx,'tcp://localhost:%s'%ipc_sub_port,topics=('notify.',))
 
 while True:
-    print(monitor.recv())
-
+    try:
+        print(monitor.recv())
+    except KeyboardInterrupt:
+        break
 

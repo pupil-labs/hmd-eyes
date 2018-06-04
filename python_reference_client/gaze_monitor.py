@@ -10,5 +10,8 @@ monitor = Msg_Receiver(ctx,'tcp://192.168.1.12:%s'%ipc_sub_port,topics=('gaze',)
 print('connected')
 
 while True:
-    topic,g = monitor.recv()
-    print(g)
+    try:
+        topic,g = monitor.recv()
+        print(g)
+    except KeyboardInterrupt:
+        break

@@ -8,7 +8,7 @@ This guide shows how to calibrate using the HMD_Calibration plugin in Pupil Capt
 The calibration plugin samples pupil positions and receives reference positions (positions of a stimulus on the left and right hmd screen) from the client app. The reference positions are determined by the client and sent in normalised screen coordinates with timestamp and id.
 
 ```python
-ref_data = [{'norm_pos':pos,'timestamp':t,'id':0},...]
+ref_data = [{'norm_pos': pos,'timestamp': t, 'id': 0},...]
 ```
 
 The right side is denoted as id 0 , the left side as id 1. The timestamp giving clock needs to be in sync with the Pupil Capture / Service.
