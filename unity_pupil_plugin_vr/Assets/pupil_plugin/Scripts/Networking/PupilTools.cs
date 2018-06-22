@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
-using UnityEngine;
+using UnityEngine;
+
 
 public class PupilTools : MonoBehaviour
 {
@@ -229,7 +230,7 @@ public class PupilTools : MonoBehaviour
 	public static float FloatFromDictionary(Dictionary<string,object> source, string key)
 	{
 		object value_o;
-		source.TryGetValue ("confidence", out value_o);
+		source.TryGetValue (key, out value_o);
 		return (float)(double)value_o;
 	}
 	private static object IDo;
