@@ -20,6 +20,7 @@ public class Connection
 	public int PORT = 50020;
 	public string subport = "59485";
 	public bool isLocal = true;
+    public float confidenceThreshold = 0.6f;
 
 	private Dictionary<string,SubscriberSocket> _subscriptionSocketForTopic;
 	private Dictionary<string,SubscriberSocket> subscriptionSocketForTopic
@@ -163,6 +164,8 @@ public class Connection
 						Debug.Log(msgType);
 						break;
 					case "gaze":
+					case "gaze.2d.0.":
+					case "gaze.2d.1.":
 					case "pupil.0":
 					case "pupil.1":
 						var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
@@ -173,8 +176,11 @@ public class Connection
 							PupilTools.UpdateCalibrationConfidence(eyeID,confidence);
 							break;
 						}
-						if (confidence > 0.6f && msgType == "gaze") 
-							PupilTools.gazeDictionary = dictionary;
+						if ((confidence > confidenceThreshold) && msgType.StartsWith("gaze"))
+                        {
+                            PupilTools.gazeDictionary = dictionary;
+                        }
+							
 						break;
 					case "frame.eye.0":
 					case "frame.eye.1":
