@@ -21,6 +21,7 @@ MonoBehaviour:
     PORT: 50020
     subport: 65168
     isLocal: 1
+    confidenceThreshold: 0.6
     PupilVersion: 1.5.12
     PupilVersionNumbers: 01000000050000000c000000
   calibration:
@@ -53,7 +54,7 @@ MonoBehaviour:
       - {x: 1, y: 0.24}
       - {x: 2, y: 0.42}
       samplesPerDepth: 120
-    samplesToIgnoreForEyeMovement: 10
+    samplesToIgnoreForEyeMovement: 20
     rightEyeTranslation:
     - -15
     - 0
