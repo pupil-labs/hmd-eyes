@@ -150,7 +150,6 @@ public class Connection
 					if ( PupilTools.ReceiveDataIsSet )
 					{
 						PupilTools.ReceiveData( msgType, MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream), thirdFrame);
-						continue;
 					}
 
 					switch(msgType)
@@ -168,6 +167,9 @@ public class Connection
 					case "gaze.2d.1.":
 					case "pupil.0":
 					case "pupil.1":
+					case "gaze.3d.0.":
+					case "gaze.3d.1.":
+					case "gaze.3d.01.":
 						var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);
 						var confidence = PupilTools.FloatFromDictionary(dictionary,"confidence");
 						if ( PupilTools.IsCalibrating )
@@ -176,17 +178,20 @@ public class Connection
 							PupilTools.UpdateCalibrationConfidence(eyeID,confidence);
 							break;
 						}
-						if ((confidence > confidenceThreshold) && msgType.StartsWith("gaze"))
-                        {
-                            PupilTools.gazeDictionary = dictionary;
-                        }
+						else if (msgType.StartsWith("gaze"))
+						{
+							if(confidence > confidenceThreshold)
+							{
+								PupilTools.gazeDictionary = dictionary;
+							}
+						}
 							
 						break;
 					case "frame.eye.0":
 					case "frame.eye.1":
 						break;
-					default: 
-						Debug.Log(msgType);
+					default:
+						Debug.Log("No case to handle message with message type " + msgType);
 						break;
 					}
 

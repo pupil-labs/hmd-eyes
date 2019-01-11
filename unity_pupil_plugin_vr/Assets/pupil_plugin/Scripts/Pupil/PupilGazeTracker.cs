@@ -42,6 +42,8 @@ public class PupilGazeTracker:MonoBehaviour
 	public DrawMenuDeleg DrawMenu;
 	public OnUpdateDeleg OnUpdate;
 
+	bool updateInitialTranslation = true;
+
 	#endregion
 
 	public PupilGazeTracker ()
@@ -66,12 +68,10 @@ public class PupilGazeTracker:MonoBehaviour
 
 		PupilTools.IsConnected = false;
 		PupilTools.IsIdle = true;
-
-		var relativeRightEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.RightEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
-		PupilTools.Calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
-		var relativeLeftEyePosition = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.LeftEye) - UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
-		PupilTools.Calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.z*PupilSettings.PupilUnitScalingFactor, 0, 0 };
-
+		
+		PupilTools.Calibration.rightEyeTranslation = new float[] {0,0,0};
+		PupilTools.Calibration.leftEyeTranslation = new float[] {0,0,0};
+		
 		#if !UNITY_WSA
 		RunConnect ();
 		#endif
@@ -88,10 +88,17 @@ public class PupilGazeTracker:MonoBehaviour
 
 	void Update ()
 	{
+
+		if(updateInitialTranslation) 
+		{
+			//might be inconsistent during the first frames -> updating until calibration starts
+			UpdateEyesTranslation();
+		}
+
 		if (PupilTools.IsCalibrating)
 		{
 			PupilTools.Calibration.UpdateCalibration ();
-		} 
+		}
 
 		PupilTools.Connection.UpdateSubscriptionSockets ();
 
@@ -103,6 +110,7 @@ public class PupilGazeTracker:MonoBehaviour
 			} else
 			{
 				PupilTools.StartCalibration ();
+				updateInitialTranslation = false;
 			}
 		}
 #if !UNITY_WSA
@@ -126,6 +134,29 @@ public class PupilGazeTracker:MonoBehaviour
 
 		if (Instance.OnUpdate != null)
 			Instance.OnUpdate ();
+	}
+
+	void UpdateEyesTranslation()
+	{
+		Vector3 leftEye = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.LeftEye);
+		Vector3 rightEye = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.RightEye);
+		Vector3 centerEye = UnityEngine.XR.InputTracking.GetLocalPosition (UnityEngine.XR.XRNode.CenterEye);
+		Quaternion centerRotation = UnityEngine.XR.InputTracking.GetLocalRotation (UnityEngine.XR.XRNode.CenterEye);
+
+		//convert local coords into center eye coordinates
+		Vector3 globalCenterPos = Quaternion.Inverse(centerRotation) * centerEye;
+		Vector3 globalLeftEyePos = Quaternion.Inverse(centerRotation) * leftEye;
+		Vector3 globalRightEyePos = Quaternion.Inverse(centerRotation) * rightEye;
+		
+		//right
+		var relativeRightEyePosition = globalRightEyePos - globalCenterPos;
+		relativeRightEyePosition *= PupilSettings.PupilUnitScalingFactor;
+		PupilTools.Calibration.rightEyeTranslation = new float[] { relativeRightEyePosition.x, relativeRightEyePosition.y, relativeRightEyePosition.z };
+		
+		//left
+		var relativeLeftEyePosition = globalLeftEyePos - globalCenterPos;
+		relativeLeftEyePosition *= PupilSettings.PupilUnitScalingFactor;
+		PupilTools.Calibration.leftEyeTranslation = new float[] { relativeLeftEyePosition.x, relativeLeftEyePosition.y, relativeLeftEyePosition.z };
 	}
 
 #endregion
