@@ -15,6 +15,8 @@ public class MarketWith2DCalibration : MonoBehaviour
 	private Vector2 gazePointCenter;
 
 	public Material shaderMaterial;
+	[Range(0.05f,0.5f)]
+	public float highlightRadius = 0.25f;
 
 	void Start () 
 	{
@@ -76,7 +78,7 @@ public class MarketWith2DCalibration : MonoBehaviour
 	{
 		if (monoColorMode)
 		{
-			shaderMaterial.SetFloat ("_highlightThreshold", 0.05f);
+			shaderMaterial.SetFloat ("_highlightThreshold", highlightRadius);
 			switch (sceneCamera.stereoActiveEye)
 			{
 			case Camera.MonoOrStereoscopicEye.Left:
