@@ -886,6 +886,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shaderMaterial: {fileID: 2100000, guid: f51f5d0c76790c44cb42ff0209bc174e, type: 2}
+  highlightRadius: 0.25
   monoColorMode: 1
 --- !u!120 &873154569
 LineRenderer:
