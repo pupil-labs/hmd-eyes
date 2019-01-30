@@ -12,4 +12,13 @@ public class CalibrationDemo : MonoBehaviour
 			print ("We are gazing");
 		}
 	}
+
+	void OnDisable()
+	{
+		if (PupilTools.IsConnected)
+		{
+			PupilGazeTracker.Instance.StopVisualizingGaze ();
+			print ("Stop visualizing gaze");
+		}
+	}
 }

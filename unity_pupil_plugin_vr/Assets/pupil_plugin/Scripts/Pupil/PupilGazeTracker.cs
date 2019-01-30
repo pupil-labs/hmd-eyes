@@ -235,7 +235,7 @@ public class PupilGazeTracker:MonoBehaviour
 		PupilMarker.TryToSetActive(_markerGazeCenter,false);
 		PupilMarker.TryToSetActive(_gaze3D,false);
 
-		PupilTools.IsIdle = true;
+		// PupilTools.IsIdle = true;
 //		PupilTools.UnSubscribeFrom("gaze");
 	}
 
