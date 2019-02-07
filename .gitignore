@@ -1,6 +1,7 @@
-dev_Refactor-and-demos/Library/
-dev_Refactor-and-demos/Temp/
 *.pyc
+
+# VSCode
+*/**/.vscode/*
 
 # Unity Folder
 [Ll]ibrary/
