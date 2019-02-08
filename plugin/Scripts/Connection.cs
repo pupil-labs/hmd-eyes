@@ -21,7 +21,6 @@ namespace PupilLabs
         private bool contextExists = false;
         private TimeSpan requestTimeout = new System.TimeSpan(0, 0, 1); //= 1sec
 
-        private bool isConnected = false;
         public bool IsConnected { get; set; }
 
         private string PupilVersion;

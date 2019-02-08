@@ -7,8 +7,7 @@ namespace PupilLabs.Demos
 
     public class BlinkDemo : MonoBehaviour
     {
-        [SerializeField]
-        private PupilLabs.Stream stream;
+        public PupilLabs.Stream stream;
 
         public Transform leftEye;
         public Transform rightEye;

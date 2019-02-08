@@ -14,7 +14,7 @@ namespace PupilLabs
     {
 
         [SerializeField]
-        private PupilLabs.Connection connection;
+        private PupilLabs.Connection connection = new PupilLabs.Connection();
         [SerializeField]
         private bool printMessageTopic = false;
         [SerializeField]
