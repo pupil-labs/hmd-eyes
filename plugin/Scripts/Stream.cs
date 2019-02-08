@@ -33,6 +33,10 @@ namespace PupilLabs
             public string topic;
             public SubscriberSocket socket;
             public event ReceiveDataDelegate OnReceiveData;
+            public bool HasSubscribers
+            {
+                get { return OnReceiveData != null; }
+            }
 
             private MemoryStream mStream; //TODO why as member
             public void ParseData(object s, NetMQSocketEventArgs eventArgs)
@@ -127,7 +131,7 @@ namespace PupilLabs
             }
         }
 
-        public void InitializeSubscriptionSocket(string topic, ReceiveDataDelegate subscriberHandler)
+        public void SubscribeTo(string topic, ReceiveDataDelegate subscriberHandler)
         {
             if (!subscriptions.ContainsKey(topic))
             {
@@ -146,16 +150,24 @@ namespace PupilLabs
             subscriptions[topic].OnReceiveData += subscriberHandler;
         }
 
-        public void CloseSubscriptionSocket(string topic, ReceiveDataDelegate subscriberHandler = null)
+        public void UnsubscribeFrom(string topic, ReceiveDataDelegate subscriberHandler)
         {
-            if (subscriptionSocketToBeClosed == null)
-                subscriptionSocketToBeClosed = new List<string>();
-            if (!subscriptionSocketToBeClosed.Contains(topic))
-                subscriptionSocketToBeClosed.Add(topic);
-
             if (subscriptions.ContainsKey(topic) && subscriberHandler != null)
             {
                 subscriptions[topic].OnReceiveData -= subscriberHandler;
+
+                if(!subscriptions[topic].HasSubscribers)
+                {
+                    CloseSubscriptionSocket(topic);
+                }
+            }
+        }
+
+        private void CloseSubscriptionSocket(string topic)
+        {
+            if (!subscriptionSocketToBeClosed.Contains(topic))
+            {
+                subscriptionSocketToBeClosed.Add(topic);
             }
         }
 

@@ -43,7 +43,7 @@ namespace PupilLabs.Demos
 
             Debug.Log("StartBlinkSubscription");
 
-            stream.InitializeSubscriptionSocket("blinks",CustomReceiveData);
+            stream.SubscribeTo("blinks",CustomReceiveData);
 
             stream.Send(new Dictionary<string, object> {
                 { "subject", "start_plugin" }
@@ -68,7 +68,7 @@ namespace PupilLabs.Demos
                 ,{ "name", "Blink_Detection" }
             });
 
-            stream.CloseSubscriptionSocket("blinks",CustomReceiveData);
+            stream.UnsubscribeFrom("blinks",CustomReceiveData);
         }
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
