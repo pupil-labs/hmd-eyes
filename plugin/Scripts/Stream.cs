@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,15 +9,15 @@ using MessagePack;
 namespace PupilLabs
 {
 
-    public class Stream : MonoBehaviour
+    public partial class Stream : MonoBehaviour
     {
 
         [SerializeField]
         private PupilLabs.Connection connection = new PupilLabs.Connection();
-        [SerializeField]
-        private bool printMessageTopic = false;
-        [SerializeField]
-        private bool printMessage = false;
+        // [SerializeField]
+        // private bool printMessageTopic = false;
+        // [SerializeField]
+        // private bool printMessage = false;
 
         public delegate void ConnectionDelegate();
         public event ConnectionDelegate OnConnected;
@@ -28,37 +27,6 @@ namespace PupilLabs
 
         public delegate void ReceiveDataDelegate(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null);
 
-        private class Subscription
-        {
-            public string topic;
-            public SubscriberSocket socket;
-            public event ReceiveDataDelegate OnReceiveData;
-            public bool HasSubscribers
-            {
-                get { return OnReceiveData != null; }
-            }
-
-            private MemoryStream mStream; //TODO why as member
-            public void ParseData(object s, NetMQSocketEventArgs eventArgs)
-            {
-                NetMQMessage m = new NetMQMessage();
-
-                while (eventArgs.Socket.TryReceiveMultipartMessage(ref m))
-                {
-                    string msgType = m[0].ConvertToString();
-                    mStream = new MemoryStream(m[1].ToByteArray());
-                    byte[] thirdFrame = null;
-                    if (m.FrameCount >= 3)
-                        thirdFrame = m[2].ToByteArray();
-
-                    if (OnReceiveData != null)
-                    {
-                        OnReceiveData(msgType, MessagePackSerializer.Deserialize<Dictionary<string, object>>(mStream), thirdFrame);
-                    }
-                }
-            }
-        }
-
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
         private List<string> subscriptionSocketToBeClosed = new List<string>();
 
@@ -66,7 +34,7 @@ namespace PupilLabs
         {
             if (!connection.IsConnected)
             {
-                StartCoroutine(Connect(retry: true, retryDelay: 5f));
+                RunConnect();
             }
         }
 
@@ -86,7 +54,12 @@ namespace PupilLabs
             }
         }
 
-        public IEnumerator Connect(bool retry = false, float retryDelay = 5f)
+        public void RunConnect()
+        {
+            StartCoroutine(Connect(retry: true, retryDelay: 5f));
+        }
+
+        private IEnumerator Connect(bool retry = false, float retryDelay = 5f)
         //TODO crash on cancel while trying to connect
         {
             yield return new WaitForSeconds(3f);
@@ -136,15 +109,10 @@ namespace PupilLabs
             if (!subscriptions.ContainsKey(topic))
             {
                 string connectionStr = connection.GetConnectionString();
-                Subscription subscription = new Subscription();
-                subscription.socket = new SubscriberSocket(connectionStr);
-                subscription.topic = topic;
-
+                Subscription subscription = new Subscription(connectionStr, topic);
+                
                 subscriptions.Add(topic, subscription);
-                subscriptions[topic].socket.Subscribe(topic);
-
-                subscriptions[topic].socket.ReceiveReady += subscriptions[topic].ParseData;
-                // subscriptions[topic].OnReceiveData += Logging;
+                // subscriptions[topic].OnReceiveData += Logging; //TODO would keep the socket open forever
             }
 
             subscriptions[topic].OnReceiveData += subscriberHandler;
@@ -204,17 +172,17 @@ namespace PupilLabs
             return connection.sendRequestMessage(dictionary);
         }
 
-        private void Logging(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
-        {
-            if (printMessageTopic)
-            {
-                Debug.Log(topic);
-            }
+        // private void Logging(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
+        // {
+        //     if (printMessageTopic)
+        //     {
+        //         Debug.Log(topic);
+        //     }
 
-            if (printMessage)
-            {
-                Debug.Log(MessagePackSerializer.Serialize<Dictionary<string, object>>(dictionary));
-            }
-        }
+        //     if (printMessage)
+        //     {
+        //         Debug.Log(MessagePackSerializer.Serialize<Dictionary<string, object>>(dictionary));
+        //     }
+        // }
     }
 }
