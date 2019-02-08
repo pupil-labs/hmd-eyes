@@ -20,11 +20,11 @@ namespace PupilLabs
         [SerializeField]
         private bool printMessage = false;
 
-        public delegate void ConnectionDelegate ();
+        public delegate void ConnectionDelegate();
         public event ConnectionDelegate OnConnected;
-	    public event ConnectionDelegate OnDisconnecting;
+        public event ConnectionDelegate OnDisconnecting;
 
-        public delegate void ReceiveDataDelegate (string topic, Dictionary<string,object> dictionary, byte[] thirdFrame = null);
+        public delegate void ReceiveDataDelegate(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null);
         public event ReceiveDataDelegate OnReceiveData;
 
         private Dictionary<string, SubscriberSocket> subscriptionSocketForTopic;
@@ -41,15 +41,15 @@ namespace PupilLabs
 
         void OnEnable()
         {
-            if(!connection.IsConnected)
+            if (!connection.IsConnected)
             {
-                StartCoroutine (Connect (retry: true, retryDelay: 5f));
+                StartCoroutine(Connect(retry: true, retryDelay: 5f));
             }
         }
 
         void OnDisable()
         {
-            if(connection.IsConnected)
+            if (connection.IsConnected)
             {
                 Disconnect();
             }
@@ -57,7 +57,7 @@ namespace PupilLabs
 
         void Update()
         {
-            if(connection.IsConnected)
+            if (connection.IsConnected)
             {
                 UpdateSubscriptionSockets();
             }
@@ -107,7 +107,7 @@ namespace PupilLabs
         }
 
         private MemoryStream mStream; //TODO why as member
-        public void InitializeSubscriptionSocket(string topic) 
+        public void InitializeSubscriptionSocket(string topic)
         {
             if (!SubscriptionSocketForTopic.ContainsKey(topic))
             {
@@ -130,9 +130,9 @@ namespace PupilLabs
         private void UpdateSubscriptionSockets()
         {
             // Poll all sockets
-            foreach(SubscriberSocket subSocket in SubscriptionSocketForTopic.Values)
+            foreach (SubscriberSocket subSocket in SubscriptionSocketForTopic.Values)
             {
-                if(subSocket.HasIn)
+                if (subSocket.HasIn)
                 {
                     subSocket.Poll();
                 }
@@ -151,7 +151,7 @@ namespace PupilLabs
             }
         }
 
-        private void OnReceiveReady(object s, NetMQSocketEventArgs eventArgs) 
+        private void OnReceiveReady(object s, NetMQSocketEventArgs eventArgs)
         {
             int i = 0;
 
@@ -177,7 +177,7 @@ namespace PupilLabs
                     Debug.Log(MessagePackSerializer.ToJson(m[1].ToByteArray()));
                 }
 
-                if (OnReceiveData!=null)
+                if (OnReceiveData != null)
                 {
                     OnReceiveData(msgType, MessagePackSerializer.Deserialize<Dictionary<string, object>>(mStream), thirdFrame);
                 }
@@ -188,14 +188,13 @@ namespace PupilLabs
             }
         }
 
-        public bool Send(Dictionary<string,object> dictionary)
+        public bool Send(Dictionary<string, object> dictionary)
         {
-            if(!connection.IsConnected)
+            if (!connection.IsConnected)
             {
                 return false;
             }
-            return connection.sendRequestMessage (dictionary);
+            return connection.sendRequestMessage(dictionary);
         }
     }
 }
-
