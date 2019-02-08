@@ -11,13 +11,21 @@ namespace PupilLabs
 	[Serializable]
     public class Connection
     {
-        private bool isConnected = false;
-        public bool IsConnected { get; set; }
 
 		public string IP = "127.0.0.1";
 		public int PORT = 50020;
 		private string IPHeader;
 		private string subport = "59485";
+
+		private RequestSocket requestSocket = null;
+		private bool contextExists = false;
+		private TimeSpan requestTimeout = new System.TimeSpan (0, 0, 1); //= 1sec
+        
+		private bool isConnected = false;
+        public bool IsConnected { get; set; }
+
+		private string PupilVersion;
+		public List<int> PupilVersionNumbers;
 
 		[SerializeField]
 		private bool isLocal = true; //TODO check again: only used via inspector
@@ -27,16 +35,7 @@ namespace PupilLabs
 			return IPHeader + subport;
 		}
 		
-		private RequestSocket requestSocket = null;
-
-		private bool _contextExists = false;
-		private bool contextExists
-		{
-			get { return _contextExists; }
-			set { _contextExists = value; }
-		}
-		private TimeSpan timeout = new System.TimeSpan (0, 0, 1); //1sec
-		public void InitializeRequestSocket()
+		public void InitializeRequestSocket() //TODO default params useful?
 		{
 			IPHeader = ">tcp://" + IP + ":";
 
@@ -52,19 +51,17 @@ namespace PupilLabs
 
 			requestSocket = new RequestSocket (IPHeader + PORT);
 			requestSocket.SendFrame ("SUB_PORT");
-			IsConnected = requestSocket.TryReceiveFrameString (timeout, out subport);
+			IsConnected = requestSocket.TryReceiveFrameString (requestTimeout, out subport);
 			if (IsConnected)
 			{
-				CheckPupilVersion ();
+				UpdatePupilVersion ();
 			}
 		}
 
-		private string PupilVersion;
-		public List<int> PupilVersionNumbers;
-		private void CheckPupilVersion()
+		private void UpdatePupilVersion()
 		{
 			requestSocket.SendFrame ("v");
-			if (requestSocket.TryReceiveFrameString (timeout, out PupilVersion))
+			if (requestSocket.TryReceiveFrameString (requestTimeout, out PupilVersion))
 			{
 				if (PupilVersion != null && PupilVersion != "Unknown command.")
 				{
@@ -111,7 +108,7 @@ namespace PupilLabs
 		{
 			// we are currently not doing anything with this
 			NetMQMessage m = new NetMQMessage ();
-			return requestSocket.TryReceiveMultipartMessage (timeout, ref m);
+			return requestSocket.TryReceiveMultipartMessage (requestTimeout, ref m);
 		}
 
 		public void SetPupilTimestamp(float time)
