@@ -22,9 +22,10 @@ namespace PupilLabs.Demos
             stream.OnConnected += StartBlinkSubscription;
             stream.OnDisconnecting += StopBlinkSubscription;
 
-            stream.OnReceiveData += CustomReceiveData;
-
-            //TODO What if already connected?
+            if (stream.IsConnected)
+            {
+                StartBlinkSubscription();
+            }
         }
 
         void OnDisable()
@@ -32,14 +33,18 @@ namespace PupilLabs.Demos
             stream.OnConnected -= StartBlinkSubscription;
             stream.OnDisconnecting -= StopBlinkSubscription;
 
-            stream.OnReceiveData -= CustomReceiveData;
+            if (stream.IsConnected)
+            {
+                StopBlinkSubscription();
+            }
         }
 
         void StartBlinkSubscription()
         {
+
             Debug.Log("StartBlinkSubscription");
 
-            stream.InitializeSubscriptionSocket("blinks");
+            stream.InitializeSubscriptionSocket("blinks",CustomReceiveData);
 
             stream.Send(new Dictionary<string, object> {
                 { "subject", "start_plugin" }
@@ -56,6 +61,7 @@ namespace PupilLabs.Demos
 
         void StopBlinkSubscription()
         {
+
             Debug.Log("StopBlinkSubscription");
 
             stream.Send(new Dictionary<string, object> {
@@ -63,21 +69,19 @@ namespace PupilLabs.Demos
                 ,{ "name", "Blink_Detection" }
             });
 
-            stream.CloseSubscriptionSocket("blinks");
+            stream.CloseSubscriptionSocket("blinks",CustomReceiveData);
         }
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
-            if (topic == "blinks")
+           if (dictionary.ContainsKey("timestamp"))
             {
-                if (dictionary.ContainsKey("timestamp"))
+                Debug.Log("Blink detected: " + dictionary["timestamp"].ToString());
+                
+                if (!blinking)
                 {
-                    Debug.Log("Blink detected: " + dictionary["timestamp"].ToString());
-                    if (!blinking)
-                    {
-                        blinking = true;
-                        StartCoroutine(Blink(blinkDuration));
-                    }
+                    blinking = true;
+                    StartCoroutine(Blink(blinkDuration));
                 }
             }
         }
