@@ -15,6 +15,17 @@ namespace PupilLabs
 
         [SerializeField]
         private PupilLabs.Connection connection;
+        [SerializeField]
+        private bool printMessageType = false;
+        [SerializeField]
+        private bool printMessage = false;
+
+        public delegate void ConnectionDelegate ();
+        public event ConnectionDelegate OnConnected;
+	    public event ConnectionDelegate OnDisconnecting;
+
+        public delegate void ReceiveDataDelegate (string topic, Dictionary<string,object> dictionary, byte[] thirdFrame = null);
+        public event ReceiveDataDelegate OnReceiveData;
 
         private Dictionary<string, SubscriberSocket> subscriptionSocketForTopic;
         private Dictionary<string, SubscriberSocket> SubscriptionSocketForTopic
@@ -26,13 +37,13 @@ namespace PupilLabs
                 return subscriptionSocketForTopic;
             }
         }
+        private List<string> subscriptionSocketToBeClosed = new List<string>();
 
-        // Start is called before the first frame update
         void OnEnable()
         {
             if(!connection.IsConnected)
             {
-                StartCoroutine (PupilTools.Connect (retry: true, retryDelay: 5f));
+                StartCoroutine (Connect (retry: true, retryDelay: 5f));
             }
         }
 
@@ -44,10 +55,12 @@ namespace PupilLabs
             }
         }
 
-        // Update is called once per frame
         void Update()
         {
-
+            if(connection.IsConnected)
+            {
+                UpdateSubscriptionSockets();
+            }
         }
 
         public IEnumerator Connect(bool retry = false, float retryDelay = 5f)
@@ -78,9 +91,9 @@ namespace PupilLabs
             }
             Debug.Log(" Succesfully connected to Pupil! ");
 
-            // RepaintGUI();
-            // if (OnConnected != null) //TODO
-            //     OnConnected();
+            // RepaintGUI(); //TODO what for?
+            if (OnConnected != null)
+                OnConnected();
             yield break;
         }
 
@@ -94,7 +107,7 @@ namespace PupilLabs
         }
 
         private MemoryStream mStream; //TODO why as member
-        public void InitializeSubscriptionSocket(string topic)
+        public void InitializeSubscriptionSocket(string topic) //TODO = Subscribe
         {
             if (!SubscriptionSocketForTopic.ContainsKey(topic))
             {
@@ -102,7 +115,7 @@ namespace PupilLabs
                 SubscriptionSocketForTopic.Add(topic, new SubscriberSocket(connectionStr));
                 SubscriptionSocketForTopic[topic].Subscribe(topic);
 
-                SubscriptionSocketForTopic[topic].ReceiveReady += (s, a) =>
+                SubscriptionSocketForTopic[topic].ReceiveReady += (s, a) => //TODO = Receive
                 {
                     int i = 0;
 
@@ -118,15 +131,19 @@ namespace PupilLabs
                         if (m.FrameCount >= 3)
                             thirdFrame = m[2].ToByteArray();
 
-                        if (PupilSettings.Instance.debug.printMessageType)
-                            Debug.Log(msgType);
-
-                        if (PupilSettings.Instance.debug.printMessage)
-                            Debug.Log(MessagePackSerializer.ToJson(m[1].ToByteArray()));
-
-                        if (PupilTools.ReceiveDataIsSet)
+                        if (printMessageType)
                         {
-                            PupilTools.ReceiveData(msgType, MessagePackSerializer.Deserialize<Dictionary<string, object>>(mStream), thirdFrame);
+                            Debug.Log(msgType);
+                        }
+
+                        if (printMessage)
+                        {
+                            Debug.Log(MessagePackSerializer.ToJson(m[1].ToByteArray()));
+                        }
+
+                        if (OnReceiveData!=null)
+                        {
+                            OnReceiveData(msgType, MessagePackSerializer.Deserialize<Dictionary<string, object>>(mStream), thirdFrame);
                         }
 
                         // removed parsing message -> should all happen via delegates
@@ -137,12 +154,22 @@ namespace PupilLabs
             }
         }
 
+        public void CloseSubscriptionSocket(string topic) //TODO what if we have >= 2 subscribers?
+        {
+            if (subscriptionSocketToBeClosed == null)
+                subscriptionSocketToBeClosed = new List<string>();
+            if (!subscriptionSocketToBeClosed.Contains(topic))
+                subscriptionSocketToBeClosed.Add(topic);
+        }
+
         private void UpdateSubscriptionSockets()
         //TODO split? 
         //called every frame to A: poll sockets and B: maybe delete some
         //originally only called by PupilGazeTracker 
         //TODO what about Blink Demo without gazetracker? it actually needs one ...
         {
+            // Poll all sockets
+            //TODO replace by foreach
             string[] keys = new string[SubscriptionSocketForTopic.Count];
             SubscriptionSocketForTopic.Keys.CopyTo(keys, 0);
             for (int i = 0; i < keys.Length; i++)
@@ -150,6 +177,8 @@ namespace PupilLabs
                 if (SubscriptionSocketForTopic[keys[i]].HasIn)
                     SubscriptionSocketForTopic[keys[i]].Poll();
             }
+            // Check sockets to be closed
+            //TODO handle double unsubscribe (remove from list if nothing to unsubscribe from)
             for (int i = subscriptionSocketToBeClosed.Count - 1; i >= 0; i--)
             {
                 var toBeClosed = subscriptionSocketToBeClosed[i];
@@ -162,13 +191,13 @@ namespace PupilLabs
             }
         }
 
-        private List<string> subscriptionSocketToBeClosed = new List<string>();
-        private void CloseSubscriptionSocket(string topic) //TODO what if we have >= 2 subscribers?
+        public bool Send(Dictionary<string,object> dictionary)
         {
-            if (subscriptionSocketToBeClosed == null)
-                subscriptionSocketToBeClosed = new List<string>();
-            if (!subscriptionSocketToBeClosed.Contains(topic))
-                subscriptionSocketToBeClosed.Add(topic);
+            if(!connection.IsConnected)
+            {
+                return false;
+            }
+            return connection.sendRequestMessage (dictionary);
         }
     }
 }

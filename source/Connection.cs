@@ -25,10 +25,10 @@ namespace PupilLabs
         public bool IsConnected { get; set; }
 
 		private string PupilVersion;
+		[HideInInspector]
 		public List<int> PupilVersionNumbers;
 
-		[SerializeField]
-		private bool isLocal = true; //TODO check again: only used via inspector
+		// private bool isLocal = true; //TODO check again: only used via inspector
 
 		public string GetConnectionString()
 		{
@@ -43,10 +43,7 @@ namespace PupilLabs
 
 			if (!contextExists)
 			{
-				AsyncIO.ForceDotNet.Force ();
-				NetMQConfig.ManualTerminationTakeOver ();
-				NetMQConfig.ContextCreate (true);
-				contextExists = true;
+				CreateContext();
 			}
 
 			requestSocket = new RequestSocket (IPHeader + PORT);
@@ -55,27 +52,6 @@ namespace PupilLabs
 			if (IsConnected)
 			{
 				UpdatePupilVersion ();
-			}
-		}
-
-		private void UpdatePupilVersion()
-		{
-			requestSocket.SendFrame ("v");
-			if (requestSocket.TryReceiveFrameString (requestTimeout, out PupilVersion))
-			{
-				if (PupilVersion != null && PupilVersion != "Unknown command.")
-				{
-					Debug.Log (PupilVersion);
-					var split = PupilVersion.Split ('.');
-					PupilVersionNumbers = new List<int> ();
-					int number;
-					foreach (var item in split)
-					{
-						if (int.TryParse (item, out number))
-							PupilVersionNumbers.Add (number);
-					}
-					// Is3DCalibrationSupported ();
-				}
 			}
 		}
 
@@ -111,13 +87,42 @@ namespace PupilLabs
 			return requestSocket.TryReceiveMultipartMessage (requestTimeout, ref m);
 		}
 
+		
+		private void UpdatePupilVersion()
+		{
+			requestSocket.SendFrame ("v");
+			if (requestSocket.TryReceiveFrameString (requestTimeout, out PupilVersion))
+			{
+				if (PupilVersion != null && PupilVersion != "Unknown command.")
+				{
+					Debug.Log (PupilVersion);
+					var split = PupilVersion.Split ('.');
+					PupilVersionNumbers = new List<int> ();
+					int number;
+					foreach (var item in split)
+					{
+						if (int.TryParse (item, out number))
+							PupilVersionNumbers.Add (number);
+					}
+				}
+			}
+		}
+
 		public void SetPupilTimestamp(float time)
 		{
 			if (requestSocket != null)
 			{
 				requestSocket.SendFrame ("T " + time.ToString ("0.00000000"));
-				receiveRequestResponse ();//TODO not handling the response yet
+				receiveRequestResponse ();
 			}
+		}
+
+		private void CreateContext()
+		{
+			AsyncIO.ForceDotNet.Force ();
+			NetMQConfig.ManualTerminationTakeOver ();
+			NetMQConfig.ContextCreate (true);
+			contextExists = true;
 		}
 
 		public void TerminateContext()
