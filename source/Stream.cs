@@ -91,7 +91,7 @@ namespace PupilLabs
             }
             Debug.Log(" Succesfully connected to Pupil! ");
 
-            // RepaintGUI(); //TODO what for?
+            // RepaintGUI(); //
             if (OnConnected != null)
                 OnConnected();
             yield break;
@@ -107,7 +107,7 @@ namespace PupilLabs
         }
 
         private MemoryStream mStream; //TODO why as member
-        public void InitializeSubscriptionSocket(string topic) //TODO = Subscribe
+        public void InitializeSubscriptionSocket(string topic) 
         {
             if (!SubscriptionSocketForTopic.ContainsKey(topic))
             {
@@ -115,46 +115,11 @@ namespace PupilLabs
                 SubscriptionSocketForTopic.Add(topic, new SubscriberSocket(connectionStr));
                 SubscriptionSocketForTopic[topic].Subscribe(topic);
 
-                SubscriptionSocketForTopic[topic].ReceiveReady += (s, a) => //TODO = Receive
-                {
-                    int i = 0;
-
-                    NetMQMessage m = new NetMQMessage();
-
-                    while (a.Socket.TryReceiveMultipartMessage(ref m))
-                    {
-
-
-                        string msgType = m[0].ConvertToString();
-                        mStream = new MemoryStream(m[1].ToByteArray());
-                        byte[] thirdFrame = null;
-                        if (m.FrameCount >= 3)
-                            thirdFrame = m[2].ToByteArray();
-
-                        if (printMessageType)
-                        {
-                            Debug.Log(msgType);
-                        }
-
-                        if (printMessage)
-                        {
-                            Debug.Log(MessagePackSerializer.ToJson(m[1].ToByteArray()));
-                        }
-
-                        if (OnReceiveData!=null)
-                        {
-                            OnReceiveData(msgType, MessagePackSerializer.Deserialize<Dictionary<string, object>>(mStream), thirdFrame);
-                        }
-
-                        // removed parsing message -> should all happen via delegates
-
-                        i++;
-                    }
-                };
+                SubscriptionSocketForTopic[topic].ReceiveReady += OnReceiveReady;
             }
         }
 
-        public void CloseSubscriptionSocket(string topic) //TODO what if we have >= 2 subscribers?
+        public void CloseSubscriptionSocket(string topic)
         {
             if (subscriptionSocketToBeClosed == null)
                 subscriptionSocketToBeClosed = new List<string>();
@@ -163,22 +128,17 @@ namespace PupilLabs
         }
 
         private void UpdateSubscriptionSockets()
-        //TODO split? 
-        //called every frame to A: poll sockets and B: maybe delete some
-        //originally only called by PupilGazeTracker 
-        //TODO what about Blink Demo without gazetracker? it actually needs one ...
         {
             // Poll all sockets
-            //TODO replace by foreach
-            string[] keys = new string[SubscriptionSocketForTopic.Count];
-            SubscriptionSocketForTopic.Keys.CopyTo(keys, 0);
-            for (int i = 0; i < keys.Length; i++)
+            foreach(SubscriberSocket subSocket in SubscriptionSocketForTopic.Values)
             {
-                if (SubscriptionSocketForTopic[keys[i]].HasIn)
-                    SubscriptionSocketForTopic[keys[i]].Poll();
+                if(subSocket.HasIn)
+                {
+                    subSocket.Poll();
+                }
             }
+
             // Check sockets to be closed
-            //TODO handle double unsubscribe (remove from list if nothing to unsubscribe from)
             for (int i = subscriptionSocketToBeClosed.Count - 1; i >= 0; i--)
             {
                 var toBeClosed = subscriptionSocketToBeClosed[i];
@@ -188,6 +148,43 @@ namespace PupilLabs
                     SubscriptionSocketForTopic.Remove(toBeClosed);
                 }
                 subscriptionSocketToBeClosed.Remove(toBeClosed);
+            }
+        }
+
+        private void OnReceiveReady(object s, NetMQSocketEventArgs eventArgs) 
+        {
+            int i = 0;
+
+            NetMQMessage m = new NetMQMessage();
+
+            while (eventArgs.Socket.TryReceiveMultipartMessage(ref m))
+            {
+
+
+                string msgType = m[0].ConvertToString();
+                mStream = new MemoryStream(m[1].ToByteArray());
+                byte[] thirdFrame = null;
+                if (m.FrameCount >= 3)
+                    thirdFrame = m[2].ToByteArray();
+
+                if (printMessageType)
+                {
+                    Debug.Log(msgType);
+                }
+
+                if (printMessage)
+                {
+                    Debug.Log(MessagePackSerializer.ToJson(m[1].ToByteArray()));
+                }
+
+                if (OnReceiveData!=null)
+                {
+                    OnReceiveData(msgType, MessagePackSerializer.Deserialize<Dictionary<string, object>>(mStream), thirdFrame);
+                }
+
+                //TODO removed parsing message -> should all happen via delegates
+
+                i++;
             }
         }
 
