@@ -35,7 +35,7 @@ namespace PupilLabs.Demos
 
             Debug.Log("StartPupilSubscription");
 
-            stream.SubscribeTo("pupil.", CustomReceiveData);
+            stream.SubscribeTo("pupil", CustomReceiveData);
         }
 
         void StopPupilSubscription()
@@ -43,7 +43,7 @@ namespace PupilLabs.Demos
 
             Debug.Log("StopPupilSubscription");
 
-            stream.UnsubscribeFrom("pupil.", CustomReceiveData);
+            stream.UnsubscribeFrom("pupil", CustomReceiveData);
         }
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
