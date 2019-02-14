@@ -50,7 +50,6 @@ namespace PupilLabs
         }
 
         private IEnumerator Connect(bool retry = false, float retryDelay = 5f)
-        //TODO crash on cancel while trying to connect
         {
             yield return new WaitForSeconds(3f);
 
@@ -93,10 +92,6 @@ namespace PupilLabs
 
         public bool Send(Dictionary<string, object> dictionary)
         {
-            if (!IsConnected)
-            {
-                return false;
-            }
             return request.SendRequestMessage(dictionary);
         }
 
@@ -125,16 +120,13 @@ namespace PupilLabs
 
         public void SetPupilTimestamp(float time)
         {
-            if (IsConnected)
-            {
-                string response;
-                request.SendCommand("T " + time.ToString("0.00000000"),out response);
-            }
+            string response;
+            request.SendCommand("T " + time.ToString("0.00000000"),out response);  
         }
 
         public string GetPupilVersion()
         {
-            string pupilVersion;
+            string pupilVersion = null;
             request.SendCommand("v",out pupilVersion);
             return pupilVersion;
         }

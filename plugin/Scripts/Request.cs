@@ -60,27 +60,39 @@ namespace PupilLabs
 
             public bool SendRequestMessage(Dictionary<string, object> data)
             {
-                if (requestSocket != null && IsConnected)
+                if (requestSocket == null || !IsConnected)
                 {
-                    NetMQMessage m = new NetMQMessage();
-
-                    m.Append("notify." + data["subject"]);
-                    m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(data));
-
-                    requestSocket.SendMultipartMessage(m);
-                    return ReceiveRequestResponse();
+                    return false;
                 }
-                return false;
+                
+                NetMQMessage m = new NetMQMessage();
+
+                m.Append("notify." + data["subject"]);
+                m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(data));
+
+                requestSocket.SendMultipartMessage(m);
+                return ReceiveRequestResponse();
             }
 
             public bool SendCommand(string cmd, out string response)
             {
+                if (requestSocket == null || !IsConnected)
+                {
+                    response = null;
+                    return false;
+                }
+
                 requestSocket.SendFrame(cmd);
                 return requestSocket.TryReceiveFrameString(requestTimeout, out response);
             }
 
             public bool ReceiveRequestResponse()
             {
+                if (requestSocket == null || !IsConnected)
+                {
+                    return false;
+                }
+
                 NetMQMessage m = new NetMQMessage();
                 return requestSocket.TryReceiveMultipartMessage(requestTimeout, ref m);
             }
