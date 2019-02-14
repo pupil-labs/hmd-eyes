@@ -7,7 +7,7 @@ using MessagePack;
 namespace PupilLabs
 {
 
-    public partial class Stream : MonoBehaviour
+    public partial class SubscriptionsController : MonoBehaviour
     {
 
         [SerializeField]
@@ -26,13 +26,13 @@ namespace PupilLabs
         public delegate void ReceiveDataDelegate(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null);
 
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
-        private List<string> subscriptionSocketToBeClosed = new List<string>();
-
+        
         void OnEnable()
         {
             if (!connection.IsConnected)
             {
                 RunConnect();
+                //RequestController.Connect();
             }
         }
 
@@ -46,9 +46,9 @@ namespace PupilLabs
 
         void Update()
         {
-            if (connection.IsConnected)
+            if (connection.IsConnected) //TODO needed?
             {
-                UpdateSubscriptionSockets();
+                UpdateSubscriptionSockets(); 
             }
         }
 
@@ -89,7 +89,7 @@ namespace PupilLabs
             yield break;
         }
 
-        public void Disconnect()
+        public void Disconnect() 
         {
             foreach (var socketKey in subscriptions.Keys)
                 CloseSubscriptionSocket(socketKey);
@@ -131,34 +131,36 @@ namespace PupilLabs
 
         private void CloseSubscriptionSocket(string topic)
         {
-            if (!subscriptionSocketToBeClosed.Contains(topic))
+            if (subscriptions.ContainsKey(topic))
             {
-                subscriptionSocketToBeClosed.Add(topic);
+                subscriptions[topic].ShouldClose = true;
             }
         }
 
         private void UpdateSubscriptionSockets()
         {
-            // Poll all sockets
+
+            List<string> toBeRemoved = new List<string>();
             foreach (var subscription in subscriptions.Values)
             {
-                if (subscription.socket.HasIn)
+                if (!subscription.ShouldClose)
                 {
-                    subscription.socket.Poll();
+                    subscription.UpdateSocket();
+                }
+                else
+                {
+                    subscription.Close();
+                    toBeRemoved.Add(subscription.topic);
                 }
             }
 
-            // Check sockets to be closed
-            for (int i = subscriptionSocketToBeClosed.Count - 1; i >= 0; i--)
+            foreach (var removeTopic in toBeRemoved)
             {
-                var toBeClosed = subscriptionSocketToBeClosed[i];
-                if (subscriptions.ContainsKey(toBeClosed))
+                if( subscriptions.ContainsKey(removeTopic))
                 {
-                    subscriptions[toBeClosed].socket.Close();
-                    subscriptions.Remove(toBeClosed);
+                    subscriptions.Remove(removeTopic);
                 }
-                subscriptionSocketToBeClosed.Remove(toBeClosed);
-            }
+            }            
         }
 
         public bool Send(Dictionary<string, object> dictionary)

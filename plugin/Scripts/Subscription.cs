@@ -8,12 +8,12 @@ using System.IO;
 namespace PupilLabs
 {
 
-    public partial class Stream : MonoBehaviour
+    public partial class SubscriptionsController : MonoBehaviour
     {
         private class Subscription
         {
-            private string topic;
-            public SubscriberSocket socket;
+            public string topic;
+            private SubscriberSocket socket;
             
             public event ReceiveDataDelegate OnReceiveData;
 
@@ -21,6 +21,8 @@ namespace PupilLabs
             {
                 get { return OnReceiveData != null; }
             }
+
+            public bool ShouldClose { get; set; }
 
             public Subscription(string connection, string topic)
             {
@@ -51,6 +53,19 @@ namespace PupilLabs
                         OnReceiveData(msgType, MessagePackSerializer.Deserialize<Dictionary<string, object>>(mStream), thirdFrame);
                     }
                 }
+            }
+
+            public void UpdateSocket()
+            {
+                if (socket.HasIn)
+                {
+                    socket.Poll();
+                }
+            }
+
+            public void Close()
+            {
+                socket.Close();
             }
         }
     }

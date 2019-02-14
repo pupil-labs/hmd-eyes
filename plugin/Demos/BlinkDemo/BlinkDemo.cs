@@ -7,7 +7,7 @@ namespace PupilLabs.Demos
 
     public class BlinkDemo : MonoBehaviour
     {
-        public PupilLabs.Stream stream;
+        public PupilLabs.SubscriptionsController subsCtrl;
 
         public Transform leftEye;
         public Transform rightEye;
@@ -18,10 +18,10 @@ namespace PupilLabs.Demos
         // Use this for initialization
         void OnEnable()
         {
-            stream.OnConnected += StartBlinkSubscription;
-            stream.OnDisconnecting += StopBlinkSubscription;
+            subsCtrl.OnConnected += StartBlinkSubscription;
+            subsCtrl.OnDisconnecting += StopBlinkSubscription;
 
-            if (stream.IsConnected)
+            if (subsCtrl.IsConnected)
             {
                 StartBlinkSubscription();
             }
@@ -29,10 +29,10 @@ namespace PupilLabs.Demos
 
         void OnDisable()
         {
-            stream.OnConnected -= StartBlinkSubscription;
-            stream.OnDisconnecting -= StopBlinkSubscription;
+            subsCtrl.OnConnected -= StartBlinkSubscription;
+            subsCtrl.OnDisconnecting -= StopBlinkSubscription;
 
-            if (stream.IsConnected)
+            if (subsCtrl.IsConnected)
             {
                 StopBlinkSubscription();
             }
@@ -43,9 +43,9 @@ namespace PupilLabs.Demos
 
             Debug.Log("StartBlinkSubscription");
 
-            stream.SubscribeTo("blinks",CustomReceiveData);
+            subsCtrl.SubscribeTo("blinks",CustomReceiveData);
 
-            stream.Send(new Dictionary<string, object> {
+            subsCtrl.Send(new Dictionary<string, object> {
                 { "subject", "start_plugin" }
                 ,{ "name", "Blink_Detection" }
                 ,{
@@ -63,12 +63,12 @@ namespace PupilLabs.Demos
 
             Debug.Log("StopBlinkSubscription");
 
-            stream.Send(new Dictionary<string, object> {
+            subsCtrl.Send(new Dictionary<string, object> {
                 { "subject","stop_plugin" }
                 ,{ "name", "Blink_Detection" }
             });
 
-            stream.UnsubscribeFrom("blinks",CustomReceiveData);
+            subsCtrl.UnsubscribeFrom("blinks",CustomReceiveData);
         }
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)

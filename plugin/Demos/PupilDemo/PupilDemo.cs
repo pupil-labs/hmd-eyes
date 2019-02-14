@@ -6,14 +6,14 @@ namespace PupilLabs.Demos
 
     public class PupilDemo : MonoBehaviour
     {
-        public PupilLabs.Stream stream;
+        public PupilLabs.SubscriptionsController subsCtrl;
 
         void OnEnable()
         {
-            stream.OnConnected += StartPupilSubscription;
-            stream.OnDisconnecting += StopPupilSubscription;
+            subsCtrl.OnConnected += StartPupilSubscription;
+            subsCtrl.OnDisconnecting += StopPupilSubscription;
 
-            if (stream.IsConnected)
+            if (subsCtrl.IsConnected)
             {
                 StartPupilSubscription();
             }
@@ -21,10 +21,10 @@ namespace PupilLabs.Demos
 
         void OnDisable()
         {
-            stream.OnConnected -= StartPupilSubscription;
-            stream.OnDisconnecting -= StopPupilSubscription;
+            subsCtrl.OnConnected -= StartPupilSubscription;
+            subsCtrl.OnDisconnecting -= StopPupilSubscription;
 
-            if (stream.IsConnected)
+            if (subsCtrl.IsConnected)
             {
                 StopPupilSubscription();
             }
@@ -35,7 +35,7 @@ namespace PupilLabs.Demos
 
             Debug.Log("StartPupilSubscription");
 
-            stream.SubscribeTo("pupil", CustomReceiveData);
+            subsCtrl.SubscribeTo("pupil", CustomReceiveData);
         }
 
         void StopPupilSubscription()
@@ -43,7 +43,7 @@ namespace PupilLabs.Demos
 
             Debug.Log("StopPupilSubscription");
 
-            stream.UnsubscribeFrom("pupil", CustomReceiveData);
+            subsCtrl.UnsubscribeFrom("pupil", CustomReceiveData);
         }
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
