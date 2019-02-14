@@ -5,9 +5,9 @@ namespace PupilLabs
 {
     public class Helpers
     {
-        public static bool Is3DCalibrationSupported(PupilLabs.Connection connection)
+        public static bool Is3DCalibrationSupported(PupilLabs.RequestController requestCtrl)
         {
-            List<int> versionNumbers = connection.PupilVersionNumbers;
+            List<int> versionNumbers = requestCtrl.PupilVersionNumbers;
             if (versionNumbers.Count > 0)
                 if (versionNumbers[0] >= 1)
                     return true;

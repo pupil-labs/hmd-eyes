@@ -8,6 +8,7 @@ namespace PupilLabs.Demos
     public class BlinkDemo : MonoBehaviour
     {
         public PupilLabs.SubscriptionsController subsCtrl;
+        public PupilLabs.RequestController requestCtrl;
 
         public Transform leftEye;
         public Transform rightEye;
@@ -18,8 +19,8 @@ namespace PupilLabs.Demos
         // Use this for initialization
         void OnEnable()
         {
-            subsCtrl.OnConnected += StartBlinkSubscription;
-            subsCtrl.OnDisconnecting += StopBlinkSubscription;
+            requestCtrl.OnConnected += StartBlinkSubscription;
+            requestCtrl.OnDisconnecting += StopBlinkSubscription;
 
             if (subsCtrl.IsConnected)
             {
@@ -29,8 +30,8 @@ namespace PupilLabs.Demos
 
         void OnDisable()
         {
-            subsCtrl.OnConnected -= StartBlinkSubscription;
-            subsCtrl.OnDisconnecting -= StopBlinkSubscription;
+            requestCtrl.OnConnected -= StartBlinkSubscription;
+            requestCtrl.OnDisconnecting -= StopBlinkSubscription;
 
             if (subsCtrl.IsConnected)
             {
@@ -45,7 +46,7 @@ namespace PupilLabs.Demos
 
             subsCtrl.SubscribeTo("blinks",CustomReceiveData);
 
-            subsCtrl.Send(new Dictionary<string, object> {
+            requestCtrl.Send(new Dictionary<string, object> {
                 { "subject", "start_plugin" }
                 ,{ "name", "Blink_Detection" }
                 ,{
@@ -63,7 +64,7 @@ namespace PupilLabs.Demos
 
             Debug.Log("StopBlinkSubscription");
 
-            subsCtrl.Send(new Dictionary<string, object> {
+            requestCtrl.Send(new Dictionary<string, object> {
                 { "subject","stop_plugin" }
                 ,{ "name", "Blink_Detection" }
             });

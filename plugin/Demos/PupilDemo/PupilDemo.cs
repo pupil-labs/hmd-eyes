@@ -7,11 +7,12 @@ namespace PupilLabs.Demos
     public class PupilDemo : MonoBehaviour
     {
         public PupilLabs.SubscriptionsController subsCtrl;
+        public PupilLabs.RequestController requestCtrl;
 
         void OnEnable()
         {
-            subsCtrl.OnConnected += StartPupilSubscription;
-            subsCtrl.OnDisconnecting += StopPupilSubscription;
+            requestCtrl.OnConnected += StartPupilSubscription;
+            requestCtrl.OnDisconnecting += StopPupilSubscription;
 
             if (subsCtrl.IsConnected)
             {
@@ -21,8 +22,8 @@ namespace PupilLabs.Demos
 
         void OnDisable()
         {
-            subsCtrl.OnConnected -= StartPupilSubscription;
-            subsCtrl.OnDisconnecting -= StopPupilSubscription;
+            requestCtrl.OnConnected -= StartPupilSubscription;
+            requestCtrl.OnDisconnecting -= StopPupilSubscription;
 
             if (subsCtrl.IsConnected)
             {

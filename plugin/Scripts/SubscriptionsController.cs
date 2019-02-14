@@ -10,18 +10,13 @@ namespace PupilLabs
     public partial class SubscriptionsController : MonoBehaviour
     {
 
-        [SerializeField]
-        private PupilLabs.Connection connection = new PupilLabs.Connection();
+        public PupilLabs.RequestController requestCtrl;
         // [SerializeField]
         // private bool printMessageTopic = false;
         // [SerializeField]
         // private bool printMessage = false;
 
-        public delegate void ConnectionDelegate();
-        public event ConnectionDelegate OnConnected;
-        public event ConnectionDelegate OnDisconnecting;
-
-        public bool IsConnected { get { return connection.IsConnected; } }
+        public bool IsConnected { get { return requestCtrl.IsConnected; } }
 
         public delegate void ReceiveDataDelegate(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null);
 
@@ -29,84 +24,34 @@ namespace PupilLabs
         
         void OnEnable()
         {
-            if (!connection.IsConnected)
+            if (requestCtrl != null)
             {
-                RunConnect();
-                //RequestController.Connect();
+                requestCtrl.OnDisconnecting += Disconnect;
             }
         }
 
         void OnDisable()
         {
-            if (connection.IsConnected)
-            {
-                Disconnect();
-            }
+            Disconnect();
         }
 
         void Update()
         {
-            if (connection.IsConnected) //TODO needed?
-            {
-                UpdateSubscriptionSockets(); 
-            }
+            UpdateSubscriptionSockets();
         }
 
-        public void RunConnect()
-        {
-            StartCoroutine(Connect(retry: true, retryDelay: 5f));
-        }
-
-        private IEnumerator Connect(bool retry = false, float retryDelay = 5f)
-        //TODO crash on cancel while trying to connect
-        {
-            yield return new WaitForSeconds(3f);
-
-            while (!connection.IsConnected)
-            {
-                connection.InitializeRequestSocket();
-
-                if (!connection.IsConnected)
-                {
-                    if (retry)
-                    {
-                        Debug.Log("Could not connect, Re-trying in 5 seconds ! ");
-                        yield return new WaitForSeconds(retryDelay);
-
-                    }
-                    else
-                    {
-                        connection.TerminateContext();
-                        yield return null;
-                    }
-                }
-            }
-            Debug.Log(" Succesfully connected to Pupil! ");
-
-            // RepaintGUI(); //
-            if (OnConnected != null)
-                OnConnected();
-            yield break;
-        }
-
-        public void Disconnect() 
+        public void Disconnect()
         {
             foreach (var socketKey in subscriptions.Keys)
                 CloseSubscriptionSocket(socketKey);
             UpdateSubscriptionSockets();
-
-            connection.CloseSockets();
-
-            if (OnDisconnecting != null){
-                OnDisconnecting();
-            }
         }
 
         public void SubscribeTo(string topic, ReceiveDataDelegate subscriberHandler)
         {
             if (!subscriptions.ContainsKey(topic))
             {
-                string connectionStr = connection.GetConnectionString();
+                string connectionStr = requestCtrl.GetConnectionString();
                 Subscription subscription = new Subscription(connectionStr, topic);
                 
                 subscriptions.Add(topic, subscription);
@@ -163,14 +108,7 @@ namespace PupilLabs
             }            
         }
 
-        public bool Send(Dictionary<string, object> dictionary)
-        {
-            if (!connection.IsConnected)
-            {
-                return false;
-            }
-            return connection.sendRequestMessage(dictionary);
-        }
+
 
         // private void Logging(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         // {
