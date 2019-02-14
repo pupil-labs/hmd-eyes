@@ -20,10 +20,9 @@ namespace PupilLabs
         public event ConnectionDelegate OnConnected;
         public event ConnectionDelegate OnDisconnecting;
 
+        [SerializeField]
         private string PupilVersion;
-        [HideInInspector]
-        public List<int> PupilVersionNumbers;
-
+        
         public string GetConnectionString()
         {
             return request.GetConnectionString();
@@ -133,24 +132,17 @@ namespace PupilLabs
             }
         }
 
+        public string GetPupilVersion()
+        {
+            string pupilVersion;
+            request.SendCommand("v",out pupilVersion);
+            return pupilVersion;
+        }
+
         private void UpdatePupilVersion()
         {
-            if (request.SendCommand("v",out PupilVersion))
-            {
-                if (PupilVersion != null && PupilVersion != "Unknown command.")
-                {
-                    Debug.Log($"PupilVersion: {PupilVersion}");
-                    
-                    var split = PupilVersion.Split('.');
-                    PupilVersionNumbers = new List<int>();
-                    int number;
-                    foreach (var item in split)
-                    {
-                        if (int.TryParse(item, out number))
-                            PupilVersionNumbers.Add(number);
-                    }
-                }
-            }
+            PupilVersion = GetPupilVersion();
+            Debug.Log($"Pupil Version: {PupilVersion}");
         }
     }
 }

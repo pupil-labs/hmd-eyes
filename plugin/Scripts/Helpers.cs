@@ -7,7 +7,20 @@ namespace PupilLabs
     {
         public static bool Is3DCalibrationSupported(PupilLabs.RequestController requestCtrl)
         {
-            List<int> versionNumbers = requestCtrl.PupilVersionNumbers;
+            List<int> versionNumbers = new List<int>();
+            string pupilVersion = requestCtrl.GetPupilVersion();
+            if (pupilVersion != null && pupilVersion != "Unknown command.")
+            {
+                var split = pupilVersion.Split('.');
+                versionNumbers = new List<int>();
+                int number;
+                foreach (var item in split)
+                {
+                    if (int.TryParse(item, out number))
+                        versionNumbers.Add(number);
+                }
+            }
+
             if (versionNumbers.Count > 0)
                 if (versionNumbers[0] >= 1)
                     return true;
