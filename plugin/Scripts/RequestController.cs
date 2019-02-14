@@ -101,6 +101,29 @@ namespace PupilLabs
             return request.SendRequestMessage(dictionary);
         }
 
+        public void StartPlugin(string name, Dictionary<string, object> args = null)
+        {
+            Dictionary<string, object> startPluginDic = new Dictionary<string, object> {
+                { "subject", "start_plugin" },
+                { "name", name }
+            };
+
+            if (args != null)
+            {
+                startPluginDic["args"] = args;
+            }
+
+            request.SendRequestMessage(startPluginDic);
+        }
+
+        public void StopPlugin(string name)
+        {
+            request.SendRequestMessage(new Dictionary<string, object> {
+                { "subject","stop_plugin" },
+                { "name", name }
+            });
+        }
+
         public void SetPupilTimestamp(float time)
         {
             if (IsConnected)

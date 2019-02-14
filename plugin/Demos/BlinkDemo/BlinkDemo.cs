@@ -16,7 +16,6 @@ namespace PupilLabs.Demos
         public float blinkDuration = 0.5f;
         private bool blinking = false;
 
-        // Use this for initialization
         void OnEnable()
         {
             requestCtrl.OnConnected += StartBlinkSubscription;
@@ -46,17 +45,14 @@ namespace PupilLabs.Demos
 
             subsCtrl.SubscribeTo("blinks",CustomReceiveData);
 
-            requestCtrl.Send(new Dictionary<string, object> {
-                { "subject", "start_plugin" }
-                ,{ "name", "Blink_Detection" }
-                ,{
-                    "args", new Dictionary<string,object> {
-                        { "history_length", 0.2f }
-                        ,{ "onset_confidence_threshold", 0.5f }
-                        ,{ "offset_confidence_threshold", 0.5f }
-                    }
+            requestCtrl.StartPlugin(
+                "Blink_Detection",
+                new Dictionary<string, object> {
+                    { "history_length", 0.2f },
+                    { "onset_confidence_threshold", 0.5f },
+                    { "offset_confidence_threshold", 0.5f }
                 }
-            });
+            );
         }
 
         void StopBlinkSubscription()
@@ -64,10 +60,7 @@ namespace PupilLabs.Demos
 
             Debug.Log("StopBlinkSubscription");
 
-            requestCtrl.Send(new Dictionary<string, object> {
-                { "subject","stop_plugin" }
-                ,{ "name", "Blink_Detection" }
-            });
+            requestCtrl.StopPlugin("Blink_Detection");
 
             subsCtrl.UnsubscribeFrom("blinks",CustomReceiveData);
         }
