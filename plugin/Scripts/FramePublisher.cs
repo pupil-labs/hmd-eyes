@@ -11,7 +11,6 @@ namespace PupilLabs
 
         public delegate void PublishHandler(int eyeIdx, byte[] frameData);
         public event PublishHandler OnReceiveFrame;
- 
 
         public FramePublisher(SubscriptionsController subsCtrl)
         {
@@ -79,7 +78,7 @@ namespace PupilLabs
 
             if (OnReceiveFrame != null)
             {
-                OnReceiveFrame(eyeIdx,thirdFrame);
+                OnReceiveFrame(eyeIdx, thirdFrame);
             }
         }
     }

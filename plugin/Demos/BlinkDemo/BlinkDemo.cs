@@ -21,7 +21,7 @@ namespace PupilLabs.Demos
             requestCtrl.OnConnected += StartBlinkSubscription;
             requestCtrl.OnDisconnecting += StopBlinkSubscription;
 
-            if (subsCtrl.IsConnected)
+            if (requestCtrl.IsConnected)
             {
                 StartBlinkSubscription();
             }
@@ -32,7 +32,7 @@ namespace PupilLabs.Demos
             requestCtrl.OnConnected -= StartBlinkSubscription;
             requestCtrl.OnDisconnecting -= StopBlinkSubscription;
 
-            if (subsCtrl.IsConnected)
+            if (requestCtrl.IsConnected)
             {
                 StopBlinkSubscription();
             }
@@ -40,7 +40,6 @@ namespace PupilLabs.Demos
 
         void StartBlinkSubscription()
         {
-
             Debug.Log("StartBlinkSubscription");
 
             subsCtrl.SubscribeTo("blinks", CustomReceiveData);
@@ -57,7 +56,6 @@ namespace PupilLabs.Demos
 
         void StopBlinkSubscription()
         {
-
             Debug.Log("StopBlinkSubscription");
 
             requestCtrl.StopPlugin("Blink_Detection");

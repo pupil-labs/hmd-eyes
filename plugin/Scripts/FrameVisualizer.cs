@@ -9,7 +9,7 @@ namespace PupilLabs
         public SubscriptionsController subscriptionsController;
 
         public int targetFPS = 20;
-        public Transform cameraAsParent; //TODO pose not 100% clear yet
+        public Transform cameraAsParent;
 
         [SerializeField]
         Texture2D[] eyeTexture = new Texture2D[2];
@@ -42,7 +42,7 @@ namespace PupilLabs
             }
 
             Debug.Log("Enabling Frame Visualizer");
-            
+
             publisher.OnReceiveFrame += UpdateFrame;
 
             eyePublishingInitialized = new bool[] { false, false };

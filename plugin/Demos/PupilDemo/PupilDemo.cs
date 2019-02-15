@@ -14,7 +14,7 @@ namespace PupilLabs.Demos
             requestCtrl.OnConnected += StartPupilSubscription;
             requestCtrl.OnDisconnecting += StopPupilSubscription;
 
-            if (subsCtrl.IsConnected)
+            if (requestCtrl.IsConnected)
             {
                 StartPupilSubscription();
             }
@@ -25,7 +25,7 @@ namespace PupilLabs.Demos
             requestCtrl.OnConnected -= StartPupilSubscription;
             requestCtrl.OnDisconnecting -= StopPupilSubscription;
 
-            if (subsCtrl.IsConnected)
+            if (requestCtrl.IsConnected)
             {
                 StopPupilSubscription();
             }
@@ -33,7 +33,6 @@ namespace PupilLabs.Demos
 
         void StartPupilSubscription()
         {
-
             Debug.Log("StartPupilSubscription");
 
             subsCtrl.SubscribeTo("pupil", CustomReceiveData);
@@ -41,7 +40,6 @@ namespace PupilLabs.Demos
 
         void StopPupilSubscription()
         {
-
             Debug.Log("StopPupilSubscription");
 
             subsCtrl.UnsubscribeFrom("pupil", CustomReceiveData);
@@ -49,7 +47,6 @@ namespace PupilLabs.Demos
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
-
             Debug.Log($"Topic {topic} received");
             foreach (var item in dictionary)
             {
