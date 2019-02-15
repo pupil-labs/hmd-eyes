@@ -9,7 +9,7 @@ namespace PupilLabs
         public RequestController requestCtrl;
         public SubscriptionsController subsCtrl;
 
-        public Calibration calibration;
+        public Calibration calibration = new Calibration();
         new public Camera camera;
 
         private float radius;
@@ -45,7 +45,8 @@ namespace PupilLabs
                     calibration.StopCalibration ();
                 } else
                 {
-                    //TODO clean up
+                    InitializeCalibration();
+
                     calibration.requestCtrl = requestCtrl;
                     calibration.subsCtrl = subsCtrl;
                     calibration.StartCalibration (calibrationSettings);

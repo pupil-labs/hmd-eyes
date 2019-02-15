@@ -19,7 +19,7 @@ namespace PupilLabs
 
 		private void ReceiveResponse(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame)
 		{
-			//TODO
+			Debug.Log($"Calibration.ReceiveResponse: {topic}");
 		}
 
 		//TODO where to set?	
@@ -29,6 +29,8 @@ namespace PupilLabs
 		CalibrationSettings settings;
 		public void StartCalibration (CalibrationSettings settings)
 		{
+			Debug.Log("StartCalibration");
+
 			this.settings = settings; //TODO temp, where to set?
 
 			requestCtrl.SetPupilTimestamp (Time.time);
@@ -93,6 +95,8 @@ namespace PupilLabs
 		private List<Dictionary<string,object>> _calibrationData = new List<Dictionary<string,object>> ();
 		public void AddCalibrationReferenceData ()
 		{
+			Debug.Log("AddCalibrationReferenceData");
+
 			requestCtrl.Send (new Dictionary<string,object> {
 				{ "subject","calibration.add_ref_data" },
 				{
@@ -108,6 +112,8 @@ namespace PupilLabs
 
 		public void StopCalibration ()
 		{
+			Debug.Log("Stop Calibration");
+
 			IsCalibrating = false;
 			requestCtrl.Send (new Dictionary<string,object> { { "subject","calibration.should_stop" } });
 		}
