@@ -4,9 +4,8 @@ using UnityEngine;
 
 namespace PupilLabs
 {
-    public class FramePublishing : MonoBehaviour
+    public class FrameVisualizer : MonoBehaviour
     {
-        public RequestController requestController;
         public SubscriptionsController subscriptionsController;
 
         public int targetFPS = 20;
@@ -18,6 +17,8 @@ namespace PupilLabs
         MeshRenderer[] eyeRenderer = new MeshRenderer[2];
         bool[] eyePublishingInitialized = new bool[2];
 
+        FramePublisher publisher = null;
+
         void OnEnable()
         {
             if (cameraAsParent == null)
@@ -27,60 +28,33 @@ namespace PupilLabs
                 return;
             }
 
-            if (requestController == null || subscriptionsController == null)
+            if (subscriptionsController == null)
             {
-                Debug.LogWarning("Frame Publisher needs access to Subscriptions and Request Controller");
+                Debug.LogWarning("Frame Publisher needs access to SubscriptionsController");
                 enabled = false;
                 return;
             }
 
+
+            if (publisher == null)
+            {
+                publisher = new FramePublisher(subscriptionsController);
+            }
+
+            Debug.Log("Enabling Frame Visualizer");
+            
+            publisher.OnReceiveFrame += UpdateFrame;
+
             eyePublishingInitialized = new bool[] { false, false };
-
-            subscriptionsController.SubscribeTo("frame.", CustomReceiveData);
-
-            requestController.StartPlugin("Frame_Publisher");
         }
 
-        private static object[] position_o;
-        Vector2 PixelPosition(object position)
+        void UpdateFrame(int eyeIdx, byte[] frameData)
         {
-            position_o = position as object[];
-            Vector2 result = Vector2.zero;
-            if (position_o.Length != 2)
-                UnityEngine.Debug.Log("Array length not supported");
-            else
+            if (!eyePublishingInitialized[eyeIdx])
             {
-                result.x = float.Parse(position_o[1].ToString());
-                result.y = float.Parse(position_o[0].ToString());
+                InitializeFramePublishing(eyeIdx);
             }
-            return result;
-        }
-        float FloatForKeyInDictionary(Dictionary<string, object> dictionary, string key)
-        {
-            if (dictionary.ContainsKey(key))
-                return float.Parse(dictionary[key].ToString());
-            return 0;
-        }
-        void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
-        {
-            //		if (topic == "pupil.0" || topic == "pupil.1")
-            //			UpdateSphereProjection (eyeIndex: topic == "pupil.0" ? 0 : 1, dictionary: dictionary);
-
-            if (thirdFrame == null)
-                return;
-
-            if (topic == "frame.eye.0")
-            {
-                if (!eyePublishingInitialized[0])
-                    InitializeFramePublishing(0);
-                eyeImageRaw[0] = thirdFrame;
-            }
-            else if (topic == "frame.eye.1")
-            {
-                if (!eyePublishingInitialized[1])
-                    InitializeFramePublishing(1);
-                eyeImageRaw[1] = thirdFrame;
-            }
+            eyeImageRaw[eyeIdx] = frameData;
         }
 
         public void InitializeFramePublishing(int eyeIndex)
@@ -129,21 +103,20 @@ namespace PupilLabs
 
         void OnDisable()
         {
-            Debug.Log("Disabling Frame Publisher");
+            Debug.Log("Disabling Frame Visualizer");
 
-            if (requestController != null)
+            if (publisher != null)
             {
-                requestController.StopPlugin("Frame_Publisher");
-            }
-
-            if (subscriptionsController != null)
-            {
-                subscriptionsController.UnsubscribeFrom("frame", CustomReceiveData);
+                publisher.OnReceiveFrame -= UpdateFrame;
             }
 
             for (int i = eyeRenderer.Length - 1; i >= 0; i--)
+            {
                 if (eyeRenderer[i] != null && eyeRenderer[i].gameObject != null)
+                {
                     Destroy(eyeRenderer[i].gameObject);
+                }
+            }
         }
     }
 }
