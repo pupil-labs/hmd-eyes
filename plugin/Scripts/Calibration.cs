@@ -44,7 +44,7 @@ namespace PupilLabs
 			subsCtrl.SubscribeTo ("notify.calibration.failed",ReceiveResponse);
 			// subsCtrl.SubscribeTo ("pupil."); //TODO why?
 
-			requestCtrl.StartPlugin(settings.type.pluginName);
+			requestCtrl.StartPlugin(settings.pluginName);
 				
 			requestCtrl.Send (new Dictionary<string,object> {
 				{ "subject","calibration.should_start" },
@@ -79,12 +79,12 @@ namespace PupilLabs
 					position [i] *= Helpers.PupilUnitScalingFactor;
 
 			_calibrationData.Add ( new Dictionary<string,object> () {
-				{ settings.type.positionKey, position }, 
+				{ settings.positionKey, position }, 
 				{ "timestamp", timestamp },
 				{ "id", int.Parse(Helpers.rightEyeID) }
 			});
 			_calibrationData.Add ( new Dictionary<string,object> () {
-				{ settings.type.positionKey, position }, 
+				{ settings.positionKey, position }, 
 				{ "timestamp", timestamp },
 				{ "id", int.Parse(Helpers.leftEyeID) } 
 			});

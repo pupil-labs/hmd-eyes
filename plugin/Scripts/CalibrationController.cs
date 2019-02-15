@@ -10,27 +10,16 @@ namespace PupilLabs
         public SubscriptionsController subsCtrl;
 
         public Calibration calibration;
-        private CalibrationSettings.Type type;
-        private CalibrationSettings.Mode mode;
         new public Camera camera;
 
         private float radius;
         private double offset;
 
         public CalibrationSettings calibrationSettings;
-		public CalibrationSettings.Type currentCalibrationType
-		{
-			get
-			{
-				return calibrationSettings.type;
-			}
-		}
 
         void OnEnable()
         {
-            //TODO temp
-            type = calibrationSettings.type;
-            mode = calibrationSettings.mode; 
+            
         }
 
         bool updateInitialTranslation = true;
@@ -117,27 +106,27 @@ namespace PupilLabs
         public void UpdateCalibrationPoint()
         {
             currentCalibrationPointPosition = new float[]{0};
-            switch (mode)
+            switch (calibrationSettings.mode)
             {
             case CalibrationSettings.Mode._3D:
-                currentCalibrationPointPosition = new float[] {type.centerPoint.x,type.centerPoint.y,type.vectorDepthRadius [currentCalibrationDepth].x};
+                currentCalibrationPointPosition = new float[] {calibrationSettings.centerPoint.x,calibrationSettings.centerPoint.y,calibrationSettings.vectorDepthRadius [currentCalibrationDepth].x};
                 offset = 0.25f * Math.PI;
                 break;
             default:
-                currentCalibrationPointPosition = new float[]{ type.centerPoint.x,type.centerPoint.y };
+                currentCalibrationPointPosition = new float[]{ calibrationSettings.centerPoint.x,calibrationSettings.centerPoint.y };
                 offset = 0f;
                 break;
             }
-            radius = type.vectorDepthRadius[currentCalibrationDepth].y;
-            if (currentCalibrationPoint > 0 && currentCalibrationPoint < type.points)
+            radius = calibrationSettings.vectorDepthRadius[currentCalibrationDepth].y;
+            if (currentCalibrationPoint > 0 && currentCalibrationPoint < calibrationSettings.points)
             {	
-                currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (type.points-1f) + offset);
-                currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (type.points-1f) + offset);
+                currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (calibrationSettings.points-1f) + offset);
+                currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (calibrationSettings.points-1f) + offset);
             }
-            if (mode == CalibrationSettings.Mode._3D)
+            if (calibrationSettings.mode == CalibrationSettings.Mode._3D)
                 currentCalibrationPointPosition [1] /= camera.aspect;
             Marker.UpdatePosition (currentCalibrationPointPosition);
-            Marker.SetScale (type.markerScale);
+            Marker.SetScale (calibrationSettings.markerScale);
         }
 
         public PupilMarker Marker;
@@ -165,12 +154,12 @@ namespace PupilLabs
 
 				currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 
-				if (currentCalibrationSamples >= currentCalibrationType.samplesPerDepth)
+				if (currentCalibrationSamples >= calibrationSettings.samplesPerDepth)
 				{
 					currentCalibrationSamples = 0;
 					currentCalibrationDepth++;
 
-					if (currentCalibrationDepth >= currentCalibrationType.vectorDepthRadius.Length)
+					if (currentCalibrationDepth >= calibrationSettings.vectorDepthRadius.Length)
 					{
 						currentCalibrationDepth = 0;
 						currentCalibrationPoint++;
@@ -178,7 +167,7 @@ namespace PupilLabs
 						//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
 						calibration.AddCalibrationReferenceData ();
 
-						if (currentCalibrationPoint >= currentCalibrationType.points)
+						if (currentCalibrationPoint >= calibrationSettings.points)
 						{
 							calibration.StopCalibration ();
 						}

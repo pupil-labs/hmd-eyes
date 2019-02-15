@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace PupilLabs
 {
+    [CreateAssetMenu(fileName = "CalibrationSettings", menuName = "Pupil/CalibrationSettings", order = 1)]
     public class CalibrationSettings : ScriptableObject
     {
         public enum Mode
@@ -12,23 +13,16 @@ namespace PupilLabs
             _3D
         }
 
-        [System.Serializable]
-        public struct Type
-        {
-            public string name;
-            public string pluginName;
-            public string positionKey;
-            public double[] ref_data;
-            public float points;
-            public float markerScale;
-            public Vector2 centerPoint;
-            public Vector2[] vectorDepthRadius;
-            public int samplesPerDepth;
-        }
-
-        public Type type;
         public Mode mode;
 
+        public string pluginName;
+        public string positionKey;
+        public double[] ref_data;
+        public float points = 5;
+        public float markerScale = 0.03f;
+        public Vector2 centerPoint;
+        public Vector2[] vectorDepthRadius;
+        public int samplesPerDepth = 80;
         public int samplesToIgnoreForEyeMovement = 10;
 
         // public Type CalibrationType2D = new Type () 
