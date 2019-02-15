@@ -2,33 +2,53 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FramePublishingDemo : MonoBehaviour 
+namespace PupilLabs.Demos
 {
-	private FramePublishing publisher;
-
-	void OnEnable () 
+	public class FramePublishingDemo : MonoBehaviour 
 	{
-		PupilTools.OnConnected += StartFramePublishing;
-		PupilTools.OnDisconnecting += StopFramePublishing;
-	}
+		public FramePublishing publisher;
+		public RequestController requestCtrl;
 
-	void StartFramePublishing()
-	{
-		if (publisher == null)
-			publisher = gameObject.AddComponent<FramePublishing> ();
-		else
-			publisher.enabled = true;
-	}
+		void OnEnable () 
+		{
+			if (requestCtrl == null)
+			{
+				Debug.LogWarning("EyeCamVisDemo needs access to a RequestController");
+				enabled = false;
+				return;
+			}
 
-	void StopFramePublishing()
-	{
-		if (publisher != null)
-			publisher.enabled = false;
-	}
+			requestCtrl.OnConnected += StartFramePublishing;
+			requestCtrl.OnDisconnecting += StopFramePublishing;
+		}
 
-	void OnDisable()
-	{
-		PupilTools.OnConnected -= StartFramePublishing;
-		PupilTools.OnDisconnecting -= StopFramePublishing;
+		void StartFramePublishing()
+		{
+			if (publisher != null)
+			{
+				publisher.enabled = true;
+			}
+		}
+
+		void StopFramePublishing()
+		{
+			if (publisher != null)
+			{
+				publisher.enabled = false;
+			}
+		}
+
+		void OnDisable()
+		{
+			if (requestCtrl == null)
+			{
+				return;
+			}
+
+			StopFramePublishing();
+
+			requestCtrl.OnConnected -= StartFramePublishing;
+			requestCtrl.OnDisconnecting -= StopFramePublishing;
+		}
 	}
 }
