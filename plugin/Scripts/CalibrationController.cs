@@ -8,9 +8,10 @@ namespace PupilLabs
     {
         public RequestController requestCtrl;
         public SubscriptionsController subsCtrl;
-
-        public Calibration calibration = new Calibration();
         new public Camera camera;
+        public Transform marker;
+
+        private Calibration calibration = new Calibration();
 
         private float radius;
         private double offset;
@@ -95,16 +96,15 @@ namespace PupilLabs
 			previousCalibrationDepth = -1;
 			previousCalibrationPoint = -1;
 
-			if (!PupilMarker.TryToReset (Marker))
-				Marker = new PupilMarker ("Calibraton Marker", Color.white);
 			UpdateCalibrationPoint ();
+            marker.localScale = Vector3.one * calibrationSettings.markerScale;
 
 			//		yield return new WaitForSeconds (2f);
 
 			Debug.Log ("Starting Calibration");
 		}
 
-        public void UpdateCalibrationPoint()
+        private void UpdateCalibrationPoint()
         {
             currentCalibrationPointPosition = new float[]{0};
             switch (calibrationSettings.mode)
@@ -126,11 +126,43 @@ namespace PupilLabs
             }
             if (calibrationSettings.mode == CalibrationSettings.Mode._3D)
                 currentCalibrationPointPosition [1] /= camera.aspect;
-            Marker.UpdatePosition (currentCalibrationPointPosition);
-            Marker.SetScale (calibrationSettings.markerScale);
+            
+            UpdateMarkerPosition(calibrationSettings.mode, marker, currentCalibrationPointPosition);
         }
 
-        public PupilMarker Marker;
+        private void UpdateMarkerPosition(CalibrationSettings.Mode mode, Transform marker, float[] newPosition)
+        {
+            Vector3 position;
+
+            if (mode == CalibrationSettings.Mode._2D)
+            {
+                if (newPosition.Length == 2)
+                {
+                    position.x = newPosition[0];
+                    position.y = newPosition[1];
+                    position.z = calibrationSettings.vectorDepthRadius[0].x;
+                    gameObject.transform.position = camera.ViewportToWorldPoint(position);
+                } 
+                else
+                {
+                    Debug.Log ("Length of new position array does not match 2D mode");
+                }
+            }
+            else if (mode == CalibrationSettings.Mode._3D)
+            {
+                if (newPosition.Length == 3)
+                {
+                    position.x = newPosition[0];
+                    position.y = newPosition[1];
+                    position.z = newPosition[2];
+                    gameObject.transform.localPosition = position;
+                } 
+                else
+                {
+                    Debug.Log ("Length of new position array does not match 3D mode");
+                }
+            }
+        }
 
 	
 		static float lastTimeStamp = 0;
