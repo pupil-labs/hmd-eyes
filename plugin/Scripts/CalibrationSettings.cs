@@ -23,5 +23,6 @@ namespace PupilLabs
         public Vector2[] vectorDepthRadius;
         public int samplesPerDepth = 40;
         public int samplesToIgnoreForEyeMovement = 10;
+        public float timeBetweenCalibrationPoints = 0.02f; // was 0.1, 1000/60 ms wait in old version 
     }
 }

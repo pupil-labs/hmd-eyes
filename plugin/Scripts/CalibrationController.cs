@@ -165,13 +165,12 @@ namespace PupilLabs
         }
 
 	
-		static float lastTimeStamp = 0;
-		static float timeBetweenCalibrationPoints = 0.02f; // was 0.1, 1000/60 ms wait in old version
+		private float lastTimeStamp = 0;
 		public void UpdateCalibration ()
 		{
 			float t = Time.time;
 
-			if (t - lastTimeStamp > timeBetweenCalibrationPoints)
+			if (t - lastTimeStamp > calibrationSettings.timeBetweenCalibrationPoints)
 			{
 				lastTimeStamp = t;
 
