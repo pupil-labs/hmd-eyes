@@ -5,6 +5,10 @@ namespace PupilLabs
 {
     public class Helpers
     {
+        public static float PupilUnitScalingFactor = 1000;	// Pupil is currently operating in mm
+        public const string leftEyeID = "1";
+	    public const string rightEyeID = "0";
+
         public static bool Is3DCalibrationSupported(PupilLabs.RequestController requestCtrl)
         {
             List<int> versionNumbers = new List<int>();
