@@ -10,7 +10,7 @@ namespace PupilLabs
 
     public partial class RequestController
     {
-        
+
         [System.Serializable]
         private class Request
         {
@@ -19,12 +19,12 @@ namespace PupilLabs
             public string IP = "127.0.0.1";
             public int PORT = 50020;
             private string IPHeader;
-            private string subport = "59485";
+            private string subport;
 
             public RequestSocket requestSocket = null;
             private bool contextExists = false;
             private TimeSpan requestTimeout = new System.TimeSpan(0, 0, 1); //= 1sec
-            
+
             public bool IsConnected { get; set; }
 
             public string GetConnectionString()
@@ -64,7 +64,7 @@ namespace PupilLabs
                 {
                     return false;
                 }
-                
+
                 NetMQMessage m = new NetMQMessage();
 
                 m.Append("notify." + data["subject"]);
@@ -112,6 +112,12 @@ namespace PupilLabs
                     NetMQConfig.ContextTerminate(true);
                     contextExists = false;
                 }
+            }
+
+            public void resetDefaultLocalConnection()
+            {
+                IP = "127.0.0.1";
+                PORT = 50020;
             }
 
         }

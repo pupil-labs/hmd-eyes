@@ -1,12 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using NetMQ.Sockets;
-using MessagePack;
 
 namespace PupilLabs
 {
-
+    // [RequireComponent(typeof(RequestController))]
     public partial class SubscriptionsController : MonoBehaviour
     {
 

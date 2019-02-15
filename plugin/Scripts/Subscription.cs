@@ -14,7 +14,7 @@ namespace PupilLabs
         {
             public string topic;
             private SubscriberSocket socket;
-            
+
             public event ReceiveDataDelegate OnReceiveData;
 
             public bool HasSubscribers
@@ -41,7 +41,7 @@ namespace PupilLabs
                 {
                     string msgType = m[0].ConvertToString();
                     MemoryStream mStream = new MemoryStream(m[1].ToByteArray());
-                    
+
                     byte[] thirdFrame = null;
                     if (m.FrameCount >= 3)
                     {

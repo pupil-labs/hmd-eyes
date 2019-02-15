@@ -7,8 +7,8 @@ namespace PupilLabs.Demos
 
     public class BlinkDemo : MonoBehaviour
     {
-        public PupilLabs.SubscriptionsController subsCtrl;
         public PupilLabs.RequestController requestCtrl;
+        public PupilLabs.SubscriptionsController subsCtrl;
 
         public Transform leftEye;
         public Transform rightEye;
@@ -43,7 +43,7 @@ namespace PupilLabs.Demos
 
             Debug.Log("StartBlinkSubscription");
 
-            subsCtrl.SubscribeTo("blinks",CustomReceiveData);
+            subsCtrl.SubscribeTo("blinks", CustomReceiveData);
 
             requestCtrl.StartPlugin(
                 "Blink_Detection",
@@ -62,15 +62,15 @@ namespace PupilLabs.Demos
 
             requestCtrl.StopPlugin("Blink_Detection");
 
-            subsCtrl.UnsubscribeFrom("blinks",CustomReceiveData);
+            subsCtrl.UnsubscribeFrom("blinks", CustomReceiveData);
         }
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
-           if (dictionary.ContainsKey("timestamp"))
+            if (dictionary.ContainsKey("timestamp"))
             {
                 Debug.Log("Blink detected: " + dictionary["timestamp"].ToString());
-                
+
                 if (!blinking)
                 {
                     blinking = true;

@@ -8,21 +8,22 @@ namespace PupilLabs
 
     public partial class RequestController : MonoBehaviour
     {
+
         [SerializeField]
         private Request request = new Request();
 
-        public bool IsConnected 
-        { 
-            get { return request.IsConnected;}   
+        public bool IsConnected
+        {
+            get { return request.IsConnected; }
         }
 
         public delegate void ConnectionDelegate();
         public event ConnectionDelegate OnConnected;
         public event ConnectionDelegate OnDisconnecting;
 
-        [SerializeField]
+        // [SerializeField]
         private string PupilVersion;
-        
+
         public string GetConnectionString()
         {
             return request.GetConnectionString();
@@ -30,6 +31,7 @@ namespace PupilLabs
 
         void OnEnable()
         {
+            PupilVersion = "not connected";
             if (!IsConnected)
             {
                 RunConnect();
@@ -38,7 +40,7 @@ namespace PupilLabs
 
         void OnDisable()
         {
-            if(IsConnected)
+            if (IsConnected)
             {
                 Disconnect();
             }
@@ -81,9 +83,10 @@ namespace PupilLabs
             yield break;
         }
 
-        public void Disconnect() 
+        public void Disconnect()
         {
-            if (OnDisconnecting != null){
+            if (OnDisconnecting != null)
+            {
                 OnDisconnecting();
             }
 
@@ -121,13 +124,13 @@ namespace PupilLabs
         public void SetPupilTimestamp(float time)
         {
             string response;
-            request.SendCommand("T " + time.ToString("0.00000000"),out response);  
+            request.SendCommand("T " + time.ToString("0.00000000"), out response);
         }
 
         public string GetPupilVersion()
         {
             string pupilVersion = null;
-            request.SendCommand("v",out pupilVersion);
+            request.SendCommand("v", out pupilVersion);
             return pupilVersion;
         }
 
@@ -135,6 +138,12 @@ namespace PupilLabs
         {
             PupilVersion = GetPupilVersion();
             Debug.Log($"Pupil Version: {PupilVersion}");
+        }
+
+        [ContextMenu("Reset To Default Connection")]
+        public void ResetDefaultLocalConnection()
+        {
+            request.resetDefaultLocalConnection();
         }
     }
 }
