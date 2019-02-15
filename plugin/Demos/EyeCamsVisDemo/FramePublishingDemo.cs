@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FramePublishingDemo : MonoBehaviour 
 {
-	FramePublishing publisher;
+	private FramePublishing publisher;
 
 	void OnEnable () 
 	{
