@@ -29,7 +29,7 @@ namespace PupilLabs
         int currentCalibrationDepth;
         float[] currentCalibrationPointPosition;
 
-        float lastTimeStamp = 0;
+        float tLast = 0;
 
         void OnEnable()
         {
@@ -74,17 +74,17 @@ namespace PupilLabs
 
         private void UpdateCalibration()
         {
-            float t = Time.time;
+            float tNow = Time.time;
 
-            if (t - lastTimeStamp > calibrationSettings.timeBetweenCalibrationPoints)
+            if (tNow - tLast > 1f/calibrationSettings.sampleRate)
             {
-                lastTimeStamp = t;
+                tLast = tNow;
 
                 UpdateCalibrationPoint();
 
                 //Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
                 if (currentCalibrationSamples > calibrationSettings.samplesToIgnoreForEyeMovement)
-                    calibration.AddCalibrationPointReferencePosition(currentCalibrationPointPosition, t);
+                    calibration.AddCalibrationPointReferencePosition(currentCalibrationPointPosition, tNow);
 
                 currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 
