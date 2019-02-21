@@ -13,21 +13,23 @@ namespace PupilLabs
 
         public CalibrationSettings calibrationSettings;
 
+        //events
         public delegate void CalibrationEndedDel();
         public event CalibrationEndedDel OnCalibrationFailed;
         public event CalibrationEndedDel OnCalibrationSucceeded;
 
-        private Calibration calibration = new Calibration();
-        private float radius;
-        private double offset;
+        //members
+        Calibration calibration = new Calibration();
+        
+        float radius;
+        double offset;
 
-        //TODO some sort of struct?
         int currentCalibrationPoint;
-		int currentCalibrationSamples;
-		int currentCalibrationDepth;
-		float[] currentCalibrationPointPosition;
+        int currentCalibrationSamples;
+        int currentCalibrationDepth;
+        float[] currentCalibrationPointPosition;
 
-        private float lastTimeStamp = 0;
+        float lastTimeStamp = 0;
 
         void OnEnable()
         {
@@ -35,19 +37,19 @@ namespace PupilLabs
             calibration.OnCalibrationFailed += CalibrationFailed;
         }
 
-        void Update ()
+        void Update()
         {
             if (calibration.IsCalibrating)
             {
-                UpdateCalibration ();
+                UpdateCalibration();
             }
 
-            if (subsCtrl.IsConnected && Input.GetKeyUp (KeyCode.C)) //TODO needs some public API instead of keypress only
+            if (subsCtrl.IsConnected && Input.GetKeyUp(KeyCode.C)) //TODO needs some public API instead of keypress only
             {
                 if (calibration.IsCalibrating)
                 {
-                    calibration.StopCalibration ();
-                } 
+                    calibration.StopCalibration();
+                }
                 else
                 {
                     InitializeCalibration();
@@ -55,58 +57,58 @@ namespace PupilLabs
             }
         }
 
-		private void InitializeCalibration ()
-		{
-			Debug.Log ("Starting Calibration");
+        private void InitializeCalibration()
+        {
+            Debug.Log("Starting Calibration");
 
-			currentCalibrationPoint = 0;
-			currentCalibrationSamples = 0;
-			currentCalibrationDepth = 0;
+            currentCalibrationPoint = 0;
+            currentCalibrationSamples = 0;
+            currentCalibrationDepth = 0;
 
-			UpdateCalibrationPoint ();
+            UpdateCalibrationPoint();
             marker.gameObject.SetActive(true);
             marker.localScale = Vector3.one * calibrationSettings.markerScale;
 
-            calibration.StartCalibration (calibrationSettings,subsCtrl);
-		}
+            calibration.StartCalibration(calibrationSettings, subsCtrl);
+        }
 
-        private void UpdateCalibration ()
-		{
-			float t = Time.time;
+        private void UpdateCalibration()
+        {
+            float t = Time.time;
 
-			if (t - lastTimeStamp > calibrationSettings.timeBetweenCalibrationPoints)
-			{
-				lastTimeStamp = t;
+            if (t - lastTimeStamp > calibrationSettings.timeBetweenCalibrationPoints)
+            {
+                lastTimeStamp = t;
 
-				UpdateCalibrationPoint ();
+                UpdateCalibrationPoint();
 
-				//Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
-				if ( currentCalibrationSamples > calibrationSettings.samplesToIgnoreForEyeMovement )
-					calibration.AddCalibrationPointReferencePosition (currentCalibrationPointPosition, t);
-				
-				currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
+                //Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+                if (currentCalibrationSamples > calibrationSettings.samplesToIgnoreForEyeMovement)
+                    calibration.AddCalibrationPointReferencePosition(currentCalibrationPointPosition, t);
 
-				if (currentCalibrationSamples >= calibrationSettings.samplesPerDepth)
-				{
-					currentCalibrationSamples = 0;
-					currentCalibrationDepth++;
+                currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 
-					if (currentCalibrationDepth >= calibrationSettings.vectorDepthRadius.Length)
-					{
-						currentCalibrationDepth = 0;
-						currentCalibrationPoint++;
+                if (currentCalibrationSamples >= calibrationSettings.samplesPerDepth)
+                {
+                    currentCalibrationSamples = 0;
+                    currentCalibrationDepth++;
 
-						//Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
-						calibration.SendCalibrationReferenceData ();
+                    if (currentCalibrationDepth >= calibrationSettings.vectorDepthRadius.Length)
+                    {
+                        currentCalibrationDepth = 0;
+                        currentCalibrationPoint++;
 
-						if (currentCalibrationPoint >= calibrationSettings.points)
-						{
-							calibration.StopCalibration ();
-						}
-					}
-				}
-			}
-		}
+                        //Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
+                        calibration.SendCalibrationReferenceData();
+
+                        if (currentCalibrationPoint >= calibrationSettings.points)
+                        {
+                            calibration.StopCalibration();
+                        }
+                    }
+                }
+            }
+        }
 
         private void CalibrationSucceeded()
         {
@@ -135,27 +137,27 @@ namespace PupilLabs
 
         private void UpdateCalibrationPoint()
         {
-            currentCalibrationPointPosition = new float[]{0};
+            currentCalibrationPointPosition = new float[] { 0 };
             switch (calibrationSettings.mode)
             {
-            case CalibrationSettings.Mode._3D:
-                currentCalibrationPointPosition = new float[] {calibrationSettings.centerPoint.x,calibrationSettings.centerPoint.y,calibrationSettings.vectorDepthRadius [currentCalibrationDepth].x};
-                offset = 0.25f * Math.PI;
-                break;
-            default:
-                currentCalibrationPointPosition = new float[]{ calibrationSettings.centerPoint.x,calibrationSettings.centerPoint.y };
-                offset = 0f;
-                break;
+                case CalibrationSettings.Mode._3D:
+                    currentCalibrationPointPosition = new float[] { calibrationSettings.centerPoint.x, calibrationSettings.centerPoint.y, calibrationSettings.vectorDepthRadius[currentCalibrationDepth].x };
+                    offset = 0.25f * Math.PI;
+                    break;
+                default:
+                    currentCalibrationPointPosition = new float[] { calibrationSettings.centerPoint.x, calibrationSettings.centerPoint.y };
+                    offset = 0f;
+                    break;
             }
             radius = calibrationSettings.vectorDepthRadius[currentCalibrationDepth].y;
             if (currentCalibrationPoint > 0 && currentCalibrationPoint < calibrationSettings.points)
-            {	
-                currentCalibrationPointPosition [0] += radius * (float) Math.Cos (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (calibrationSettings.points-1f) + offset);
-                currentCalibrationPointPosition [1] += radius * (float) Math.Sin (2f * Math.PI * (float)(currentCalibrationPoint - 1) / (calibrationSettings.points-1f) + offset);
+            {
+                currentCalibrationPointPosition[0] += radius * (float)Math.Cos(2f * Math.PI * (float)(currentCalibrationPoint - 1) / (calibrationSettings.points - 1f) + offset);
+                currentCalibrationPointPosition[1] += radius * (float)Math.Sin(2f * Math.PI * (float)(currentCalibrationPoint - 1) / (calibrationSettings.points - 1f) + offset);
             }
             if (calibrationSettings.mode == CalibrationSettings.Mode._3D)
-                currentCalibrationPointPosition [1] /= camera.aspect;
-            
+                currentCalibrationPointPosition[1] /= camera.aspect;
+
             UpdateMarkerPosition(calibrationSettings.mode, marker, currentCalibrationPointPosition);
         }
 
@@ -172,10 +174,10 @@ namespace PupilLabs
                     position.y = newPosition[1];
                     position.z = calibrationSettings.vectorDepthRadius[0].x;
                     gameObject.transform.position = camera.ViewportToWorldPoint(position);
-                } 
+                }
                 else
                 {
-                    Debug.Log ("Length of new position array does not match 2D mode");
+                    Debug.Log("Length of new position array does not match 2D mode");
                 }
             }
             else if (mode == CalibrationSettings.Mode._3D)
@@ -186,10 +188,10 @@ namespace PupilLabs
                     position.y = newPosition[1];
                     position.z = newPosition[2];
                     gameObject.transform.localPosition = position; //TODO which parent
-                } 
+                }
                 else
                 {
-                    Debug.Log ("Length of new position array does not match 3D mode");
+                    Debug.Log("Length of new position array does not match 3D mode");
                 }
             }
         }

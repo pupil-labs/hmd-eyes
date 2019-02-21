@@ -19,7 +19,7 @@ namespace PupilLabs
         public string positionKey;
         public float points = 5;
         public float markerScale = 0.03f;
-        public Vector2 centerPoint = new Vector2(0.5f,0.5f);
+        public Vector2 centerPoint = new Vector2(0.5f, 0.5f);
         public Vector2[] vectorDepthRadius;
         public int samplesPerDepth = 40;
         public int samplesToIgnoreForEyeMovement = 10;
