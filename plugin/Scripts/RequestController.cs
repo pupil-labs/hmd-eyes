@@ -124,7 +124,9 @@ namespace PupilLabs
         public void SetPupilTimestamp(float time)
         {
             string response;
-            request.SendCommand("T " + time.ToString("0.00000000"), out response);
+            string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
+            Debug.Log($"Sync Time Command: {command}");
+            request.SendCommand(command, out response);
         }
 
         public string GetPupilVersion()
