@@ -30,7 +30,6 @@ namespace PupilLabs
             this.subsCtrl = subsCtrl;
             this.requestCtrl = subsCtrl.requestCtrl;
 
-            Debug.Log("Start Calibration");
 
             requestCtrl.SetPupilTimestamp(Time.time);
 
@@ -41,8 +40,8 @@ namespace PupilLabs
 
             IsCalibrating = true;
 
-            subsCtrl.SubscribeTo("notify.calibration.successful", ReceiveSuccess); 
-            subsCtrl.SubscribeTo("notify.calibration.failed", ReceiveFailure); 
+            subsCtrl.SubscribeTo("notify.calibration.successful", ReceiveSuccess);
+            subsCtrl.SubscribeTo("notify.calibration.failed", ReceiveFailure);
 
             requestCtrl.StartPlugin(settings.PluginName);
 
@@ -70,6 +69,8 @@ namespace PupilLabs
                     leftEyeTranslation
                 }
             });
+
+            Debug.Log("Calibration Started");
 
             calibrationData.Clear();
         }
@@ -106,13 +107,13 @@ namespace PupilLabs
 
         public void StopCalibration()
         {
-            Debug.Log("Stop Calibration");
+            Debug.Log("Calibration should stop");
 
             IsCalibrating = false;
             requestCtrl.Send(new Dictionary<string, object> { { "subject", "calibration.should_stop" } });
         }
 
-        private void UpdateEyesTranslation() //TODO move to Calibration
+        private void UpdateEyesTranslation()
         {
             Vector3 leftEye = UnityEngine.XR.InputTracking.GetLocalPosition(UnityEngine.XR.XRNode.LeftEye);
             Vector3 rightEye = UnityEngine.XR.InputTracking.GetLocalPosition(UnityEngine.XR.XRNode.RightEye);
@@ -137,27 +138,29 @@ namespace PupilLabs
 
         private void ReceiveSuccess(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame)
         {
-            
-            Debug.Log($"Calibration response: {topic}");
             if (OnCalibrationSucceeded != null)
             {
                 OnCalibrationSucceeded();
             }
 
-            subsCtrl.UnsubscribeFrom("notify.calibration.successful", ReceiveSuccess); 
-            subsCtrl.UnsubscribeFrom("notify.calibration.failed", ReceiveFailure); 
+            CalibrationEnded(topic);
         }
 
         private void ReceiveFailure(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame)
         {
-            Debug.Log($"Calibration response: {topic}");
             if (OnCalibrationFailed != null)
             {
                 OnCalibrationFailed();
             }
 
-            subsCtrl.UnsubscribeFrom("notify.calibration.successful", ReceiveSuccess); 
-            subsCtrl.UnsubscribeFrom("notify.calibration.failed", ReceiveFailure); 
+            CalibrationEnded(topic);
+        }
+
+        private void CalibrationEnded(string topic)
+        {
+            Debug.Log($"Calibration response: {topic}");
+            subsCtrl.UnsubscribeFrom("notify.calibration.successful", ReceiveSuccess);
+            subsCtrl.UnsubscribeFrom("notify.calibration.failed", ReceiveFailure);
         }
     }
 }

@@ -21,8 +21,8 @@ namespace PupilLabs
         //members
         Calibration calibration = new Calibration();
 
-        int currentCalibrationPoint;
-        int currentCalibrationSamples;
+        int targetIdx;
+        int targetSampleCount;
         Vector3 currLocalTargetPos;
 
         float tLastSample = 0;
@@ -47,16 +47,27 @@ namespace PupilLabs
                 UpdateCalibration();
             }
 
-            if (subsCtrl.IsConnected && Input.GetKeyUp(KeyCode.C)) //TODO needs some public API instead of keypress only
+            if (Input.GetKeyUp(KeyCode.C))
             {
-                if (calibration.IsCalibrating)
-                {
-                    calibration.StopCalibration();
-                }
-                else
-                {
-                    InitializeCalibration();
-                }
+                ToggleCalibration();
+            }
+        }
+
+        public void ToggleCalibration()
+        {
+            if (!subsCtrl.IsConnected)
+            {
+                Debug.LogWarning("Calibration not possible: not connected!");
+                return;
+            }
+
+            if (calibration.IsCalibrating)
+            {
+                calibration.StopCalibration();
+            }
+            else
+            {
+                InitializeCalibration();
             }
         }
 
@@ -64,8 +75,8 @@ namespace PupilLabs
         {
             Debug.Log("Starting Calibration");
 
-            currentCalibrationPoint = 0;
-            currentCalibrationSamples = 0;
+            targetIdx = 0;
+            targetSampleCount = 0;
 
             UpdatePosition();
 
@@ -92,22 +103,17 @@ namespace PupilLabs
                 //Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
                 AddSample(tNow);
 
-                currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
+                targetSampleCount++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 
-                if (currentCalibrationSamples >= settings.samplesPerTarget || tNow - tLastTarget >= settings.secondsPerTarget)
+                if (targetSampleCount >= settings.samplesPerTarget || tNow - tLastTarget >= settings.secondsPerTarget)
                 {
-                    // Debug.Log($"update target. last duration = {tNow - tLastTarget} samples = {currentCalibrationSamples}");
+                    calibration.SendCalibrationReferenceData();
 
-                    calibration.SendCalibrationReferenceData(); //including clear!
-                    
-                    //NEXT TARGET
-                    if (currentCalibrationPoint < targets.GetTargetCount())
+                    if (targetIdx < targets.GetTargetCount())
                     {
-                        
-                        currentCalibrationSamples = 0;
+                        targetSampleCount = 0;
 
                         UpdatePosition();
-
                     }
                     else
                     {
@@ -145,12 +151,12 @@ namespace PupilLabs
         private void AddSample(float time)
         {
             float[] refData;
-            
+
             if (settings.mode == CalibrationSettings.Mode._3D)
             {
-                refData = new float[]{currLocalTargetPos.x,currLocalTargetPos.y,currLocalTargetPos.z};
+                refData = new float[] { currLocalTargetPos.x, currLocalTargetPos.y, currLocalTargetPos.z };
                 refData[1] /= camera.aspect; //TODO TBD why?
-                
+
                 for (int i = 0; i < refData.Length; i++)
                 {
                     refData[i] *= Helpers.PupilUnitScalingFactor;
@@ -160,19 +166,19 @@ namespace PupilLabs
             {
                 Vector3 worldPos = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
                 Vector3 viewportPos = camera.WorldToViewportPoint(worldPos);
-                refData = new float[]{viewportPos.x,viewportPos.y};
+                refData = new float[] { viewportPos.x, viewportPos.y };
             }
 
-            calibration.AddCalibrationPointReferencePosition(refData,time);
+            calibration.AddCalibrationPointReferencePosition(refData, time);
         }
 
         private void UpdatePosition()
         {
-            currLocalTargetPos = targets.GetLocalTargetPosAt(currentCalibrationPoint);
-            
+            currLocalTargetPos = targets.GetLocalTargetPosAt(targetIdx);
+
             marker.position = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
-                        
-            currentCalibrationPoint++;
+
+            targetIdx++;
             tLastTarget = Time.time;
         }
     }

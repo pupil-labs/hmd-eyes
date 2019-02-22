@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PupilLabs{
+namespace PupilLabs
+{
 
     [CreateAssetMenu(fileName = "Circle Calibration Targets", menuName = "Pupil/CircleCalibrationTargets", order = 2)]
     public class CircleCalibrationTargets : CalibrationTargets
@@ -27,17 +28,17 @@ namespace PupilLabs{
 
         public override Vector3 GetLocalTargetPosAt(int idx) //TODO handle idx internally
         {
-            pointIdx = (int)Mathf.Floor((float)idx/(float)circles.Count);
+            pointIdx = (int)Mathf.Floor((float)idx / (float)circles.Count);
             circleIdx = idx % circles.Count;
 
-            return UpdateCalibrationPoint();            
+            return UpdateCalibrationPoint();
         }
 
         private Vector3 UpdateCalibrationPoint()
         {
             Circle circle = circles[circleIdx];
-            Vector3 position = new Vector3(circle.center.x,circle.center.y,circle.center.z);
-            
+            Vector3 position = new Vector3(circle.center.x, circle.center.y, circle.center.z);
+
             if (pointIdx > 0 && pointIdx < points)
             {
                 float angle = 360f * (float)(pointIdx - 1) / (points - 1f);

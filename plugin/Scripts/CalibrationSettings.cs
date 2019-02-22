@@ -14,6 +14,10 @@ namespace PupilLabs
         }
 
         public Mode mode;
+        [Header("Time and sample amount per Target")]
+        public float secondsPerTarget = 1f;
+        public float ignoreInitialSeconds = 0.1f;
+        public int samplesPerTarget = 40;
 
         public string PluginName
         {
@@ -44,11 +48,6 @@ namespace PupilLabs
                 }
             }
         }
-        
-        [Header("Time and sample amount per Target")]
-        public float secondsPerTarget = 1f;
-        public float ignoreInitialSeconds = 0.1f;
-        public int samplesPerTarget = 40;
 
         public float SampleRate
         {
