@@ -15,15 +15,25 @@ namespace PupilLabs
 
         public Mode mode;
 
-        public string pluginName;
-        public string positionKey;
+        public string pluginName; //TODO should be mode dependent
+        public string positionKey; //TODO should be mode dependet
+
+        [Header("Time and sample amount per Target")]
+        public float secondsPerTarget = 1f;
+        public float ignoreInitialSeconds = 0.1f;
+        public int samplesPerTarget = 40;
+
+        [Header("Calibration Targets")]
         public float points = 5;
-        public float markerScale = 0.03f;
-        public Vector2 centerPoint = new Vector2(0.5f, 0.5f);
         public Vector2[] vectorDepthRadius;
-        public int samplesPerDepth = 40;
-        public int samplesToIgnoreForEyeMovement = 10;
-        [Range(5,120)]
-        public float sampleRate = 30; 
+        public Vector2 centerPoint = new Vector2(0.5f, 0.5f);
+
+        public float SampleRate
+        {
+            get
+            {
+                return (float)samplesPerTarget / (secondsPerTarget - ignoreInitialSeconds);
+            }
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace PupilLabs
 
         //members
         Calibration calibration = new Calibration();
-        
+
         float radius;
         double offset;
 
@@ -29,7 +29,8 @@ namespace PupilLabs
         int currentCalibrationDepth;
         float[] currentCalibrationPointPosition;
 
-        float tLast = 0;
+        float tLastSample = 0;
+        float tLastTarget = 0;
 
         void OnEnable()
         {
@@ -66,32 +67,41 @@ namespace PupilLabs
             currentCalibrationDepth = 0;
 
             UpdateCalibrationPoint();
+            tLastTarget = Time.time;
             marker.gameObject.SetActive(true);
-            marker.localScale = Vector3.one * calibrationSettings.markerScale;
 
             calibration.StartCalibration(calibrationSettings, subsCtrl);
+            Debug.Log($"Sample Rate: {calibrationSettings.SampleRate}");
         }
 
         private void UpdateCalibration()
         {
             float tNow = Time.time;
 
-            if (tNow - tLast > 1f/calibrationSettings.sampleRate)
+            if (tNow - tLastSample >= 1f / calibrationSettings.SampleRate - Time.deltaTime / 2f)
             {
-                tLast = tNow;
+
+                if (tNow - tLastTarget < calibrationSettings.ignoreInitialSeconds - Time.deltaTime / 2f)
+                {
+                    return;
+                }
+
+                tLastSample = tNow;
 
                 UpdateCalibrationPoint();
-
                 //Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
-                if (currentCalibrationSamples > calibrationSettings.samplesToIgnoreForEyeMovement)
-                    calibration.AddCalibrationPointReferencePosition(currentCalibrationPointPosition, tNow);
+                calibration.AddCalibrationPointReferencePosition(currentCalibrationPointPosition, tNow);
 
                 currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 
-                if (currentCalibrationSamples >= calibrationSettings.samplesPerDepth)
+                if (currentCalibrationSamples >= calibrationSettings.samplesPerTarget || tNow - tLastTarget >= calibrationSettings.secondsPerTarget)
                 {
+                    Debug.Log($"update target. last duration = {tNow - tLastTarget} samples = {currentCalibrationSamples}");
+
                     currentCalibrationSamples = 0;
                     currentCalibrationDepth++;
+
+                    tLastTarget = tNow;
 
                     if (currentCalibrationDepth >= calibrationSettings.vectorDepthRadius.Length)
                     {
