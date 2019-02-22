@@ -96,7 +96,7 @@ namespace PupilLabs
 
                 if (currentCalibrationSamples >= calibrationSettings.samplesPerTarget || tNow - tLastTarget >= calibrationSettings.secondsPerTarget)
                 {
-                    Debug.Log($"update target. last duration = {tNow - tLastTarget} samples = {currentCalibrationSamples}");
+                    // Debug.Log($"update target. last duration = {tNow - tLastTarget} samples = {currentCalibrationSamples}");
 
                     currentCalibrationSamples = 0;
                     currentCalibrationDepth++;

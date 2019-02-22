@@ -15,9 +15,36 @@ namespace PupilLabs
 
         public Mode mode;
 
-        public string pluginName; //TODO should be mode dependent
-        public string positionKey; //TODO should be mode dependet
+        public string PluginName
+        {
+            get
+            {
+                if (mode == Mode._2D)
+                {
+                    return "HMD_Calibration";
+                }
+                else
+                {
+                    return "HMD_Calibration_3D";
+                }
+            }
+        }
 
+        public string PositionKey
+        {
+            get
+            {
+                if (mode == Mode._2D)
+                {
+                    return "norm_pos";
+                }
+                else
+                {
+                    return "mm_pos";
+                }
+            }
+        }
+        
         [Header("Time and sample amount per Target")]
         public float secondsPerTarget = 1f;
         public float ignoreInitialSeconds = 0.1f;

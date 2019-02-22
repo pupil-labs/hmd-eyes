@@ -44,7 +44,7 @@ namespace PupilLabs
             subsCtrl.SubscribeTo("notify.calibration.successful", ReceiveSuccess);
             subsCtrl.SubscribeTo("notify.calibration.failed", ReceiveFailure);
 
-            requestCtrl.StartPlugin(settings.pluginName);
+            requestCtrl.StartPlugin(settings.PluginName);
 
             UpdateEyesTranslation();
 
@@ -81,12 +81,12 @@ namespace PupilLabs
                     position[i] *= Helpers.PupilUnitScalingFactor;
 
             calibrationData.Add(new Dictionary<string, object>() {
-                { settings.positionKey, position },
+                { settings.PositionKey, position },
                 { "timestamp", timestamp },
                 { "id", int.Parse(Helpers.rightEyeID) }
             });
             calibrationData.Add(new Dictionary<string, object>() {
-                { settings.positionKey, position },
+                { settings.PositionKey, position },
                 { "timestamp", timestamp },
                 { "id", int.Parse(Helpers.leftEyeID) }
             });
