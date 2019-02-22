@@ -8,10 +8,10 @@ namespace PupilLabs
     {
         public SubscriptionsController subsCtrl;
 
-        new public Camera camera;
         public Transform marker;
 
         public CalibrationSettings calibrationSettings;
+        public CalibrationTargets targets;
 
         //events
         public delegate void CalibrationEndedDel();
@@ -21,12 +21,8 @@ namespace PupilLabs
         //members
         Calibration calibration = new Calibration();
 
-        float radius;
-        double offset;
-
         int currentCalibrationPoint;
         int currentCalibrationSamples;
-        int currentCalibrationDepth;
         float[] currentCalibrationPointPosition;
 
         float tLastSample = 0;
@@ -66,7 +62,9 @@ namespace PupilLabs
             currentCalibrationSamples = 0;
             currentCalibrationDepth = 0;
 
-            UpdateCalibrationPoint();
+            currentCalibrationPointPosition = targets.GetNextTarget(currentCalibrationPoint);
+            UpdateMarkerPosition(calibrationSettings.mode, marker, currentCalibrationPointPosition);
+
             tLastTarget = Time.time;
             marker.gameObject.SetActive(true);
 
@@ -88,8 +86,9 @@ namespace PupilLabs
 
                 tLastSample = tNow;
 
-                UpdateCalibrationPoint();
-                //Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+                // currentCalibrationPointPosition = targets.UpdateCalibrationPoint();
+                // UpdateMarkerPosition(calibrationSettings.mode, marker, currentCalibrationPointPosition);
+                // //Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
                 calibration.AddCalibrationPointReferencePosition(currentCalibrationPointPosition, tNow);
 
                 currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
@@ -98,23 +97,22 @@ namespace PupilLabs
                 {
                     // Debug.Log($"update target. last duration = {tNow - tLastTarget} samples = {currentCalibrationSamples}");
 
-                    currentCalibrationSamples = 0;
-                    currentCalibrationDepth++;
-
-                    tLastTarget = tNow;
-
-                    if (currentCalibrationDepth >= calibrationSettings.vectorDepthRadius.Length)
+                    //NEXT TARGET
+                    if (currentCalibrationPoint < targets.GetTargetCount())
                     {
-                        currentCalibrationDepth = 0;
+                        currentCalibrationPointPosition = targets.GetNextTarget(currentCalibrationPoint);
+                        UpdateMarkerPosition(calibrationSettings.mode, marker, currentCalibrationPointPosition);
+                        
+                        calibration.SendCalibrationReferenceData(); //including clear!
+                        
+                        currentCalibrationSamples = 0;
                         currentCalibrationPoint++;
 
-                        //Send the current relevant calibration data for the current calibration point. _CalibrationPoints returns _calibrationData as an array of a Dictionary<string,object>.
-                        calibration.SendCalibrationReferenceData();
-
-                        if (currentCalibrationPoint >= calibrationSettings.points)
-                        {
-                            calibration.StopCalibration();
-                        }
+                        tLastTarget = tNow;
+                    }
+                    else
+                    {
+                        calibration.StopCalibration();
                     }
                 }
             }
@@ -145,31 +143,7 @@ namespace PupilLabs
             marker.gameObject.SetActive(false);
         }
 
-        private void UpdateCalibrationPoint()
-        {
-            currentCalibrationPointPosition = new float[] { 0 };
-            switch (calibrationSettings.mode)
-            {
-                case CalibrationSettings.Mode._3D:
-                    currentCalibrationPointPosition = new float[] { calibrationSettings.centerPoint.x, calibrationSettings.centerPoint.y, calibrationSettings.vectorDepthRadius[currentCalibrationDepth].x };
-                    offset = 0.25f * Math.PI;
-                    break;
-                default:
-                    currentCalibrationPointPosition = new float[] { calibrationSettings.centerPoint.x, calibrationSettings.centerPoint.y };
-                    offset = 0f;
-                    break;
-            }
-            radius = calibrationSettings.vectorDepthRadius[currentCalibrationDepth].y;
-            if (currentCalibrationPoint > 0 && currentCalibrationPoint < calibrationSettings.points)
-            {
-                currentCalibrationPointPosition[0] += radius * (float)Math.Cos(2f * Math.PI * (float)(currentCalibrationPoint - 1) / (calibrationSettings.points - 1f) + offset);
-                currentCalibrationPointPosition[1] += radius * (float)Math.Sin(2f * Math.PI * (float)(currentCalibrationPoint - 1) / (calibrationSettings.points - 1f) + offset);
-            }
-            if (calibrationSettings.mode == CalibrationSettings.Mode._3D)
-                currentCalibrationPointPosition[1] /= camera.aspect;
 
-            UpdateMarkerPosition(calibrationSettings.mode, marker, currentCalibrationPointPosition);
-        }
 
         //TODO TBD part of calibration target something?
         private void UpdateMarkerPosition(CalibrationSettings.Mode mode, Transform marker, float[] newPosition)

@@ -50,11 +50,6 @@ namespace PupilLabs
         public float ignoreInitialSeconds = 0.1f;
         public int samplesPerTarget = 40;
 
-        [Header("Calibration Targets")]
-        public float points = 5;
-        public Vector2[] vectorDepthRadius;
-        public Vector2 centerPoint = new Vector2(0.5f, 0.5f);
-
         public float SampleRate
         {
             get
