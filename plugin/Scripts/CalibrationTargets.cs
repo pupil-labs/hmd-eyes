@@ -30,7 +30,7 @@ namespace PupilLabs{
             return points * circles.Count;
         }
 
-        public Vector3 GetTargetAt(int idx) //TODO handle idx internally
+        public Vector3 GetLocalTargetPosAt(int idx) //TODO handle idx internally
         {
             currentCalibrationPoint = (int)Mathf.Floor((float)idx/(float)circles.Count);
             currentCalibrationDepth = idx % circles.Count;
