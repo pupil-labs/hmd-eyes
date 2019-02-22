@@ -9,22 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7af549a719760347987e7e27fbc634f, type: 3}
-  m_Name: 3D Calibration Default Settings
+  m_Script: {fileID: 11500000, guid: 4a326d0b0ec1bf6408737de026abe763, type: 3}
+  m_Name: 3D Default Targets
   m_EditorClassIdentifier: 
   mode: 1
-  pluginName: HMD_Calibration_3D
-  positionKey: mm_pos
-  ref_data:
-  - 0
-  - 0
-  - 0
   points: 5
-  markerScale: 0.03
-  centerPoint: {x: 0, y: 0}
   vectorDepthRadius:
   - {x: 0.6, y: 0.18}
   - {x: 1, y: 0.24}
   - {x: 2, y: 0.42}
-  samplesPerDepth: 80
-  samplesToIgnoreForEyeMovement: 20
+  centerPoint: {x: 0, y: 0}
