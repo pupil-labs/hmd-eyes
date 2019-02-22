@@ -7,10 +7,10 @@ namespace PupilLabs
     public class CalibrationController : MonoBehaviour
     {
         public SubscriptionsController subsCtrl;
-
+        public new Camera camera;
         public Transform marker;
 
-        public CalibrationSettings calibrationSettings;
+        public CalibrationSettings settings;
         public CalibrationTargets targets;
 
         //events
@@ -32,6 +32,12 @@ namespace PupilLabs
         {
             calibration.OnCalibrationSucceeded += CalibrationSucceeded;
             calibration.OnCalibrationFailed += CalibrationFailed;
+        }
+
+        void OnDisable()
+        {
+            calibration.OnCalibrationSucceeded -= CalibrationSucceeded;
+            calibration.OnCalibrationFailed -= CalibrationFailed;
         }
 
         void Update()
@@ -60,55 +66,48 @@ namespace PupilLabs
 
             currentCalibrationPoint = 0;
             currentCalibrationSamples = 0;
-            currentCalibrationDepth = 0;
 
-            currentCalibrationPointPosition = targets.GetNextTarget(currentCalibrationPoint);
-            UpdateMarkerPosition(calibrationSettings.mode, marker, currentCalibrationPointPosition);
+            UpdatePosition();
 
-            tLastTarget = Time.time;
             marker.gameObject.SetActive(true);
 
-            calibration.StartCalibration(calibrationSettings, subsCtrl);
-            Debug.Log($"Sample Rate: {calibrationSettings.SampleRate}");
+            calibration.StartCalibration(settings, subsCtrl);
+            Debug.Log($"Sample Rate: {settings.SampleRate}");
         }
 
         private void UpdateCalibration()
         {
             float tNow = Time.time;
 
-            if (tNow - tLastSample >= 1f / calibrationSettings.SampleRate - Time.deltaTime / 2f)
+            if (tNow - tLastSample >= 1f / settings.SampleRate - Time.deltaTime / 2f)
             {
 
-                if (tNow - tLastTarget < calibrationSettings.ignoreInitialSeconds - Time.deltaTime / 2f)
+                if (tNow - tLastTarget < settings.ignoreInitialSeconds - Time.deltaTime / 2f)
                 {
                     return;
                 }
 
                 tLastSample = tNow;
 
-                // currentCalibrationPointPosition = targets.UpdateCalibrationPoint();
-                // UpdateMarkerPosition(calibrationSettings.mode, marker, currentCalibrationPointPosition);
-                // //Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
+                //Adding the calibration reference data to the list that wil;l be passed on, once the required sample amount is met.
                 calibration.AddCalibrationPointReferencePosition(currentCalibrationPointPosition, tNow);
 
                 currentCalibrationSamples++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)
 
-                if (currentCalibrationSamples >= calibrationSettings.samplesPerTarget || tNow - tLastTarget >= calibrationSettings.secondsPerTarget)
+                if (currentCalibrationSamples >= settings.samplesPerTarget || tNow - tLastTarget >= settings.secondsPerTarget)
                 {
                     // Debug.Log($"update target. last duration = {tNow - tLastTarget} samples = {currentCalibrationSamples}");
 
+                    calibration.SendCalibrationReferenceData(); //including clear!
+                    
                     //NEXT TARGET
                     if (currentCalibrationPoint < targets.GetTargetCount())
                     {
-                        currentCalibrationPointPosition = targets.GetNextTarget(currentCalibrationPoint);
-                        UpdateMarkerPosition(calibrationSettings.mode, marker, currentCalibrationPointPosition);
-                        
-                        calibration.SendCalibrationReferenceData(); //including clear!
                         
                         currentCalibrationSamples = 0;
-                        currentCalibrationPoint++;
 
-                        tLastTarget = tNow;
+                        UpdatePosition();
+
                     }
                     else
                     {
@@ -143,7 +142,31 @@ namespace PupilLabs
             marker.gameObject.SetActive(false);
         }
 
+        private void UpdatePosition()
+        {
+            float[] currPos = targets.GetTargetAt(currentCalibrationPoint);
 
+            if (settings.mode == CalibrationSettings.Mode._3D)
+            {
+                currPos[1] /= camera.aspect;
+                currentCalibrationPointPosition = new float[]{currPos[0],currPos[1],currPos[2]};
+                
+                for (int i = 0; i < currentCalibrationPointPosition.Length; i++)
+                {
+                    currentCalibrationPointPosition[i] *= Helpers.PupilUnitScalingFactor;
+                }
+            
+            }
+            else
+            {
+                currentCalibrationPointPosition = new float[]{currPos[0],currPos[1]};
+            }
+            
+            UpdateMarkerPosition(settings.mode, marker, currPos);
+            
+            currentCalibrationPoint++;
+            tLastTarget = Time.time;
+        }
 
         //TODO TBD part of calibration target something?
         private void UpdateMarkerPosition(CalibrationSettings.Mode mode, Transform marker, float[] newPosition)
@@ -152,11 +175,11 @@ namespace PupilLabs
 
             if (mode == CalibrationSettings.Mode._2D)
             {
-                if (newPosition.Length == 2)
+                if (newPosition.Length == 3)
                 {
                     position.x = newPosition[0];
                     position.y = newPosition[1];
-                    position.z = calibrationSettings.vectorDepthRadius[0].x;
+                    position.z = newPosition[2];
                     gameObject.transform.position = camera.ViewportToWorldPoint(position);
                 }
                 else
@@ -169,6 +192,7 @@ namespace PupilLabs
                 if (newPosition.Length == 3)
                 {
                     position.x = newPosition[0];
+
                     position.y = newPosition[1];
                     position.z = newPosition[2];
                     gameObject.transform.localPosition = position; //TODO which parent

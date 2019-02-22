@@ -26,7 +26,7 @@ namespace PupilLabs
 
         public void StartCalibration(CalibrationSettings settings, SubscriptionsController subsCtrl)
         {
-            this.settings = settings; //TODO temp, where to set?
+            this.settings = settings;
             this.subsCtrl = subsCtrl;
             this.requestCtrl = subsCtrl.requestCtrl;
 
@@ -41,8 +41,8 @@ namespace PupilLabs
 
             IsCalibrating = true;
 
-            subsCtrl.SubscribeTo("notify.calibration.successful", ReceiveSuccess);
-            subsCtrl.SubscribeTo("notify.calibration.failed", ReceiveFailure);
+            subsCtrl.SubscribeTo("notify.calibration.successful", ReceiveSuccess); 
+            subsCtrl.SubscribeTo("notify.calibration.failed", ReceiveFailure); 
 
             requestCtrl.StartPlugin(settings.PluginName);
 
@@ -76,10 +76,6 @@ namespace PupilLabs
 
         public void AddCalibrationPointReferencePosition(float[] position, float timestamp)
         {
-            if (settings.mode == CalibrationSettings.Mode._3D)
-                for (int i = 0; i < position.Length; i++)
-                    position[i] *= Helpers.PupilUnitScalingFactor;
-
             calibrationData.Add(new Dictionary<string, object>() {
                 { settings.PositionKey, position },
                 { "timestamp", timestamp },
@@ -141,11 +137,15 @@ namespace PupilLabs
 
         private void ReceiveSuccess(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame)
         {
+            
             Debug.Log($"Calibration response: {topic}");
             if (OnCalibrationSucceeded != null)
             {
                 OnCalibrationSucceeded();
             }
+
+            subsCtrl.UnsubscribeFrom("notify.calibration.successful", ReceiveSuccess); 
+            subsCtrl.UnsubscribeFrom("notify.calibration.failed", ReceiveFailure); 
         }
 
         private void ReceiveFailure(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame)
@@ -155,6 +155,9 @@ namespace PupilLabs
             {
                 OnCalibrationFailed();
             }
+
+            subsCtrl.UnsubscribeFrom("notify.calibration.successful", ReceiveSuccess); 
+            subsCtrl.UnsubscribeFrom("notify.calibration.failed", ReceiveFailure); 
         }
     }
 }

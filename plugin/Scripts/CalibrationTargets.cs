@@ -4,16 +4,16 @@ using UnityEngine;
 
 namespace PupilLabs{
 
-    public class CalibrationTargets : MonoBehaviour
+    [CreateAssetMenu(fileName = "CalibrationTargets", menuName = "Pupil/CalibrationTargets", order = 2)]
+    public class CalibrationTargets : ScriptableObject
     {
-        new public Camera camera;
         public CalibrationSettings.Mode mode;
 
         [Header("Calibration Targets")]
         [SerializeField]
         int points = 5;
         [SerializeField]
-        Vector2[] vectorDepthRadius;
+        Vector2[] vectorDepthRadius = new Vector2[1];
         [SerializeField]
         Vector2 centerPoint = new Vector2(0.5f, 0.5f);
 
@@ -24,13 +24,14 @@ namespace PupilLabs{
 
         public int GetTargetCount()
         {
-            return points;
+            return points * vectorDepthRadius.Length;
         }
 
-        public float[] GetNextTarget(int idx) //TODO handle idx internally
+        public float[] GetTargetAt(int idx) //TODO handle idx internally
         {
             currentCalibrationPoint = (int)Mathf.Floor((float)idx/(float)vectorDepthRadius.Length);
             currentCalibrationDepth = idx % vectorDepthRadius.Length;
+            Debug.Log($"GetNextTarget {idx},{currentCalibrationPoint},{currentCalibrationDepth}");
 
             return UpdateCalibrationPoint();            
         }
@@ -45,20 +46,21 @@ namespace PupilLabs{
                     offset = 0.25f * Math.PI;
                     break;
                 default:
-                    position = new float[] { centerPoint.x, centerPoint.y };
+                    position = new float[] { centerPoint.x, centerPoint.y, vectorDepthRadius[0].x };
                     offset = 0f;
                     break;
             }
+
             radius = vectorDepthRadius[currentCalibrationDepth].y;
+
             if (currentCalibrationPoint > 0 && currentCalibrationPoint < points)
             {
                 position[0] += radius * (float)Math.Cos(2f * Math.PI * (float)(currentCalibrationPoint - 1) / (points - 1f) + offset);
                 position[1] += radius * (float)Math.Sin(2f * Math.PI * (float)(currentCalibrationPoint - 1) / (points - 1f) + offset);
             }
-            if (mode == CalibrationSettings.Mode._3D)
-                position[1] /= camera.aspect;
 
-                return position;
+            Debug.Log($"Point: {position[0]} {position[1]} {position[2]}");
+            return position;
         }
     }
 }
