@@ -144,12 +144,15 @@ namespace PupilLabs
 
         private void UpdatePosition()
         {
-            float[] currPos = targets.GetTargetAt(currentCalibrationPoint);
+            Vector3 currPos = targets.GetTargetAt(currentCalibrationPoint);
+            marker.localPosition = currPos;
 
+            //TODO TBD move logic to Calibration?
             if (settings.mode == CalibrationSettings.Mode._3D)
             {
-                currPos[1] /= camera.aspect;
+                
                 currentCalibrationPointPosition = new float[]{currPos[0],currPos[1],currPos[2]};
+                currentCalibrationPointPosition[1] /= camera.aspect;
                 
                 for (int i = 0; i < currentCalibrationPointPosition.Length; i++)
                 {
@@ -159,49 +162,12 @@ namespace PupilLabs
             }
             else
             {
+                currPos = camera.WorldToViewportPoint(currPos);
                 currentCalibrationPointPosition = new float[]{currPos[0],currPos[1]};
             }
             
-            UpdateMarkerPosition(settings.mode, marker, currPos);
-            
             currentCalibrationPoint++;
             tLastTarget = Time.time;
-        }
-
-        //TODO TBD part of calibration target something?
-        private void UpdateMarkerPosition(CalibrationSettings.Mode mode, Transform marker, float[] newPosition)
-        {
-            Vector3 position;
-
-            if (mode == CalibrationSettings.Mode._2D)
-            {
-                if (newPosition.Length == 3)
-                {
-                    position.x = newPosition[0];
-                    position.y = newPosition[1];
-                    position.z = newPosition[2];
-                    gameObject.transform.position = camera.ViewportToWorldPoint(position);
-                }
-                else
-                {
-                    Debug.Log("Length of new position array does not match 2D mode");
-                }
-            }
-            else if (mode == CalibrationSettings.Mode._3D)
-            {
-                if (newPosition.Length == 3)
-                {
-                    position.x = newPosition[0];
-
-                    position.y = newPosition[1];
-                    position.z = newPosition[2];
-                    gameObject.transform.localPosition = position; //TODO which parent
-                }
-                else
-                {
-                    Debug.Log("Length of new position array does not match 3D mode");
-                }
-            }
         }
     }
 }

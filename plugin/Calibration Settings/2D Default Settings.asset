@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: 2D Default Settings
   m_EditorClassIdentifier: 
   mode: 0
-  secondsPerTarget: 1
-  ignoreInitialSeconds: 0.1
-  samplesPerTarget: 40
+  secondsPerTarget: 1.5
+  ignoreInitialSeconds: 0.3
+  samplesPerTarget: 30

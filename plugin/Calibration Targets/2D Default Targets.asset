@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 2D Default Targets
   m_EditorClassIdentifier: 
   mode: 0
+  circles:
+  - center: {x: 0, y: 0, z: 2}
+    radius: 0.7
   points: 7
-  vectorDepthRadius:
-  - {x: 2, y: 0.12}
-  centerPoint: {x: 0.5, y: 0.48}

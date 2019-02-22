@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: 3D Default Targets
   m_EditorClassIdentifier: 
   mode: 1
-  points: 5
-  vectorDepthRadius:
-  - {x: 0.6, y: 0.18}
-  - {x: 1, y: 0.24}
-  - {x: 2, y: 0.42}
-  centerPoint: {x: 0, y: 0}
+  circles:
+  - center: {x: 0, y: 0, z: 0.6}
+    radius: 0.18
+  - center: {x: 0, y: 0, z: 1}
+    radius: 0.24
+  - center: {x: 0, y: 0, z: 2}
+    radius: 0.42
+  points: 6
