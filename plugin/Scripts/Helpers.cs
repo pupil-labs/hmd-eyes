@@ -49,11 +49,11 @@ namespace PupilLabs
             }
             return result;
         }
-        private static Vector3 Position(object position, bool applyScaling)
+        public static Vector3 Position(object position, bool applyScaling)
         {
             Vector3 result = ObjectToVector(position);
             if (applyScaling)
-                result /= PupilSettings.PupilUnitScalingFactor;
+                result /= PupilUnitScalingFactor;
             return result;
         }
 

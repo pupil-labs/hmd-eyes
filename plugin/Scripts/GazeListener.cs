@@ -7,7 +7,10 @@ namespace PupilLabs
     public class GazeListener
     {
 
-
+        public delegate void Receive2dDel(string id, Vector3 pos, float confidence);
+        public delegate void Receive3dDel();
+        public event Receive2dDel OnReceive2dGaze;
+        public event Receive3dDel OnReceive3dGaze;
 
         private RequestController requestCtrl;
         private SubscriptionsController subsCtrl;
@@ -57,14 +60,36 @@ namespace PupilLabs
         {
             Debug.Log($"3D Gaze msg topic: {topic}");
 
-
+            if (OnReceive3dGaze != null)
+            {
+                OnReceive3dGaze();
+            }
         }
 
         void Receive2DGaze(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
-            Debug.Log($"2D Gaze msg topic: {topic}");
+            string key = "norm_pos";
+            if (dictionary.ContainsKey(key))
+            {
+                string eyeId = Helpers.StringFromDictionary(dictionary, "id");
+                var position2D = Helpers.Position(dictionary[key], false);
 
+                float confidence = 0f;
+                string confidenceKey = "confidence";
+                if (dictionary.ContainsKey(confidenceKey))
+                {
+                    confidence = Helpers.FloatFromDictionary(dictionary, confidenceKey);
+                }
 
+                if (OnReceive2dGaze != null)
+                {
+                    OnReceive2dGaze(eyeId, position2D, confidence);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("2d gaze received without norm_pos data");
+            }
         }
     }
 }
