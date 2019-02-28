@@ -8,7 +8,7 @@ namespace PupilLabs
     {
         public SubscriptionsController subscriptionsController;
         public CalibrationController calibrationController;
-        // public bool showGazeBeforeCalibration = false; //TODO
+        public Transform gazeEstimate;
 
         [Range(0f, 0.99f)]
         public float confidenceThreshold = 0.6f;
@@ -39,11 +39,13 @@ namespace PupilLabs
             Debug.Log("Start Visualizing Gaze");
             gazeListener.OnReceive2dGazeTarget += Update2d;
             gazeListener.OnReceive3dGazeTarget += Update3d;
+
+            gazeEstimate.gameObject.SetActive(true);
         }
 
         void StopVisualizing()
         {
-
+            gazeEstimate.gameObject.SetActive(false);
         }
 
         void Update2d(string id, Vector3 pos, float confidence)
@@ -54,6 +56,7 @@ namespace PupilLabs
         void Update3d(Vector3 pos, float confidence)
         {
             Debug.Log($"GV::Update3d {pos} {confidence}");
+            gazeEstimate.localPosition = pos; //assuming marker is child of cam TODO better use (and show) world coord case 
         }
     }
 }
