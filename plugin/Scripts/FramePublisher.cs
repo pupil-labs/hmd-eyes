@@ -37,7 +37,7 @@ namespace PupilLabs
             }
         }
 
-        void Enable()
+        public void Enable()
         {
             Debug.Log("Enabling Frame Publisher");
 
@@ -45,7 +45,7 @@ namespace PupilLabs
             requestCtrl.StartPlugin("Frame_Publisher");
         }
 
-        void Disable()
+        public void Disable()
         {
             Debug.Log("Disabling Frame Publisher");
 

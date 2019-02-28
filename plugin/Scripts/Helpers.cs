@@ -39,7 +39,7 @@ namespace PupilLabs
             position_o = source as object[];
             Vector3 result = Vector3.zero;
             if (position_o.Length != 2 && position_o.Length != 3)
-                UnityEngine.Debug.Log("Array length not supported");
+                Debug.Log("Array length not supported");
             else
             {
                 result.x = (float)(double)position_o[0];
