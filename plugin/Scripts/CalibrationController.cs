@@ -14,9 +14,10 @@ namespace PupilLabs
         public CalibrationTargets targets;
 
         //events
-        public delegate void CalibrationEndedDel();
-        public event CalibrationEndedDel OnCalibrationFailed;
-        public event CalibrationEndedDel OnCalibrationSucceeded;
+        public delegate void CalibrationDel();
+        public event CalibrationDel OnCalibrationStarted;
+        public event CalibrationDel OnCalibrationFailed;
+        public event CalibrationDel OnCalibrationSucceeded;
 
         //members
         Calibration calibration = new Calibration();
@@ -84,6 +85,11 @@ namespace PupilLabs
 
             calibration.StartCalibration(settings, subsCtrl);
             Debug.Log($"Sample Rate: {settings.SampleRate}");
+
+            if (OnCalibrationStarted != null)
+            {
+                OnCalibrationStarted();
+            }
         }
 
         private void UpdateCalibration()
@@ -152,6 +158,7 @@ namespace PupilLabs
         {
             float[] refData;
 
+            //TODO naming mode depending mapping
             if (settings.mode == CalibrationSettings.Mode._3D)
             {
                 refData = new float[] { currLocalTargetPos.x, currLocalTargetPos.y, currLocalTargetPos.z };
@@ -172,7 +179,7 @@ namespace PupilLabs
             calibration.AddCalibrationPointReferencePosition(refData, time);
         }
 
-        private void UpdatePosition()
+        private void UpdatePosition() 
         {
             currLocalTargetPos = targets.GetLocalTargetPosAt(targetIdx);
 

@@ -14,7 +14,7 @@ namespace PupilLabs
         }
 
         public Mode mode;
-        [Header("Time and sample amount per Target")]
+        [Header("Time and sample amount per target")]
         public float secondsPerTarget = 1f;
         public float ignoreInitialSeconds = 0.1f;
         public int samplesPerTarget = 40;
