@@ -37,7 +37,8 @@ namespace PupilLabs
         void StartVisualizing()
         {
             Debug.Log("Start Visualizing Gaze");
-            gazeListener.OnReceive2dGaze += Update2d;
+            gazeListener.OnReceive2dGazeTarget += Update2d;
+            gazeListener.OnReceive3dGazeTarget += Update3d;
         }
 
         void StopVisualizing()
@@ -47,7 +48,12 @@ namespace PupilLabs
 
         void Update2d(string id, Vector3 pos, float confidence)
         {
-            Debug.Log($"GV::Update {id} {pos} {confidence}");
+            Debug.Log($"GV::Update2d {id} {pos} {confidence}");
+        }
+
+        void Update3d(Vector3 pos, float confidence)
+        {
+            Debug.Log($"GV::Update3d {pos} {confidence}");
         }
     }
 }
