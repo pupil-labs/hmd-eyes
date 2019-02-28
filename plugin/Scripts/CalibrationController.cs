@@ -13,6 +13,8 @@ namespace PupilLabs
         public CalibrationSettings settings;
         public CalibrationTargets targets;
 
+        public bool IsCalibrating { get { return calibration.IsCalibrating; } }
+
         //events
         public delegate void CalibrationDel();
         public event CalibrationDel OnCalibrationStarted;
