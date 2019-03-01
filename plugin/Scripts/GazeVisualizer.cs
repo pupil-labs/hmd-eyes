@@ -94,10 +94,12 @@ namespace PupilLabs
 
                 if (showProjectedVis)
                 {
+                    gazeEstimateMarker.gameObject.SetActive(false);
                     ShowProjectedVis();
                 }
                 else
                 {
+                    gazeEstimateMarker.gameObject.SetActive(true);
                     if (projectionMarker != null)
                     {
                         projectionMarker.gameObject.SetActive(false);
