@@ -71,10 +71,10 @@ namespace PupilLabs
         void Update3d(GazeData gazeData)
         {
             // Debug.Log($"GV::Update3d {pos} {confidence}");
-            
-            if (filterByConfidence && gazeData.confidence >= confidenceThreshold)
+
+            if (filterByConfidence && gazeData.Confidence >= confidenceThreshold)
             {
-                gazeEstimateMarker.position = cam.transform.localToWorldMatrix.MultiplyPoint(gazeData.gazePoint3d);
+                gazeEstimateMarker.position = cam.transform.localToWorldMatrix.MultiplyPoint(gazeData.GazePoint3d);
                 //TODO visualize mono vs bino 
             }
         }
