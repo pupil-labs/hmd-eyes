@@ -16,7 +16,7 @@ namespace PupilLabs
 
         public GazeDataMode Mode { get; }
         public float Confidence { get; }
-        public float Timestamp { get; } //TODO float in s?
+        public float Timestamp { get; } 
 
         public Vector2 NormPos { get; } //in camera viewport space
         public Vector3 GazePoint3d { get; } //in local camera space
@@ -49,7 +49,7 @@ namespace PupilLabs
                 Debug.LogError("GazeData with no matching mode");
                 return;
             }
-
+                
             Confidence = Helpers.FloatFromDictionary(dictionary, "confidence");
             Timestamp = Helpers.FloatFromDictionary(dictionary, "timestamp");
 
@@ -71,14 +71,14 @@ namespace PupilLabs
             }
         }
 
-        private Vector3 ExtractEyeCenter(Dictionary<string, object> dictionary, GazeDataMode mode, int eye)
+        private Vector3 ExtractEyeCenter(Dictionary<string, object> dictionary, GazeDataMode mode, byte eye)
         {
 
             object vecObj;
             if (mode == GazeDataMode.Binocular)
             {
-                var binoDic = dictionary["eye_centers_3d"] as Dictionary<string, object>;
-                vecObj = binoDic[eye.ToString("d")];
+                var binoDic = dictionary["eye_centers_3d"] as Dictionary<object, object>;
+                vecObj = binoDic[eye];
             }
             else
             {
@@ -87,14 +87,14 @@ namespace PupilLabs
             return Helpers.Position(vecObj, false);
         }
 
-        private Vector3 ExtractGazeNormal(Dictionary<string, object> dictionary, GazeDataMode mode, int eye)
+        private Vector3 ExtractGazeNormal(Dictionary<string, object> dictionary, GazeDataMode mode, byte eye)
         {
 
             object vecObj;
             if (mode == GazeDataMode.Binocular)
             {
-                var binoDic = dictionary["gaze_normals_3d"] as Dictionary<string, object>;
-                vecObj = binoDic[eye.ToString("d")];
+                var binoDic = dictionary["gaze_normals_3d"] as Dictionary<object, object>;
+                vecObj = binoDic[eye];
             }
             else
             {
