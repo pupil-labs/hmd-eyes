@@ -13,21 +13,16 @@ namespace PupilLabs
 
         [Header("Settings")]
         public bool filterByConfidence = true;
-        [Range(0f, 0.99f)]
+        [Range(0f, 1f)]
         public float confidenceThreshold = 0.6f;
 
-        [Header("2D only")]
-        [Range(0,10)]
-        public float projectionDepth = 2f;
-
-        GazeListener gazeListener = null;
-
+        Gaze3dListener gazeListener = null;
 
         void OnEnable()
         {
             if (gazeListener == null)
             {
-                gazeListener = new GazeListener(subscriptionsController);
+                gazeListener = new Gaze3dListener(subscriptionsController);
             }
 
             if (calibrationController == null)
@@ -53,8 +48,7 @@ namespace PupilLabs
         void StartVisualizing()
         {
             Debug.Log("Start Visualizing Gaze");
-            gazeListener.OnReceive2dGazeTarget += Update2d;
-            gazeListener.OnReceive3dGazeTarget += Update3d;
+            gazeListener.OnReceive3dGaze += Update3d;
 
             if (gazeEstimateMarker == null)
             {
@@ -74,24 +68,14 @@ namespace PupilLabs
             }
         }
 
-        void Update2d(string id, Vector3 pos, float confidence)
-        {
-            // Debug.Log($"GV::Update2d {id} {pos} {confidence}");
-
-            if (filterByConfidence && confidence > confidenceThreshold)
-            {
-                pos.z = projectionDepth;
-                gazeEstimateMarker.position = cam.ViewportToWorldPoint(pos);
-            }
-        }
-
-        void Update3d(Vector3 pos, float confidence)
+        void Update3d(GazeData gazeData)
         {
             // Debug.Log($"GV::Update3d {pos} {confidence}");
             
-            if (filterByConfidence && confidence > confidenceThreshold)
+            if (filterByConfidence && gazeData.confidence >= confidenceThreshold)
             {
-                gazeEstimateMarker.position = cam.transform.localToWorldMatrix.MultiplyPoint(pos); 
+                gazeEstimateMarker.position = cam.transform.localToWorldMatrix.MultiplyPoint(gazeData.gazePoint3d);
+                //TODO visualize mono vs bino 
             }
         }
     }
