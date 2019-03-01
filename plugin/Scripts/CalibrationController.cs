@@ -186,6 +186,7 @@ namespace PupilLabs
             currLocalTargetPos = targets.GetLocalTargetPosAt(targetIdx);
 
             marker.position = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
+            marker.LookAt (camera.transform.position);
 
             targetIdx++;
             tLastTarget = Time.time;

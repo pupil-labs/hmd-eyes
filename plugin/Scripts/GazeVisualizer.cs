@@ -9,6 +9,7 @@ namespace PupilLabs
         public SubscriptionsController subscriptionsController;
         public CalibrationController calibrationController;
         public Transform gazeEstimateMarker;
+        public Camera cam;
 
         [Header("Settings")]
         public bool filterByConfidence = true;
@@ -16,7 +17,6 @@ namespace PupilLabs
         public float confidenceThreshold = 0.6f;
 
         [Header("2D only")]
-        public Camera cam;
         [Range(0,10)]
         public float projectionDepth = 2f;
 
@@ -33,6 +33,12 @@ namespace PupilLabs
             if (calibrationController == null)
             {
                 Debug.LogWarning("CalibrationController missing");
+                return;
+            }
+
+            if (cam == null)
+            {
+                Debug.LogWarning("Camera reference missing");
                 return;
             }
 
@@ -72,12 +78,6 @@ namespace PupilLabs
         {
             // Debug.Log($"GV::Update2d {id} {pos} {confidence}");
 
-            if (cam == null)
-            {
-                Debug.LogWarning("Camera reference missing to project 2d gaze estimate");
-                return;
-            }
-
             if (filterByConfidence && confidence > confidenceThreshold)
             {
                 pos.z = projectionDepth;
@@ -91,7 +91,7 @@ namespace PupilLabs
             
             if (filterByConfidence && confidence > confidenceThreshold)
             {
-                gazeEstimateMarker.localPosition = pos; //assuming marker is child of cam TODO better use (and show) world coord case 
+                gazeEstimateMarker.position = cam.transform.localToWorldMatrix.MultiplyPoint(pos); 
             }
         }
     }
