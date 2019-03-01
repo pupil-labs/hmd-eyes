@@ -8,10 +8,17 @@ namespace PupilLabs
     {
         public SubscriptionsController subscriptionsController;
         public CalibrationController calibrationController;
-        public Transform gazeEstimate;
+        public Transform gazeEstimateMarker;
 
+        [Header("Settings")]
+        public bool filterByConfidence = true;
         [Range(0f, 0.99f)]
         public float confidenceThreshold = 0.6f;
+
+        [Header("2D only")]
+        public Camera cam;
+        [Range(0,10)]
+        public float projectionDepth = 2f;
 
         GazeListener gazeListener = null;
 
@@ -23,10 +30,13 @@ namespace PupilLabs
                 gazeListener = new GazeListener(subscriptionsController);
             }
 
-            if (calibrationController != null)
+            if (calibrationController == null)
             {
-                calibrationController.OnCalibrationSucceeded += StartVisualizing;
+                Debug.LogWarning("CalibrationController missing");
+                return;
             }
+
+            calibrationController.OnCalibrationSucceeded += StartVisualizing;
         }
 
         void OnDisable()
@@ -40,23 +50,49 @@ namespace PupilLabs
             gazeListener.OnReceive2dGazeTarget += Update2d;
             gazeListener.OnReceive3dGazeTarget += Update3d;
 
-            gazeEstimate.gameObject.SetActive(true);
+            if (gazeEstimateMarker == null)
+            {
+                Debug.LogWarning("Gaze Marker missing");
+                return;
+            }
+
+            gazeEstimateMarker.gameObject.SetActive(true);
         }
 
         void StopVisualizing()
         {
-            gazeEstimate.gameObject.SetActive(false);
+
+            if (gazeEstimateMarker != null)
+            {
+                gazeEstimateMarker.gameObject.SetActive(false);
+            }
         }
 
         void Update2d(string id, Vector3 pos, float confidence)
         {
-            Debug.Log($"GV::Update2d {id} {pos} {confidence}");
+            // Debug.Log($"GV::Update2d {id} {pos} {confidence}");
+
+            if (cam == null)
+            {
+                Debug.LogWarning("Camera reference missing to project 2d gaze estimate");
+                return;
+            }
+
+            if (filterByConfidence && confidence > confidenceThreshold)
+            {
+                pos.z = projectionDepth;
+                gazeEstimateMarker.position = cam.ViewportToWorldPoint(pos);
+            }
         }
 
         void Update3d(Vector3 pos, float confidence)
         {
-            Debug.Log($"GV::Update3d {pos} {confidence}");
-            gazeEstimate.localPosition = pos; //assuming marker is child of cam TODO better use (and show) world coord case 
+            // Debug.Log($"GV::Update3d {pos} {confidence}");
+            
+            if (filterByConfidence && confidence > confidenceThreshold)
+            {
+                gazeEstimateMarker.localPosition = pos; //assuming marker is child of cam TODO better use (and show) world coord case 
+            }
         }
     }
 }
