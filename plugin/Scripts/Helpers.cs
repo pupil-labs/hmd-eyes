@@ -93,5 +93,12 @@ namespace PupilLabs
                 topics += key + ",";
             return topics;
         }
+
+        public static Dictionary<object,object> BaseData (Dictionary<string, object> dictionary)
+        {
+            object o;
+            dictionary.TryGetValue ("base_data", out o);
+            return o as Dictionary<object,object>;
+        }
     }
 }
