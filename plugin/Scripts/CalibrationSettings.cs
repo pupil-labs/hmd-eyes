@@ -13,11 +13,13 @@ namespace PupilLabs
             _3D
         }
 
-        public Mode mode;
         [Header("Time and sample amount per target")]
         public float secondsPerTarget = 1f;
         public float ignoreInitialSeconds = 0.1f;
         public int samplesPerTarget = 40;
+        
+        [HideInInspector]
+        public Mode mode = Mode._3D;
 
         public string PluginName
         {
