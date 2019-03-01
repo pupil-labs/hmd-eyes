@@ -11,10 +11,21 @@ namespace PupilLabs
         public Transform gazeEstimateMarker;
         public Camera cam;
 
-        [Header("Settings")]
+        [Header("Confidence")]
         public bool filterByConfidence = true;
         [Range(0f, 1f)]
         public float confidenceThreshold = 0.6f;
+
+        [Header("Fixed Depth")]
+        public bool applyFixedDepth = false;
+        [Range(0f,10f)]
+        public float fixedDepth = 2f;
+
+        [Header("Projected Visualization")]
+        public bool showProjectedVis = true;
+        public Transform projectionMarker;
+        [Range(0.01f,0.1f)]
+        public float sphereCastRadius = 0.05f;
 
         Gaze3dListener gazeListener = null;
 
@@ -75,7 +86,66 @@ namespace PupilLabs
             if (filterByConfidence && gazeData.Confidence >= confidenceThreshold)
             {
                 gazeEstimateMarker.position = cam.transform.localToWorldMatrix.MultiplyPoint(gazeData.GazePoint3d);
-                //TODO visualize mono vs bino 
+
+                if (applyFixedDepth || showProjectedVis)
+                {
+                    gazeEstimateMarker.position = ApplyFixedDepth();
+                }
+
+                if (showProjectedVis)
+                {
+                    ShowProjectedVis();
+                }
+                else
+                {
+                    if (projectionMarker != null)
+                    {
+                        projectionMarker.gameObject.SetActive(false);
+                    }
+                }
+            }
+        }
+
+        private Vector3 ApplyFixedDepth()
+        {
+            Vector3 localPosition = cam.transform.worldToLocalMatrix.MultiplyPoint(gazeEstimateMarker.position);
+            localPosition.Normalize();
+            
+            //in case depth is < 0
+            float angle = Vector3.Angle(Vector3.forward,localPosition);
+            float direction = 1f;
+            if(angle >= 90f){
+                direction = -1f;
+            }
+            
+            localPosition *= direction * fixedDepth;
+            return cam.transform.localToWorldMatrix.MultiplyPoint(localPosition);
+        }
+
+        private void ShowProjectedVis()
+        {
+            if (projectionMarker == null)
+            {
+                Debug.LogWarning("Marker missing");
+                return;
+            }
+
+            projectionMarker.gameObject.SetActive(true);
+
+            Vector3 origin = cam.transform.position;
+
+            Vector3 direction = gazeEstimateMarker.position - origin;
+            direction.Normalize();
+            if (Physics.SphereCast(origin, sphereCastRadius, direction, out RaycastHit hit, Mathf.Infinity))
+            {
+                Debug.DrawRay(origin, direction * hit.distance, Color.yellow);
+
+                projectionMarker.position = hit.point;
+                projectionMarker.rotation = Quaternion.FromToRotation(Vector3.forward, hit.normal);
+            }
+            else
+            {
+                Debug.DrawRay(origin, direction * 10, Color.white);
             }
         }
     }
