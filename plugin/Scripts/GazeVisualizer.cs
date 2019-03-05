@@ -27,13 +27,13 @@ namespace PupilLabs
         [Range(0.01f,0.1f)]
         public float sphereCastRadius = 0.05f;
 
-        Gaze3dListener gazeListener = null;
+        GazeListener gazeListener = null;
 
         void OnEnable()
         {
             if (gazeListener == null)
             {
-                gazeListener = new Gaze3dListener(subscriptionsController);
+                gazeListener = new GazeListener(subscriptionsController);
             }
 
             if (calibrationController == null)

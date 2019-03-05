@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PupilLabs
 {
-    public class Gaze3dListener
+    public class GazeListener
     {
 
         public delegate void Receive3dGazeDel(GazeData gazeData);
@@ -13,7 +13,7 @@ namespace PupilLabs
         private RequestController requestCtrl;
         private SubscriptionsController subsCtrl;
 
-        public Gaze3dListener(SubscriptionsController subsCtrl)
+        public GazeListener(SubscriptionsController subsCtrl)
         {
             this.subsCtrl = subsCtrl;
             this.requestCtrl = subsCtrl.requestCtrl;
@@ -27,7 +27,7 @@ namespace PupilLabs
             }
         }
 
-        ~Gaze3dListener()
+        ~GazeListener()
         {
             requestCtrl.OnConnected -= Enable;
             requestCtrl.OnDisconnecting -= Disable;
