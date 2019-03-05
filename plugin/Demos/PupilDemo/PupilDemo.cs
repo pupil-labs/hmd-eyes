@@ -7,7 +7,13 @@ namespace PupilLabs.Demos
     public class PupilDemo : MonoBehaviour
     {
         public PupilLabs.SubscriptionsController subsCtrl;
-        public PupilLabs.RequestController requestCtrl;
+        
+        private PupilLabs.RequestController requestCtrl;
+
+        void Awake()
+        {
+            requestCtrl = subsCtrl.requestCtrl;
+        }
 
         void OnEnable()
         {
