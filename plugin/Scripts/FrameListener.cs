@@ -4,15 +4,15 @@ using UnityEngine;
 
 namespace PupilLabs
 {
-    public class FramePublisher
+    public class FrameListener
     {
         private RequestController requestCtrl;
         private SubscriptionsController subsCtrl;
 
         public delegate void PublishHandler(int eyeIdx, byte[] frameData);
-        public event PublishHandler OnReceiveFrame;
+        public event PublishHandler OnReceiveEyeFrame;
 
-        public FramePublisher(SubscriptionsController subsCtrl)
+        public FrameListener(SubscriptionsController subsCtrl)
         {
             this.subsCtrl = subsCtrl;
             this.requestCtrl = subsCtrl.requestCtrl;
@@ -26,7 +26,7 @@ namespace PupilLabs
             }
         }
 
-        ~FramePublisher()
+        ~FrameListener()
         {
             requestCtrl.OnConnected -= Enable;
             requestCtrl.OnDisconnecting -= Disable;
@@ -41,7 +41,7 @@ namespace PupilLabs
         {
             Debug.Log("Enabling Frame Publisher");
 
-            subsCtrl.SubscribeTo("frame", CustomReceiveData);
+            subsCtrl.SubscribeTo("frame.eye.", CustomReceiveData);
             requestCtrl.StartPlugin("Frame_Publisher");
         }
 
@@ -49,7 +49,7 @@ namespace PupilLabs
         {
             Debug.Log("Disabling Frame Publisher");
 
-            subsCtrl.UnsubscribeFrom("frame", CustomReceiveData);
+            subsCtrl.UnsubscribeFrom("frame.eye.", CustomReceiveData);
             requestCtrl.StopPlugin("Frame_Publisher");
         }
 
@@ -76,12 +76,10 @@ namespace PupilLabs
                 return;
             }
 
-            if (OnReceiveFrame != null)
+            if (OnReceiveEyeFrame != null)
             {
-                OnReceiveFrame(eyeIdx, thirdFrame);
+                OnReceiveEyeFrame(eyeIdx, thirdFrame);
             }
-
-            //onreceiveworldframe
         }
     }
 }

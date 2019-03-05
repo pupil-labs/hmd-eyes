@@ -16,7 +16,7 @@ namespace PupilLabs
         MeshRenderer[] eyeRenderer = new MeshRenderer[2];
         bool[] eyePublishingInitialized = new bool[2];
 
-        FramePublisher publisher = null;
+        FrameListener publisher = null;
 
         void OnEnable()
         {
@@ -37,17 +37,17 @@ namespace PupilLabs
 
             if (publisher == null)
             {
-                publisher = new FramePublisher(subscriptionsController);
+                publisher = new FrameListener(subscriptionsController);
             }
 
             Debug.Log("Enabling Frame Visualizer");
 
-            publisher.OnReceiveFrame += UpdateFrame;
+            publisher.OnReceiveEyeFrame += ReceiveEyeFrame;
 
             eyePublishingInitialized = new bool[] { false, false };
         }
 
-        void UpdateFrame(int eyeIdx, byte[] frameData)
+        void ReceiveEyeFrame(int eyeIdx, byte[] frameData)
         {
             if (!eyePublishingInitialized[eyeIdx])
             {
@@ -106,7 +106,7 @@ namespace PupilLabs
 
             if (publisher != null)
             {
-                publisher.OnReceiveFrame -= UpdateFrame;
+                publisher.OnReceiveEyeFrame -= ReceiveEyeFrame;
             }
 
             for (int i = eyeRenderer.Length - 1; i >= 0; i--)
