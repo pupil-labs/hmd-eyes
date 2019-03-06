@@ -9,7 +9,7 @@ namespace PupilLabs
         public SubscriptionsController subscriptionsController;
         public CalibrationController calibrationController;
         public Transform gazeEstimateMarker;
-        public Camera cam;
+        public Transform cameraTransform;
 
         [Header("Confidence")]
         public bool filterByConfidence = true;
@@ -28,6 +28,8 @@ namespace PupilLabs
         public float sphereCastRadius = 0.05f;
 
         GazeListener gazeListener = null;
+        Vector3 localGazePosition;
+        Vector3 worldGazePosition;
 
         void OnEnable()
         {
@@ -42,7 +44,7 @@ namespace PupilLabs
                 return;
             }
 
-            if (cam == null)
+            if (cameraTransform == null)
             {
                 Debug.LogWarning("Camera reference missing");
                 return;
@@ -56,10 +58,34 @@ namespace PupilLabs
             StopVisualizing();
         }
 
+        void Update()
+        {
+            gazeEstimateMarker.position = worldGazePosition;
+
+            if (applyFixedDepth || showProjectedVis)
+            {
+                gazeEstimateMarker.position = GetAsFixedDepth(localGazePosition);
+            }
+
+            if (showProjectedVis)
+            {
+                gazeEstimateMarker.gameObject.SetActive(false);
+                ShowProjectedVis();
+            }
+            else
+            {
+                gazeEstimateMarker.gameObject.SetActive(true);
+                if (projectionMarker != null)
+                {
+                    projectionMarker.gameObject.SetActive(false);
+                }
+            }
+        }
+
         void StartVisualizing()
         {
             Debug.Log("Start Visualizing Gaze");
-            gazeListener.OnReceive3dGaze += Update3d;
+            gazeListener.OnReceive3dGaze += ReceiveGaze;
 
             if (gazeEstimateMarker == null)
             {
@@ -79,38 +105,17 @@ namespace PupilLabs
             }
         }
 
-        void Update3d(GazeData gazeData)
+        void ReceiveGaze(GazeData gazeData)
         {
-            // Debug.Log($"GV::Update3d {pos} {confidence}");
-
             if (filterByConfidence && gazeData.Confidence >= confidenceThreshold)
             {
-                gazeEstimateMarker.position = cam.transform.localToWorldMatrix.MultiplyPoint(gazeData.GazePoint3d);
-
-                if (applyFixedDepth || showProjectedVis)
-                {
-                    gazeEstimateMarker.position = ApplyFixedDepth();
-                }
-
-                if (showProjectedVis)
-                {
-                    gazeEstimateMarker.gameObject.SetActive(false);
-                    ShowProjectedVis();
-                }
-                else
-                {
-                    gazeEstimateMarker.gameObject.SetActive(true);
-                    if (projectionMarker != null)
-                    {
-                        projectionMarker.gameObject.SetActive(false);
-                    }
-                }
+                localGazePosition = gazeData.GazePoint3d;
+                worldGazePosition = cameraTransform.localToWorldMatrix.MultiplyPoint(gazeData.GazePoint3d);
             }
         }
 
-        private Vector3 ApplyFixedDepth()
+        private Vector3 GetAsFixedDepth(Vector3 localPosition)
         {
-            Vector3 localPosition = cam.transform.worldToLocalMatrix.MultiplyPoint(gazeEstimateMarker.position);
             localPosition.Normalize();
             
             //in case depth is < 0
@@ -121,7 +126,7 @@ namespace PupilLabs
             }
             
             localPosition *= direction * fixedDepth;
-            return cam.transform.localToWorldMatrix.MultiplyPoint(localPosition);
+            return cameraTransform.localToWorldMatrix.MultiplyPoint(localPosition);
         }
 
         private void ShowProjectedVis()
@@ -134,9 +139,9 @@ namespace PupilLabs
 
             projectionMarker.gameObject.SetActive(true);
 
-            Vector3 origin = cam.transform.position;
+            Vector3 origin = cameraTransform.position;
 
-            Vector3 direction = gazeEstimateMarker.position - origin;
+            Vector3 direction = worldGazePosition - origin;
             direction.Normalize();
             if (Physics.SphereCast(origin, sphereCastRadius, direction, out RaycastHit hit, Mathf.Infinity))
             {
