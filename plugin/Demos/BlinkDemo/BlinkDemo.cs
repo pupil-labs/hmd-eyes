@@ -1,20 +1,27 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace PupilLabs.Demos
 {
 
     public class BlinkDemo : MonoBehaviour
     {
-        public PupilLabs.RequestController requestCtrl;
-        public PupilLabs.SubscriptionsController subsCtrl;
-
+        public SubscriptionsController subscriptionsController;
+        public Text text;
         public Transform leftEye;
         public Transform rightEye;
         [Range(0.1f, 10)]
         public float blinkDuration = 0.5f;
+        
+        private RequestController requestCtrl;
         private bool blinking = false;
+
+        void Awake()
+        {
+            requestCtrl = subscriptionsController.requestCtrl;
+        }
 
         void OnEnable()
         {
@@ -38,11 +45,23 @@ namespace PupilLabs.Demos
             }
         }
 
+        void Update()
+        {
+            if (requestCtrl == null || text == null) { return; }
+
+            text.text = requestCtrl.IsConnected ? "Connected" : "Not connected";
+
+            if (requestCtrl.IsConnected)
+            {
+                text.text += "\n\nWatch the capsule hero and blink!";
+            }
+        }
+
         void StartBlinkSubscription()
         {
             Debug.Log("StartBlinkSubscription");
 
-            subsCtrl.SubscribeTo("blinks", CustomReceiveData);
+            subscriptionsController.SubscribeTo("blinks", CustomReceiveData);
 
             requestCtrl.StartPlugin(
                 "Blink_Detection",
@@ -60,7 +79,7 @@ namespace PupilLabs.Demos
 
             requestCtrl.StopPlugin("Blink_Detection");
 
-            subsCtrl.UnsubscribeFrom("blinks", CustomReceiveData);
+            subscriptionsController.UnsubscribeFrom("blinks", CustomReceiveData);
         }
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
