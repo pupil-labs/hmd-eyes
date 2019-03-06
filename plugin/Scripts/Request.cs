@@ -58,6 +58,11 @@ namespace PupilLabs
                 IsConnected = false;
             }
 
+            ~Request()
+            {
+                CloseSockets();
+            }
+
             public bool SendRequestMessage(Dictionary<string, object> data)
             {
                 if (requestSocket == null || !IsConnected)
@@ -100,8 +105,6 @@ namespace PupilLabs
             private void CreateContext()
             {
                 AsyncIO.ForceDotNet.Force();
-                NetMQConfig.ManualTerminationTakeOver();
-                NetMQConfig.ContextCreate(true);
                 contextExists = true;
             }
 
@@ -109,7 +112,8 @@ namespace PupilLabs
             {
                 if (contextExists)
                 {
-                    NetMQConfig.ContextTerminate(true);
+                    Debug.Log("Request Context Cleanup");
+                    NetMQConfig.Cleanup(false);
                     contextExists = false;
                 }
             }
