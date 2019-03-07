@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a326d0b0ec1bf6408737de026abe763, type: 3}
   m_Name: 3D Default Targets
   m_EditorClassIdentifier: 
-  mode: 1
   circles:
   - center: {x: 0, y: 0, z: 0.6}
     radius: 0.18

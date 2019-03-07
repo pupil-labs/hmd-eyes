@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7af549a719760347987e7e27fbc634f, type: 3}
   m_Name: 3D Default Settings
   m_EditorClassIdentifier: 
-  mode: 1
-  secondsPerTarget: 1
-  ignoreInitialSeconds: 0.1
+  secondsPerTarget: 1.5
+  ignoreInitialSeconds: 0.3
   samplesPerTarget: 30
+  mode: 1
