@@ -4,18 +4,28 @@ using UnityEngine;
 
 namespace PupilLabs
 {
-	public class DisableOnCalibrationStart : MonoBehaviour {
+	public class DisableDuringCalibration : MonoBehaviour {
 
 		public CalibrationController controller;
+		public bool enableAfterCalibration;
 
 		void OnEnable () 
 		{
 			controller.OnCalibrationStarted += DisableMePls;
+			controller.OnCalibrationSucceeded += EnableMePls;
+			controller.OnCalibrationFailed += EnableMePls;
 		}
 
 		void OnDisable ()
 		{
 			controller.OnCalibrationStarted -= DisableMePls;
+			controller.OnCalibrationSucceeded -= EnableMePls;
+			controller.OnCalibrationFailed -= EnableMePls;
+		}
+
+		void EnableMePls()
+		{
+			gameObject.SetActive(true);
 		}
 
 		void DisableMePls()
