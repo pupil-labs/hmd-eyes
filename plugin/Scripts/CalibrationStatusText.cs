@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +9,6 @@ namespace PupilLabs
     public class CalibrationStatusText : MonoBehaviour
     {
         public SubscriptionsController subsCtrl;
-        
         public Text statusText;
 
         private CalibrationController calibrationController;
@@ -35,15 +34,6 @@ namespace PupilLabs
             calibrationController.OnCalibrationSucceeded -= CalibrationSucceeded;
             calibrationController.OnCalibrationFailed -= CalibrationFailed;
         }
-
-        void Update()
-        {
-            if (statusText != null)
-            {
-                statusText.enabled = !calibrationController.IsCalibrating;
-            }
-        }
-
         
         private void OnConnected()
         {
@@ -55,17 +45,22 @@ namespace PupilLabs
         private void OnCalibrationStarted()
         {
             statusText.enabled = false;
-            SetStatusText("Waiting for calibration to finish.");
         }
 
         private void CalibrationSucceeded()
         {
+            statusText.enabled = true;
             SetStatusText("Calibration succeeded.");
+
+            StartCoroutine(DisableTextAfter(1));
         }
 
         private void CalibrationFailed()
         {
+            statusText.enabled = true;
             SetStatusText("Calibration failed.");
+
+            StartCoroutine(DisableTextAfter(1));
         }
 
         private void SetStatusText(string text)
@@ -74,6 +69,12 @@ namespace PupilLabs
             {
                 statusText.text = text;
             }
+        }
+
+        IEnumerator DisableTextAfter(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            statusText.enabled = false;
         }
     }
 }
