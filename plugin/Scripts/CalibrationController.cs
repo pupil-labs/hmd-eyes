@@ -67,7 +67,7 @@ namespace PupilLabs
 
             if (calibration.IsCalibrating)
             {
-                calibration.StopCalibration();
+                // calibration.StopCalibration();
             }
             else
             {
@@ -97,8 +97,9 @@ namespace PupilLabs
 
         private void UpdateCalibration()
         {
-            float tNow = Time.time;
+            UpdateMarker();
 
+            float tNow = Time.time;
             if (tNow - tLastSample >= 1f / settings.SampleRate - Time.deltaTime / 2f)
             {
 
@@ -186,11 +187,14 @@ namespace PupilLabs
         {
             currLocalTargetPos = targets.GetLocalTargetPosAt(targetIdx);
 
-            marker.position = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
-            marker.LookAt (camera.transform.position);
-
             targetIdx++;
             tLastTarget = Time.time;
+        }
+
+        private void UpdateMarker()
+        {
+            marker.position = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
+            marker.LookAt (camera.transform.position);
         }
     }
 }
