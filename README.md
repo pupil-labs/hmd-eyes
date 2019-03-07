@@ -26,6 +26,10 @@ This guide walks you through a first time setup for your Pupil Labs VR add-on.
 
 Check out the [developer docs](./docs/Developer.md) to learn how to set up dev environment, make changes to code, and integrate with your own Unity3D project.
 
+**Dependencies**: Unity 2018.3 latest, using *Scripting Runtime Verion* **.NET 4.x Equivalent**. 
+
+Due to an issue with MessagePack, the default project setting for `ProjectSettings/Player/Configuration/API Compatibility Level` is not supported and needs to be set to *.NET 4.x*
+
 ## Community
 
 Chat with the hmd-eyes community on [Discord](https://discord.gg/PahDtSH).

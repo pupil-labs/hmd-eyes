@@ -8,6 +8,9 @@ Note that there are difference in the setup for VR and ~~HoloLens~~.
 
 ### VR Build and Player Settings
 
+**Dependencies**: Unity 2018.3 latest, using *Scripting Runtime Verion* **.NET 4.x Equivalent**. 
+
+Due to an issue with MessagePack, the default project setting for `ProjectSettings/Player/Configuration/API Compatibility Level` is not supported and needs to be set to *.NET 4.x*
 
 ![VR Build And Player Settings](VRBuildAndPlayerSettings.png)
 
