@@ -16,16 +16,12 @@ namespace PupilLabs
 			controller.OnCalibrationFailed += EnableMePls;
 		}
 
-		void OnDisable ()
-		{
-			controller.OnCalibrationStarted -= DisableMePls;
-			controller.OnCalibrationSucceeded -= EnableMePls;
-			controller.OnCalibrationFailed -= EnableMePls;
-		}
-
 		void EnableMePls()
 		{
-			gameObject.SetActive(true);
+			if (enableAfterCalibration)
+			{
+				gameObject.SetActive(true);
+			}
 		}
 
 		void DisableMePls()
