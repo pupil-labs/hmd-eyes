@@ -19,7 +19,7 @@ namespace PupilLabs
         public delegate void ReceiveDataDelegate(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null);
 
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
-        
+
         void OnEnable()
         {
             if (requestCtrl != null)
@@ -51,7 +51,7 @@ namespace PupilLabs
             {
                 string connectionStr = requestCtrl.GetConnectionString();
                 Subscription subscription = new Subscription(connectionStr, topic);
-                
+
                 subscriptions.Add(topic, subscription);
                 // subscriptions[topic].OnReceiveData += Logging; //TODO would keep the socket open forever
             }
@@ -65,7 +65,7 @@ namespace PupilLabs
             {
                 subscriptions[topic].OnReceiveData -= subscriberHandler;
 
-                if(!subscriptions[topic].HasSubscribers)
+                if (!subscriptions[topic].HasSubscribers)
                 {
                     CloseSubscriptionSocket(topic);
                 }
@@ -99,11 +99,11 @@ namespace PupilLabs
 
             foreach (var removeTopic in toBeRemoved)
             {
-                if( subscriptions.ContainsKey(removeTopic))
+                if (subscriptions.ContainsKey(removeTopic))
                 {
                     subscriptions.Remove(removeTopic);
                 }
-            }            
+            }
         }
 
 

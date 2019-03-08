@@ -18,13 +18,13 @@ namespace PupilLabs
 
         [Header("Fixed Depth")]
         public bool applyFixedDepth = false;
-        [Range(0f,10f)]
+        [Range(0f, 10f)]
         public float fixedDepth = 2f;
 
         [Header("Projected Visualization")]
         public bool showProjectedVis = true;
         public Transform projectionMarker;
-        [Range(0.01f,0.1f)]
+        [Range(0.01f, 0.1f)]
         public float sphereCastRadius = 0.05f;
 
         GazeListener gazeListener = null;
@@ -117,14 +117,15 @@ namespace PupilLabs
         private Vector3 GetAsFixedDepth(Vector3 localPosition)
         {
             localPosition.Normalize();
-            
+
             //in case depth is < 0
-            float angle = Vector3.Angle(Vector3.forward,localPosition);
+            float angle = Vector3.Angle(Vector3.forward, localPosition);
             float direction = 1f;
-            if(angle >= 90f){
+            if (angle >= 90f)
+            {
                 direction = -1f;
             }
-            
+
             localPosition *= direction * fixedDepth;
             return cameraTransform.localToWorldMatrix.MultiplyPoint(localPosition);
         }
