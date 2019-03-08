@@ -162,11 +162,10 @@ namespace PupilLabs
         {
             float[] refData;
 
-            //TODO naming mode depending mapping
             if (settings.mode == CalibrationSettings.Mode._3D)
             {
                 refData = new float[] { currLocalTargetPos.x, currLocalTargetPos.y, currLocalTargetPos.z };
-                refData[1] /= camera.aspect; //TODO TBD why?
+                refData[1] /= camera.aspect;
 
                 for (int i = 0; i < refData.Length; i++)
                 {
@@ -183,7 +182,7 @@ namespace PupilLabs
             calibration.AddCalibrationPointReferencePosition(refData, time);
         }
 
-        private void UpdatePosition() 
+        private void UpdatePosition()
         {
             currLocalTargetPos = targets.GetLocalTargetPosAt(targetIdx);
 
@@ -194,7 +193,7 @@ namespace PupilLabs
         private void UpdateMarker()
         {
             marker.position = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
-            marker.LookAt (camera.transform.position);
+            marker.LookAt(camera.transform.position);
         }
     }
 }

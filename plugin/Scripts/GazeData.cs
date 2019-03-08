@@ -16,7 +16,7 @@ namespace PupilLabs
 
         public GazeDataMode Mode { get; }
         public float Confidence { get; }
-        public float Timestamp { get; } 
+        public float Timestamp { get; }
 
         public Vector2 NormPos { get; } //in camera viewport space
         public Vector3 GazePoint3d { get; } //in local camera space
@@ -49,7 +49,7 @@ namespace PupilLabs
                 Debug.LogError("GazeData with no matching mode");
                 return;
             }
-                
+
             Confidence = Helpers.FloatFromDictionary(dictionary, "confidence");
             Timestamp = Helpers.FloatFromDictionary(dictionary, "timestamp");
 

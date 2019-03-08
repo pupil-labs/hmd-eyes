@@ -7,7 +7,7 @@ namespace PupilLabs
     {
         public static float PupilUnitScalingFactor = 1000;	// Pupil is currently operating in mm
         public const string leftEyeID = "1";
-	    public const string rightEyeID = "0";
+        public const string rightEyeID = "0";
 
         public static bool Is3DCalibrationSupported(PupilLabs.RequestController requestCtrl)
         {
@@ -94,11 +94,11 @@ namespace PupilLabs
             return topics;
         }
 
-        public static Dictionary<object,object> BaseData (Dictionary<string, object> dictionary)
+        public static Dictionary<object, object> BaseData(Dictionary<string, object> dictionary)
         {
             object o;
-            dictionary.TryGetValue ("base_data", out o);
-            return o as Dictionary<object,object>;
+            dictionary.TryGetValue("base_data", out o);
+            return o as Dictionary<object, object>;
         }
     }
 }

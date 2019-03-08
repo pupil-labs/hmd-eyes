@@ -34,7 +34,7 @@ namespace PupilLabs
             calibrationController.OnCalibrationSucceeded -= CalibrationSucceeded;
             calibrationController.OnCalibrationFailed -= CalibrationFailed;
         }
-        
+
         private void OnConnected()
         {
             string text = "Connected";
