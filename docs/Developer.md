@@ -25,9 +25,21 @@ As part of new releases, HMD-Eyes provides what is called `Unity Package` assets
 To import either one in Unity, select `Assets/Import Package/Custom Package...` and navigate to where you downloaded the file to. You are presented with a dialog to choose from the files included in the package. Press `Import` to import all of them. This will create a new folder named `Plugins/Pupil` in your project structure including all necessary scripts and assets to integrate eye tracking with your own project.
 Use the demo scenes included in the Unity projects described here as an example on how to get started.
 
-## Overview
+## Plugin Overview
 
-TBD
+The plugin architecture consists of three layers
+- Pupil Connection (low level api): 
+
+    Connection to Pupil Capture, sending messages and managing subscriptions
+
+- Pupil Communicaton (high level api): 
+
+    High level classes handling the communication and data parsing for specific topics       
+- Utility Components:
+
+    Components for visualizing Pupil Capture data or guiding through specific processes
+
+![Architecture](architecture.png)
 
 ## Communicating with Pupil
 
