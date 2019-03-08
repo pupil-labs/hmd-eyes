@@ -267,7 +267,7 @@ The Gaze Demo showcases the full stack needed for gaze estimations. You start in
 
 Following the instructions you can start the calibration, which will hide everything and only shows the calibration targets. After a successful calibration the `GazeVisualizer` starts, projecting the gaze estimate into the scene.
 
-![Gaze Demo](GazeDemo.png)
+![Gaze Demo](gazeDemo.png)
 
 ### HoloLens - 2D/3D Calibration Demo 
 
