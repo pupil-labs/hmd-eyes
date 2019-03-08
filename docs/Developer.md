@@ -95,7 +95,7 @@ When the calibration process is complete, all reference points are sent to Pupil
 
 Demo: **GazeDemo**
 
-The `GazeListener` class takes care of subscribing of all `"gaze"` messages and provides C# events containing the already parsed `GazeData` struct. Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. Keep in mind that the position vectors like the `GazePoint3d` and the `EyeCenter0/1` are local coordinates in VR camera space. 
+The `GazeListener` class takes care of subscribing to all `"gaze"` messages and provides C# events containing the already parsed `GazeData`. Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. Keep in mind that the position vectors like the `GazePoint3d` and the `EyeCenter0/1` are local coordinates in VR camera space. 
 
 The `GazeVisualizer` component already showcases how to access the 3d coordinates of the gaze point after checking the confidence. 
 
@@ -108,9 +108,13 @@ We implemented three types of visualizations:
 - gaze point with a fixed depth: `Apply Fixed Depth`
 - raw 3d gaze point: both options above disabled
 
+Checkout the `Gaze Controller` prefab to add gaze tracking to your own scenes.
+
 ## Accessing Data 
 
-**TBD!** 
+For your own applications you might not want to visualize gaze at all but access it directly. In this case you need to write your own component utilizing the `GazeListener` class similar to the `GazeVisualizer`.
+
+Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. Keep in mind that the position vectors like the `GazePoint3d` and the `EyeCenter0/1` are local coordinates in VR camera space. 
 
 <!-- The first step to be able to access Pupil data is to subscribe to a topic.
 
@@ -261,7 +265,7 @@ This demo scene shows how to communicate with Pupil and access eye video frames
 
 The Gaze Demo showcases the full stack needed for gaze estimations. You start in a simple scene with and after an established connection to Pupil Capture, you can see Eye Frames as a reference to adjust your HMD and use the scene to "warm up" your eyes.
 
-Following the instructions you can start the calibration, which will hide everything and only show the calibration targets. After a successful calibration the `GazeVisualizer` starts, projecting the gaze estimate into the scene.
+Following the instructions you can start the calibration, which will hide everything and only shows the calibration targets. After a successful calibration the `GazeVisualizer` starts, projecting the gaze estimate into the scene.
 
 ![Gaze Demo](GazeDemo.png)
 
