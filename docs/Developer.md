@@ -16,14 +16,18 @@ Due to an issue with MessagePack, the default project setting for `ProjectSettin
 
 The software has been tested for both Oculus and OpenVR SDKs. Please make sure to select the correct SDK for your headset. 
 
-### Adding h,d-eyes to Existing Projects
+### Adding hmd-eyes to Existing Projects
 
 As part of new releases, HMD-Eyes provides what is called `Unity Package` assets
 - `Pupil.Import.Package.VR.unitypackage`
-- ~~`Pupil.Import.Package.HoloLens.unitypackage`~~
+- ~~`Pupil.Import.Package.HoloLens.unitypackage`~~ (TBD)
 
 To import either one in Unity, select `Assets/Import Package/Custom Package...` and navigate to where you downloaded the file to. You are presented with a dialog to choose from the files included in the package. Press `Import` to import all of them. This will create a new folder named `Plugins/Pupil` in your project structure including all necessary scripts and assets to integrate eye tracking with your own project.
 Use the demo scenes included in the Unity projects described here as an example on how to get started.
+
+## Overview
+
+TBD
 
 ## Communicating with Pupil
 
@@ -50,17 +54,17 @@ To display images of the eyes, we provided a component called `FrameVisualizer`.
 
 ## Calibration 
 
-In order to know what someone is looking at in the scene, we must to establish a mapping between pupil and gaze positions. This is what we call calibration. The calibration process establishes a mapping from pupil to gaze coordinates, based on a 3d representation of the eyes.
+In order to know what someone is looking at in the scene, we must establish a mapping between pupil positions and the gaze point. 
 
-Once the communication between Unity and Pupil Capture has been established, you are ready to calibrate. Before you calibrate you will need to ensure that and that eyes are well captured. 
+Once the communication between Unity and Pupil Capture has been setup, you are ready to calibrate. Before you calibrate you will need to ensure that eyes are well captured. 
 
-Use the `FrameVisualizer` component to check that you are capturing a good image of the eye. You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements. Additionally you need to check the confidence and quality of the pupil detection inside Pupil Capture.
+Use the `FrameVisualizer` component to check that you are capturing a good image in particular of the pupil of the eye. You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements. Additionally you need to check the confidence and quality of the pupil detection inside Pupil Capture.
 
 ![Before Starting A Calibration](BeforeStartingCalibration.png)
 
-We provided the `CalibrationController` component, based on the `Calibration` class. While the `CalibrationController` guides through the process and acts as an interface, while the `Calibration` itself handles the communication with Pupil Capture.
+We provided the `CalibrationController` component, based on the `Calibration` class. The `CalibrationController` guides through the process and acts as an interface, while the `Calibration` itself handles the communication with Pupil Capture.
 
-As all *Listeners* and other high level components the `CalibrationController` needs access to the PupilConnection object. Additionally setting the camera object makes sure that the calibration happens in camera space and is independent of head movements. 
+As all *Listeners* and other high level components the `CalibrationController` needs access to the Pupil Connection object. Additionally assigning the camera object makes sure that the calibration happens in camera space and is independent of head movements. 
 
 ![Calibration Controller](CalibrationController.png)
 
@@ -79,18 +83,9 @@ The **Calibration Settings** are currently reduced to time and sample amount per
 
 The real flexibility lies in the **Calibration Targets**. 
 
-The plugin provides `CircleCalibrationTargets` as a default implementation, which allows to define targets as a list of circles with different *center* and *radius* plus the number of points for every circle. 
+The plugin provides `CircleCalibrationTargets` as a default implementation, which allows to define targets as a list of circles with different *center* and *radii* plus the number of points for every circle. 
 
 On top `CalibrationTargets` and the `CalibrationController` are setup in a way that you can write your own implementation of `CalibrationTargets` and plug them into the controller. Be aware that the controller expects targets in local/camera space and not world coordinates.
-
-### ~~Calibration marker visualization of pupil detection confidence~~ 
-
-<!-- During calibration, the marker color will visualize pupil detection confidence. 
-- White = high confidence pupil detection for both eyes
-- Red = low confidence pupil detection for both eyes. 
-- Confidence visualization per eye:
-    - Right eye (eye ID 0) -  Low confidence = pink. High confidence = white. The marker will gradually become pink if confidence drops for this eye. 
-    - Left eye (eye ID 1) - Low confidence = yellow. High confidence = white. The marker will gradually become yellow if confidence drops for this eye.   -->
 
 ### Calibration Success/Failure 
 
@@ -98,11 +93,24 @@ When the calibration process is complete, all reference points are sent to Pupil
 
 ## Gaze Tracking
 
-**TBD** For now please have a look at the **GazeDemo**.
+Demo: **GazeDemo**
+
+The `GazeListener` class takes care of subscribing of all `"gaze"` messages and provides C# events containing the already parsed `GazeData` struct. Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. Keep in mind that the position vectors like the `GazePoint3d` and the `EyeCenter0/1` are local coordinates in VR camera space. 
+
+The `GazeVisualizer` component already showcases how to access the 3d coordinates of the gaze point after checking the confidence. 
+
+![Gaze Visualizer](GazeVisualizer.png)
+
+The `GazeVisualizer` component needs access to the `CalibrationController` (to start the visualization after a successful calibration) and again access to the Pupil Connection object.
+
+We implemented three types of visualizations:
+- gaze point projected into the scene via raycast: `Show Projected Vis` (default)
+- gaze point with a fixed depth: `Apply Fixed Depth`
+- raw 3d gaze point: both options above disabled
 
 ## Accessing Data 
 
-**TBD!** For now please check the demo scenes and demo source code.
+**TBD!** 
 
 <!-- The first step to be able to access Pupil data is to subscribe to a topic.
 
@@ -168,7 +176,7 @@ Ray ray = sceneCamera.ViewportPointToRay(viewportPoint);
 
 This solutions requires the use of Unity Colliders, though, which, when hit by the above defined ray, return the 3D hit point position.  -->
 
-### Topics that do not require calibration 
+### Examples for topics that do not require calibration 
 
 We include three demo scenes that exemplify subscribing to topics to get data for which no calibration is required
 - `Blink`,
@@ -215,7 +223,9 @@ Helpers.FloatFromDictionary(Dictionary<string,object> source, string key)
 
 The script implementation is based on the values you receive for 2D capturing mode. Have a look at [the documentation](https://github.com/pupil-labs/pupil-docs/blob/master/user-docs/data-format.md#looking-at-the-data) to see the additional values available in 3D mode
     
-## ~~Recording Data~~
+## Recording Data
+
+TBD
 
 <!-- The Unity VR plugin allows to trigger recordings in Pupil Capture (Pupil Service does not support this feature). Recordings can be started through the interface GUI of `PupilGazeTracker` or by pressing the 'R' key (in either case only once a connection has been established). On the plugin side of things, two additional processes are started
 - a screen recording, saving the current view to a video file 
@@ -255,15 +265,21 @@ Following the instructions you can start the calibration, which will hide everyt
 
 ![Gaze Demo](GazeDemo.png)
 
-### ~~HoloLens - 2D/3D Calibration Demo~~ 
+### HoloLens - 2D/3D Calibration Demo 
+
+TBD
 
 <!-- As it is not a common use-case for HoloLens to visualize complete scenes, we reduced the market scene to a single object - the `sharkman` - for the user to look at.  -->
 
-### ~~Spherical Video demo~~
+### Spherical Video demo
+
+TBD
 
 <!-- Load and display a 360 degree video based on Unity's 2017.3 implementation. Combined with Pupil, this allows to visualize what the user is looking at.  -->
 
-### ~~Heatmap demo~~
+### Heatmap demo
+
+TBD
 
 <!-- This demo shows how to generate and export spherical videos or still images with heat maps generated from gaze postions.
 
