@@ -126,7 +126,7 @@ public class Calibration
 	static float timeBetweenCalibrationPoints = 0.02f; // was 0.1, 1000/60 ms wait in old version
 	public void UpdateCalibration ()
 	{
-		float t = Time.time;// PupilSettings.Instance.connection.currentPupilTimestamp;
+		float t = Time.realtimeSinceStartup;
 
 		if (t - lastTimeStamp > timeBetweenCalibrationPoints)
 		{

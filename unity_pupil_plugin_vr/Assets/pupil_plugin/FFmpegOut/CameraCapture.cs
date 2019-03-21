@@ -135,7 +135,7 @@ namespace FFmpegOut
 				tempTex.Apply();
 
 				// With the winter 2017 release of this plugin, Pupil timestamp is set to Unity time when connecting
-				timeStampList.AddRange ( System.BitConverter.GetBytes(Time.time));
+				timeStampList.AddRange ( System.BitConverter.GetBytes(Time.realtimeSinceStartup));
 				_pipe.Write(tempTex.GetRawTextureData());
 
 				Destroy(tempTex);

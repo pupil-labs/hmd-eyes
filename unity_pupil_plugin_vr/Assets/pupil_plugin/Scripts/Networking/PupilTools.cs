@@ -359,8 +359,6 @@ public class PupilTools : MonoBehaviour
 
 	public static void StartCalibration ()
 	{
-		Connection.SetPupilTimestamp (Time.time);
-
 		if (IsGazing)
 			PupilGazeTracker.Instance.StopVisualizingGaze ();
 		
