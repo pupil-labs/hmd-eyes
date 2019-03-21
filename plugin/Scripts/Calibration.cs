@@ -30,9 +30,6 @@ namespace PupilLabs
             this.subsCtrl = subsCtrl;
             this.requestCtrl = subsCtrl.requestCtrl;
 
-
-            requestCtrl.SetPupilTimestamp(Time.time);
-
             if (OnCalibrationStarted != null)
             {
                 OnCalibrationStarted();

@@ -53,7 +53,7 @@ namespace PupilLabs
                 Subscription subscription = new Subscription(connectionStr, topic);
 
                 subscriptions.Add(topic, subscription);
-                // subscriptions[topic].OnReceiveData += Logging; //TODO would keep the socket open forever
+                // subscriptions[topic].OnReceiveData += Logging; 
             }
 
             subscriptions[topic].OnReceiveData += subscriberHandler;

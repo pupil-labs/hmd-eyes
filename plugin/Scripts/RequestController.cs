@@ -75,6 +75,8 @@ namespace PupilLabs
                 }
             }
             Debug.Log(" Succesfully connected to Pupil! ");
+
+            SetPupilTimestamp(Time.realtimeSinceStartup);
             UpdatePupilVersion();
 
             // RepaintGUI(); //
@@ -125,8 +127,21 @@ namespace PupilLabs
         {
             string response;
             string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
-            Debug.Log($"Sync Time Command: {command}");
+            // Debug.Log($"Sync Time Command: {command}");
             request.SendCommand(command, out response);
+        }
+
+        public string GetPupilTimestamp()
+        {
+            string response;
+            bool success = request.SendCommand("t",out response);
+            
+            if (!success)
+            {
+                Debug.LogWarning("GetPupilTimestamp: not connected!");
+            }
+ 
+            return response;
         }
 
         public string GetPupilVersion()
@@ -146,6 +161,20 @@ namespace PupilLabs
         public void ResetDefaultLocalConnection()
         {
             request.resetDefaultLocalConnection();
+        }
+
+        [ContextMenu("Check Time Sync")]
+        public void CheckTimeSync()
+        {
+            if (IsConnected)
+            {
+                Debug.Log($"Unity time: {Time.realtimeSinceStartup}");
+                Debug.Log($"Pupil Time: {GetPupilTimestamp()}");
+            }
+            else
+            {
+                Debug.LogWarning("CheckTimeSync: not connected");
+            }
         }
     }
 }

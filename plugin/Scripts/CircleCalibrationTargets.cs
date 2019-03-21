@@ -26,7 +26,7 @@ namespace PupilLabs
             return points * circles.Count;
         }
 
-        public override Vector3 GetLocalTargetPosAt(int idx) //TODO handle idx internally
+        public override Vector3 GetLocalTargetPosAt(int idx)
         {
             pointIdx = (int)Mathf.Floor((float)idx / (float)circles.Count);
             circleIdx = idx % circles.Count;
