@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PupilManager : MonoBehaviour 
 {
@@ -155,4 +156,19 @@ public class PupilManager : MonoBehaviour
 		PupilTools.OnCalibrationEnded -= OnCalibrationEnded;
 		PupilTools.OnCalibrationFailed -= OnCalibrationFailed;
 	}
+
+	[ContextMenu("Check Time Sync")]
+    public void CheckTimeSync()
+    {
+		if (PupilTools.IsConnected)
+		{
+			Debug.Log("Pupil Capture: "+PupilTools.Connection.GetPupilTimeStamp());
+			Debug.Log("Unity Time.time: "+Time.time.ToString());
+			Debug.Log("Unity Time.realtimeSinceStartup"+ Time.realtimeSinceStartup);
+		}
+		else
+		{
+			Debug.Log("Checking time sync not possible: not connected");
+		}
+    }
 }

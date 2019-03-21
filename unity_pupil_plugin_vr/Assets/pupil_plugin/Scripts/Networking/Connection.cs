@@ -61,7 +61,7 @@ public class Connection
 		if (isConnected)
 		{
 			CheckPupilVersion ();
-//			SetPupilTimestamp (Time.time); moved to PupilTools.StartCalibration
+			// SetPupilTimestamp (Time.time); 
 		}
 	}
 
@@ -259,6 +259,19 @@ public class Connection
 			requestSocket.SendFrame ("T " + time.ToString ("0.00000000"));
 			receiveRequestResponse ();
 		}
+	}
+
+	public string GetPupilTimeStamp()
+	{
+		if (requestSocket != null)
+		{
+			requestSocket.SendFrame("t");
+
+			NetMQMessage response = new NetMQMessage ();
+			requestSocket.TryReceiveMultipartMessage (timeout, ref response);
+			return response.ToString();
+		}
+		return "not connected";
 	}
 
 	public void TerminateContext()
