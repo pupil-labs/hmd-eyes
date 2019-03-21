@@ -1,16 +1,25 @@
 # Developer Documentation
 
+## Pupil Capture/Service
+
+For people new to hmd-eyes, we recommend using the project with [Pupil Capture](https://docs.pupil-labs.com/#pupil-capture). 
+It supports recordings and the GUI offers detailed feedback (e.g. pupil detection confidence), which is especially important for gaze tracking or features like blink detection). 
+
+[Pupil Service](https://docs.pupil-labs.com/#pupil-service) features a simplified GUI and a tool set tailored towards low-latency real-time data access.
 
 ## Setup 
+
 This section of the docs will show you how to set up your development environment in Unity3D so that you can work with Pupil + Unity.
 
 Note that there are difference in the setup for VR and ~~HoloLens~~.
 
 ### VR Build and Player Settings
 
-**Dependencies**: Unity 2018.3 latest, using *Scripting Runtime Verion* **.NET 4.x Equivalent**. 
+**Dependencies**: 
 
-Due to an issue with MessagePack, the default project setting for `ProjectSettings/Player/Configuration/API Compatibility Level` is not supported and needs to be set to *.NET 4.x*
+* Unity 2018.3 latest
+* `ProjectSettings/Player/Configuration/Scripting Runtime Verion` set to **.NET 4.x Equivalent**.
+* Due to an issue with MessagePack, the default project setting for `ProjectSettings/Player/Configuration/API Compatibility Level` is not supported and needs to be set to **.NET 4.x**
 
 ![VR Build And Player Settings](VRBuildAndPlayerSettings.png)
 
