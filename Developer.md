@@ -40,6 +40,10 @@ Use the demo scenes included in the Unity projects described here as an example 
 
 The Unity scene `pupil_plugin/Calibration.unity`, which is included in both projects, serves as a starting point for VR and HoloLens development. Use it to test connecting to Pupil.
 
+#### Pupil Capture/Service
+
+For starters we recommend using hmd-eyes with [Pupil Capture](https://docs.pupil-labs.com/#pupil-capture). It supports recordings and the GUI offers more utilies (like checking the detection confidence, which is especially important for gaze tracking or features like blink detection). [Pupil Service](https://docs.pupil-labs.com/#pupil-service) on the other hand does not have a world video feed or GUI with the benefit of lower latency.
+
 #### VR Settings
 
 1. `Local` vs `Remote` - Select the `PupilGazeTracker` gameobject to access the custom Inspector GUI. `Local` is used to communicate with Pupil Capture/Service when the Unity project and Pupil software are running on the same machine. `Remote` is used to communicate with Pupil Capture/Service running on another machine over the network. 
