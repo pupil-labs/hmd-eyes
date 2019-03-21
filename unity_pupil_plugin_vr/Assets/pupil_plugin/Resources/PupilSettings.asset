@@ -19,11 +19,11 @@ MonoBehaviour:
     IP: 127.0.0.1
     IPHeader: '>tcp://127.0.0.1:'
     PORT: 50020
-    subport: 65168
+    subport: 56702
     isLocal: 1
     confidenceThreshold: 0.6
-    PupilVersion: 1.5.12
-    PupilVersionNumbers: 01000000050000000c000000
+    PupilVersion: 1.11.4
+    PupilVersionNumbers: 010000000b00000004000000
   calibration:
     CalibrationType2D:
       name: 2d
@@ -53,16 +53,16 @@ MonoBehaviour:
       - {x: 0.6, y: 0.18}
       - {x: 1, y: 0.24}
       - {x: 2, y: 0.42}
-      samplesPerDepth: 120
+      samplesPerDepth: 80
     samplesToIgnoreForEyeMovement: 20
     rightEyeTranslation:
-    - -15
-    - 0
-    - 0
+    - 31.599998
+    - 0.00011920929
+    - -0.000059604645
     leftEyeTranslation:
-    - -15
+    - -31.599998
     - 0
-    - 0
+    - -0.000059604645
   customGUIVariables:
     tabs:
       mainTab: 1
@@ -72,7 +72,7 @@ MonoBehaviour:
   recorder:
     codec: 1
     resolution: 1
-    filePath: C:/Users/office/Documents/RecordingTest
+    filePath: FolderToStoreYourRecordings
     isFixedRecordingLength: 0
     recordingLength: 10
     isCustomPath: 1
