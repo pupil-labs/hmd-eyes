@@ -61,7 +61,7 @@ public class Connection
 		if (isConnected)
 		{
 			CheckPupilVersion ();
-			// SetPupilTimestamp (Time.time); 
+			SetPupilTimestamp (Time.realtimeSinceStartup); 
 		}
 	}
 

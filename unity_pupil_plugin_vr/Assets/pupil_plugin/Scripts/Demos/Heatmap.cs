@@ -266,7 +266,7 @@ public class Heatmap : MonoBehaviour
 					for (int j = 0; j < texture.width; j++)
 						mirrored [j + texture.width * i] = pixels [j + texture.width * ((texture.height - 1) - i)];
 				texture.SetPixels (mirrored);
-				System.IO.File.WriteAllBytes (path + string.Format ("/Heatmap_{0}.jpg", Time.time), texture.EncodeToJPG ());
+				System.IO.File.WriteAllBytes (path + string.Format ("/Heatmap_{0}.jpg", Time.realtimeSinceStartup), texture.EncodeToJPG ());
 				capturing = false;
 			}
 			else
@@ -276,7 +276,7 @@ public class Heatmap : MonoBehaviour
 				else
 				{
 					// With the winter 2017 release of this plugin, Pupil timestamp is set to Unity time when connecting
-					timeStampList.AddRange( System.BitConverter.GetBytes(Time.time));
+					timeStampList.AddRange( System.BitConverter.GetBytes(Time.realtimeSinceStartup));
 					_pipe.Write (CaptureCurrentView ().GetRawTextureData ());
 				}
 			}

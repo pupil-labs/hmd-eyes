@@ -163,7 +163,6 @@ public class PupilManager : MonoBehaviour
 		if (PupilTools.IsConnected)
 		{
 			Debug.Log("Pupil Capture: "+PupilTools.Connection.GetPupilTimeStamp());
-			Debug.Log("Unity Time.time: "+Time.time.ToString());
 			Debug.Log("Unity Time.realtimeSinceStartup"+ Time.realtimeSinceStartup);
 		}
 		else
