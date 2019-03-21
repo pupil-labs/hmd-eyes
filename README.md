@@ -10,7 +10,7 @@ This guide walks you through a first time setup for your Pupil Labs VR add-on.
 
 1. [HTC Vive Add-on setup](https://docs.pupil-labs.com/#htc-vive-add-on) - Install your Pupil eye tracking add-on into your HMD and connect the add-on to your computer. 
 1. [Download Pupil Software](https://github.com/pupil-labs/pupil/releases/latest). Extract the Pupil Capture app to your Desktop.
-1. Start Pupil Capture via the `pupil_capture.exe` in the Pupil Capture App folder. Pupil Capture does pupil detection from eye images.
+1. Start Pupil Capture via the `pupil_capture.exe` in the Pupil Capture App folder. Pupil Capture performs the actual eye tracking and provides real-time data access via a network API.
 1. [Download and start hmd-eyes demo app](https://github.com/pupil-labs/hmd-eyes/releases/latest) - This demo runs a VR experience. The demo app talks to Pupil software in  the background. You will use it to calibrate and visualize gaze data within a demo scene. The demo app will start with settings dialog. <!-- insert image of app demo dialog -->
 1. Start the demo with default values. You will see a view of the left eye of the hmd.
 1. This would be a good point to put said device on your head.
