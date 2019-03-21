@@ -261,7 +261,7 @@ public class Connection
 		}
 	}
 
-	public string GetPupilTimeStamp()
+	public string GetPupilTimestamp()
 	{
 		if (requestSocket != null)
 		{
