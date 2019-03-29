@@ -16,7 +16,7 @@ namespace PupilLabs.Demos
             }
 
             gazeVisualizer.subscriptionsController = subsController;
-            gazeVisualizer.StartVisualizing();
+            gazeVisualizer.enabled = true;
         }
     }
 }
