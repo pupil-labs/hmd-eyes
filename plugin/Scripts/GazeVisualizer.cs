@@ -7,50 +7,25 @@ namespace PupilLabs
     public class GazeVisualizer : MonoBehaviour
     {
         public SubscriptionsController subscriptionsController;
-        public CalibrationController calibrationController;
-        public Transform gazeEstimateMarker;
         public Transform cameraTransform;
 
-        [Header("Confidence")]
-        public bool filterByConfidence = true;
+        [Header("Settings")]
         [Range(0f, 1f)]
         public float confidenceThreshold = 0.6f;
 
-        [Header("Fixed Depth")]
-        public bool applyFixedDepth = false;
-        [Range(0f, 10f)]
-        public float fixedDepth = 2f;
-
         [Header("Projected Visualization")]
-        public bool showProjectedVis = true;
         public Transform projectionMarker;
         [Range(0.01f, 0.1f)]
         public float sphereCastRadius = 0.05f;
 
         GazeListener gazeListener = null;
-        Vector3 localGazePosition;
-        Vector3 worldGazePosition;
+        Vector3 localGazeDirection;
+        float gazeDistance;
+        bool isGazing = false;
 
         void OnEnable()
         {
-            if (gazeListener == null)
-            {
-                gazeListener = new GazeListener(subscriptionsController);
-            }
-
-            if (calibrationController == null)
-            {
-                Debug.LogWarning("CalibrationController missing");
-                return;
-            }
-
-            if (cameraTransform == null)
-            {
-                Debug.LogWarning("Camera reference missing");
-                return;
-            }
-
-            calibrationController.OnCalibrationSucceeded += StartVisualizing;
+            StartVisualizing();
         }
 
         void OnDisable()
@@ -60,77 +35,72 @@ namespace PupilLabs
 
         void Update()
         {
-            gazeEstimateMarker.position = worldGazePosition;
-
-            if (applyFixedDepth || showProjectedVis)
+            if (!isGazing)
             {
-                gazeEstimateMarker.position = GetAsFixedDepth(localGazePosition);
-            }
-
-            if (showProjectedVis)
-            {
-                gazeEstimateMarker.gameObject.SetActive(false);
-                ShowProjectedVis();
-            }
-            else
-            {
-                gazeEstimateMarker.gameObject.SetActive(true);
-                if (projectionMarker != null)
-                {
-                    projectionMarker.gameObject.SetActive(false);
-                }
-            }
-        }
-
-        void StartVisualizing()
-        {
-            Debug.Log("Start Visualizing Gaze");
-            gazeListener.OnReceive3dGaze += ReceiveGaze;
-
-            if (gazeEstimateMarker == null)
-            {
-                Debug.LogWarning("Gaze Marker missing");
                 return;
             }
 
-            gazeEstimateMarker.gameObject.SetActive(true);
+            ShowProjected();
         }
 
-        void StopVisualizing()
+        public void StartVisualizing()
         {
+            Debug.Log("Start Visualizing Gaze");
 
-            if (gazeEstimateMarker != null)
+            if (subscriptionsController == null)
             {
-                gazeEstimateMarker.gameObject.SetActive(false);
+                Debug.LogError("SubscriptionController missing");
+                return;
+            }
+
+            if (projectionMarker == null)
+            {
+                Debug.LogError("Marker reference missing");
+                return;
+            }
+
+            if (cameraTransform == null)
+            {
+                Debug.LogError("Camera reference missing");
+                enabled = false;
+                return;
+            }
+
+            if (gazeListener == null)
+            {
+                gazeListener = new GazeListener(subscriptionsController);
+            }
+
+            gazeListener.OnReceive3dGaze += ReceiveGaze;
+            projectionMarker.gameObject.SetActive(true);
+            isGazing = true;
+        }
+
+        public void StopVisualizing()
+        {
+            isGazing = false;
+
+            if (gazeListener != null)
+            {
+                gazeListener.OnReceive3dGaze -= ReceiveGaze;
+            }
+
+            if (projectionMarker != null)
+            {
+                projectionMarker.gameObject.SetActive(false);
             }
         }
 
         void ReceiveGaze(GazeData gazeData)
         {
-            if (filterByConfidence && gazeData.Confidence >= confidenceThreshold)
+            if (gazeData.Confidence >= confidenceThreshold)
             {
-                localGazePosition = gazeData.GazePoint3d;
-                worldGazePosition = cameraTransform.localToWorldMatrix.MultiplyPoint(gazeData.GazePoint3d);
+                localGazeDirection = gazeData.GazeDirection;
+                gazeDistance = gazeData.GazeDistance;
             }
         }
 
-        private Vector3 GetAsFixedDepth(Vector3 localPosition)
-        {
-            localPosition.Normalize();
-
-            //in case depth is < 0
-            float angle = Vector3.Angle(Vector3.forward, localPosition);
-            float direction = 1f;
-            if (angle >= 90f)
-            {
-                direction = -1f;
-            }
-
-            localPosition *= direction * fixedDepth;
-            return cameraTransform.localToWorldMatrix.MultiplyPoint(localPosition);
-        }
-
-        private void ShowProjectedVis()
+         void ShowProjected()
         {
             if (projectionMarker == null)
             {
@@ -142,8 +112,8 @@ namespace PupilLabs
 
             Vector3 origin = cameraTransform.position;
 
-            Vector3 direction = worldGazePosition - origin;
-            direction.Normalize();
+            Vector3 direction = cameraTransform.TransformDirection(localGazeDirection);
+            
             if (Physics.SphereCast(origin, sphereCastRadius, direction, out RaycastHit hit, Mathf.Infinity))
             {
                 Debug.DrawRay(origin, direction * hit.distance, Color.yellow);

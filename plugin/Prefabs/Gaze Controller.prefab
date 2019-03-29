@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5877764812355255330}
   - component: {fileID: 5877764812355255333}
   - component: {fileID: 5877764812355255331}
+  - component: {fileID: 339353008368645249}
   m_Layer: 0
   m_Name: Calibration Controller
   m_TagString: Untagged
@@ -64,6 +65,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   subsCtrl: {fileID: 0}
   statusText: {fileID: 47073779600029413}
+--- !u!114 &339353008368645249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5877764812355255332}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfd6d0aaa0718a8408802b6edef2eaab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  calibrationController: {fileID: 5877764812355255333}
+  objectToBeActivated: {fileID: 5877764814266065875}
 --- !u!1 &5877764812424549215
 GameObject:
   m_ObjectHideFlags: 0
@@ -297,13 +312,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   subscriptionsController: {fileID: 0}
-  calibrationController: {fileID: 5877764812355255333}
   gazeEstimateMarker: {fileID: 5877764812503649561}
   cameraTransform: {fileID: 0}
-  filterByConfidence: 1
   confidenceThreshold: 0.65
   applyFixedDepth: 0
   fixedDepth: 2
+  useDirection: 0
   showProjectedVis: 1
   projectionMarker: {fileID: 5877764813517154938}
   sphereCastRadius: 0.05
