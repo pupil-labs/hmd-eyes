@@ -8,13 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Plugins/Pupil/Demos/GazeDemo/GazeDemoScene.unity
     guid: e915b2b809dc8ec4b877dc5dae8c97c2
-  - enabled: 0
-    path: Assets/Plugins/Pupil/Demos/PupilDataDemo/PupilDataScene.unity
-    guid: 34a78a72855e3d044a82fde364790ea3
-  - enabled: 0
-    path: Assets/Plugins/Pupil/Demos/BlinkDemo/BlinkDemoScene.unity
-    guid: dd83771ac51e2cf468ac0697a4dc6b02
-  - enabled: 0
-    path: Assets/Plugins/Pupil/Demos/FramePublisherDemo/FramePublisherDemo.unity
-    guid: dd9ecfcd8efcd4a4ea1db27dd8e07dad
+  - enabled: 1
+    path: Assets/Plugins/Pupil/Demos/SceneManagement/Application Scene.unity
+    guid: bc12ab09a6a6d78439f120d418f2050a
   m_configObjects: {}
