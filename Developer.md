@@ -45,7 +45,7 @@ The Unity scene `pupil_plugin/Calibration.unity`, which is included in both proj
 For people new to hmd-eyes, we recommend using the project with [Pupil Capture](https://docs.pupil-labs.com/#pupil-capture). 
 It supports recordings and the GUI offers detailed feedback (e.g. pupil detection confidence), which is especially important for gaze tracking or features like blink detection). 
 
-[Pupil Service](https://docs.pupil-labs.com/#pupil-service) features a simplified GUI and a tool set tailored towards low-latency real-time data access.
+[Pupil Service](https://docs.pupil-labs.com/#pupil-service) features a simplified GUI and a toolset tailored towards low-latency real-time data access.
 
 #### VR Settings
 
