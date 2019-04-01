@@ -61,15 +61,16 @@ namespace PupilLabs
 
                 if (!IsConnected)
                 {
+                    request.TerminateContext();
+
                     if (retry)
                     {
-                        Debug.Log("Could not connect, Re-trying in 5 seconds ! ");
+                        Debug.LogWarning("Could not connect, Re-trying in 5 seconds! ");
                         yield return new WaitForSeconds(retryDelay);
-
                     }
                     else
                     {
-                        request.TerminateContext();
+                        Debug.LogWarning("Could not connect! ");
                         yield return null;
                     }
                 }

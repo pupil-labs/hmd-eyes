@@ -19,14 +19,17 @@ namespace PupilLabs
         public float Timestamp { get; }
 
 
-        /*  Backprojection into viewport based on camera intrinsic set in Pupil Capture.
-            Not available with Pupil Service */    
-        public Vector2 NormPos { get; }
-
         public Vector3 GazeDirection { get; }
         public float GazeDistance { get; }
+
         [System.Obsolete("GazePoint3d is deprecated. Use GazeDirection (and GazeDistance) instead.")]
         public Vector3 GazePoint3d { get { return gazePoint3d; } } //in local camera space
+
+        /// <summary> 
+        /// Backprojection into viewport, based on camera intrinsics set in Pupil Capture.
+        /// Not available with Pupil Service.
+        /// </summary>
+        public Vector2 NormPos { get; }
 
         public Vector3 EyeCenter0 { get { return CheckAvailability(0) ? eyeCenter0 : Vector3.zero; } }
         public Vector3 EyeCenter1 { get { return CheckAvailability(1) ? eyeCenter1 : Vector3.zero; } }
