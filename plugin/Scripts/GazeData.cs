@@ -18,7 +18,11 @@ namespace PupilLabs
         public float Confidence { get; }
         public float Timestamp { get; }
 
-        public Vector2 NormPos { get; } //in camera viewport space
+
+        /*  Backprojection into viewport based on camera intrinsic set in Pupil Capture.
+            Not available with Pupil Service */    
+        public Vector2 NormPos { get; }
+
         public Vector3 GazeDirection { get; }
         public float GazeDistance { get; }
         [System.Obsolete("GazePoint3d is deprecated. Use GazeDirection (and GazeDistance) instead.")]
@@ -57,7 +61,11 @@ namespace PupilLabs
             Confidence = Helpers.FloatFromDictionary(dictionary, "confidence");
             Timestamp = Helpers.FloatFromDictionary(dictionary, "timestamp");
 
-            NormPos = Helpers.Position(dictionary["norm_pos"], false);
+            if (dictionary.ContainsKey("norm_pos"))
+            {
+                NormPos = Helpers.Position(dictionary["norm_pos"], false);
+            }
+
             gazePoint3d = ExtractAndParseGazePoint(dictionary);
             GazeDirection = gazePoint3d.normalized;
             GazeDistance = gazePoint3d.magnitude;
