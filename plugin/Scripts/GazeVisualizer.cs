@@ -100,7 +100,7 @@ namespace PupilLabs
             }
         }
 
-         void ShowProjected()
+        void ShowProjected()
         {
             if (projectionMarker == null)
             {
@@ -113,7 +113,7 @@ namespace PupilLabs
             Vector3 origin = cameraTransform.position;
 
             Vector3 direction = cameraTransform.TransformDirection(localGazeDirection);
-            
+
             if (Physics.SphereCast(origin, sphereCastRadius, direction, out RaycastHit hit, Mathf.Infinity))
             {
                 Debug.DrawRay(origin, direction * hit.distance, Color.yellow);

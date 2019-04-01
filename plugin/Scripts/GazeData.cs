@@ -61,7 +61,7 @@ namespace PupilLabs
             gazePoint3d = ExtractAndParseGazePoint(dictionary);
             GazeDirection = gazePoint3d.normalized;
             GazeDistance = gazePoint3d.magnitude;
-            
+
             if (Mode == GazeDataMode.Binocular || Mode == GazeDataMode.Monocular_0)
             {
                 eyeCenter0 = ExtractEyeCenter(dictionary, Mode, 0);

@@ -15,7 +15,7 @@ namespace PupilLabs
         void OnDisable()
         {
             calibrationController.OnCalibrationSucceeded -= EnableComponent;
-        }   
+        }
 
         void EnableComponent()
         {

@@ -127,20 +127,19 @@ namespace PupilLabs
         {
             string response;
             string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
-            // Debug.Log($"Sync Time Command: {command}");
             request.SendCommand(command, out response);
         }
 
         public string GetPupilTimestamp()
         {
             string response;
-            bool success = request.SendCommand("t",out response);
-            
+            bool success = request.SendCommand("t", out response);
+
             if (!success)
             {
                 Debug.LogWarning("GetPupilTimestamp: not connected!");
             }
- 
+
             return response;
         }
 
