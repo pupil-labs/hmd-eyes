@@ -12,16 +12,28 @@ namespace PupilLabs
         [SerializeField]
         private Request request = new Request();
 
-        public bool IsConnected
-        {
-            get { return request.IsConnected; }
-        }
 
         public delegate void ConnectionDelegate();
         public event ConnectionDelegate OnConnected;
         public event ConnectionDelegate OnDisconnecting;
 
-        // [SerializeField]
+        public bool IsConnected
+        {
+            get { return request.IsConnected; }
+        }
+
+        public string IP
+        {
+            get { return request.IP; }
+            set { request.IP = value; }
+        }
+
+        public int PORT 
+        {
+            get { return request.PORT; }
+            set { request.PORT = value; }
+        }
+
         private string PupilVersion;
 
         public string GetConnectionString()
