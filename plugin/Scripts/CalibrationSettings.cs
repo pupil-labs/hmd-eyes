@@ -58,5 +58,20 @@ namespace PupilLabs
                 return (float)samplesPerTarget / (secondsPerTarget - ignoreInitialSeconds);
             }
         }
+
+        public string DetectionMode
+        {
+            get
+            {
+                if (mode == Mode._2D)
+                {
+                    return "2d";
+                }
+                else
+                {
+                    return "3d";
+                }
+            }
+        }
     }
 }

@@ -74,15 +74,25 @@ namespace PupilLabs
                     }
                 }
             }
+
+            Connected();
+            
+            yield break;
+        }
+
+        private void Connected()
+        {
             Debug.Log(" Succesfully connected to Pupil! ");
 
             SetPupilTimestamp(Time.realtimeSinceStartup);
             UpdatePupilVersion();
 
+            StartEyeProcesses();
+            SetDetectionMode("3d");
+
             // RepaintGUI(); //
             if (OnConnected != null)
                 OnConnected();
-            yield break;
         }
 
         public void Disconnect()
@@ -100,6 +110,25 @@ namespace PupilLabs
             return request.SendRequestMessage(dictionary);
         }
 
+        public bool StartEyeProcesses()
+        {
+            var startLeftEye = new Dictionary<string, object> {
+                {"subject", "eye_process.should_start.1"},
+                {"eye_id", 1},
+                {"delay", 0.1f}
+            };
+            var startRightEye = new Dictionary<string, object> {
+                {"subject", "eye_process.should_start.0"},
+                { "eye_id", 0},
+                { "delay", 0.2f}
+            };
+
+            bool leftEyeRunning = Send(startLeftEye);
+            bool rightEyeRunning = Send(startRightEye);
+
+            return leftEyeRunning && rightEyeRunning;
+        }
+
         public void StartPlugin(string name, Dictionary<string, object> args = null)
         {
             Dictionary<string, object> startPluginDic = new Dictionary<string, object> {
@@ -112,15 +141,20 @@ namespace PupilLabs
                 startPluginDic["args"] = args;
             }
 
-            request.SendRequestMessage(startPluginDic);
+            Send(startPluginDic);
         }
 
         public void StopPlugin(string name)
         {
-            request.SendRequestMessage(new Dictionary<string, object> {
+            Send(new Dictionary<string, object> {
                 { "subject","stop_plugin" },
                 { "name", name }
             });
+        }
+
+        public bool SetDetectionMode(string mode)
+        {
+            return Send(new Dictionary<string, object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
         }
 
         public void SetPupilTimestamp(float time)
