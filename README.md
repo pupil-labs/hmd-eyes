@@ -24,7 +24,8 @@ This guide walks you through a first time setup for your Pupil Labs VR add-on.
 
 ## Develop, integrate, and extend
 
-Check out the [developer docs](./docs/Developer.md) to learn how to set up dev environment, make changes to code, and integrate with your own Unity3D project.
+Download the *.unitypackage from the [latest release](https://github.com/pupil-labs/hmd-eyes/releases/latest) and 
+check out the [developer docs](./docs/Developer.md) to learn how to set up dev environment, make changes to code, and integrate with your own Unity3D project.
 
 **Dependencies**: 
 
