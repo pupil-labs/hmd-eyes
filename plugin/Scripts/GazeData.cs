@@ -7,7 +7,7 @@ namespace PupilLabs
     public class GazeData
     {
 
-        public enum GazeDataMode
+        public enum GazeMappingContext
         {
             Monocular_0,
             Monocular_1,
@@ -15,11 +15,11 @@ namespace PupilLabs
         }
 
         /// <summary>
-        /// GazeDataMode refers to GazeData being based on binocular or monocular mapping. 
+        /// MappingContext refers to GazeData being based on binocular or monocular mapping. 
         /// It also indicates the availability of EyeCenter/GazeNormal:
         /// Binocular for both eyes or Monocular for the corresponding eye.
         /// </summary>
-        public GazeDataMode Mode { get; private set; }
+        public GazeMappingContext MappingContext { get; private set; }
 
         /// <summary>
         /// Confidence of the pupil detection and 3d representation of the eye(s).
@@ -27,18 +27,19 @@ namespace PupilLabs
         /// </summary>
         public float Confidence { get; private set; }
         /// <summary>
-        /// Time in seconds since application start. 
+        /// Synchronized Pupil time in seconds. 
+        /// Can correspond to time since application start if set by hmd-eyes.  
         /// </summary>
         public float Timestamp { get; private set; }
 
         /// <summary>
         /// Gaze direction as a normalized vector in local camera space. 
-        /// Very precise (small angular error).
+        /// Accurate (small angular error).
         /// </summary>
         public Vector3 GazeDirection { get; private set; }
         /// <summary>
         /// Distance in meters between VR camera and gaze target, magnitude of the gaze vector.
-        /// Error-prone with high variance. Recommended to project GazeDirection instead.
+        /// Less accurate with high variance. Recommended to project GazeDirection instead.
         /// </summary>
         public float GazeDistance { get; private set; }
 
@@ -83,7 +84,7 @@ namespace PupilLabs
         /// </summary>
         public bool IsEyeDataAvailable(int eyeIdx)
         {
-            return Mode == (GazeDataMode)eyeIdx || Mode == GazeDataMode.Binocular;
+            return MappingContext == (GazeMappingContext)eyeIdx || MappingContext == GazeMappingContext.Binocular;
         }
 
         /// <summary>
@@ -130,15 +131,15 @@ namespace PupilLabs
         {
             if (topic == "gaze.3d.01.")
             {
-                Mode = GazeDataMode.Binocular;
+                MappingContext = GazeMappingContext.Binocular;
             }
             else if (topic == "gaze.3d.0.")
             {
-                Mode = GazeDataMode.Monocular_0;
+                MappingContext = GazeMappingContext.Monocular_0;
             }
             else if (topic == "gaze.3d.1.")
             {
-                Mode = GazeDataMode.Monocular_1;
+                MappingContext = GazeMappingContext.Monocular_1;
             }
             else
             {
@@ -158,15 +159,15 @@ namespace PupilLabs
             GazeDirection = gazePoint3d.normalized;
             GazeDistance = gazePoint3d.magnitude;
 
-            if (Mode == GazeDataMode.Binocular || Mode == GazeDataMode.Monocular_0)
+            if (MappingContext == GazeMappingContext.Binocular || MappingContext == GazeMappingContext.Monocular_0)
             {
-                eyeCenter0 = ExtractEyeCenter(dictionary, Mode, 0);
-                gazeNormal0 = ExtractGazeNormal(dictionary, Mode, 0);
+                eyeCenter0 = ExtractEyeCenter(dictionary, MappingContext, 0);
+                gazeNormal0 = ExtractGazeNormal(dictionary, MappingContext, 0);
             }
-            if (Mode == GazeDataMode.Binocular || Mode == GazeDataMode.Monocular_1)
+            if (MappingContext == GazeMappingContext.Binocular || MappingContext == GazeMappingContext.Monocular_1)
             {
-                eyeCenter1 = ExtractEyeCenter(dictionary, Mode, 1);
-                gazeNormal1 = ExtractGazeNormal(dictionary, Mode, 1);
+                eyeCenter1 = ExtractEyeCenter(dictionary, MappingContext, 1);
+                gazeNormal1 = ExtractGazeNormal(dictionary, MappingContext, 1);
             }
         }
 
@@ -185,11 +186,11 @@ namespace PupilLabs
             return gazePos;
         }
 
-        private Vector3 ExtractEyeCenter(Dictionary<string, object> dictionary, GazeDataMode mode, byte eye)
+        private Vector3 ExtractEyeCenter(Dictionary<string, object> dictionary, GazeMappingContext context, byte eye)
         {
 
             object vecObj;
-            if (mode == GazeDataMode.Binocular)
+            if (context == GazeMappingContext.Binocular)
             {
                 var binoDic = dictionary["eye_centers_3d"] as Dictionary<object, object>;
                 vecObj = binoDic[eye];
@@ -203,11 +204,11 @@ namespace PupilLabs
             return eyeCenter;
         }
 
-        private Vector3 ExtractGazeNormal(Dictionary<string, object> dictionary, GazeDataMode mode, byte eye)
+        private Vector3 ExtractGazeNormal(Dictionary<string, object> dictionary, GazeMappingContext context, byte eye)
         {
 
             object vecObj;
-            if (mode == GazeDataMode.Binocular)
+            if (context == GazeMappingContext.Binocular)
             {
                 var binoDic = dictionary["gaze_normals_3d"] as Dictionary<object, object>;
                 vecObj = binoDic[eye];
@@ -225,7 +226,7 @@ namespace PupilLabs
         {
             if (!IsEyeDataAvailable(eyeIdx))
             {
-                Debug.LogWarning("Data not available in this GazeData set. Please check GazeData.IsEyeDataAvailable or GazeData.Mode first.");
+                Debug.LogWarning("Data not available in this GazeData set. Please check GazeData.IsEyeDataAvailable or GazeData.MappingContext first.");
                 return false;
             }
 
