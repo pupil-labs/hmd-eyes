@@ -110,15 +110,15 @@ namespace PupilLabs.Demos
                 return;
             }
 
-            if (data.Mode != GazeData.GazeDataMode.Monocular_1)
+            if (data.IsEyeDataAvailable(0))
             {
                 gazeNormalLeft = data.GazeNormal0;
                 eyeCenterLeft = data.EyeCenter0;
             }
 
-            if (data.Mode != GazeData.GazeDataMode.Monocular_0) //TODO better to have a available method?
+            if (data.IsEyeDataAvailable(1))
             {
-                gazeNormalRight = data.GazeNormal1; //TODO still local
+                gazeNormalRight = data.GazeNormal1;
                 eyeCenterRight = data.EyeCenter1;
             }
         }

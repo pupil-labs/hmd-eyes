@@ -14,13 +14,33 @@ namespace PupilLabs
             Binocular
         }
 
-        public GazeDataMode Mode { get; }
-        public float Confidence { get; }
-        public float Timestamp { get; }
+        /// <summary>
+        /// GazeDataMode refers to GazeData being based on binocular or monocular mapping. 
+        /// It also indicates the availability of EyeCenter/GazeNormal:
+        /// Binocular for both eyes or Monocular for the corresponding eye.
+        /// </summary>
+        public GazeDataMode Mode { get; private set; }
 
+        /// <summary>
+        /// Confidence of the pupil detection and 3d representation of the eye(s).
+        /// Used to filter data sets with low confidence (below ~0.6). 
+        /// </summary>
+        public float Confidence { get; private set; }
+        /// <summary>
+        /// Time in seconds since application start. 
+        /// </summary>
+        public float Timestamp { get; private set; }
 
-        public Vector3 GazeDirection { get; }
-        public float GazeDistance { get; }
+        /// <summary>
+        /// Gaze direction as a normalized vector in local camera space. 
+        /// Very precise (small angular error).
+        /// </summary>
+        public Vector3 GazeDirection { get; private set; }
+        /// <summary>
+        /// Distance in meters between VR camera and gaze target, magnitude of the gaze vector.
+        /// Error-prone with high variance. Recommended to project GazeDirection instead.
+        /// </summary>
+        public float GazeDistance { get; private set; }
 
         [System.Obsolete("GazePoint3d is deprecated. Use GazeDirection (and GazeDistance) instead.")]
         public Vector3 GazePoint3d { get { return gazePoint3d; } } //in local camera space
@@ -29,11 +49,24 @@ namespace PupilLabs
         /// Backprojection into viewport, based on camera intrinsics set in Pupil Capture.
         /// Not available with Pupil Service.
         /// </summary>
-        public Vector2 NormPos { get; }
+        public Vector2 NormPos { get; private set; }
 
+        /// <summary>
+        /// 3d coordinate of eye center 0 in local camera space. By default eye index 0 corresponds to the right eye.
+        /// </summary>
         public Vector3 EyeCenter0 { get { return CheckAvailability(0) ? eyeCenter0 : Vector3.zero; } }
+        /// <summary>
+        /// 3d coordinate of eye center 1 in local camera space. By default eye index 1 corresponds to the left eye.
+        /// </summary>
         public Vector3 EyeCenter1 { get { return CheckAvailability(1) ? eyeCenter1 : Vector3.zero; } }
+
+        /// <summary>
+        /// Gaze vector of eye 0 in local camera space. By default eye index 0 corresponds to the right eye.
+        /// </summary>
         public Vector3 GazeNormal0 { get { return CheckAvailability(0) ? gazeNormal0 : Vector3.zero; } }
+        /// <summary>
+        /// Gaze vector of eye 1 in local camera space. By default eye index 1 corresponds to the left eye.
+        /// </summary>
         public Vector3 GazeNormal1 { get { return CheckAvailability(1) ? gazeNormal1 : Vector3.zero; } }
 
         private Vector3 gazePoint3d;
@@ -42,7 +75,59 @@ namespace PupilLabs
 
         public GazeData(string topic, Dictionary<string, object> dictionary)
         {
+            Parse(topic,dictionary);
+        }
 
+        /// <summary>
+        /// Check availability of EyeCenter/GazeNormal for corresponding eye. 
+        /// </summary>
+        public bool IsEyeDataAvailable(int eyeIdx)
+        {
+            return Mode == (GazeDataMode)eyeIdx || Mode == GazeDataMode.Binocular;
+        }
+
+        /// <summary>
+        /// Parameterized version of EyeCenter0/1
+        /// </summary>
+        public Vector3 GetEyeCenter(int eyeIdx)
+        {
+            if (eyeIdx == 0)
+            {
+                return EyeCenter0;
+            }
+            else if (eyeIdx == 1)
+            {
+                return EyeCenter1;
+            }
+            else
+            {
+                Debug.LogWarning($"EyeIdx of {eyeIdx} not supported. Valid options: 0 or 1");
+                return Vector3.zero;
+            }
+        }
+
+        /// <summary>
+        /// Parameterized version of GazeNormal0/1
+        /// </summary>
+        public Vector3 GetGazeNormal(int eyeIdx)
+        {
+            if (eyeIdx == 0)
+            {
+                return GazeNormal0;
+            }
+            else if (eyeIdx == 1)
+            {
+                return GazeNormal1;
+            }
+            else
+            {
+                Debug.LogWarning($"EyeIdx of {eyeIdx} not supported. Valid options: 0 or 1");
+                return Vector3.zero;
+            }
+        }
+
+        private void Parse(string topic, Dictionary<string, object> dictionary)
+        {
             if (topic == "gaze.3d.01.")
             {
                 Mode = GazeDataMode.Binocular;
@@ -138,9 +223,9 @@ namespace PupilLabs
 
         private bool CheckAvailability(int eyeIdx)
         {
-            if (Mode != (GazeDataMode)eyeIdx && Mode != GazeDataMode.Binocular)
+            if (!IsEyeDataAvailable(eyeIdx))
             {
-                Debug.LogWarning("Data not available in this GazeData set. Please check GazeData.Mode first.");
+                Debug.LogWarning("Data not available in this GazeData set. Please check GazeData.IsEyeDataAvailable or GazeData.Mode first.");
                 return false;
             }
 
