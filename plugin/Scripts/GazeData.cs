@@ -33,18 +33,22 @@ namespace PupilLabs
         public float Timestamp { get; private set; }
 
         /// <summary>
-        /// Gaze direction as a normalized vector in local camera space. 
-        /// Accurate (small angular error).
+        /// Gaze direction corresponding to the 3d gaze point.
+        /// Normalized vector in local camera space. 
         /// </summary>
         public Vector3 GazeDirection { get; private set; }
         /// <summary>
-        /// Distance in meters between VR camera and gaze target, magnitude of the gaze vector.
-        /// Less accurate with high variance. Recommended to project GazeDirection instead.
+        /// Distance in meters between VR camera and 3d gaze point.
         /// </summary>
         public float GazeDistance { get; private set; }
 
-        [System.Obsolete("GazePoint3d is deprecated. Use GazeDirection (and GazeDistance) instead.")]
-        public Vector3 GazePoint3d { get { return gazePoint3d; } } //in local camera space
+        /// <summary>
+        /// 3d gaze point in local camera space. 
+        /// Recommended to use equivalent representation as GazeDirection plus GazeDistance,
+        /// as this clearly sperates the angular error from the depth error.
+        /// </summary>
+        [System.Obsolete("Using the data field GazePoint3d is not recommended. Use GazeDirection and GazeDistance instead.")]
+        public Vector3 GazePoint3d { get { return gazePoint3d; } } 
 
         /// <summary> 
         /// Backprojection into viewport, based on camera intrinsics set in Pupil Capture.
