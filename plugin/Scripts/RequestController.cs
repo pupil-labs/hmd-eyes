@@ -28,7 +28,7 @@ namespace PupilLabs
             set { request.IP = value; }
         }
 
-        public int PORT 
+        public int PORT
         {
             get { return request.PORT; }
             set { request.PORT = value; }
@@ -89,7 +89,7 @@ namespace PupilLabs
             }
 
             Connected();
-            
+
             yield break;
         }
 

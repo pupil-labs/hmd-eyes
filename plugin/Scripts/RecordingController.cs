@@ -80,9 +80,9 @@ namespace PupilLabs
                 return;
             }
 
-            requestCtrl.Send(new Dictionary<string, object> 
-            { 
-                { "subject", "recording.should_stop" } 
+            requestCtrl.Send(new Dictionary<string, object>
+            {
+                { "subject", "recording.should_stop" }
             });
 
             IsRecording = false;
@@ -90,15 +90,15 @@ namespace PupilLabs
 
         private string GetRecordingPath()
         {
-            string date = System.DateTime.Now.ToString ("yyyy_MM_dd");
+            string date = System.DateTime.Now.ToString("yyyy_MM_dd");
             string path = Application.dataPath + "/" + date;
 
-            path = path.Replace ("Assets/", ""); //go one folder up
+            path = path.Replace("Assets/", ""); //go one folder up
 
-            if (!System.IO.Directory.Exists (path))
-                System.IO.Directory.CreateDirectory (path);
+            if (!System.IO.Directory.Exists(path))
+                System.IO.Directory.CreateDirectory(path);
 
             return path;
-        }    
+        }
     }
 }

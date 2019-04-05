@@ -48,7 +48,7 @@ namespace PupilLabs
         /// as this clearly sperates the angular error from the depth error.
         /// </summary>
         [System.Obsolete("Using the data field GazePoint3d is not recommended. Use GazeDirection and GazeDistance instead.")]
-        public Vector3 GazePoint3d { get { return gazePoint3d; } } 
+        public Vector3 GazePoint3d { get { return gazePoint3d; } }
 
         /// <summary> 
         /// Backprojection into viewport, based on camera intrinsics set in Pupil Capture.
@@ -80,7 +80,7 @@ namespace PupilLabs
 
         public GazeData(string topic, Dictionary<string, object> dictionary)
         {
-            Parse(topic,dictionary);
+            Parse(topic, dictionary);
         }
 
         /// <summary>
