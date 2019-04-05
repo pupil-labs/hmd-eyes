@@ -23,6 +23,11 @@ namespace PupilLabs
         float gazeDistance;
         bool isGazing = false;
 
+        bool errorAngleBasedMarkerRadius = true;
+        float angleErrorEstimate = 2f;
+        
+        Vector3 origMarkerScale;
+
         void OnEnable()
         {
             StartVisualizing();
@@ -58,6 +63,8 @@ namespace PupilLabs
                 Debug.LogError("Marker reference missing");
                 return;
             }
+
+            origMarkerScale = projectionMarker.localScale;
 
             if (cameraTransform == null)
             {
@@ -114,17 +121,32 @@ namespace PupilLabs
 
             Vector3 direction = cameraTransform.TransformDirection(localGazeDirection);
 
+            projectionMarker.localScale = origMarkerScale;
             if (Physics.SphereCast(origin, sphereCastRadius, direction, out RaycastHit hit, Mathf.Infinity))
             {
                 Debug.DrawRay(origin, direction * hit.distance, Color.yellow);
 
                 projectionMarker.position = hit.point;
                 projectionMarker.rotation = Quaternion.FromToRotation(Vector3.forward, hit.normal);
+
+                if (errorAngleBasedMarkerRadius)
+                {
+                    projectionMarker.localScale = GetErrorAngleBasedScale(origMarkerScale, hit.distance, angleErrorEstimate);
+                }
             }
             else
             {
                 Debug.DrawRay(origin, direction * 10, Color.white);
             }
+        }
+
+        Vector3 GetErrorAngleBasedScale(Vector3 origScale, float distance, float errorAngle)
+        {
+            Vector3 scale = origScale;
+            float scaleXY = distance * Mathf.Tan(Mathf.Deg2Rad * angleErrorEstimate) * 2; 
+            scale.x = scaleXY;
+            scale.y = scaleXY;
+            return scale;
         }
     }
 }
