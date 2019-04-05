@@ -5,15 +5,10 @@ using UnityEngine;
 
 namespace PupilLabs
 {
-    // [RequireComponent(typeof(RequestController))]
     public partial class SubscriptionsController : MonoBehaviour
     {
 
         public PupilLabs.RequestController requestCtrl;
-        // [SerializeField]
-        // private bool printMessageTopic = false;
-        // [SerializeField]
-        // private bool printMessage = false;
 
         public bool IsConnected { get { return requestCtrl.IsConnected; } }
 
@@ -106,20 +101,5 @@ namespace PupilLabs
                 }
             }
         }
-
-
-
-        // private void Logging(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
-        // {
-        //     if (printMessageTopic)
-        //     {
-        //         Debug.Log(topic);
-        //     }
-
-        //     if (printMessage)
-        //     {
-        //         Debug.Log(MessagePackSerializer.Serialize<Dictionary<string, object>>(dictionary));
-        //     }
-        // }
     }
 }

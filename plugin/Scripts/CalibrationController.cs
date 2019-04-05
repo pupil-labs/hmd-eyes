@@ -17,10 +17,9 @@ namespace PupilLabs
         public bool IsCalibrating { get { return calibration.IsCalibrating; } }
 
         //events
-        public delegate void CalibrationDel();
-        public event CalibrationDel OnCalibrationStarted;
-        public event CalibrationDel OnCalibrationFailed;
-        public event CalibrationDel OnCalibrationSucceeded;
+        public event Action OnCalibrationStarted;
+        public event Action OnCalibrationFailed;
+        public event Action OnCalibrationSucceeded;
 
         //members
         Calibration calibration = new Calibration();

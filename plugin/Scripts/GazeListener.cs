@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,8 +8,7 @@ namespace PupilLabs
     public class GazeListener
     {
 
-        public delegate void Receive3dGazeDel(GazeData gazeData);
-        public event Receive3dGazeDel OnReceive3dGaze;
+        public event Action<GazeData> OnReceive3dGaze;
 
         private RequestController requestCtrl;
         private SubscriptionsController subsCtrl;

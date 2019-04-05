@@ -8,10 +8,9 @@ namespace PupilLabs
     public class Calibration
     {
         //events
-        public delegate void CalibrationDel();
-        public event CalibrationDel OnCalibrationStarted;
-        public event CalibrationDel OnCalibrationSucceeded;
-        public event CalibrationDel OnCalibrationFailed;
+        public event Action OnCalibrationStarted;
+        public event Action OnCalibrationSucceeded;
+        public event Action OnCalibrationFailed;
 
         //members
         SubscriptionsController subsCtrl;

@@ -12,10 +12,8 @@ namespace PupilLabs
         [SerializeField]
         private Request request = new Request();
 
-
-        public delegate void ConnectionDelegate();
-        public event ConnectionDelegate OnConnected;
-        public event ConnectionDelegate OnDisconnecting;
+        public event Action OnConnected;
+        public event Action OnDisconnecting;
 
         public bool IsConnected
         {

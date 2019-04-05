@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,8 +10,7 @@ namespace PupilLabs
         private RequestController requestCtrl;
         private SubscriptionsController subsCtrl;
 
-        public delegate void PublishHandler(int eyeIdx, byte[] frameData);
-        public event PublishHandler OnReceiveEyeFrame;
+        public event Action<int,byte[]> OnReceiveEyeFrame;
 
         public FrameListener(SubscriptionsController subsCtrl)
         {
