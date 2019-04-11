@@ -25,7 +25,7 @@ namespace PupilLabs
 
         bool errorAngleBasedMarkerRadius = true;
         float angleErrorEstimate = 2f;
-        
+
         Vector3 origMarkerScale;
 
         void OnEnable()
@@ -143,7 +143,7 @@ namespace PupilLabs
         Vector3 GetErrorAngleBasedScale(Vector3 origScale, float distance, float errorAngle)
         {
             Vector3 scale = origScale;
-            float scaleXY = distance * Mathf.Tan(Mathf.Deg2Rad * angleErrorEstimate) * 2; 
+            float scaleXY = distance * Mathf.Tan(Mathf.Deg2Rad * angleErrorEstimate) * 2;
             scale.x = scaleXY;
             scale.y = scaleXY;
             return scale;

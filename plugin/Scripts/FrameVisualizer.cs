@@ -68,11 +68,11 @@ namespace PupilLabs
             Vector2 textureScale;
             if (eyeIndex == 0) //right by default
             {
-                textureScale = new Vector2(-1,1);
+                textureScale = new Vector2(-1, 1);
             }
             else //index == 1 -> left by default
             {
-                textureScale = new Vector2(1,-1);
+                textureScale = new Vector2(1, -1);
             }
 
             eyeRenderer[eyeIndex].material.mainTextureScale = textureScale;

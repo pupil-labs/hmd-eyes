@@ -10,7 +10,7 @@ namespace PupilLabs
         private RequestController requestCtrl;
         private SubscriptionsController subsCtrl;
 
-        public event Action<int,byte[]> OnReceiveEyeFrame;
+        public event Action<int, byte[]> OnReceiveEyeFrame;
 
         public FrameListener(SubscriptionsController subsCtrl)
         {
