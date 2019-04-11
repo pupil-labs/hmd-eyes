@@ -13,7 +13,7 @@ namespace PupilLabs
         public RequestController requestCtrl;
         public Camera centerCam;
         public int width, height;
-        public float delay = 0.3f;
+        public int maxFrameRate = 90;
         
         private RenderTexture renderTexture;
         public Texture2D streamTexture;
@@ -38,7 +38,6 @@ namespace PupilLabs
         {
             string connectionStr = requestCtrl.GetPubConnectionString();
             pubSocket = new PublisherSocket(connectionStr);
-            // pubSocket.SendReady += ? 
             
             isSetup = true;
             Debug.Log("screen cast ready");
@@ -46,33 +45,30 @@ namespace PupilLabs
 
         void Update()
         {
-            // activeCamera.Render();
-            RenderTexture.active = renderTexture;
-
-            // Read pixels
-            streamTexture.ReadPixels(new Rect(0,0,width,height),0,0);
-            streamTexture.Apply();
-
-            // Clean up
-            RenderTexture.active = null; // added to avoid errors 
-
             if (!isSetup)
             {
                 return;
             }
 
-            // if (Time.time - tLastFrame > delay)
-            // {
-                Send();
-            //     tLastFrame = Time.time;
-            // }
+            if (Time.time - tLastFrame < 1/(float)maxFrameRate)
+            {
+                return;
+            }
+
+            tLastFrame = Time.time;
+            
+            RenderTexture.active = renderTexture;
+
+            streamTexture.ReadPixels(new Rect(0,0,width,height),0,0);
+            streamTexture.Apply();
+
+            RenderTexture.active = null;
+
+            SendFrame();            
         }
 
-        void Send()
+        void SendFrame()
         {
-            Debug.Log("Send");
-            byte[] rawTextureData = streamTexture.GetRawTextureData();
-
             Dictionary<string, object> payload = new Dictionary<string, object> {
                 {"topic", "frame.world"},
                 {"width", width},
@@ -81,6 +77,8 @@ namespace PupilLabs
                 {"timestamp", Time.realtimeSinceStartup},
                 {"format", "rgb"},
             };
+
+            byte[] rawTextureData = streamTexture.GetRawTextureData();
         
             NetMQMessage m = new NetMQMessage();
             m.Append("frame.world"); 

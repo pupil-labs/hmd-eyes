@@ -491,6 +491,7 @@ MonoBehaviour:
   centerCam: {fileID: 211868748}
   width: 640
   height: 480
+  maxFrameRate: 60
   streamTexture: {fileID: 0}
 --- !u!4 &293617998
 Transform:
