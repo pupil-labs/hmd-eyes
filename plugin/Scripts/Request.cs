@@ -20,6 +20,7 @@ namespace PupilLabs
             public int PORT = 50020;
             private string IPHeader;
             private string subport;
+            private string pubport;
 
             public RequestSocket requestSocket = null;
             private bool contextExists = false;
@@ -27,9 +28,14 @@ namespace PupilLabs
 
             public bool IsConnected { get; set; }
 
-            public string GetConnectionString()
+            public string GetSubConnectionString()
             {
                 return IPHeader + subport;
+            }
+
+            public string GetPubConnectionString()
+            {
+                return IPHeader + pubport;
             }
 
             public void InitializeRequestSocket()
@@ -46,6 +52,9 @@ namespace PupilLabs
                 requestSocket = new RequestSocket(IPHeader + PORT);
                 requestSocket.SendFrame("SUB_PORT");
                 IsConnected = requestSocket.TryReceiveFrameString(requestTimeout, out subport);
+
+                requestSocket.SendFrame("PUB_PORT");
+                requestSocket.TryReceiveFrameString(requestTimeout, out pubport);
             }
 
             public void CloseSockets()

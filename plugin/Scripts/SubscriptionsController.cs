@@ -45,7 +45,7 @@ namespace PupilLabs
         {
             if (!subscriptions.ContainsKey(topic))
             {
-                string connectionStr = requestCtrl.GetConnectionString();
+                string connectionStr = requestCtrl.GetSubConnectionString();
                 Subscription subscription = new Subscription(connectionStr, topic);
 
                 subscriptions.Add(topic, subscription);

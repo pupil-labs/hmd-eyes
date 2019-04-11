@@ -37,9 +37,14 @@ namespace PupilLabs
 
         private string PupilVersion;
 
-        public string GetConnectionString()
+        public string GetSubConnectionString()
         {
-            return request.GetConnectionString();
+            return request.GetSubConnectionString();
+        }
+
+        public string GetPubConnectionString()
+        {
+            return request.GetPubConnectionString();
         }
 
         void OnEnable()
