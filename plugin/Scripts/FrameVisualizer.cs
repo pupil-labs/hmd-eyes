@@ -65,8 +65,17 @@ namespace PupilLabs
             eyeRenderer[eyeIndex] = InitializeEyeObject(eyeIndex, parent);
             eyeRenderer[eyeIndex].material = new Material(shader);
             eyeRenderer[eyeIndex].material.mainTexture = eyeTexture[eyeIndex];
-            if (eyeIndex == 1)
-                eyeRenderer[eyeIndex].material.mainTextureScale = new Vector2(-1, -1);
+            Vector2 textureScale;
+            if (eyeIndex == 0) //right by default
+            {
+                textureScale = new Vector2(-1,1);
+            }
+            else //index == 1 -> left by default
+            {
+                textureScale = new Vector2(1,-1);
+            }
+
+            eyeRenderer[eyeIndex].material.mainTextureScale = textureScale;
 
             lastUpdate = Time.time;
 
@@ -80,7 +89,7 @@ namespace PupilLabs
             go.transform.parent = parent;
             go.transform.localEulerAngles = Vector3.left * 90;
             go.transform.localScale = Vector3.one * 0.05f;
-            go.transform.localPosition = new Vector3((eyeIndex == 0 ? -0.3f : 0.3f), -0.5f, 1.9999f);
+            go.transform.localPosition = new Vector3((eyeIndex == 1 ? -0.3f : 0.3f), -0.5f, 1.9999f);
 
             Destroy(go.GetComponent<Collider>());
 
