@@ -8,9 +8,12 @@ namespace PupilLabs
 
     public partial class RequestController : MonoBehaviour
     {
-
+        [Header("IP & Port")]
         [SerializeField]
         private Request request = new Request();
+        [Header("Settings")]
+        public float retryConnectDelay = 5f;
+
 
         public event Action OnConnected;
         public event Action OnDisconnecting;
@@ -58,10 +61,10 @@ namespace PupilLabs
 
         public void RunConnect()
         {
-            StartCoroutine(Connect(retry: true, retryDelay: 5f));
+            StartCoroutine(Connect(retry: true));
         }
 
-        private IEnumerator Connect(bool retry = false, float retryDelay = 5f)
+        private IEnumerator Connect(bool retry = false)
         {
             yield return new WaitForSeconds(3f);
 
@@ -76,7 +79,7 @@ namespace PupilLabs
                     if (retry)
                     {
                         Debug.LogWarning("Could not connect, Re-trying in 5 seconds! ");
-                        yield return new WaitForSeconds(retryDelay);
+                        yield return new WaitForSeconds(retryConnectDelay);
                     }
                     else
                     {
