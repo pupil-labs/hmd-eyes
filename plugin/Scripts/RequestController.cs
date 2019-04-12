@@ -14,7 +14,6 @@ namespace PupilLabs
         [Header("Settings")]
         public float retryConnectDelay = 5f;
 
-
         public event Action OnConnected;
         public event Action OnDisconnecting;
 
@@ -35,6 +34,8 @@ namespace PupilLabs
             set { request.PORT = value; }
         }
 
+        public float UnityToPupilTime { get; private set; }
+        
         private string PupilVersion;
 
         public string GetSubConnectionString()
@@ -103,7 +104,7 @@ namespace PupilLabs
         {
             Debug.Log(" Succesfully connected to Pupil! ");
 
-            SetPupilTimestamp(Time.realtimeSinceStartup);
+            UpdateTimeSync();
             UpdatePupilVersion();
 
             StartEyeProcesses();
@@ -181,6 +182,7 @@ namespace PupilLabs
             string response;
             string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
             request.SendCommand(command, out response);
+            UnityToPupilTime = 0f;
         }
 
         public string GetPupilTimestamp()
@@ -194,6 +196,20 @@ namespace PupilLabs
             }
 
             return response;
+        }
+
+        public void UpdateTimeSync()
+        {
+            if (!IsConnected)
+            {
+                return;
+            }
+
+            string pupilTimeStr = GetPupilTimestamp();
+            float pupilTime = float.Parse(pupilTimeStr,System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+      
+            float unityTime = Time.unscaledTime;
+            UnityToPupilTime = pupilTime - unityTime;
         }
 
         public string GetPupilVersion()
@@ -222,6 +238,7 @@ namespace PupilLabs
             {
                 Debug.Log($"Unity time: {Time.realtimeSinceStartup}");
                 Debug.Log($"Pupil Time: {GetPupilTimestamp()}");
+                UpdateTimeSync();
             }
             else
             {
