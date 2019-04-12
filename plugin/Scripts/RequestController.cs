@@ -8,14 +8,14 @@ namespace PupilLabs
 
     public partial class RequestController : MonoBehaviour
     {
-        [Header("IP & Port")]
+
         [SerializeField]
         private Request request = new Request();
-        [Header("Settings")]
-        public float retryConnectDelay = 5f;
 
-        public event Action OnConnected;
-        public event Action OnDisconnecting;
+
+        public delegate void ConnectionDelegate();
+        public event ConnectionDelegate OnConnected;
+        public event ConnectionDelegate OnDisconnecting;
 
         public bool IsConnected
         {
@@ -28,24 +28,17 @@ namespace PupilLabs
             set { request.IP = value; }
         }
 
-        public int PORT
+        public int PORT 
         {
             get { return request.PORT; }
             set { request.PORT = value; }
         }
 
-        public float UnityToPupilTimeOffset { get; private set; }
-      
         private string PupilVersion;
 
-        public string GetSubConnectionString()
+        public string GetConnectionString()
         {
-            return request.GetSubConnectionString();
-        }
-
-        public string GetPubConnectionString()
-        {
-            return request.GetPubConnectionString();
+            return request.GetConnectionString();
         }
 
         void OnEnable()
@@ -67,16 +60,19 @@ namespace PupilLabs
 
         public void RunConnect()
         {
-            StartCoroutine(Connect(retry: true));
+            StartCoroutine(Connect(retry: true, retryDelay: 5f));
         }
 
-        private IEnumerator Connect(bool retry = false)
+        private IEnumerator Connect(bool retry = false, float retryDelay = 5f)
         {
             yield return new WaitForSeconds(3f);
 
             while (!IsConnected)
             {
                 request.InitializeRequestSocket();
+                // ***************************************************************************
+                request.InitializePubSocket();
+                // ---------------------------------------------------------------------------
 
                 if (!IsConnected)
                 {
@@ -85,7 +81,7 @@ namespace PupilLabs
                     if (retry)
                     {
                         Debug.LogWarning("Could not connect, Re-trying in 5 seconds! ");
-                        yield return new WaitForSeconds(retryConnectDelay);
+                        yield return new WaitForSeconds(retryDelay);
                     }
                     else
                     {
@@ -96,7 +92,7 @@ namespace PupilLabs
             }
 
             Connected();
-
+            
             yield break;
         }
 
@@ -104,7 +100,7 @@ namespace PupilLabs
         {
             Debug.Log(" Succesfully connected to Pupil! ");
 
-            UpdateTimeSync();
+            SetPupilTimestamp(Time.realtimeSinceStartup);
             UpdatePupilVersion();
 
             StartEyeProcesses();
@@ -182,7 +178,6 @@ namespace PupilLabs
             string response;
             string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
             request.SendCommand(command, out response);
-            UnityToPupilTimeOffset = 0f;
         }
 
         public string GetPupilTimestamp()
@@ -196,30 +191,6 @@ namespace PupilLabs
             }
 
             return response;
-        }
-
-        public float ConvertToUnityTime(float pupilTimestamp)
-        {
-            return pupilTimestamp - UnityToPupilTimeOffset;
-        }
-
-        public float ConvertToPupilTime(float unityTime)
-        {
-            return unityTime + UnityToPupilTimeOffset;
-        }
-
-        public void UpdateTimeSync()
-        {
-            if (!IsConnected)
-            {
-                return;
-            }
-
-            string pupilTimeStr = GetPupilTimestamp();
-            float pupilTime = float.Parse(pupilTimeStr,System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-      
-            float unityTime = Time.unscaledTime;
-            UnityToPupilTimeOffset = pupilTime - unityTime;
         }
 
         public string GetPupilVersion()
@@ -248,12 +219,29 @@ namespace PupilLabs
             {
                 Debug.Log($"Unity time: {Time.realtimeSinceStartup}");
                 Debug.Log($"Pupil Time: {GetPupilTimestamp()}");
-                UpdateTimeSync();
             }
             else
             {
                 Debug.LogWarning("CheckTimeSync: not connected");
             }
         }
+
+
+        // ***************************************************************************
+
+        public void SendSimpleCom(string com)
+        {
+            string resp;
+            request.SendCommand(com, out resp);
+            Debug.Log("Response: " + resp);
+        }
+
+
+        public void SendTrigger(Dictionary<string, object> data)
+        {
+            request.SendPubMessage(data);
+        }
+
+        //----------------------------------------------------------------------------
     }
 }
