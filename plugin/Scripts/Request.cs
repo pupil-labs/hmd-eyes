@@ -53,8 +53,11 @@ namespace PupilLabs
                 requestSocket.SendFrame("SUB_PORT");
                 IsConnected = requestSocket.TryReceiveFrameString(requestTimeout, out subport);
 
-                requestSocket.SendFrame("PUB_PORT");
-                requestSocket.TryReceiveFrameString(requestTimeout, out pubport);
+                if (IsConnected)
+                {
+                    requestSocket.SendFrame("PUB_PORT");
+                    requestSocket.TryReceiveFrameString(requestTimeout, out pubport);
+                }
             }
 
             public void CloseSockets()
