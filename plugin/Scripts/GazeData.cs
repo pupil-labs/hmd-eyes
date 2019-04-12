@@ -34,7 +34,7 @@ namespace PupilLabs
         /// Unity time in seconds.
         /// Calculated by storing the offset between Unity and Pupil time. 
         /// </summary>
-        public float Timestamp { get; private set; }
+        public float UnityTimestamp { get; private set; }
 
         /// <summary>
         /// Gaze direction corresponding to the 3d gaze point.
@@ -157,7 +157,7 @@ namespace PupilLabs
 
             Confidence = Helpers.FloatFromDictionary(dictionary, "confidence");
             PupilTimestamp = Helpers.FloatFromDictionary(dictionary, "timestamp");
-            Timestamp = PupilTimestamp - unityToPupilTimeOffset;
+            UnityTimestamp = PupilTimestamp - unityToPupilTimeOffset;
 
             if (dictionary.ContainsKey("norm_pos"))
             {

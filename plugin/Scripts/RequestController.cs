@@ -34,8 +34,8 @@ namespace PupilLabs
             set { request.PORT = value; }
         }
 
-        public float UnityToPupilTime { get; private set; }
-        
+        public float UnityToPupilTimeOffset { get; private set; }
+      
         private string PupilVersion;
 
         public string GetSubConnectionString()
@@ -182,7 +182,7 @@ namespace PupilLabs
             string response;
             string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
             request.SendCommand(command, out response);
-            UnityToPupilTime = 0f;
+            UnityToPupilTimeOffset = 0f;
         }
 
         public string GetPupilTimestamp()
@@ -198,6 +198,16 @@ namespace PupilLabs
             return response;
         }
 
+        public float ConvertToUnityTime(float pupilTimestamp)
+        {
+            return pupilTimestamp - UnityToPupilTimeOffset;
+        }
+
+        public float ConvertToPupilTime(float unityTime)
+        {
+            return unityTime + UnityToPupilTimeOffset;
+        }
+
         public void UpdateTimeSync()
         {
             if (!IsConnected)
@@ -209,7 +219,7 @@ namespace PupilLabs
             float pupilTime = float.Parse(pupilTimeStr,System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
       
             float unityTime = Time.unscaledTime;
-            UnityToPupilTime = pupilTime - unityTime;
+            UnityToPupilTimeOffset = pupilTime - unityTime;
         }
 
         public string GetPupilVersion()

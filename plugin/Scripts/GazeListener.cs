@@ -55,7 +55,7 @@ namespace PupilLabs
         void Receive3DGaze(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
 
-            GazeData gazeData = new GazeData(topic, dictionary, requestCtrl.UnityToPupilTime);
+            GazeData gazeData = new GazeData(topic, dictionary, requestCtrl.UnityToPupilTimeOffset);
 
             if (OnReceive3dGaze != null)
             {
