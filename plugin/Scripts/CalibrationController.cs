@@ -110,7 +110,7 @@ namespace PupilLabs
                 tLastSample = tNow;
 
                 //Adding the calibration reference data to the list that will be passed on, once the required sample amount is met.
-                float sampleTimeStamp = subsCtrl.requestCtrl.ConvertToPupilTime(Time.unscaledTime);
+                float sampleTimeStamp = subsCtrl.requestCtrl.ConvertToPupilTime(Time.realtimeSinceStartup);
                 AddSample(sampleTimeStamp);
 
                 targetSampleCount++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)

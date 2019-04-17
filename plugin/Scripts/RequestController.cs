@@ -177,12 +177,17 @@ namespace PupilLabs
             return Send(new Dictionary<string, object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
         }
 
+        [System.Obsolete("Setting the pupil timestamp might be in conflict with other plugins.")]
         public void SetPupilTimestamp(float time)
         {
             string response;
             string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
+            
+            float tBefore = Time.realtimeSinceStartup;
             request.SendCommand(command, out response);
-            UnityToPupilTimeOffset = 0f;
+            float tAfter = Time.realtimeSinceStartup;
+
+            UnityToPupilTimeOffset = -(tAfter - tBefore)/2f;
         }
 
         public string GetPupilTimestamp()
@@ -208,6 +213,7 @@ namespace PupilLabs
             return unityTime + UnityToPupilTimeOffset;
         }
 
+        [ContextMenu("Update TimeSync")]
         public void UpdateTimeSync()
         {
             if (!IsConnected)
@@ -215,10 +221,13 @@ namespace PupilLabs
                 return;
             }
 
+            float tBefore = Time.realtimeSinceStartup;
             string pupilTimeStr = GetPupilTimestamp();
+            float tAfter = Time.realtimeSinceStartup;
+            
             float pupilTime = float.Parse(pupilTimeStr,System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
       
-            float unityTime = Time.unscaledTime;
+            float unityTime = (tBefore+tAfter)/2f;
             UnityToPupilTimeOffset = pupilTime - unityTime;
         }
 
@@ -248,7 +257,7 @@ namespace PupilLabs
             {
                 Debug.Log($"Unity time: {Time.realtimeSinceStartup}");
                 Debug.Log($"Pupil Time: {GetPupilTimestamp()}");
-                UpdateTimeSync();
+                Debug.Log($"Unity to Pupil Offset {UnityToPupilTimeOffset}");
             }
             else
             {
