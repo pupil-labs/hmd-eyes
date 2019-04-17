@@ -10,7 +10,7 @@ namespace PupilLabs
     {
         [Header("IP & Port")]
         [SerializeField]
-        private Request request = new Request();
+        private Request request;
         [Header("Settings")]
         public float retryConnectDelay = 5f;
 
@@ -34,7 +34,8 @@ namespace PupilLabs
             set { request.PORT = value; }
         }
 
-        public float UnityToPupilTimeOffset { get; private set; }
+        public float UnityToPupilTimeOffset { get { return timeSync.UnityToPupilTimeOffset; } }
+        private TimeSync timeSync = null;
       
         private string PupilVersion;
 
@@ -50,6 +51,11 @@ namespace PupilLabs
 
         void OnEnable()
         {
+            if (request == null)
+            {
+                request = new Request();
+            }
+    
             PupilVersion = "not connected";
             if (!IsConnected)
             {
@@ -104,7 +110,8 @@ namespace PupilLabs
         {
             Debug.Log(" Succesfully connected to Pupil! ");
 
-            UpdateTimeSync();
+            timeSync = new TimeSync(request);
+            timeSync.UpdateTimeSync();
             UpdatePupilVersion();
 
             StartEyeProcesses();
@@ -177,42 +184,6 @@ namespace PupilLabs
             return Send(new Dictionary<string, object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
         }
 
-        [System.Obsolete("Setting the pupil timestamp might be in conflict with other plugins.")]
-        public void SetPupilTimestamp(float time)
-        {
-            string response;
-            string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
-            
-            float tBefore = Time.realtimeSinceStartup;
-            request.SendCommand(command, out response);
-            float tAfter = Time.realtimeSinceStartup;
-
-            UnityToPupilTimeOffset = -(tAfter - tBefore)/2f;
-        }
-
-        public string GetPupilTimestamp()
-        {
-            string response;
-            bool success = request.SendCommand("t", out response);
-
-            if (!success)
-            {
-                Debug.LogWarning("GetPupilTimestamp: not connected!");
-            }
-
-            return response;
-        }
-
-        public float ConvertToUnityTime(float pupilTimestamp)
-        {
-            return pupilTimestamp - UnityToPupilTimeOffset;
-        }
-
-        public float ConvertToPupilTime(float unityTime)
-        {
-            return unityTime + UnityToPupilTimeOffset;
-        }
-
         [ContextMenu("Update TimeSync")]
         public void UpdateTimeSync()
         {
@@ -221,14 +192,27 @@ namespace PupilLabs
                 return;
             }
 
-            float tBefore = Time.realtimeSinceStartup;
-            string pupilTimeStr = GetPupilTimestamp();
-            float tAfter = Time.realtimeSinceStartup;
-            
-            float pupilTime = float.Parse(pupilTimeStr,System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-      
-            float unityTime = (tBefore+tAfter)/2f;
-            UnityToPupilTimeOffset = pupilTime - unityTime;
+            timeSync.UpdateTimeSync();
+        }
+
+        public float GetPupilTimeStamp(){
+            return timeSync.GetPupilTimestamp();
+        }
+
+        public float ConvertToUnityTime(float pupilTimestamp)
+        {
+            return timeSync.ConvertToUnityTime(pupilTimestamp);
+        }
+
+        public float ConvertToPupilTime(float unityTime)
+        {
+            return timeSync.ConvertToPupilTime(unityTime);
+        }
+
+        [System.Obsolete("Setting the pupil timestamp might be in conflict with other plugins.")]
+        public void SetPupilTimestamp(float time)
+        {
+            timeSync.SetPupilTimestamp(time);
         }
 
         public string GetPupilVersion()
@@ -255,9 +239,7 @@ namespace PupilLabs
         {
             if (IsConnected)
             {
-                Debug.Log($"Unity time: {Time.realtimeSinceStartup}");
-                Debug.Log($"Pupil Time: {GetPupilTimestamp()}");
-                Debug.Log($"Unity to Pupil Offset {UnityToPupilTimeOffset}");
+                timeSync.CheckTimeSync();
             }
             else
             {
