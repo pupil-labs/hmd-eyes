@@ -8,14 +8,16 @@ namespace PupilLabs
     public class CalibrationController : MonoBehaviour
     {
         public SubscriptionsController subsCtrl;
-        public new Camera camera;
+        public Origin gazeOrigin;
         public Transform marker;
 
         public CalibrationSettings settings;
         public CalibrationTargets targets;
 
-        public bool IsCalibrating { get { return calibration.IsCalibrating; } }
+        public new Camera camera; //2d only 
 
+        public bool IsCalibrating { get { return calibration.IsCalibrating; } }
+        
         //events
         public event Action OnCalibrationStarted;
         public event Action OnCalibrationFailed;
@@ -35,6 +37,8 @@ namespace PupilLabs
         {
             calibration.OnCalibrationSucceeded += CalibrationSucceeded;
             calibration.OnCalibrationFailed += CalibrationFailed;
+
+
         }
 
         void OnDisable()
@@ -174,7 +178,7 @@ namespace PupilLabs
             }
             else
             {
-                Vector3 worldPos = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
+                Vector3 worldPos = gazeOrigin.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
                 Vector3 viewportPos = camera.WorldToViewportPoint(worldPos);
                 refData = new float[] { viewportPos.x, viewportPos.y };
             }
@@ -192,8 +196,8 @@ namespace PupilLabs
 
         private void UpdateMarker()
         {
-            marker.position = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
-            marker.LookAt(camera.transform.position);
+            marker.position = gazeOrigin.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
+            marker.LookAt(gazeOrigin.transform.position);
         }
     }
 }
