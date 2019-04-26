@@ -196,22 +196,46 @@ namespace PupilLabs
         }
 
         public float GetPupilTimeStamp(){
+            if (!IsConnected)
+            {
+                Debug.LogWarning("Not connected");
+                return 0;
+            }
+
             return timeSync.GetPupilTimestamp();
         }
 
         public float ConvertToUnityTime(float pupilTimestamp)
         {
+            if (!IsConnected)
+            {
+                Debug.LogWarning("Not connected");
+                return 0;
+            }
+
             return timeSync.ConvertToUnityTime(pupilTimestamp);
         }
 
         public float ConvertToPupilTime(float unityTime)
         {
+            if (!IsConnected)
+            {
+                Debug.LogWarning("Not connected");
+                return 0;
+            }
+
             return timeSync.ConvertToPupilTime(unityTime);
         }
 
         [System.Obsolete("Setting the pupil timestamp might be in conflict with other plugins.")]
         public void SetPupilTimestamp(float time)
         {
+            if (!IsConnected)
+            {
+                Debug.LogWarning("Not connected");
+                return;
+            }
+
             timeSync.SetPupilTimestamp(time);
         }
 
