@@ -270,5 +270,14 @@ namespace PupilLabs
                 Debug.LogWarning("CheckTimeSync: not connected");
             }
         }
+
+        [ContextMenu("Sync Pupil Time To Time.now")]
+        void SyncPupilTimeToUnityTime()
+        {
+            if (IsConnected)
+            {
+                timeSync.SetPupilTimestamp(Time.realtimeSinceStartup);
+            }
+        }
     }
 }
