@@ -1,6 +1,30 @@
 # Developer Documentation
 
-### Pupil Capture/Service
+- [Getting Started](#getting-started)
+	- [Pupil Capture or Service](#pupil-capture-or-service)
+	- [Dependencies](#dependencies)
+	- [Adding hmd-eyes to Existing Projects](#adding-hmd-eyes-to-existing-projects)
+	- [VR Build and Player Settings](#vr-build-and-player-settings)
+- [Plugin Overview](#plugin-overview)
+	- [Component Setup](#component-setup)
+	- [Scene Management](#scene-management)
+- [Communicating with Pupil](#communicating-with-pupil)
+- [Display Eye Images](#display-eye-images)
+- [Calibration](#calibration)
+	- [Calibration Settings and Targets](#calibration-settings-and-targets)
+	- [Calibration Success/Failure](#calibration-successfailure)
+- [Gaze Tracking](#gaze-tracking)
+	- [GazeDirection + GazeDistance instead of GazePoint3d](#gazedirection--gazedistance-instead-of-gazepoint3d)
+- [Accessing Data](#accessing-data)
+	- [Examples for topics that do not require calibration](#examples-for-topics-that-do-not-require-calibration)
+- [Recording Data](#recording-data)
+- [Demo Scenes](#demo-scenes)
+
+## Getting Started 
+
+This section of the docs will show you how to set up your development environment in Unity3D so that you can work with Pupil + Unity.
+
+### Pupil Capture or Service
 
 For people new to hmd-eyes, we recommend using the project with [Pupil Capture](https://docs.pupil-labs.com/#pupil-capture). 
 It supports recordings and the GUI offers detailed feedback (e.g. pupil detection confidence), which is especially important for gaze tracking or features like blink detection). 
@@ -12,12 +36,6 @@ It supports recordings and the GUI offers detailed feedback (e.g. pupil detectio
 * Unity 2018.3 latest
 * `ProjectSettings/Player/Configuration/Scripting Runtime Verion` set to **.NET 4.x Equivalent**.
 * Due to an issue with MessagePack, the default project setting for `ProjectSettings/Player/Configuration/API Compatibility Level` is not supported and needs to be set to **.NET 4.x**
-
-## Getting Started 
-
-This section of the docs will show you how to set up your development environment in Unity3D so that you can work with Pupil + Unity.
-
-Note that there are difference in the setup for VR and HoloLens.
   
 ### Adding hmd-eyes to Existing Projects
 
