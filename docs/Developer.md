@@ -23,7 +23,7 @@ Note that there are difference in the setup for VR and HoloLens.
 
 >Please be aware that for Unity plugins in general to work (especially demo scenes) it is not sufficient to clone and copy paste the plugin/source folder!
 
-HMD-Eyes provides what is called `Unity Package` assets
+Instead HMD-Eyes provides what is called `Unity Package` assets
 - `Pupil.Import.Package.VR.unitypackage`
 - ~~`Pupil.Import.Package.HoloLens.unitypackage`~~ (TBD)
 
@@ -97,12 +97,14 @@ To display images of the eyes, we provided a component called `FrameVisualizer`.
 
 In order to know what someone is looking at in the scene, we must establish a mapping between pupil positions and the gaze point. 
 
-Once the communication between Unity and Pupil Capture has been setup, you are ready to calibrate. Before you calibrate you will need to ensure that eyes are well captured. 
+Before you calibrate you will need to ensure that eyes are well captured and that the pupil detection runs with high confidence (~0.8).
+Please refer to the Pupil [getting started](https://docs.pupil-labs.com/#capture-workflow) and [user docs](https://docs.pupil-labs.com/#pupil-detection).
 
-Use the `FrameVisualizer` component to check that you are capturing a good image in particular of the pupil of the eye. You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements. Additionally you need to check the confidence and quality of the pupil detection inside Pupil Capture.
+Use the `FrameVisualizer` component to check that you are capturing a good image in particular of the pupil of the eye. You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements.
 
 ![Before Starting A Calibration](BeforeStartingCalibration.png)
 
+Once the communication between Unity and Pupil Capture has been setup, you are ready to calibrate. 
 We provided the `CalibrationController` component, based on the `Calibration` class. The `CalibrationController` guides through the process and acts as an interface, while the `Calibration` itself handles the communication with Pupil Capture.
 
 As all *Listeners* and other high level components the `CalibrationController` needs access to the Pupil Connection object. Additionally assigning the camera object makes sure that the calibration happens in camera space and is independent of head movements. 
@@ -150,7 +152,7 @@ Checkout the `Gaze Controller` prefab to add gaze tracking to your own scenes.
 
 ### GazeDirection + GazeDistance instead of GazePoint3d
 
-Instead of directly using the data field `GazeData.GazePoint3d` we recommend to use the equivalent representation as `GazeData.GazeDirection` and `GazeData.GazeDistance` as this representation clearly separates the angular error from the depth error. Note that while the depth error increases with growing distance of the gaze target the direction remains accurate (angular error of ~2 degrees).
+Instead of directly using the data field `GazeData.GazePoint3d` we recommend to use the equivalent representation as `GazeData.GazeDirection` and `GazeData.GazeDistance` as this representation clearly separates the angular error from the depth error. Note that while the depth error increases with growing distance of the gaze target the direction remains accurate (angular error of less than 2 degrees).
 
 Due to access to 3d informations about the VR environment, the gaze estimation can be enhanced by using the `GazeData.GazeDirection` to project into the scene via [raycasting](https://docs.unity3d.com/ScriptReference/Physics.Raycast.html).
 
