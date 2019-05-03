@@ -49,7 +49,7 @@ namespace PupilLabs
         /// <summary>
         /// 3d gaze point in local camera space. 
         /// Recommended to use equivalent representation as GazeDirection plus GazeDistance,
-        /// as this clearly sperates the angular error from the depth error.
+        /// as this clearly seperates the angular error from the depth error.
         /// </summary>
         [System.Obsolete("Using the data field GazePoint3d is not recommended. Use GazeDirection and GazeDistance instead.")]
         public Vector3 GazePoint3d { get { return gazePoint3d; } }

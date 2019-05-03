@@ -294,6 +294,105 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 55932935}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &324916661
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5949723158929319867, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_Name
+      value: Gaze Validation Controller
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319865, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949723158929319866, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: calibrationCtrl
+      value: 
+      objectReference: {fileID: 5877764812924331511}
+    - target: {fileID: 5949723158929319866, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: subscriptionsCtrl
+      value: 
+      objectReference: {fileID: 1626429637}
+    - target: {fileID: 5949723158929319866, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: gazeOrigin
+      value: 
+      objectReference: {fileID: 1923697938}
+    - target: {fileID: 5949723158929319866, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: cameraTransform
+      value: 
+      objectReference: {fileID: 1923697938}
+    - target: {fileID: 5949723158929319866, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: gazeVis
+      value: 
+      objectReference: {fileID: 5877764812924331512}
+    - target: {fileID: 5949723158929319866, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: hideDuringValidation
+      value: 
+      objectReference: {fileID: 2077975384}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 36bd0643c0a2c194f8be84c00bbe6e87, type: 3}
 --- !u!1 &471193592
 GameObject:
   m_ObjectHideFlags: 0
@@ -2522,5 +2621,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 33106f9ae9798da45b13ca3bf1e2747e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5877764812924331512 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5877764814266065873, guid: 5b1f0dffe8de01941a3bacf3f7b2c347,
+    type: 3}
+  m_PrefabInstance: {fileID: 5877764812924331510}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 528a2a5af85707849a09e8168819098b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

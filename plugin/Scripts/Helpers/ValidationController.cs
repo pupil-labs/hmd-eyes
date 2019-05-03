@@ -8,7 +8,7 @@ namespace PupilLabs
     {
         public CalibrationController calibrationCtrl;
         public SubscriptionsController subscriptionsCtrl;
-        public Transform gazeOrigin;
+        public Transform cameraTransform;
         public Transform marker;
         public GazeVisualizer gazeVis;
         public Transform hideDuringValidation;
@@ -24,7 +24,7 @@ namespace PupilLabs
         bool validationRunning = false;
         int targetIdx = 0;
         float tTargetStart;
-        Vector3 currLocalTarget; 
+        Vector3 currLocalTarget;
 
         GazeListener gazeListener;
 
@@ -45,7 +45,7 @@ namespace PupilLabs
         void OnEnable()
         {
             calibrationCtrl.OnCalibrationSucceeded += OnCalibrationSucceeded;
-            marker.parent = gazeOrigin;
+            marker.parent = cameraTransform;
             marker.gameObject.SetActive(false);
 
             gazeListener = new GazeListener(subscriptionsCtrl);
@@ -121,8 +121,8 @@ namespace PupilLabs
             avgError = CalcAvgError();
             Debug.Log($"AVG Angular Error {avgError}");
 
-            Debug.Log($"AVG Angular Error 0.6-0.8 {CalcAvgError(0.6f,0.8f)}");
-            Debug.Log($"AVG Angular Error 0.8-1 {CalcAvgError(0.8f,1f)}");
+            Debug.Log($"AVG Angular Error 0.6-0.8 {CalcAvgError(0.6f, 0.8f)}");
+            Debug.Log($"AVG Angular Error 0.8-1 {CalcAvgError(0.8f, 1f)}");
 
             if (gazeVisWasEnable)
             {
@@ -150,14 +150,14 @@ namespace PupilLabs
         void UpdateMarker()
         {
             marker.localPosition = currLocalTarget; //as marker.parent = gaze origin
-            marker.LookAt(gazeOrigin.position);
+            marker.LookAt(cameraTransform.position);
         }
 
         void HandleGaze(GazeData gaze)
         {
             if (!validationRunning)
             {
-                return;   
+                return;
             }
 
             if (gaze.UnityTimestamp - tTargetStart < switchTargetDelay)
@@ -171,7 +171,7 @@ namespace PupilLabs
             }
 
             Vector3 targetDir = currLocalTarget.normalized;
-            float angle = Vector3.Angle(targetDir,gaze.GazeDirection);
+            float angle = Vector3.Angle(targetDir, gaze.GazeDirection);
 
             Sample sample = new Sample();
             sample.targetIndex = targetIdx;
@@ -190,14 +190,14 @@ namespace PupilLabs
             int count = 0;
             foreach (var sample in samples)
             {
-                if (sample.confidence > maxConfidence || sample.confidence < minConfidence )
+                if (sample.confidence > maxConfidence || sample.confidence < minConfidence)
                 {
                     continue;
                 }
                 error += sample.angularError;
                 count++;
             }
-            return error/(float)count;
+            return error / (float)count;
         }
 
 #if UNITY_EDITOR  
@@ -216,7 +216,7 @@ namespace PupilLabs
                 //TODO vec3 to csv extension method
             }
 
-            string path = UnityEditor.EditorUtility.SaveFilePanel("Save CSV",Application.dataPath,"validation","csv");
+            string path = UnityEditor.EditorUtility.SaveFilePanel("Save CSV", Application.dataPath, "validation", "csv");
 
             System.IO.StreamWriter outStream = System.IO.File.CreateText(path);
             outStream.WriteLine(sb);
