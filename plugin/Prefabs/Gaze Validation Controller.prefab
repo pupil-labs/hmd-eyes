@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5949723158929319865}
   - component: {fileID: 5949723158929319866}
   m_Layer: 0
-  m_Name: Validation Controller
+  m_Name: Gaze Validation Controller
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46,13 +46,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   calibrationCtrl: {fileID: 0}
   subscriptionsCtrl: {fileID: 0}
-  gazeOrigin: {fileID: 0}
+  cameraTransform: {fileID: 0}
   marker: {fileID: 5949723158349719686}
   gazeVis: {fileID: 0}
   hideDuringValidation: {fileID: 0}
   targets: {fileID: 11400000, guid: bbd1b5e03972ac44fa39e33d0cc48964, type: 2}
   durationPerTarget: 2
-  switchTargetDelay: 0.3
+  switchTargetDelay: 0.5
   minimalConfidence: 0.6
   validationTestDelay: 5
   avgError: 0

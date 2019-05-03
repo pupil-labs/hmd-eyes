@@ -391,6 +391,11 @@ PrefabInstance:
       propertyPath: hideDuringValidation
       value: 
       objectReference: {fileID: 2077975384}
+    - target: {fileID: 5949723158929319866, guid: 36bd0643c0a2c194f8be84c00bbe6e87,
+        type: 3}
+      propertyPath: validationTestDelay
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 36bd0643c0a2c194f8be84c00bbe6e87, type: 3}
 --- !u!1 &471193592

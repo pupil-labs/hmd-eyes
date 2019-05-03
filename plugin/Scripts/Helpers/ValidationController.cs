@@ -18,9 +18,13 @@ namespace PupilLabs
         public float switchTargetDelay = 0.2f;
         public float minimalConfidence = 0.6f;
         public float validationTestDelay = 5f;
-        [Header("Results")]
+        [Header("Simple Results")]
         public float avgError;
 
+        [HideInInspector] 
+        public List<Sample> samples = new List<Sample>();
+        
+        //members
         bool validationRunning = false;
         int targetIdx = 0;
         float tTargetStart;
@@ -39,8 +43,6 @@ namespace PupilLabs
             public Vector3 target;
             public Vector3 gazeDir;
         }
-
-        List<Sample> samples = new List<Sample>();
 
         void OnEnable()
         {
@@ -207,11 +209,11 @@ namespace PupilLabs
             System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
 
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.AppendLine("angularError;confidence;mode;target.x;target.y;target.z;gazeDir.x;gazeDir.y;gazeDir.z");
+            sb.AppendLine("index;angularError;confidence;mode;target.x;target.y;target.z;gazeDir.x;gazeDir.y;gazeDir.z");
 
             foreach (var sample in samples)
             {
-                string sampleString = $"{sample.angularError};{sample.confidence};{sample.mappingContext};{sample.target.x};{sample.target.y};{sample.target.z};{sample.gazeDir.x};{sample.gazeDir.y};{sample.gazeDir.z}";
+                string sampleString = $"{sample.targetIndex};{sample.angularError};{sample.confidence};{sample.mappingContext};{sample.target.x};{sample.target.y};{sample.target.z};{sample.gazeDir.x};{sample.gazeDir.y};{sample.gazeDir.z}";
                 sb.AppendLine(sampleString);
                 //TODO vec3 to csv extension method
             }
