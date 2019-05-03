@@ -23,16 +23,16 @@ namespace PupilLabs
 
             private Request request;
 
-            public void SetPupilTimestamp(float time)
+            public void SetPupilTimestamp(double time)
             {
                 string response;
                 string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
-                
+
                 float tBefore = Time.realtimeSinceStartup;
                 request.SendCommand(command, out response);
                 float tAfter = Time.realtimeSinceStartup;
 
-                UnityToPupilTimeOffset = -(tAfter - tBefore)/2f;
+                UnityToPupilTimeOffset = -(tAfter - tBefore) / 2f;
             }
 
             public double GetPupilTimestamp()
@@ -46,7 +46,7 @@ namespace PupilLabs
                     return -1;
                 }
 
-                return double.Parse(response,System.Globalization.CultureInfo.InvariantCulture.NumberFormat);;
+                return double.Parse(response, System.Globalization.CultureInfo.InvariantCulture.NumberFormat); ;
             }
 
             public double ConvertToUnityTime(double pupilTimestamp)
@@ -64,8 +64,8 @@ namespace PupilLabs
                 double tBefore = Time.realtimeSinceStartup;
                 double pupilTime = GetPupilTimestamp();
                 double tAfter = Time.realtimeSinceStartup;
-        
-                double unityTime = (tBefore+tAfter)/2.0;
+
+                double unityTime = (tBefore + tAfter) / 2.0;
                 UnityToPupilTimeOffset = pupilTime - unityTime;
             }
 
@@ -76,7 +76,7 @@ namespace PupilLabs
                 Debug.Log($"Unity time: {unityTime}");
                 Debug.Log($"Pupil Time: {pupilTime}");
                 Debug.Log($"Unity to Pupil Offset {UnityToPupilTimeOffset}");
-                Debug.Log($"out of sync by {unityTime+UnityToPupilTimeOffset-pupilTime}");
+                Debug.Log($"out of sync by {unityTime + UnityToPupilTimeOffset - pupilTime}");
             }
         }
     }

@@ -36,7 +36,7 @@ namespace PupilLabs
 
         public double UnityToPupilTimeOffset { get { return timeSync.UnityToPupilTimeOffset; } }
         private TimeSync timeSync = null;
-      
+
         private string PupilVersion;
 
         public string GetSubConnectionString()
@@ -55,7 +55,7 @@ namespace PupilLabs
             {
                 request = new Request();
             }
-    
+
             PupilVersion = "not connected";
             if (!IsConnected)
             {
@@ -195,7 +195,8 @@ namespace PupilLabs
             timeSync.UpdateTimeSync();
         }
 
-        public double GetPupilTimeStamp(){
+        public double GetPupilTimeStamp()
+        {
             if (!IsConnected)
             {
                 Debug.LogWarning("Not connected");
@@ -228,7 +229,7 @@ namespace PupilLabs
         }
 
         [System.Obsolete("Setting the pupil timestamp might be in conflict with other plugins.")]
-        public void SetPupilTimestamp(float time)
+        public void SetPupilTimestamp(double time)
         {
             if (!IsConnected)
             {
