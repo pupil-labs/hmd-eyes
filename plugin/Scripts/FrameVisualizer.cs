@@ -7,9 +7,10 @@ namespace PupilLabs
     public class FrameVisualizer : MonoBehaviour
     {
         public SubscriptionsController subscriptionsController;
+        public Transform cameraAsParent;
+        public Material eyeFrameMaterial;
 
         public int targetFPS = 20;
-        public Transform cameraAsParent;
 
         Texture2D[] eyeTexture = new Texture2D[2];
         byte[][] eyeImageRaw = new byte[2][];
@@ -34,6 +35,12 @@ namespace PupilLabs
                 return;
             }
 
+            if (eyeFrameMaterial == null)
+            {
+                Debug.LogWarning("Texture material for eye frames missing.");
+                enabled = false;
+                return;
+            }
 
             if (publisher == null)
             {
@@ -59,11 +66,10 @@ namespace PupilLabs
         public void InitializeFramePublishing(int eyeIndex)
         {
             Transform parent = cameraAsParent;
-            Shader shader = Shader.Find("Unlit/Texture");
 
             eyeTexture[eyeIndex] = new Texture2D(100, 100);
             eyeRenderer[eyeIndex] = InitializeEyeObject(eyeIndex, parent);
-            eyeRenderer[eyeIndex].material = new Material(shader);
+            eyeRenderer[eyeIndex].material = new Material(eyeFrameMaterial);
             eyeRenderer[eyeIndex].material.mainTexture = eyeTexture[eyeIndex];
             Vector2 textureScale;
             if (eyeIndex == 0) //right by default
