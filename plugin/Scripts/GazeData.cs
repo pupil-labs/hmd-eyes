@@ -29,12 +29,12 @@ namespace PupilLabs
         /// <summary>
         /// Pupil time in seconds. 
         /// </summary>
-        public float PupilTimestamp { get; private set; }
+        public double PupilTimestamp { get; private set; }
         /// <summary>
         /// Unity time in seconds.
         /// Calculated by storing the offset between Unity and Pupil time. 
         /// </summary>
-        public float UnityTimestamp { get; private set; }
+        public double UnityTimestamp { get; private set; }
 
         /// <summary>
         /// Gaze direction corresponding to the 3d gaze point.
@@ -82,7 +82,7 @@ namespace PupilLabs
         private Vector3 eyeCenter0, eyeCenter1;
         private Vector3 gazeNormal0, gazeNormal1;
 
-        public GazeData(string topic, Dictionary<string, object> dictionary, float unityToPupilTimeOffset)
+        public GazeData(string topic, Dictionary<string, object> dictionary, double unityToPupilTimeOffset)
         {
             Parse(topic, dictionary, unityToPupilTimeOffset);
         }
@@ -135,7 +135,7 @@ namespace PupilLabs
             }
         }
 
-        private void Parse(string topic, Dictionary<string, object> dictionary,float unityToPupilTimeOffset)
+        private void Parse(string topic, Dictionary<string, object> dictionary,double unityToPupilTimeOffset)
         {
             if (topic == "gaze.3d.01.")
             {
@@ -156,7 +156,7 @@ namespace PupilLabs
             }
 
             Confidence = Helpers.FloatFromDictionary(dictionary, "confidence");
-            PupilTimestamp = Helpers.FloatFromDictionary(dictionary, "timestamp");
+            PupilTimestamp = Helpers.DoubleFromDictionary(dictionary, "timestamp");
             UnityTimestamp = PupilTimestamp - unityToPupilTimeOffset;
 
             if (dictionary.ContainsKey("norm_pos"))

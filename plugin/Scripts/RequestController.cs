@@ -34,7 +34,7 @@ namespace PupilLabs
             set { request.PORT = value; }
         }
 
-        public float UnityToPupilTimeOffset { get { return timeSync.UnityToPupilTimeOffset; } }
+        public double UnityToPupilTimeOffset { get { return timeSync.UnityToPupilTimeOffset; } }
         private TimeSync timeSync = null;
       
         private string PupilVersion;
@@ -195,7 +195,7 @@ namespace PupilLabs
             timeSync.UpdateTimeSync();
         }
 
-        public float GetPupilTimeStamp(){
+        public double GetPupilTimeStamp(){
             if (!IsConnected)
             {
                 Debug.LogWarning("Not connected");
@@ -205,7 +205,7 @@ namespace PupilLabs
             return timeSync.GetPupilTimestamp();
         }
 
-        public float ConvertToUnityTime(float pupilTimestamp)
+        public double ConvertToUnityTime(double pupilTimestamp)
         {
             if (!IsConnected)
             {
@@ -216,7 +216,7 @@ namespace PupilLabs
             return timeSync.ConvertToUnityTime(pupilTimestamp);
         }
 
-        public float ConvertToPupilTime(float unityTime)
+        public double ConvertToPupilTime(double unityTime)
         {
             if (!IsConnected)
             {

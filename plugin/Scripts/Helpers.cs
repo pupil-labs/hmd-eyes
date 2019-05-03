@@ -66,9 +66,13 @@ namespace PupilLabs
         }
         public static float FloatFromDictionary(Dictionary<string, object> source, string key)
         {
+            return (float)DoubleFromDictionary(source,key);
+        }
+        public static double DoubleFromDictionary(Dictionary<string, object> source, string key)
+        {
             object value_o;
             source.TryGetValue(key, out value_o);
-            return (float)(double)value_o;
+            return (double)value_o;
         }
         private static object IDo;
         public static string StringFromDictionary(Dictionary<string, object> source, string key)

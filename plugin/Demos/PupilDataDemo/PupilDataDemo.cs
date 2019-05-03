@@ -78,8 +78,11 @@ namespace PupilLabs.Demos
                         var textForKey = Helpers.StringFromDictionary(dictionary, item.Key);
                         // Do stuff
                         break;
-                    case "confidence":
                     case "timestamp":
+                        double timestamp = Helpers.DoubleFromDictionary(dictionary, item.Key);
+                        // Do stuff
+                        break;
+                    case "confidence":
                     case "diameter":
                         var valueForKey = Helpers.FloatFromDictionary(dictionary, item.Key);
                         // Do stuff

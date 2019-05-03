@@ -19,7 +19,7 @@ namespace PupilLabs
                 this.request = request;
             }
 
-            public float UnityToPupilTimeOffset { get; private set; }
+            public double UnityToPupilTimeOffset { get; private set; }
 
             private Request request;
 
@@ -35,7 +35,7 @@ namespace PupilLabs
                 UnityToPupilTimeOffset = -(tAfter - tBefore)/2f;
             }
 
-            public float GetPupilTimestamp()
+            public double GetPupilTimestamp()
             {
                 string response;
                 bool success = request.SendCommand("t", out response);
@@ -46,33 +46,33 @@ namespace PupilLabs
                     return -1;
                 }
 
-                return float.Parse(response,System.Globalization.CultureInfo.InvariantCulture.NumberFormat);;
+                return double.Parse(response,System.Globalization.CultureInfo.InvariantCulture.NumberFormat);;
             }
 
-            public float ConvertToUnityTime(float pupilTimestamp)
+            public double ConvertToUnityTime(double pupilTimestamp)
             {
                 return pupilTimestamp - UnityToPupilTimeOffset;
             }
 
-            public float ConvertToPupilTime(float unityTime)
+            public double ConvertToPupilTime(double unityTime)
             {
                 return unityTime + UnityToPupilTimeOffset;
             }
 
             public void UpdateTimeSync()
             {
-                float tBefore = Time.realtimeSinceStartup;
-                float pupilTime = GetPupilTimestamp();
-                float tAfter = Time.realtimeSinceStartup;
+                double tBefore = Time.realtimeSinceStartup;
+                double pupilTime = GetPupilTimestamp();
+                double tAfter = Time.realtimeSinceStartup;
         
-                float unityTime = (tBefore+tAfter)/2f;
+                double unityTime = (tBefore+tAfter)/2.0;
                 UnityToPupilTimeOffset = pupilTime - unityTime;
             }
 
             public void CheckTimeSync()
             {
-                float pupilTime = GetPupilTimestamp();
-                float unityTime = Time.realtimeSinceStartup;
+                double pupilTime = GetPupilTimestamp();
+                double unityTime = Time.realtimeSinceStartup;
                 Debug.Log($"Unity time: {unityTime}");
                 Debug.Log($"Pupil Time: {pupilTime}");
                 Debug.Log($"Unity to Pupil Offset {UnityToPupilTimeOffset}");
