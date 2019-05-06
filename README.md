@@ -1,7 +1,7 @@
-hmd-eyes alpha
+hmd-eyes beta
 ========
 
-**Work in progress**: This is the **alpha version** of the new hmd-eyes Unity integration. We appreciate any level of feedback but can't recommend using it for production.
+**Work in progress:** This is the **beta version** of the new hmd-eyes Unity integration. We recommend using this version for everyone starting with hmd-eyes or starting a new project. Any level of feedback is highly appreciated.
 
 ---------------
 
@@ -29,7 +29,7 @@ check out the [developer docs](./docs/Developer.md) to learn how to set up dev e
 
 **Dependencies**: 
 
-* Unity 2018.3 latest
+* Unity 2018.3+
 * `ProjectSettings/Player/Configuration/Scripting Runtime Verion` set to **.NET 4.x Equivalent**.
 * Due to an issue with MessagePack, the default project setting for `ProjectSettings/Player/Configuration/API Compatibility Level` is not supported and needs to be set to **.NET 4.x**
 

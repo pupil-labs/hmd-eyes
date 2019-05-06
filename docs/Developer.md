@@ -1,24 +1,22 @@
 # Developer Documentation
 
-- [Getting Started](#getting-started)
-	- [Pupil Capture or Service](#pupil-capture-or-service)
-	- [Dependencies](#dependencies)
-	- [Adding hmd-eyes to Existing Projects](#adding-hmd-eyes-to-existing-projects)
-	- [VR Build and Player Settings](#vr-build-and-player-settings)
-- [Plugin Overview](#plugin-overview)
-	- [Component Setup](#component-setup)
-	- [Scene Management](#scene-management)
-- [Communicating with Pupil](#communicating-with-pupil)
-- [Display Eye Images](#display-eye-images)
-- [Calibration](#calibration)
-	- [Calibration Settings and Targets](#calibration-settings-and-targets)
-	- [Calibration Success/Failure](#calibration-successfailure)
-- [Gaze Tracking](#gaze-tracking)
-	- [GazeDirection + GazeDistance instead of GazePoint3d](#gazedirection--gazedistance-instead-of-gazepoint3d)
-- [Accessing Data](#accessing-data)
-	- [Examples for topics that do not require calibration](#examples-for-topics-that-do-not-require-calibration)
-- [Recording Data](#recording-data)
-- [Demo Scenes](#demo-scenes)
+  - [Getting Started](#getting-started)
+    - [Pupil Capture or Service](#pupil-capture-or-service)
+    - [Dependencies](#dependencies)
+    - [Adding hmd-eyes to Existing Projects](#adding-hmd-eyes-to-existing-projects)
+    - [VR Build and Player Settings](#vr-build-and-player-settings)
+  - [Plugin Overview](#plugin-overview)
+  - [Communicating with Pupil](#communicating-with-pupil)
+  - [Display Eye Images](#display-eye-images)
+  - [Calibration](#calibration)
+    - [Calibration Settings and Targets](#calibration-settings-and-targets)
+    - [Calibration Success/Failure](#calibration-successfailure)
+  - [Gaze Tracking](#gaze-tracking)
+    - [GazeDirection + GazeDistance instead of GazePoint3d](#gazedirection--gazedistance-instead-of-gazepoint3d)
+  - [Accessing Data](#accessing-data)
+    - [Examples for topics that do not require calibration](#examples-for-topics-that-do-not-require-calibration)
+  - [Recording Data](#recording-data)
+  - [Demo Scenes](#demo-scenes)
 
 ## Getting Started 
 
@@ -33,7 +31,7 @@ It supports recordings and the GUI offers detailed feedback (e.g. pupil detectio
 
 ### Dependencies
 
-* Unity 2018.3 latest
+* Unity 2018.3+
 * `ProjectSettings/Player/Configuration/Scripting Runtime Verion` set to **.NET 4.x Equivalent**.
 * Due to an issue with MessagePack, the default project setting for `ProjectSettings/Player/Configuration/API Compatibility Level` is not supported and needs to be set to **.NET 4.x**
   
@@ -72,21 +70,22 @@ The plugin architecture consists of three layers
 - Pupil Communicaton (high level api): 
 
     High level classes handling the communication and data parsing for specific topics       
-- Utility Components:
+
+- Flow Control:
 
     Components for visualizing Pupil Capture data or guiding through specific processes
 
 ![Architecture](architecture.png)
 
-### Component Setup
+<!-- ### Component Setup
 
-*TBD*
+*TBD* -->
 
-### Scene Management
+<!-- ### Scene Management
 
 Demo: [SceneManagementDemo](#SceneManagementDemo)
 
-*TBD*
+*TBD* -->
 
 ## Communicating with Pupil
 
@@ -180,70 +179,6 @@ For your own applications you might not want to visualize gaze at all but access
 
 Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. Keep in mind that most vectors like `GazeDirection` and `EyeCenter0/1` are local coordinates in VR camera space. 
 
-<!-- The first step to be able to access Pupil data is to subscribe to a topic.
-
-```c#
-PupilTools.SubscribeTo(string topic)
-```
-
-Once messages on a subscribed topic are available, the receiving socket is polled (`Connection.cs`, [line 199](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L199))
-
-```c#
-if (subscriptionSocketForTopic [keys [i]].HasIn)    // key[i] being the 'topic' 
-    subscriptionSocketForTopic [keys [i]].Poll ();
-```
-
-Message interpretation is handled inside the code block starting in [line 127](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L127) of `Connection.cs`
-
-```c#
-subscriptionSocketForTopic\[topic\].ReceiveReady += (s, a) =>
-```
-
-### `Gaze` Topic (available after successful calibration)
-
-After a successful calibration, `gaze` topic messages will be received. These messages contain dictionaries. These dictionaries are deserialized using the `MessagePackSerializer` classes ([line 167](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L167), `Connection.cs`) and stored to `PupilTools.gazeDictionary`
-
-```c#
-var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);  
-var confidence = PupilTools.FloatFromDictionary(dictionary,"confidence");  
-[..]  
-if (confidence > 0.6f && msgType == "gaze")   
-    PupilTools.gazeDictionary = dictionary;
-```
-
-Changes to `gazeDictionary` trigger 
-
-```c#
-PupilTools.UpdateGaze()
-```
-
-which goes through the data, storing relevant information (e.g. the gaze positions) through 
-
-```c#
-PupilData.AddGazeToEyeData(string key, float[] position)
-```
-Based on the chosen calibration type, this can either be 2D or 3D. To access the data, use 
-
-- `PupilData._2D.LeftEyePosition`, `PupilData._2D.RightEyePosition` or `PupilData._2D.GazePosition`, which will provide the current viewport coordinates in camera space for the respective eye (used e.g. for the three colored markers) 
-
-- `PupilData._2D.GetEyePosition (Camera sceneCamera, string eyeID)`, which will apply an additional frustum center offset for each eye (used e.g. for the shader implementations) 
-
-- `PupilData._3D.GazePosition`, which contains the camera relative gaze position 
-
-Working with 2D calibration and viewport coordinates, Unity provides methods to translate these to 3D space, e.g. `PupilMarker.UpdatePosition(Vector2 newPosition)`, line 56 
-
-```c#
-gameObject.transform.position = camera.ViewportToWorldPoint(position); 
-```
-
-An alternative is used by the laser pointer implementation in the `2D Calibration Demo` scene `MarketWith2DCalibration.Update()`, line 63 
-
-```c#
-Ray ray = sceneCamera.ViewportPointToRay(viewportPoint); 
-```
-
-This solutions requires the use of Unity Colliders, though, which, when hit by the above defined ray, return the 3D hit point position.  -->
-
 ### Examples for topics that do not require calibration 
 
 We include three demo scenes that exemplify subscribing to topics to get data for which no calibration is required
@@ -289,7 +224,7 @@ There are multiple subtopics included in the dictionary and as "diameter" is of 
 Helpers.FloatFromDictionary(Dictionary<string,object> source, string key)
 ```
 
-The script implementation is based on the values you receive for 2D capturing mode. Have a look at [the documentation](https://github.com/pupil-labs/pupil-docs/blob/master/user-docs/data-format.md#looking-at-the-data) to see the additional values available in 3D mode
+The script implementation is based on the values you receive for 2D capturing mode. Have a look at [the documentation](https://github.com/pupil-labs/pupil-docs/blob/master/user-docs/data-format.md#looking-at-the-data) to see the additional values available in 3D mode.
     
 ## Recording Data
 
