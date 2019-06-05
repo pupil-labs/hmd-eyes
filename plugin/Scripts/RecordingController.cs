@@ -8,22 +8,27 @@ namespace PupilLabs
     {
         public RequestController requestCtrl;
 
-        [SerializeField] private bool startRecordingButton;
-        [SerializeField] private bool stopRecordingButton;
+        [Header("Custom Recording Path")]
+        public bool useCustomPath;
+        [SerializeField] private string customPath;
+
+        [Header("Controls")]
+        [SerializeField] private bool startRecording;
+        [SerializeField] private bool stopRecording;
 
         public bool IsRecording { get; private set; }
 
         void Update()
         {
-            if (startRecordingButton)
+            if (startRecording)
             {
-                startRecordingButton = false;
+                startRecording = false;
                 StartRecording();
             }
 
-            if (stopRecordingButton)
+            if (stopRecording)
             {
-                stopRecordingButton = false;
+                stopRecording = false;
                 StopRecording();
             }
         }
@@ -48,7 +53,7 @@ namespace PupilLabs
                 return;
             }
 
-            var path = GetRecordingPath().Substring(2);
+            var path = GetRecordingPath();
             Debug.Log($"Recording path: {path}");
 
             requestCtrl.Send(new Dictionary<string, object>
@@ -88,15 +93,31 @@ namespace PupilLabs
             IsRecording = false;
         }
 
+        public void SetCustomPath(string path)
+        {
+            useCustomPath = true;
+            customPath = path;
+        }
+
         private string GetRecordingPath()
         {
-            string date = System.DateTime.Now.ToString("yyyy_MM_dd");
-            string path = Application.dataPath + "/" + date;
+            string path = "";
 
-            path = path.Replace("Assets/", ""); //go one folder up
-
+            if (useCustomPath)
+            {
+                path = customPath;
+            }
+            else
+            {
+                string date = System.DateTime.Now.ToString("yyyy_MM_dd");
+                path = $"{Application.dataPath}/{date}";
+                path = path.Replace("Assets/", ""); //go one folder up
+            }
+    
             if (!System.IO.Directory.Exists(path))
+            {
                 System.IO.Directory.CreateDirectory(path);
+            }
 
             return path;
         }
