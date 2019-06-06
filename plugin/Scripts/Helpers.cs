@@ -64,16 +64,25 @@ namespace PupilLabs
             else
                 return Vector3.zero;
         }
+        
+        public static int IntFromDictionary(Dictionary<string, object> source, string key)
+        {
+            source.TryGetValue(key, out object value_o);
+            return (int)value_o;
+        }
+
         public static float FloatFromDictionary(Dictionary<string, object> source, string key)
         {
             return (float)DoubleFromDictionary(source, key);
         }
+
         public static double DoubleFromDictionary(Dictionary<string, object> source, string key)
         {
             object value_o;
             source.TryGetValue(key, out value_o);
             return (double)value_o;
         }
+
         private static object IDo;
         public static string StringFromDictionary(Dictionary<string, object> source, string key)
         {
@@ -82,6 +91,7 @@ namespace PupilLabs
                 result = IDo.ToString();
             return result;
         }
+        
         public static Dictionary<object, object> DictionaryFromDictionary(Dictionary<string, object> source, string key)
         {
             if (source.ContainsKey(key))
