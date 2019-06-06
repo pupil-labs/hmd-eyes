@@ -11,33 +11,16 @@ namespace PupilLabs.Demos
         public Text statusText;
 
         private RequestController requestCtrl;
+        private PupilListener listener;
 
         void Awake()
         {
+            listener = new PupilListener(subsCtrl);
             requestCtrl = subsCtrl.requestCtrl;
+
+            listener.OnReceivePupilData += ReceivePupilData;
         }
 
-        void OnEnable()
-        {
-            requestCtrl.OnConnected += StartPupilSubscription;
-            requestCtrl.OnDisconnecting += StopPupilSubscription;
-
-            if (requestCtrl.IsConnected)
-            {
-                StartPupilSubscription();
-            }
-        }
-
-        void OnDisable()
-        {
-            requestCtrl.OnConnected -= StartPupilSubscription;
-            requestCtrl.OnDisconnecting -= StopPupilSubscription;
-
-            if (requestCtrl.IsConnected)
-            {
-                StopPupilSubscription();
-            }
-        }
 
         void Update()
         {
@@ -51,71 +34,9 @@ namespace PupilLabs.Demos
             }
         }
 
-        void StartPupilSubscription()
+        void ReceivePupilData(PupilData pupilData)
         {
-            Debug.Log("StartPupilSubscription");
-
-            subsCtrl.SubscribeTo("pupil", CustomReceiveData);
-        }
-
-        void StopPupilSubscription()
-        {
-            Debug.Log("StopPupilSubscription");
-
-            subsCtrl.UnsubscribeFrom("pupil", CustomReceiveData);
-        }
-
-        void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
-        {
-            Debug.Log($"Pupil Data received ({topic}) with confidence {dictionary["confidence"]}");
-            foreach (var item in dictionary)
-            {
-                switch (item.Key)
-                {
-                    case "topic":
-                    case "method":
-                    case "id":
-                        var textForKey = Helpers.StringFromDictionary(dictionary, item.Key);
-                        // Do stuff
-                        break;
-                    case "timestamp":
-                        double timestamp = Helpers.DoubleFromDictionary(dictionary, item.Key);
-                        // Do stuff
-                        break;
-                    case "confidence":
-                    case "diameter":
-                        var valueForKey = Helpers.FloatFromDictionary(dictionary, item.Key);
-                        // Do stuff
-                        break;
-                    case "norm_pos":
-                        var positionForKey = Helpers.VectorFromDictionary(dictionary, item.Key);
-                        // Do stuff
-                        break;
-                    case "ellipse":
-                        var dictionaryForKey = Helpers.DictionaryFromDictionary(dictionary, item.Key);
-                        foreach (var pupilEllipse in dictionaryForKey)
-                        {
-                            switch (pupilEllipse.Key.ToString())
-                            {
-                                case "angle":
-                                    var angle = (float)(double)pupilEllipse.Value;
-                                    // Do stuff
-                                    break;
-                                case "center":
-                                case "axes":
-                                    var vector = PupilLabs.Helpers.ObjectToVector(pupilEllipse.Value);
-                                    // Do stuff
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        // Do stuff
-                        break;
-                    default:
-                        break;
-                }
-            }
+            Debug.Log($"Receive Pupil Data with method {pupilData.Method} and confidence {pupilData.Confidence}");
         }
     }
 }
