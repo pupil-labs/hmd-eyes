@@ -65,46 +65,116 @@ namespace PupilLabs
             pd.Id = Helpers.StringFromDictionary(dictionary, "id");
             pd.Confidence = Helpers.FloatFromDictionary(dictionary, "confidence");
             pd.Method = Helpers.StringFromDictionary(dictionary, "method");
+            //TODO parse method and check availability of data before trying to parse (just 3d or 2d)
 
             pd.PupilTimestamp = Helpers.DoubleFromDictionary(dictionary, "timestamp");
             pd.UnityTimestamp = requestCtrl.ConvertToUnityTime(pd.PupilTimestamp);
-            // pd.Index = Helpers.IntFromDictionary(dictionary, "index");
 
             pd.NormPos = Helpers.ObjectToVector(dictionary["norm_pos"]);
             pd.Diameter = Helpers.FloatFromDictionary(dictionary, "diameter");
 
-            Debug.Log(Helpers.TopicsForDictionary(dictionary));
-            // Debug.Log(Helpers.TopicsForDictionary());
-            // foreach(var obj in (dictionary["circle_3d"] as Dictionary<object, object>).Keys)
-            // {
-            //     Debug.Log((string)obj);
-            // }
+            //+2d gaze mapping
+            TryExtractEllipse(dictionary, pd);
+
+            //+3d gaze mapping
+            pd.ModelId = Helpers.StringFromDictionary(dictionary, "model_id");
+            pd.ModelConfidence = Helpers.FloatFromDictionary(dictionary, "model_confidence");
+            pd.ModelBirthTimestamp = Helpers.DoubleFromDictionary(dictionary, "model_birth_timestamp");
+            pd.Diameter3d = Helpers.FloatFromDictionary(dictionary, "diameter_3d");
+
+            TryExtractCircle3d(dictionary, pd);
+            ExtractSphericalCoordinates(dictionary, pd);
+            
+            TryExtractSphere(dictionary, pd);
+            TryExtractProjectedSphere(dictionary, pd);
 
             return pd;
-            // //+2d gaze mapping
-            // pd.EllipseCenter2d = Helpers.ObjectToVector(dictionary["2d_ellipse_center"]);
-            // pd.EllipseAxis = Helpers.ObjectToVector(dictionary["2d_ellipse_axis"]);
-            // pd.EllipseAngle2d = Helpers.FloatFromDictionary(dictionary, "2d_ellipse_angle");
+        }
 
-            // //+3d gaze mapping
-            // pd.ModelId = Helpers.IntFromDictionary(dictionary, "model_id");
-            // pd.ModelConfidence = Helpers.FloatFromDictionary(dictionary, "model_confidence");
-            // pd.Diameter3d = Helpers.FloatFromDictionary(dictionary, "diameter_3d ");
+        bool TryExtractEllipse(Dictionary<string,object> dictionary, PupilData pupilData)
+        {
+            Dictionary<object,object> subDic = Helpers.DictionaryFromDictionary(dictionary,"ellipse");
+            if (subDic == null)
+            {
+                return false;
+            }
 
-            // pd.SphereCenter = Helpers.ObjectToVector(dictionary["sphere_center"]);
-            // pd.SphereRadius = Helpers.FloatFromDictionary(dictionary, "sphere_radius");
-            
-            // pd.CircleCenter3d = Helpers.ObjectToVector(dictionary["circle_3d_center"]);
-            // pd.CircleNormal3d = Helpers.ObjectToVector(dictionary["circle_3d_normal"]);
-            // pd.CircleRadius3d = Helpers.FloatFromDictionary(dictionary, "circle_3d_radius");
+            pupilData.EllipseCenter = Helpers.ObjectToVector(subDic["center"]);
+            pupilData.EllipseAxis = Helpers.ObjectToVector(subDic["axes"]);
+            pupilData.EllipseAngle = (float)(double)subDic["angle"];
+
+            return true;
+        }
+
+        bool TryExtractCircle3d(Dictionary<string,object> dictionary, PupilData pupilData)
+        {
+            Dictionary<object,object> subDic = Helpers.DictionaryFromDictionary(dictionary,"circle_3d");
+
+            if (subDic == null)
+            {
+                return false;
+            }
+
+            pupilData.CircleCenter = Helpers.ObjectToVector(subDic["center"]);
+            pupilData.CircleNormal = Helpers.ObjectToVector(subDic["normal"]);
+            pupilData.CircleRadius = (float)(double)subDic["radius"];
+
+            return true;
+        }
+
+        bool TryExtractSphere(Dictionary<string,object> dictionary, PupilData pupilData)
+        {
+            Dictionary<object,object> subDic = Helpers.DictionaryFromDictionary(dictionary,"sphere");
+
+            if (subDic == null)
+            {
+                return false;
+            }
+
+            pupilData.SphereCenter = Helpers.ObjectToVector(subDic["center"]);
+            pupilData.SphereRadius = (float)(double)subDic["radius"];
+
+            return true;
+        }
+
+        bool TryExtractProjectedSphere(Dictionary<string,object> dictionary, PupilData pupilData)
+        {
+            Dictionary<object,object> subDic = Helpers.DictionaryFromDictionary(dictionary,"projected_sphere");
+
+            if (subDic == null)
+            {
+                return false;
+            }
+
+            pupilData.ProjectedSphereCenter = Helpers.ObjectToVector(subDic["center"]);
+            pupilData.ProjectedSphereAxes = Helpers.ObjectToVector(subDic["axes"]);
+            pupilData.ProjectedSphereAngle = (float)(double)subDic["angle"];
+
+            return true;
+        }
+
+        void ExtractSphericalCoordinates(Dictionary<string,object> dictionary, PupilData pupilData)
+        {
+            // if circle normals are not available -> theta&phi are no doubles
+
             // pd.Theta = Helpers.FloatFromDictionary(dictionary, "theta");
+            pupilData.Theta = CastToFloat(dictionary["theta"]);
+
             // pd.Phi = Helpers.FloatFromDictionary(dictionary, "phi");
+            pupilData.Phi = CastToFloat(dictionary["phi"]);
+        }
 
-            // pd.ProjectedSphereCenter = Helpers.ObjectToVector(dictionary["projected_sphere_center"]);
-            // pd.ProjectedSphereAxis = Helpers.ObjectToVector(dictionary["projected_sphere_axis"]);
-            // pd.ProjectedSphereAngle = Helpers.FloatFromDictionary(dictionary, "projected_sphere_angle");
-
-            // return pd;
+        float CastToFloat(object obj)
+        {
+            Double? d = obj as Double?;
+            if (d.HasValue)
+            {
+                return (float)d.Value;
+            }
+            else
+            {
+                return 0f;
+            }
         }
     }
 }

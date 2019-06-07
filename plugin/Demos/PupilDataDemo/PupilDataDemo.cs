@@ -37,6 +37,7 @@ namespace PupilLabs.Demos
         void ReceivePupilData(PupilData pupilData)
         {
             Debug.Log($"Receive Pupil Data with method {pupilData.Method} and confidence {pupilData.Confidence}");
+            Debug.Log($"theta {pupilData.Theta} phi {pupilData.Phi}");
         }
     }
 }
