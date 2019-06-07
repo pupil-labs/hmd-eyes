@@ -6,7 +6,7 @@ namespace PupilLabs
 {
     public class PupilData
     {
-        public string Id { get; set; } //0 or 1 for left/right eye
+        public int EyeIdx { get; set; } //0 or 1 for right/left eye
         public float Confidence { get; set; } // - is an assessment by the pupil detector on how sure we can be on this measurement. A value of 0 indicates no confidence. 1 indicates perfect confidence. In our experience useful data carries a confidence value greater than ~0.6. A confidence of exactly 0 means that we don’t know anything. So you should ignore the position data.
         public string Method { get; set; } // indicates what detector was used to detect the pupil
 

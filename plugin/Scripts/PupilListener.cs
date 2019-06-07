@@ -62,11 +62,10 @@ namespace PupilLabs
         {
             PupilData pd = new PupilData();
 
-            pd.Id = Helpers.StringFromDictionary(dictionary, "id");
+            pd.EyeIdx = Int32.Parse(Helpers.StringFromDictionary(dictionary, "id"));
             pd.Confidence = Helpers.FloatFromDictionary(dictionary, "confidence");
             pd.Method = Helpers.StringFromDictionary(dictionary, "method");
-            //TODO parse method and check availability of data before trying to parse (just 3d or 2d)
-
+            
             pd.PupilTimestamp = Helpers.DoubleFromDictionary(dictionary, "timestamp");
             pd.UnityTimestamp = requestCtrl.ConvertToUnityTime(pd.PupilTimestamp);
 
@@ -74,19 +73,25 @@ namespace PupilLabs
             pd.Diameter = Helpers.FloatFromDictionary(dictionary, "diameter");
 
             //+2d gaze mapping
-            TryExtractEllipse(dictionary, pd);
+            if (pd.Method.Contains("2d") || pd.Method.Contains("3d"))
+            {
+                TryExtractEllipse(dictionary, pd);
+            }
 
             //+3d gaze mapping
-            pd.ModelId = Helpers.StringFromDictionary(dictionary, "model_id");
-            pd.ModelConfidence = Helpers.FloatFromDictionary(dictionary, "model_confidence");
-            pd.ModelBirthTimestamp = Helpers.DoubleFromDictionary(dictionary, "model_birth_timestamp");
-            pd.Diameter3d = Helpers.FloatFromDictionary(dictionary, "diameter_3d");
+            if (pd.Method.Contains("3d"))
+            {
+                pd.ModelId = Helpers.StringFromDictionary(dictionary, "model_id");
+                pd.ModelConfidence = Helpers.FloatFromDictionary(dictionary, "model_confidence");
+                pd.ModelBirthTimestamp = Helpers.DoubleFromDictionary(dictionary, "model_birth_timestamp");
+                pd.Diameter3d = Helpers.FloatFromDictionary(dictionary, "diameter_3d");
 
-            TryExtractCircle3d(dictionary, pd);
-            ExtractSphericalCoordinates(dictionary, pd);
-            
-            TryExtractSphere(dictionary, pd);
-            TryExtractProjectedSphere(dictionary, pd);
+                TryExtractCircle3d(dictionary, pd);
+                ExtractSphericalCoordinates(dictionary, pd);
+                
+                TryExtractSphere(dictionary, pd);
+                TryExtractProjectedSphere(dictionary, pd);
+            }
 
             return pd;
         }
