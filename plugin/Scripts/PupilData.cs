@@ -16,23 +16,39 @@ namespace PupilLabs
         public Vector2 NormPos { get; set; } // position in the eye image frame in normalized coordinates
         public float Diameter { get; set; } // diameter of the pupil in image pixels as observed in the eye image frame (is not corrected for perspective)
 
-        //2d gaze mapping
-        public Vector2 EllipseCenter { get; set; } // center of the pupil in image pixels
-        public Vector2 EllipseAxis { get; set; } // first and second axis of the pupil ellipse in pixels
-        public float EllipseAngle { get; set; } // angle of the ellipse in degrees
+        //2d
+        public class PupilEllipse
+        {
+            public Vector2 EllipseCenter { get; set; } // center of the pupil in image pixels
+            public Vector2 EllipseAxis { get; set; } // first and second axis of the pupil ellipse in pixels
+            public float EllipseAngle { get; set; } // angle of the ellipse in degrees
+        }
+        public PupilEllipse Ellipse { get; set; }
 
-        //3d gaze mapping
+        //3d
         public float Diameter3d { get; set; } //- diameter of the pupil scaled to mm based on anthropomorphic avg eye ball diameter and corrected for perspective.
+
         public float ModelConfidence { get; set; } //- confidence of the current eye model (0-1)
         public string ModelId { get; set; } //- id of the current eye model. When a slippage is detected the model is replaced and the id changes.
         public double ModelBirthTimestamp { get; set; }
-        public Vector3 SphereCenter { get; set; } // pos of the eyeball sphere is eye pinhole camera 3d space units are scaled to mm.
-        public float SphereRadius { get; set; } // radius of the eyeball. This is always 12mm (the anthropomorphic avg.) We need to make this assumption because of the single camera scale ambiguity.
-        public Vector3 CircleCenter { get; set; } // center of the pupil as 3d circle in eye pinhole camera 3d space units are mm.
-        public Vector3 CircleNormal { get; set; } // normals of the pupil as 3d circle. Indicates the direction that the pupil points at in 3d space.
-        public float CircleRadius { get; set; } // radius of the pupil as 3d circle. Same as diameter_3d
-        public float Theta { get; set; } // CircleNormal3d described in spherical coordinates in radians
-        public float Phi { get; set; } // CircleNormal3d described in spherical coordinates in radians
+
+        public class EyeSphere
+        {
+            public Vector3 SphereCenter { get; set; } // pos of the eyeball sphere is eye pinhole camera 3d space units are scaled to mm.
+            public float SphereRadius { get; set; } // radius of the eyeball. This is always 12mm (the anthropomorphic avg.) We need to make this assumption because of the single camera scale ambiguity.
+        }
+        public EyeSphere Sphere { get; set; }
+        
+        public class PupilCircle
+        {
+            public Vector3 CircleCenter { get; set; } // center of the pupil as 3d circle in eye pinhole camera 3d space units are mm.
+            public Vector3 CircleNormal { get; set; } // normals of the pupil as 3d circle. Indicates the direction that the pupil points at in 3d space.
+            public float CircleRadius { get; set; } // radius of the pupil as 3d circle. Same as diameter_3d
+            public float Theta { get; set; } // CircleNormal3d described in spherical coordinates in radians
+            public float Phi { get; set; } // CircleNormal3d described in spherical coordinates in radians
+        }
+        public PupilCircle Circle { get; set; }
+
         public Vector2 ProjectedSphereCenter { get; set; } // center of the 3d sphere projected back onto the eye image frame. Units are in image pixels.
         public Vector2 ProjectedSphereAxes { get; set; } // first and second axis of the 3d sphere projection.
         public float ProjectedSphereAngle { get; set; } // angle of the 3d sphere projection. Units are degrees.
