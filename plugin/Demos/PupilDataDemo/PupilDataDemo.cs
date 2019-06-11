@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 namespace PupilLabs.Demos
 {
-
     public class PupilDataDemo : MonoBehaviour
     {
         public SubscriptionsController subsCtrl;
@@ -39,7 +38,7 @@ namespace PupilLabs.Demos
             Debug.Log($"Receive Pupil Data with method {pupilData.Method} and confidence {pupilData.Confidence}");
             if (pupilData.EyeIdx == 0)
             {
-                Debug.Log($"theta {Mathf.Rad2Deg * pupilData.Theta} phi {Mathf.Rad2Deg * pupilData.Phi}");
+                Debug.Log($"theta {Mathf.Rad2Deg * pupilData.Circle.Theta} phi {Mathf.Rad2Deg * pupilData.Circle.Phi}");
             }
         }
     }
