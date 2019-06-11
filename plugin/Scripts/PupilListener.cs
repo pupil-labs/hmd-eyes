@@ -104,9 +104,9 @@ namespace PupilLabs
                 return false;
             }
 
-            pupilData.EllipseCenter = Helpers.ObjectToVector(subDic["center"]);
-            pupilData.EllipseAxis = Helpers.ObjectToVector(subDic["axes"]);
-            pupilData.EllipseAngle = (float)(double)subDic["angle"];
+            pupilData.Ellipse.Center = Helpers.ObjectToVector(subDic["center"]);
+            pupilData.Ellipse.Axis = Helpers.ObjectToVector(subDic["axes"]);
+            pupilData.Ellipse.Angle = (float)(double)subDic["angle"];
 
             return true;
         }
@@ -120,9 +120,9 @@ namespace PupilLabs
                 return false;
             }
 
-            pupilData.CircleCenter = Helpers.ObjectToVector(subDic["center"]);
-            pupilData.CircleNormal = Helpers.ObjectToVector(subDic["normal"]);
-            pupilData.CircleRadius = (float)(double)subDic["radius"];
+            pupilData.Circle.Center = Helpers.ObjectToVector(subDic["center"]);
+            pupilData.Circle.Normal = Helpers.ObjectToVector(subDic["normal"]);
+            pupilData.Circle.Radius = (float)(double)subDic["radius"];
 
             return true;
         }
@@ -136,8 +136,8 @@ namespace PupilLabs
                 return false;
             }
 
-            pupilData.SphereCenter = Helpers.ObjectToVector(subDic["center"]);
-            pupilData.SphereRadius = (float)(double)subDic["radius"];
+            pupilData.Sphere.Center = Helpers.ObjectToVector(subDic["center"]);
+            pupilData.Sphere.Radius = (float)(double)subDic["radius"];
 
             return true;
         }
@@ -151,9 +151,9 @@ namespace PupilLabs
                 return false;
             }
 
-            pupilData.ProjectedSphereCenter = Helpers.ObjectToVector(subDic["center"]);
-            pupilData.ProjectedSphereAxes = Helpers.ObjectToVector(subDic["axes"]);
-            pupilData.ProjectedSphereAngle = (float)(double)subDic["angle"];
+            pupilData.ProjectedSphere.Center = Helpers.ObjectToVector(subDic["center"]);
+            pupilData.ProjectedSphere.Axis = Helpers.ObjectToVector(subDic["axes"]);
+            pupilData.ProjectedSphere.Angle = (float)(double)subDic["angle"];
 
             return true;
         }
@@ -161,12 +161,8 @@ namespace PupilLabs
         void ExtractSphericalCoordinates(Dictionary<string,object> dictionary, PupilData pupilData)
         {
             // if circle normals are not available -> theta&phi are no doubles
-
-            // pd.Theta = Helpers.FloatFromDictionary(dictionary, "theta");
-            pupilData.Theta = CastToFloat(dictionary["theta"]);
-
-            // pd.Phi = Helpers.FloatFromDictionary(dictionary, "phi");
-            pupilData.Phi = CastToFloat(dictionary["phi"]);
+            pupilData.Circle.Theta = CastToFloat(dictionary["theta"]);
+            pupilData.Circle.Phi = CastToFloat(dictionary["phi"]);
         }
 
         float CastToFloat(object obj)
