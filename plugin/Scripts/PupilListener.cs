@@ -57,7 +57,5 @@ namespace PupilLabs
                 OnReceivePupilData(pupilData);
             }
         }
-
-        
     }
 }

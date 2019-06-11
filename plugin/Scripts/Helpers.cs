@@ -65,7 +65,7 @@ namespace PupilLabs
             else
                 return Vector3.zero;
         }
-        
+
         public static int IntFromDictionary(Dictionary<string, object> source, string key)
         {
             source.TryGetValue(key, out object value_o);
@@ -105,7 +105,7 @@ namespace PupilLabs
                 result = IDo.ToString();
             return result;
         }
-        
+
         public static Dictionary<object, object> DictionaryFromDictionary(Dictionary<string, object> source, string key)
         {
             if (source.ContainsKey(key))
