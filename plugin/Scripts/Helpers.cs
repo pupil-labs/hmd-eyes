@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -81,6 +82,19 @@ namespace PupilLabs
             object value_o;
             source.TryGetValue(key, out value_o);
             return (double)value_o;
+        }
+
+        public static double TryCastToDouble(object obj)
+        {
+            Double? d = obj as Double?;
+            if (d.HasValue)
+            {
+                return d.Value;
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         private static object IDo;

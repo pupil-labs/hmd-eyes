@@ -161,21 +161,8 @@ namespace PupilLabs
         void ExtractSphericalCoordinates(Dictionary<string,object> dictionary, PupilData pupilData)
         {
             // if circle normals are not available -> theta&phi are no doubles
-            pupilData.Circle.Theta = CastToFloat(dictionary["theta"]);
-            pupilData.Circle.Phi = CastToFloat(dictionary["phi"]);
-        }
-
-        float CastToFloat(object obj)
-        {
-            Double? d = obj as Double?;
-            if (d.HasValue)
-            {
-                return (float)d.Value;
-            }
-            else
-            {
-                return 0f;
-            }
+            pupilData.Circle.Theta = (float)Helpers.TryCastToDouble(dictionary["theta"]);
+            pupilData.Circle.Phi = (float)Helpers.TryCastToDouble(dictionary["phi"]);
         }
     }
 }
