@@ -96,7 +96,7 @@ namespace PupilLabs
                     else
                     {
                         Debug.LogWarning("Could not connect! ");
-                        yield return null;
+                        yield break;
                     }
                 }
             }
