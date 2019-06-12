@@ -6,54 +6,102 @@ namespace PupilLabs
 {
     public class PupilData
     {
-        public int EyeIdx { get; private set; } //0 or 1 for right/left eye
-        public float Confidence { get; private set; } // - is an assessment by the pupil detector on how sure we can be on this measurement. A value of 0 indicates no confidence. 1 indicates perfect confidence. In our experience useful data carries a confidence value greater than ~0.6. A confidence of exactly 0 means that we don’t know anything. So you should ignore the position data.
-        public string Method { get; private set; } // indicates what detector was used to detect the pupil
+        /// <summary>
+        /// Eye camera index (0/1 for right/left eye).
+        /// </summary>
+        public int EyeIdx { get; private set; }
+        /// <summary>
+        /// Confidence is an assessment by the pupil detector on how sure we can be on this measurement. 
+        /// A value of 0 indicates no confidence. 1 indicates perfect confidence. 
+        /// In our experience useful data carries a confidence value greater than ~0.6. 
+        /// </summary>
+        public float Confidence { get; private set; }
+        /// <summary>
+        /// Indicates what detector was used to detect the pupil.
+        /// </summary>
+        public string Method { get; private set; }
 
-        public double PupilTimestamp { get; private set; } // timestamp of the source image frame
+        /// <summary>
+        /// Pupil time in seconds. 
+        /// </summary>
+        public double PupilTimestamp { get; private set; }
+        /// <summary>
+        /// Unity time in seconds.
+        /// Calculated by storing the offset between Unity and Pupil time. 
+        /// </summary>
         public double UnityTimestamp { get; private set; }
 
-        public Vector2 NormPos { get; private set; } // position in the eye image frame in normalized coordinates
-        public float Diameter { get; private set; } // diameter of the pupil in image pixels as observed in the eye image frame (is not corrected for perspective)
+        /// <summary>
+        /// Position in the eye image frame in normalized coordinates.
+        /// </summary>
+        public Vector2 NormPos { get; private set; }
 
-        //2d
+        /// <summary>
+        /// Diameter of the pupil in image pixels as observed in the eye image frame (is not corrected for perspective)
+        /// </summary>
+        public float Diameter { get; private set; } 
+
+        /// <summary>
+        /// Pupil ellipse in eye camera image coordinate system.
+        /// </summary>
         public class PupilEllipse
         {
-            public Vector2 Center { get; set; } // center of the pupil in image pixels
-            public Vector2 Axis { get; set; } // first and second axis of the pupil ellipse in pixels
-            public float Angle { get; set; } // angle of the ellipse in degrees
+            public Vector2 Center { get; set; } // Center of the pupil in image pixels.
+            public Vector2 Axis { get; set; } // First and second axis of the pupil ellipse in pixels.
+            public float Angle { get; set; } // Angle of the ellipse in degrees.
         }
         public PupilEllipse Ellipse { get; private set; } = new PupilEllipse();
 
-        //3d
-        public float ModelConfidence { get; private set; } //- confidence of the current eye model (0-1)
-        public string ModelId { get; private set; } //- id of the current eye model. When a slippage is detected the model is replaced and the id changes.
+        /// <summary>
+        /// Confidence of the current eye model (0-1)
+        /// </summary>
+        public float ModelConfidence { get; private set; } 
+        /// <summary>
+        /// Id of the current eye model. 
+        /// When a slippage is detected the model is replaced and the id changes.
+        /// </summary>
+        public string ModelId { get; private set; }
+        /// <summary>
+        /// Model birth timestamp in pupil time in seconds.
+        /// </summary>
         public double ModelBirthTimestamp { get; private set; }
 
-        public float Diameter3d { get; private set; } //- diameter of the pupil scaled to mm based on anthropomorphic avg eye ball diameter and corrected for perspective.
+        /// <summary>
+        /// Diameter of the pupil scaled to mm based on anthropomorphic avg eye ball diameter and corrected for perspective.
+        /// </summary>
+        public float Diameter3d { get; private set; } //- 
 
+        /// <summary>
+        /// Eyeball sphere in eye camera 3d space (units in mm).
+        /// </summary>
         public class EyeSphere
         {
-            public Vector3 Center { get; set; } // pos of the eyeball sphere is eye pinhole camera 3d space units are scaled to mm.
-            public float Radius { get; set; } // radius of the eyeball. This is always 12mm (the anthropomorphic avg.) We need to make this assumption because of the single camera scale ambiguity.
+            public Vector3 Center { get; set; } // Pos of the eyeball sphere in eye camera 3d space in mm.
+            public float Radius { get; set; } // Radius of the eyeball. This is always 12mm (the anthropomorphic avg.)
         }
         public EyeSphere Sphere { get; private set; } = new EyeSphere();
 
+        /// <summary>
+        /// Pupil circle in eye camera 3d space (units in mm).
+        /// </summary>
         public class PupilCircle
         {
-            public Vector3 Center { get; set; } // center of the pupil as 3d circle in eye pinhole camera 3d space units are mm.
-            public Vector3 Normal { get; set; } // normals of the pupil as 3d circle. Indicates the direction that the pupil points at in 3d space.
-            public float Radius { get; set; } // radius of the pupil as 3d circle. Same as diameter_3d
-            public float Theta { get; set; } // CircleNormal3d described in spherical coordinates in radians
-            public float Phi { get; set; } // CircleNormal3d described in spherical coordinates in radians
+            public Vector3 Center { get; set; } // Center of the pupil as 3d circle in eye pinhole camera 3d space units are mm.
+            public Vector3 Normal { get; set; } // Normals of the pupil as 3d circle. Indicates the direction that the pupil points at in 3d space.
+            public float Radius { get; set; } // Radius of the pupil as 3d circle. Same as diameter_3d.
+            public float Theta { get; set; } // Normal described in spherical coordinates in radians.
+            public float Phi { get; set; } // Normal described in spherical coordinates in radians.
         }
         public PupilCircle Circle { get; private set; } = new PupilCircle();
 
+        /// <summary>
+        /// Eyeball sphere projected back onto the eye camera image (units in pixel).
+        /// </summary>
         public class ProjectedEyeSphere
         {
-            public Vector2 Center { get; set; } // center of the 3d sphere projected back onto the eye image frame. Units are in image pixels.
-            public Vector2 Axis { get; set; } // first and second axis of the 3d sphere projection.
-            public float Angle { get; set; } // angle of the 3d sphere projection. Units are degrees.
+            public Vector2 Center { get; set; } // Center of the 3d sphere projected back onto the eye image frame. Units are in image pixels.
+            public Vector2 Axis { get; set; } // First and second axis of the 3d sphere projection.
+            public float Angle { get; set; } // Angle of the 3d sphere projection. Units are degrees.
         }
         public ProjectedEyeSphere ProjectedSphere { get; private set; } = new ProjectedEyeSphere();
 
