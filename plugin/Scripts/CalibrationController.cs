@@ -18,6 +18,7 @@ namespace PupilLabs
 
         //events
         public event Action OnCalibrationStarted;
+        public event Action OnCalibrationRoutineDone;
         public event Action OnCalibrationFailed;
         public event Action OnCalibrationSucceeded;
 
@@ -127,7 +128,7 @@ namespace PupilLabs
                     }
                     else
                     {
-                        calibration.StopCalibration();
+                        StopCalibrationRoutine();
                     }
                 }
             }
@@ -135,8 +136,6 @@ namespace PupilLabs
 
         private void CalibrationSucceeded()
         {
-            CalibrationEnded();
-
             if (OnCalibrationSucceeded != null)
             {
                 OnCalibrationSucceeded();
@@ -145,17 +144,22 @@ namespace PupilLabs
 
         private void CalibrationFailed()
         {
-            CalibrationEnded();
-
             if (OnCalibrationFailed != null)
             {
                 OnCalibrationFailed();
             }
         }
 
-        private void CalibrationEnded()
+        private void StopCalibrationRoutine()
         {
+            calibration.StopCalibration();
+            
             marker.gameObject.SetActive(false);
+
+            if (OnCalibrationRoutineDone != null)
+            {
+                OnCalibrationRoutineDone();
+            }
         }
 
         private void AddSample(double time)

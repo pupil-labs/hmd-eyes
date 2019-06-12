@@ -13,8 +13,7 @@ namespace PupilLabs
         void OnEnable()
         {
             controller.OnCalibrationStarted += DisableMePls;
-            controller.OnCalibrationSucceeded += EnableMePls;
-            controller.OnCalibrationFailed += EnableMePls;
+            controller.OnCalibrationRoutineDone += EnableMePls;
         }
 
         void EnableMePls()
