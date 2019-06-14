@@ -132,12 +132,18 @@ namespace PupilLabs
             request.CloseSockets();
         }
 
-        public bool Send(Dictionary<string, object> dictionary)
+        public void Send(Dictionary<string, object> dictionary)
         {
-            return request.SendRequestMessage(dictionary);
+            if (!IsConnected)
+            {
+                Debug.LogWarning("Not connected!");
+                return;
+            }
+
+            request.SendRequestMessage(dictionary);
         }
 
-        public bool StartEyeProcesses()
+        public void StartEyeProcesses()
         {
             var startLeftEye = new Dictionary<string, object> {
                 {"subject", "eye_process.should_start.1"},
@@ -150,10 +156,8 @@ namespace PupilLabs
                 { "delay", 0.2f}
             };
 
-            bool leftEyeRunning = Send(startLeftEye);
-            bool rightEyeRunning = Send(startRightEye);
-
-            return leftEyeRunning && rightEyeRunning;
+            Send(startLeftEye);
+            Send(startRightEye);
         }
 
         public void StartPlugin(string name, Dictionary<string, object> args = null)
@@ -179,9 +183,9 @@ namespace PupilLabs
             });
         }
 
-        public bool SetDetectionMode(string mode)
+        public void SetDetectionMode(string mode)
         {
-            return Send(new Dictionary<string, object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
+            Send(new Dictionary<string, object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
         }
 
         [ContextMenu("Update TimeSync")]

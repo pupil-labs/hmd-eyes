@@ -56,14 +56,14 @@ namespace PupilLabs
 
                 yield return RequestReceiveAsync(
                     () => requestSocket.SendFrame("SUB_PORT"),
-                    () => IsConnected = requestSocket.TryReceiveFrameString(requestTimeout, out subport)
+                    () => IsConnected = requestSocket.TryReceiveFrameString(out subport)
                 );
 
                 if (IsConnected)
                 {
                     yield return RequestReceiveAsync(
                         () => requestSocket.SendFrame("PUB_PORT"),
-                        () => requestSocket.TryReceiveFrameString(requestTimeout, out pubport)
+                        () => requestSocket.TryReceiveFrameString(out pubport)
                     );
                 }
             }
@@ -111,20 +111,15 @@ namespace PupilLabs
                 CloseSockets();
             }
 
-            public bool SendRequestMessage(Dictionary<string, object> data)
+            public void SendRequestMessage(Dictionary<string, object> data)
             {
-                if (requestSocket == null || !IsConnected)
-                {
-                    return false;
-                }
-
                 NetMQMessage m = new NetMQMessage();
 
                 m.Append("notify." + data["subject"]);
                 m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(data));
 
                 requestSocket.SendMultipartMessage(m);
-                return ReceiveRequestResponse();
+                ReceiveRequestResponse();
             }
 
             public bool SendCommand(string cmd, out string response)
@@ -139,15 +134,10 @@ namespace PupilLabs
                 return requestSocket.TryReceiveFrameString(requestTimeout, out response);
             }
 
-            public bool ReceiveRequestResponse()
+            private void ReceiveRequestResponse()
             {
-                if (requestSocket == null || !IsConnected)
-                {
-                    return false;
-                }
-
                 NetMQMessage m = new NetMQMessage();
-                return requestSocket.TryReceiveMultipartMessage(requestTimeout, ref m);
+                requestSocket.TryReceiveMultipartMessage(requestTimeout, ref m);
             }
 
             private void CreateContext()
