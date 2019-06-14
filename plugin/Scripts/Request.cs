@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using NetMQ;
@@ -38,10 +39,11 @@ namespace PupilLabs
                 return IPHeader + pubport;
             }
 
-            public void InitializeRequestSocket()
+            public IEnumerator InitializeRequestSocketAsync(float timeout)
             {
-                IPHeader = ">tcp://" + IP + ":";
+                float tStarted = Time.realtimeSinceStartup;
 
+                IPHeader = ">tcp://" + IP + ":";
                 Debug.Log("Attempting to connect to : " + IPHeader + PORT);
 
                 if (!contextExists)
@@ -51,12 +53,51 @@ namespace PupilLabs
 
                 requestSocket = new RequestSocket(IPHeader + PORT);
                 requestSocket.SendFrame("SUB_PORT");
-                IsConnected = requestSocket.TryReceiveFrameString(requestTimeout, out subport);
+
+                while (!IsConnected)
+                {
+
+                    if (Time.realtimeSinceStartup - tStarted > timeout)
+                    {
+                        yield break;
+                    }
+                    else
+                    {
+                        if (requestSocket.HasIn)
+                        {
+                            IsConnected = requestSocket.TryReceiveFrameString(requestTimeout, out subport);
+                        }
+                        else
+                        {
+                            yield return new WaitForSeconds(0.1f);
+                        }
+                    }
+                }
 
                 if (IsConnected)
                 {
                     requestSocket.SendFrame("PUB_PORT");
-                    requestSocket.TryReceiveFrameString(requestTimeout, out pubport);
+
+                    bool msgReceived = false;
+                    while (!msgReceived)
+                    {
+                        if (Time.realtimeSinceStartup - tStarted > timeout)
+                        {
+                            yield break;
+                        }
+                        else
+                        {
+                            if (requestSocket.HasIn)
+                            {
+                                msgReceived = requestSocket.TryReceiveFrameString(requestTimeout, out pubport);
+                            }
+                            else
+                            {
+                                yield return new WaitForSeconds(0.1f);
+                            }
+                        }
+                    }
+                    
                 }
             }
 

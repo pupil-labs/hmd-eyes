@@ -82,7 +82,7 @@ namespace PupilLabs
 
             while (!IsConnected)
             {
-                request.InitializeRequestSocket();
+                yield return StartCoroutine(request.InitializeRequestSocketAsync(1f));
 
                 if (!IsConnected)
                 {
