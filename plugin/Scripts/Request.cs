@@ -25,6 +25,7 @@ namespace PupilLabs
 
             public RequestSocket requestSocket = null;
             private bool contextExists = false;
+            private float timeout = 1f;
             private TimeSpan requestTimeout = new System.TimeSpan(0, 0, 1); //= 1sec
 
             public bool IsConnected { get; set; }
@@ -52,11 +53,30 @@ namespace PupilLabs
                 }
 
                 requestSocket = new RequestSocket(IPHeader + PORT);
-                requestSocket.SendFrame("SUB_PORT");
 
-                while (!IsConnected)
+                yield return RequestReceiveAsync(
+                    () => requestSocket.SendFrame("SUB_PORT"),
+                    () => IsConnected = requestSocket.TryReceiveFrameString(requestTimeout, out subport)
+                );
+
+                if (IsConnected)
                 {
+                    yield return RequestReceiveAsync(
+                        () => requestSocket.SendFrame("PUB_PORT"),
+                        () => requestSocket.TryReceiveFrameString(requestTimeout, out pubport)
+                    );
+                }
+            }
 
+            private IEnumerator RequestReceiveAsync(Action request, Action receive)
+            {
+                float tStarted = Time.realtimeSinceStartup;
+                
+                request();
+
+                bool msgReceived = false;
+                while (!msgReceived)
+                {
                     if (Time.realtimeSinceStartup - tStarted > timeout)
                     {
                         yield break;
@@ -65,39 +85,14 @@ namespace PupilLabs
                     {
                         if (requestSocket.HasIn)
                         {
-                            IsConnected = requestSocket.TryReceiveFrameString(requestTimeout, out subport);
+                            msgReceived = true;
+                            receive();
                         }
                         else
                         {
                             yield return new WaitForSeconds(0.1f);
                         }
                     }
-                }
-
-                if (IsConnected)
-                {
-                    requestSocket.SendFrame("PUB_PORT");
-
-                    bool msgReceived = false;
-                    while (!msgReceived)
-                    {
-                        if (Time.realtimeSinceStartup - tStarted > timeout)
-                        {
-                            yield break;
-                        }
-                        else
-                        {
-                            if (requestSocket.HasIn)
-                            {
-                                msgReceived = requestSocket.TryReceiveFrameString(requestTimeout, out pubport);
-                            }
-                            else
-                            {
-                                yield return new WaitForSeconds(0.1f);
-                            }
-                        }
-                    }
-                    
                 }
             }
 
