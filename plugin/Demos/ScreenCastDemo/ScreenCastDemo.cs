@@ -6,10 +6,10 @@ public class ScreenCastDemo : MonoBehaviour
 {
 
     public PupilLabs.ScreenCast screenCast;
-    public MeshRenderer renderer;
+    public new MeshRenderer renderer;
 
     void OnEnable()
     {
-        renderer.material.mainTexture = screenCast.streamTexture;
+        renderer.material.mainTexture = screenCast.StreamTexture;
     }
 }
