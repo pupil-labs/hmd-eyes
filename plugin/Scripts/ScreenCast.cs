@@ -11,22 +11,35 @@ namespace PupilLabs
     public class ScreenCast : MonoBehaviour
     {
         public RequestController requestCtrl;
-        public Camera centerCam;
-        public int width, height;
+        public Camera centeredCamera;
+        [Tooltip("Can't be changed at runtime")] 
+        public int initialWidth = 640, initialHeight = 480;
+        [Range(30,120)]
         public int maxFrameRate = 90;
+        public bool inBGR = false;
         
-        private RenderTexture renderTexture;
-        public Texture2D streamTexture;
-        bool isSetup = false;
+        public Texture2D StreamTexture { get; private set; }
+
         PublisherSocket pubSocket;
+        RenderTexture renderTexture;
+        bool isSetup = false;
         int index = 0;
         float tLastFrame;
+        int width, height;
+        byte[] bgr24;
+
+        const string topic = "hmd_streaming.world";
 
         void Awake()
         {
+            width = initialWidth;
+            height = initialHeight;
+
+            bgr24 = new byte[width*height*3];
+
             renderTexture = new RenderTexture(width,height,24);
-            centerCam.targetTexture = renderTexture;
-            streamTexture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
+            centeredCamera.targetTexture = renderTexture;
+            StreamTexture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
         }
 
         void OnEnable()
@@ -40,7 +53,6 @@ namespace PupilLabs
             pubSocket = new PublisherSocket(connectionStr);
             
             isSetup = true;
-            Debug.Log("screen cast ready");
         }
 
         void Update()
@@ -59,8 +71,8 @@ namespace PupilLabs
             
             RenderTexture.active = renderTexture;
 
-            streamTexture.ReadPixels(new Rect(0,0,width,height),0,0);
-            streamTexture.Apply();
+            StreamTexture.ReadPixels(new Rect(0,0,width,height),0,0);
+            StreamTexture.Apply();
 
             RenderTexture.active = null;
 
@@ -69,25 +81,52 @@ namespace PupilLabs
 
         void SendFrame()
         {
+            float[] projection_matrix = new float[16];
+            for (int i = 0; i<16; ++i)
+            {
+                projection_matrix[i] = centeredCamera.projectionMatrix[i];
+            }
+
             Dictionary<string, object> payload = new Dictionary<string, object> {
-                {"topic", "frame.world"},
+                {"topic", topic},
                 {"width", width},
                 {"height", height},
                 {"index", index},
                 {"timestamp", Time.realtimeSinceStartup},
-                {"format", "rgb"},
+                {"format", inBGR ? "bgr" : "rgb"},
+                {"projection_matrix", projection_matrix} //TODO everyframe? - might change I guess
             };
-
-            byte[] rawTextureData = streamTexture.GetRawTextureData();
         
+            byte[] rawTextureData = StreamTexture.GetRawTextureData();
+            byte[] pixels = rawTextureData;
+
+            if (inBGR)
+            {
+                rgbToBgr(rawTextureData);
+                pixels = bgr24;
+            }
+
             NetMQMessage m = new NetMQMessage();
-            m.Append("frame.world"); 
+            m.Append(topic); 
             m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(payload));
-            m.Append(rawTextureData);
+            m.Append(pixels);
 
             pubSocket.SendMultipartMessage(m);
 
             index++;
+        }
+
+        void rgbToBgr(byte[] rgb)
+        {
+            float tStart = Time.realtimeSinceStartup*1000f;
+            for (int i=0;i<rgb.Length;i++)
+            {
+                // 0 -> +2; 1 -> +0; 2 -> -2;
+                int offset = ((i % 3) - 1) * -2;
+                bgr24[i+offset] = rgb[i];
+            }
+            float tAfter = Time.realtimeSinceStartup*1000f;
+            Debug.Log($"rgb to bgr in {tAfter-tStart}ms");
         }
     }
 }

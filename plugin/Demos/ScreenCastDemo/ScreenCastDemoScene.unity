@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -387,6 +387,7 @@ GameObject:
   - component: {fileID: 211868745}
   - component: {fileID: 211868748}
   - component: {fileID: 211868747}
+  - component: {fileID: 211868746}
   m_Layer: 0
   m_Name: ScreenCast Camera
   m_TagString: Untagged
@@ -408,6 +409,19 @@ Transform:
   m_Father: {fileID: 1879959244}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &211868746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 211868744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e2353f8d387bbb4689ffc35a6c11604, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flip: 0
 --- !u!81 &211868747
 AudioListener:
   m_ObjectHideFlags: 0
@@ -488,11 +502,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   requestCtrl: {fileID: 119473337}
-  centerCam: {fileID: 211868748}
+  centeredCamera: {fileID: 211868748}
   width: 640
   height: 480
-  maxFrameRate: 60
-  streamTexture: {fileID: 0}
+  maxFrameRate: 90
 --- !u!4 &293617998
 Transform:
   m_ObjectHideFlags: 0
@@ -826,7 +839,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1511823794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -893,13 +906,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1511823793}
-  m_LocalRotation: {x: 0.5, y: -0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 10.94, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0.7071068, w: 0}
+  m_LocalPosition: {x: -6.63, y: 6.47, z: 22.54}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 293617998}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 90}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 180}
 --- !u!1 &1879959243
 GameObject:
   m_ObjectHideFlags: 0
