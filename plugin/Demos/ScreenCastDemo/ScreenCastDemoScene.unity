@@ -503,9 +503,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   requestCtrl: {fileID: 119473337}
   centeredCamera: {fileID: 211868748}
-  width: 640
-  height: 480
-  maxFrameRate: 90
+  initialWidth: 640
+  initialHeight: 480
+  maxFrameRate: 60
+  inBGR: 0
+  recordAsync: 1
 --- !u!4 &293617998
 Transform:
   m_ObjectHideFlags: 0

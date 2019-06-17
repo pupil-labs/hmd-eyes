@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 using NetMQ;
 using NetMQ.Sockets;
@@ -12,12 +13,13 @@ namespace PupilLabs
     {
         public RequestController requestCtrl;
         public Camera centeredCamera;
-        [Tooltip("Can't be changed at runtime")] 
+        [Tooltip("Can't be changed at runtime")]
         public int initialWidth = 640, initialHeight = 480;
-        [Range(30,120)]
+        [Range(1, 120)]
         public int maxFrameRate = 90;
         public bool inBGR = false;
-        
+        public bool recordAsync = true;
+
         public Texture2D StreamTexture { get; private set; }
 
         PublisherSocket pubSocket;
@@ -35,9 +37,9 @@ namespace PupilLabs
             width = initialWidth;
             height = initialHeight;
 
-            bgr24 = new byte[width*height*3];
+            bgr24 = new byte[width * height * 3];
 
-            renderTexture = new RenderTexture(width,height,24);
+            renderTexture = new RenderTexture(width, height, 24);
             centeredCamera.targetTexture = renderTexture;
             StreamTexture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
         }
@@ -51,7 +53,7 @@ namespace PupilLabs
         {
             string connectionStr = requestCtrl.GetPubConnectionString();
             pubSocket = new PublisherSocket(connectionStr);
-            
+
             isSetup = true;
         }
 
@@ -62,27 +64,40 @@ namespace PupilLabs
                 return;
             }
 
-            if (Time.time - tLastFrame < 1/(float)maxFrameRate)
+            if (Time.time - tLastFrame < 1 / (float)maxFrameRate)
             {
                 return;
             }
 
             tLastFrame = Time.time;
-            
+
+            if (recordAsync)
+            {
+                AsyncGPUReadback.Request(renderTexture, 0, TextureFormat.RGB24, ReadbackDone);
+                return;
+            }
+
             RenderTexture.active = renderTexture;
 
-            StreamTexture.ReadPixels(new Rect(0,0,width,height),0,0);
+            StreamTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
             StreamTexture.Apply();
 
             RenderTexture.active = null;
 
-            SendFrame();            
+            SendFrame();
+        }
+
+        void ReadbackDone(AsyncGPUReadbackRequest r)
+        {
+            //TODO exception on application exit
+            StreamTexture.LoadRawTextureData(r.GetData<byte>());
+            SendFrame();
         }
 
         void SendFrame()
         {
             float[] projection_matrix = new float[16];
-            for (int i = 0; i<16; ++i)
+            for (int i = 0; i < 16; ++i)
             {
                 projection_matrix[i] = centeredCamera.projectionMatrix[i];
             }
@@ -96,7 +111,7 @@ namespace PupilLabs
                 {"format", inBGR ? "bgr" : "rgb"},
                 {"projection_matrix", projection_matrix} //TODO everyframe? - might change I guess
             };
-        
+
             byte[] rawTextureData = StreamTexture.GetRawTextureData();
             byte[] pixels = rawTextureData;
 
@@ -107,7 +122,7 @@ namespace PupilLabs
             }
 
             NetMQMessage m = new NetMQMessage();
-            m.Append(topic); 
+            m.Append(topic);
             m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(payload));
             m.Append(pixels);
 
@@ -118,15 +133,15 @@ namespace PupilLabs
 
         void rgbToBgr(byte[] rgb)
         {
-            float tStart = Time.realtimeSinceStartup*1000f;
-            for (int i=0;i<rgb.Length;i++)
+            float tStart = Time.realtimeSinceStartup * 1000f;
+            for (int i = 0; i < rgb.Length; i++)
             {
                 // 0 -> +2; 1 -> +0; 2 -> -2;
                 int offset = ((i % 3) - 1) * -2;
-                bgr24[i+offset] = rgb[i];
+                bgr24[i + offset] = rgb[i];
             }
-            float tAfter = Time.realtimeSinceStartup*1000f;
-            Debug.Log($"rgb to bgr in {tAfter-tStart}ms");
+            float tAfter = Time.realtimeSinceStartup * 1000f;
+            Debug.Log($"rgb to bgr in {tAfter - tStart}ms");
         }
     }
 }
