@@ -508,6 +508,7 @@ MonoBehaviour:
   maxFrameRate: 60
   inBGR: 0
   recordAsync: 1
+  asyncApply: 1
 --- !u!4 &293617998
 Transform:
   m_ObjectHideFlags: 0

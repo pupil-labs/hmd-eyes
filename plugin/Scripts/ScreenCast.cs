@@ -19,6 +19,7 @@ namespace PupilLabs
         public int maxFrameRate = 90;
         public bool inBGR = false;
         public bool recordAsync = true;
+        public bool asyncApply = true;
 
         public Texture2D StreamTexture { get; private set; }
 
@@ -29,6 +30,7 @@ namespace PupilLabs
         float tLastFrame;
         int width, height;
         byte[] bgr24;
+        float[] projection_matrix = new float[16];
 
         const string topic = "hmd_streaming.world";
 
@@ -73,7 +75,11 @@ namespace PupilLabs
 
             if (recordAsync)
             {
-                AsyncGPUReadback.Request(renderTexture, 0, TextureFormat.RGB24, ReadbackDone);
+                AsyncGPUReadback.Request
+                (
+                    renderTexture, 0, TextureFormat.RGB24,
+                    (AsyncGPUReadbackRequest r) => ReadbackDone(r, Time.realtimeSinceStartup)
+                );
                 return;
             }
 
@@ -84,19 +90,24 @@ namespace PupilLabs
 
             RenderTexture.active = null;
 
-            SendFrame();
+            SendFrame(Time.realtimeSinceStartup);
         }
 
-        void ReadbackDone(AsyncGPUReadbackRequest r)
+        void ReadbackDone(AsyncGPUReadbackRequest r, float timestamp = 0)
         {
             //TODO exception on application exit
+            //TODO local var?
             StreamTexture.LoadRawTextureData(r.GetData<byte>());
-            SendFrame();
+            if (asyncApply)
+            {
+                StreamTexture.Apply();
+            }
+
+            SendFrame(timestamp);
         }
 
-        void SendFrame()
+        void SendFrame(float timestamp)
         {
-            float[] projection_matrix = new float[16];
             for (int i = 0; i < 16; ++i)
             {
                 projection_matrix[i] = centeredCamera.projectionMatrix[i];
@@ -107,7 +118,7 @@ namespace PupilLabs
                 {"width", width},
                 {"height", height},
                 {"index", index},
-                {"timestamp", Time.realtimeSinceStartup},
+                {"timestamp", timestamp},
                 {"format", inBGR ? "bgr" : "rgb"},
                 {"projection_matrix", projection_matrix} //TODO everyframe? - might change I guess
             };
