@@ -95,8 +95,11 @@ namespace PupilLabs
 
         void ReadbackDone(AsyncGPUReadbackRequest r, float timestamp = 0)
         {
-            //TODO exception on application exit
-            //TODO local var?
+            if (StreamTexture == null)
+            {
+                return;
+            }
+
             StreamTexture.LoadRawTextureData(r.GetData<byte>());
             if (asyncApply)
             {
@@ -123,19 +126,19 @@ namespace PupilLabs
                 {"projection_matrix", projection_matrix} //TODO everyframe? - might change I guess
             };
 
-            byte[] rawTextureData = StreamTexture.GetRawTextureData();
-            byte[] pixels = rawTextureData;
-
-            if (inBGR)
-            {
-                rgbToBgr(rawTextureData);
-                pixels = bgr24;
-            }
-
             NetMQMessage m = new NetMQMessage();
             m.Append(topic);
             m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(payload));
-            m.Append(pixels);
+
+            if (inBGR)
+            {
+                rgbToBgr(StreamTexture.GetRawTextureData());
+                m.Append(bgr24);
+            }
+            else
+            {
+                m.Append(StreamTexture.GetRawTextureData());
+            }
 
             pubSocket.SendMultipartMessage(m);
 
@@ -151,8 +154,6 @@ namespace PupilLabs
                 int offset = ((i % 3) - 1) * -2;
                 bgr24[i + offset] = rgb[i];
             }
-            float tAfter = Time.realtimeSinceStartup * 1000f;
-            Debug.Log($"rgb to bgr in {tAfter - tStart}ms");
         }
     }
 }
