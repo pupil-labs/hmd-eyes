@@ -13,6 +13,7 @@ namespace PupilLabs
         private Request request;
         [Header("Settings")]
         public float retryConnectDelay = 5f;
+        public bool connectOnEnable = true;
 
         public event Action OnConnected;
         public event Action OnDisconnecting;
@@ -57,7 +58,7 @@ namespace PupilLabs
             }
 
             PupilVersion = "not connected";
-            if (!IsConnected)
+            if (!IsConnected && connectOnEnable)
             {
                 RunConnect();
             }
