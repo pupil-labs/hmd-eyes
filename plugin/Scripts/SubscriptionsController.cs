@@ -27,22 +27,33 @@ namespace PupilLabs
                 enabled = false;
                 return;
             }
-
-            requestCtrl.OnDisconnecting += Disconnect;
         }
 
-        void OnDisable()
+        void OnDestroy()
         {
-            Disconnect();
+            if (IsConnected)
+            {
+                Disconnect();
+            }
         }
 
         void Update()
         {
+            if (!IsConnected)
+            {
+                return;
+            }
+
             UpdateSubscriptionSockets();
         }
 
         public void Disconnect()
         {
+            if (!IsConnected)
+            {
+                return;
+            }
+
             foreach (var socketKey in subscriptions.Keys)
             {
                 CloseSubscriptionSocket(socketKey);
@@ -72,6 +83,11 @@ namespace PupilLabs
 
         public void UnsubscribeFrom(string topic, ReceiveDataDelegate subscriberHandler)
         {
+            if (!IsConnected)
+            {
+                return;
+            }
+            
             if (subscriptions.ContainsKey(topic) && subscriberHandler != null)
             {
                 subscriptions[topic].OnReceiveData -= subscriberHandler;
