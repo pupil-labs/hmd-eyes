@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 5877764812355255330}
   - component: {fileID: 5877764812355255333}
   - component: {fileID: 5877764812355255331}
-  - component: {fileID: 339353008368645249}
   m_Layer: 0
   m_Name: Calibration Controller
   m_TagString: Untagged
@@ -65,20 +64,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   subsCtrl: {fileID: 0}
   statusText: {fileID: 47073779600029413}
---- !u!114 &339353008368645249
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5877764812355255332}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfd6d0aaa0718a8408802b6edef2eaab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  calibrationController: {fileID: 5877764812355255333}
-  objectToBeActivated: {fileID: 5877764814266065875}
 --- !u!1 &5877764812424549215
 GameObject:
   m_ObjectHideFlags: 0
@@ -438,11 +423,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5851652210056570097, guid: 631603d0219478147a4bd036c406c762,
-        type: 3}
-      propertyPath: m_Camera
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 5851652210667347917, guid: 631603d0219478147a4bd036c406c762,
         type: 3}
       propertyPath: m_Color.r
@@ -457,6 +437,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Color.b
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5851652210056570097, guid: 631603d0219478147a4bd036c406c762,
+        type: 3}
+      propertyPath: m_Camera
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 631603d0219478147a4bd036c406c762, type: 3}

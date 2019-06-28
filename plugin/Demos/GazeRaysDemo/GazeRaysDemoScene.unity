@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -532,6 +532,7 @@ GameObject:
   m_Component:
   - component: {fileID: 506716980}
   - component: {fileID: 506716981}
+  - component: {fileID: 506716982}
   m_Layer: 0
   m_Name: Gaze Rays
   m_TagString: Untagged
@@ -582,6 +583,20 @@ MonoBehaviour:
     gazeLine: {fileID: 152043683}
     eye: {fileID: 1398761184}
   rayLength: 5
+--- !u!114 &506716982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 506716979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07784a1f038ce37408db5480ffadd7ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 572299731}
+  enableAfterCalibration: 1
 --- !u!1 &572299730
 GameObject:
   m_ObjectHideFlags: 0
@@ -593,7 +608,6 @@ GameObject:
   - component: {fileID: 572299732}
   - component: {fileID: 572299731}
   - component: {fileID: 572299733}
-  - component: {fileID: 6136044781628871031}
   m_Layer: 0
   m_Name: Calibration Controller
   m_TagString: Untagged
@@ -2071,11 +2085,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5851652210056570097, guid: 631603d0219478147a4bd036c406c762,
-        type: 3}
-      propertyPath: m_Camera
-      value: 
-      objectReference: {fileID: 1923697937}
     - target: {fileID: 5851652210667347917, guid: 631603d0219478147a4bd036c406c762,
         type: 3}
       propertyPath: m_Color.r
@@ -2091,6 +2100,11 @@ PrefabInstance:
       propertyPath: m_Color.b
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5851652210056570097, guid: 631603d0219478147a4bd036c406c762,
+        type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 1923697937}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 631603d0219478147a4bd036c406c762, type: 3}
 --- !u!114 &1629129952 stripped
@@ -2687,17 +2701,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 572299731}
   enableAfterCalibration: 1
---- !u!114 &6136044781628871031
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 572299730}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfd6d0aaa0718a8408802b6edef2eaab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  calibrationController: {fileID: 572299731}
-  objectToBeActivated: {fileID: 506716979}
