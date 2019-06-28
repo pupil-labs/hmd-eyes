@@ -5,62 +5,22 @@ using UnityEngine;
 
 namespace PupilLabs
 {
-    public class PupilListener
+    public class PupilListener : BaseListener
     {
-
         public event Action<PupilData> OnReceivePupilData;
 
-        public bool IsListening { get; private set; }
+        public PupilListener(SubscriptionsController subsCtrl) : base(subsCtrl) { }
         
-        private SubscriptionsController subsCtrl;
-
-        public PupilListener(SubscriptionsController subsCtrl)
+        protected override void CustomEnable()
         {
-            this.subsCtrl = subsCtrl;
-        }
-
-        ~PupilListener()
-        {
-            if (subsCtrl.IsConnected)
-            {
-                Disable();
-            }
-        }
-
-        public void Enable()
-        {
-            if (!subsCtrl.IsConnected)
-            {
-                Debug.LogWarning("No connected!");
-                return;
-            }
-
-            if (IsListening)
-            {
-                Debug.Log("Already running.");
-                return;
-            }
-
+            Debug.Log("Enabling Pupil Listener");
             subsCtrl.SubscribeTo("pupil.", ReceivePupilData);
-            IsListening = true;
         }
 
-        public void Disable()
-        {
-            if (!subsCtrl.IsConnected)
-            {
-                Debug.Log("Not connected.");
-                return;
-            }
-
-            if (!IsListening)
-            {
-                Debug.Log("Not running.");
-                return;
-            }
-
+        protected override void CustomDisable()
+        {          
+            Debug.Log("Disabling Pupil Listener"); 
             subsCtrl.UnsubscribeFrom("pupil.", ReceivePupilData);
-            IsListening = false;
         }
 
         void ReceivePupilData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)

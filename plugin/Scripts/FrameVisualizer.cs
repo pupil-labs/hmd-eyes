@@ -12,12 +12,12 @@ namespace PupilLabs
 
         public int targetFPS = 20;
 
+        public FrameListener Listener { get; private set; } = null;
+        
         Texture2D[] eyeTexture = new Texture2D[2];
         byte[][] eyeImageRaw = new byte[2][];
         MeshRenderer[] eyeRenderer = new MeshRenderer[2];
         bool[] eyePublishingInitialized = new bool[2];
-
-        FrameListener publisher = null;
 
         void OnEnable()
         {
@@ -42,16 +42,28 @@ namespace PupilLabs
                 return;
             }
 
-            if (publisher == null)
+            if (Listener == null)
             {
-                publisher = new FrameListener(subscriptionsController);
+                Listener = new FrameListener(subscriptionsController);
             }
 
             Debug.Log("Enabling Frame Visualizer");
 
-            publisher.OnReceiveEyeFrame += ReceiveEyeFrame;
+            Listener.OnReceiveEyeFrame += ReceiveEyeFrame;
+
+            // auto start visualizer
+            subscriptionsController.requestCtrl.OnConnected += StartVisualizing;
+            if (subscriptionsController.IsConnected)
+            {
+                StartVisualizing();
+            }
 
             eyePublishingInitialized = new bool[] { false, false };
+        }
+
+        public void StartVisualizing()
+        {
+            Listener.Enable();
         }
 
         void ReceiveEyeFrame(int eyeIdx, byte[] frameData)
@@ -119,9 +131,9 @@ namespace PupilLabs
         {
             Debug.Log("Disabling Frame Visualizer");
 
-            if (publisher != null)
+            if (Listener != null)
             {
-                publisher.OnReceiveEyeFrame -= ReceiveEyeFrame;
+                Listener.OnReceiveEyeFrame -= ReceiveEyeFrame;
             }
 
             for (int i = eyeRenderer.Length - 1; i >= 0; i--)

@@ -5,52 +5,26 @@ using UnityEngine;
 
 namespace PupilLabs
 {
-    public class FrameListener
+    public class FrameListener : BaseListener
     {
-        private RequestController requestCtrl;
-        private SubscriptionsController subsCtrl;
-
         public event Action<int, byte[]> OnReceiveEyeFrame;
 
-        public FrameListener(SubscriptionsController subsCtrl)
+        public FrameListener(SubscriptionsController subsCtrl) : base(subsCtrl) {}
+
+        protected override void CustomEnable()
         {
-            this.subsCtrl = subsCtrl;
-            this.requestCtrl = subsCtrl.requestCtrl;
-
-            requestCtrl.OnConnected += Enable;
-            requestCtrl.OnDisconnecting += Disable;
-
-            if (requestCtrl.IsConnected)
-            {
-                Enable();
-            }
-        }
-
-        ~FrameListener()
-        {
-            requestCtrl.OnConnected -= Enable;
-            requestCtrl.OnDisconnecting -= Disable;
-
-            if (requestCtrl.IsConnected)
-            {
-                Disable();
-            }
-        }
-
-        public void Enable()
-        {
-            Debug.Log("Enabling Frame Publisher");
+            Debug.Log("Enabling Frame Listener");
 
             subsCtrl.SubscribeTo("frame.eye.", CustomReceiveData);
-            requestCtrl.StartPlugin("Frame_Publisher");
+            subsCtrl.requestCtrl.StartPlugin("Frame_Publisher");
         }
 
-        public void Disable()
+        protected override void CustomDisable()
         {
-            Debug.Log("Disabling Frame Publisher");
+            Debug.Log("Disabling Frame Listener");
 
             subsCtrl.UnsubscribeFrom("frame.eye.", CustomReceiveData);
-            requestCtrl.StopPlugin("Frame_Publisher");
+            subsCtrl.requestCtrl.StopPlugin("Frame_Publisher");
         }
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
