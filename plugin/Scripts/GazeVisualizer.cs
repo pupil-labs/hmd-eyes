@@ -18,7 +18,8 @@ namespace PupilLabs
         [Range(0.01f, 0.1f)]
         public float sphereCastRadius = 0.05f;
 
-        GazeListener gazeListener = null;
+        public GazeListener Listener { get; private set; } = null;
+        
         Vector3 localGazeDirection;
         float gazeDistance;
         bool isGazing = false;
@@ -72,13 +73,13 @@ namespace PupilLabs
                 return;
             }
 
-            if (gazeListener == null)
+            if (Listener == null)
             {
-                gazeListener = new GazeListener(subscriptionsController);
+                Listener = new GazeListener(subscriptionsController);
             }
 
-            gazeListener.Enable();
-            gazeListener.OnReceive3dGaze += ReceiveGaze;
+            Listener.Enable();
+            Listener.OnReceive3dGaze += ReceiveGaze;
 
             projectionMarker.gameObject.SetActive(true);
             isGazing = true;
@@ -88,10 +89,10 @@ namespace PupilLabs
         {
             isGazing = false;
 
-            if (gazeListener != null)
+            if (Listener != null)
             {
-                gazeListener.OnReceive3dGaze -= ReceiveGaze;
-                gazeListener.Disable();
+                Listener.OnReceive3dGaze -= ReceiveGaze;
+                Listener.Disable();
             }
 
             if (projectionMarker != null)
