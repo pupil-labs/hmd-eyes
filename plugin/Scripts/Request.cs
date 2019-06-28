@@ -101,8 +101,6 @@ namespace PupilLabs
                 if (requestSocket != null)
                     requestSocket.Close();
 
-                TerminateContext();
-
                 IsConnected = false;
             }
 

@@ -20,8 +20,9 @@ namespace PupilLabs
 
         public bool IsConnected
         {
-            get { return request.IsConnected; }
+            get { return request.IsConnected && connectingDone; }
         }
+        private bool connectingDone;
 
         public string IP
         {
@@ -58,7 +59,7 @@ namespace PupilLabs
             }
 
             PupilVersion = "not connected";
-            if (!IsConnected && connectOnEnable)
+            if (!request.IsConnected && connectOnEnable)
             {
                 RunConnect();
             }
@@ -66,7 +67,7 @@ namespace PupilLabs
 
         void OnDisable()
         {
-            if (IsConnected)
+            if (request.IsConnected)
             {
                 Disconnect();
             }
@@ -74,18 +75,26 @@ namespace PupilLabs
 
         public void RunConnect()
         {
+            if (request.IsConnected)
+            {
+                Debug.LogWarning("Already connected!");
+                return;
+            }
+
             StartCoroutine(Connect(retry: true));
         }
 
         private IEnumerator Connect(bool retry = false)
         {
             yield return new WaitForSeconds(3f);
+           
+            connectingDone = false;
 
-            while (!IsConnected)
+            while (!request.IsConnected)
             {
                 yield return StartCoroutine(request.InitializeRequestSocketAsync(1f));
 
-                if (!IsConnected)
+                if (!request.IsConnected)
                 {
                     request.TerminateContext();
 
@@ -118,6 +127,8 @@ namespace PupilLabs
             StartEyeProcesses();
             SetDetectionMode("3d");
 
+            connectingDone = true;
+
             // RepaintGUI(); //
             if (OnConnected != null)
                 OnConnected();
@@ -133,9 +144,14 @@ namespace PupilLabs
             request.CloseSockets();
         }
 
+        public void OnDestroy()
+        {
+            request.TerminateContext();
+        }
+
         public void Send(Dictionary<string, object> dictionary)
         {
-            if (!IsConnected)
+            if (!request.IsConnected)
             {
                 Debug.LogWarning("Not connected!");
                 return;
@@ -192,7 +208,7 @@ namespace PupilLabs
         [ContextMenu("Update TimeSync")]
         public void UpdateTimeSync()
         {
-            if (!IsConnected)
+            if (!request.IsConnected)
             {
                 return;
             }
@@ -202,7 +218,7 @@ namespace PupilLabs
 
         public double GetPupilTimeStamp()
         {
-            if (!IsConnected)
+            if (!request.IsConnected)
             {
                 Debug.LogWarning("Not connected");
                 return 0;
@@ -213,7 +229,7 @@ namespace PupilLabs
 
         public double ConvertToUnityTime(double pupilTimestamp)
         {
-            if (!IsConnected)
+            if (!request.IsConnected)
             {
                 Debug.LogWarning("Not connected");
                 return 0;
@@ -224,7 +240,7 @@ namespace PupilLabs
 
         public double ConvertToPupilTime(double unityTime)
         {
-            if (!IsConnected)
+            if (!request.IsConnected)
             {
                 Debug.LogWarning("Not connected");
                 return 0;
@@ -236,7 +252,7 @@ namespace PupilLabs
         [System.Obsolete("Setting the pupil timestamp might be in conflict with other plugins.")]
         public void SetPupilTimestamp(double time)
         {
-            if (!IsConnected)
+            if (!request.IsConnected)
             {
                 Debug.LogWarning("Not connected");
                 return;
@@ -267,7 +283,7 @@ namespace PupilLabs
         [ContextMenu("Check Time Sync")]
         public void CheckTimeSync()
         {
-            if (IsConnected)
+            if (request.IsConnected)
             {
                 timeSync.CheckTimeSync();
             }
@@ -280,7 +296,7 @@ namespace PupilLabs
         [ContextMenu("Sync Pupil Time To Time.now")]
         void SyncPupilTimeToUnityTime()
         {
-            if (IsConnected)
+            if (request.IsConnected)
             {
                 timeSync.SetPupilTimestamp(Time.realtimeSinceStartup);
             }
