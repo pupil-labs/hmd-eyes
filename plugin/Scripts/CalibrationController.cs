@@ -67,7 +67,7 @@ namespace PupilLabs
 
             if (calibration.IsCalibrating)
             {
-                // calibration.StopCalibration();
+                StopCalibrationRoutine();
             }
             else
             {
