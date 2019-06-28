@@ -66,6 +66,7 @@ namespace PupilLabs.Demos
         public void StartVis()
         {
             isGazing = true;
+            gazeListener.Enable();
             gazeListener.OnReceive3dGaze += ReceiveEyeData;
         }
 
