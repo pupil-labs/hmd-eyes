@@ -49,21 +49,10 @@ namespace PupilLabs
 
             Debug.Log("Enabling Frame Visualizer");
 
+            Listener.Enable();
             Listener.OnReceiveEyeFrame += ReceiveEyeFrame;
 
-            // auto start visualizer
-            subscriptionsController.requestCtrl.OnConnected += StartVisualizing;
-            if (subscriptionsController.IsConnected)
-            {
-                StartVisualizing();
-            }
-
             eyePublishingInitialized = new bool[] { false, false };
-        }
-
-        public void StartVisualizing()
-        {
-            Listener.Enable();
         }
 
         void ReceiveEyeFrame(int eyeIdx, byte[] frameData)
@@ -134,6 +123,7 @@ namespace PupilLabs
             if (Listener != null)
             {
                 Listener.OnReceiveEyeFrame -= ReceiveEyeFrame;
+                Listener.Disable();
             }
 
             for (int i = eyeRenderer.Length - 1; i >= 0; i--)

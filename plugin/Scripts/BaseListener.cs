@@ -28,7 +28,8 @@ namespace PupilLabs
         {
             if (!subsCtrl.IsConnected)
             {
-                Debug.LogWarning("No connected!");
+                Debug.LogWarning($"{this.GetType().Name}: No connected. Waiting for connection.");
+                subsCtrl.requestCtrl.OnConnected += EnableOnConnect;
                 return;
             }
 
@@ -42,6 +43,12 @@ namespace PupilLabs
             CustomEnable();
 
             IsListening = true;
+        }
+
+        public void EnableOnConnect()
+        {
+            subsCtrl.requestCtrl.OnConnected -= EnableOnConnect;
+            Enable();
         }
 
         protected abstract void CustomEnable();
