@@ -28,12 +28,12 @@ namespace PupilLabs
 
         Vector3 origMarkerScale;
 
-        void OnEnable()
+        void OnEnable() //automagic by conditional enable/disable component
         {
             StartVisualizing();
         }
 
-        void OnDisable()
+        void OnDisable() //automagic by conditional enable/disable component
         {
             StopVisualizing();
         }
@@ -69,7 +69,6 @@ namespace PupilLabs
             if (cameraTransform == null)
             {
                 Debug.LogError("Camera reference missing");
-                enabled = false;
                 return;
             }
 
