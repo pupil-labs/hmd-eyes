@@ -10,28 +10,17 @@ namespace PupilLabs
 
         public event Action<PupilData> OnReceivePupilData;
 
-        private RequestController requestCtrl;
+        public bool IsListening { get; private set; }
+        
         private SubscriptionsController subsCtrl;
 
         public PupilListener(SubscriptionsController subsCtrl)
         {
             this.subsCtrl = subsCtrl;
-            this.requestCtrl = subsCtrl.requestCtrl;
-
-            requestCtrl.OnConnected += Enable;
-            requestCtrl.OnDisconnecting += Disable;
-
-            if (subsCtrl.IsConnected)
-            {
-                Enable();
-            }
         }
 
         ~PupilListener()
         {
-            requestCtrl.OnConnected -= Enable;
-            requestCtrl.OnDisconnecting -= Disable;
-
             if (subsCtrl.IsConnected)
             {
                 Disable();
@@ -40,17 +29,43 @@ namespace PupilLabs
 
         public void Enable()
         {
+            if (!subsCtrl.IsConnected)
+            {
+                Debug.LogWarning("No connected!");
+                return;
+            }
+
+            if (IsListening)
+            {
+                Debug.Log("Already running.");
+                return;
+            }
+
             subsCtrl.SubscribeTo("pupil.", ReceivePupilData);
+            IsListening = true;
         }
 
         public void Disable()
         {
+            if (!subsCtrl.IsConnected)
+            {
+                Debug.Log("Not connected.");
+                return;
+            }
+
+            if (!IsListening)
+            {
+                Debug.Log("Not running.");
+                return;
+            }
+
             subsCtrl.UnsubscribeFrom("pupil.", ReceivePupilData);
+            IsListening = false;
         }
 
         void ReceivePupilData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
-            PupilData pupilData = new PupilData(dictionary, requestCtrl.UnityToPupilTimeOffset);
+            PupilData pupilData = new PupilData(dictionary, subsCtrl.requestCtrl.UnityToPupilTimeOffset);
 
             if (OnReceivePupilData != null)
             {

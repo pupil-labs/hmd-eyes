@@ -78,7 +78,9 @@ namespace PupilLabs
                 gazeListener = new GazeListener(subscriptionsController);
             }
 
+            gazeListener.Enable();
             gazeListener.OnReceive3dGaze += ReceiveGaze;
+
             projectionMarker.gameObject.SetActive(true);
             isGazing = true;
         }
@@ -90,6 +92,7 @@ namespace PupilLabs
             if (gazeListener != null)
             {
                 gazeListener.OnReceive3dGaze -= ReceiveGaze;
+                gazeListener.Disable();
             }
 
             if (projectionMarker != null)

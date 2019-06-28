@@ -8,15 +8,13 @@ namespace PupilLabs.Demos
     {
         public SubscriptionsController subsCtrl;
         public Text statusText;
-
-        private RequestController requestCtrl;
         private PupilListener listener;
 
-        void Awake()
+        void OnEnable()
         {
             listener = new PupilListener(subsCtrl);
-            requestCtrl = subsCtrl.requestCtrl;
 
+            subsCtrl.requestCtrl.OnConnected += listener.Enable;
             listener.OnReceivePupilData += ReceivePupilData;
         }
 
@@ -25,9 +23,9 @@ namespace PupilLabs.Demos
         {
             if (statusText == null) { return; }
 
-            statusText.text = requestCtrl.IsConnected ? "Connected" : "Not connected";
+            statusText.text = subsCtrl.IsConnected ? "Connected" : "Not connected";
 
-            if (requestCtrl.IsConnected)
+            if (subsCtrl.IsConnected)
             {
                 statusText.text += "\n ... but nothing happening here. \nPlease check the console and have a look at the source code to get started.";
             }
