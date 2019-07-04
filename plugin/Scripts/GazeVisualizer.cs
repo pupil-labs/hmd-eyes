@@ -7,7 +7,7 @@ namespace PupilLabs
     public class GazeVisualizer : MonoBehaviour
     {
         public SubscriptionsController subscriptionsController;
-        public Transform cameraTransform;
+        public Transform gazeOrigin;
 
         [Header("Settings")]
         [Range(0f, 1f)]
@@ -39,7 +39,7 @@ namespace PupilLabs
             }
             origMarkerScale = projectionMarker.localScale;
 
-            if (subscriptionsController == null || cameraTransform == null)
+            if (subscriptionsController == null || gazeOrigin == null)
             {
                 Debug.LogWarning("Required components missing.");
                 enabled = false;
@@ -136,9 +136,9 @@ namespace PupilLabs
                 return;
             }
 
-            Vector3 origin = cameraTransform.position;
+            Vector3 origin = gazeOrigin.position;
 
-            Vector3 direction = cameraTransform.TransformDirection(localGazeDirection);
+            Vector3 direction = gazeOrigin.TransformDirection(localGazeDirection);
 
             projectionMarker.localScale = origMarkerScale;
             if (Physics.SphereCast(origin, sphereCastRadius, direction, out RaycastHit hit, Mathf.Infinity))
