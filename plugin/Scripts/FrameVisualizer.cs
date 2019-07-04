@@ -13,7 +13,7 @@ namespace PupilLabs
         public int targetFPS = 20;
 
         public FrameListener Listener { get; private set; } = null;
-        
+
         Texture2D[] eyeTexture = new Texture2D[2];
         byte[][] eyeImageRaw = new byte[2][];
         MeshRenderer[] eyeRenderer = new MeshRenderer[2];

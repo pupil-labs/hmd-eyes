@@ -16,7 +16,7 @@ namespace PupilLabs
         }
 
         public List<Circle> circles = new List<Circle>();
-        public int points = 5;
+        [Tooltip("Points per circle")] public int points = 5;
 
         int pointIdx;
         int circleIdx;

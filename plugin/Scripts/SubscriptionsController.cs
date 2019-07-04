@@ -10,9 +10,9 @@ namespace PupilLabs
 
         public PupilLabs.RequestController requestCtrl;
 
-        public bool IsConnected 
-        { 
-            get { return !(requestCtrl==null || !requestCtrl.IsConnected); } 
+        public bool IsConnected
+        {
+            get { return !(requestCtrl == null || !requestCtrl.IsConnected); }
         }
 
         public delegate void ReceiveDataDelegate(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null);
@@ -87,7 +87,7 @@ namespace PupilLabs
             {
                 return;
             }
-            
+
             if (subscriptions.ContainsKey(topic) && subscriberHandler != null)
             {
                 subscriptions[topic].OnReceiveData -= subscriberHandler;

@@ -19,7 +19,7 @@ namespace PupilLabs
         public float sphereCastRadius = 0.05f;
 
         public GazeListener Listener { get; private set; } = null;
-        
+
         Vector3 localGazeDirection;
         float gazeDistance;
         bool isGazing = false;
@@ -45,7 +45,7 @@ namespace PupilLabs
                 enabled = false;
                 return;
             }
-            
+
             StartVisualizing();
         }
 
@@ -84,7 +84,7 @@ namespace PupilLabs
             }
 
             Debug.Log("Start Visualizing Gaze");
-            
+
             if (Listener == null)
             {
                 Listener = new GazeListener(subscriptionsController);

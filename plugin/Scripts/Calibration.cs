@@ -106,7 +106,7 @@ namespace PupilLabs
             Debug.Log("Calibration should stop");
 
             IsCalibrating = false;
-            
+
             requestCtrl.Send(new Dictionary<string, object> { { "subject", "calibration.should_stop" } });
         }
 

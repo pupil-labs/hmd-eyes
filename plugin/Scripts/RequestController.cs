@@ -80,7 +80,7 @@ namespace PupilLabs
                 Debug.LogWarning("Component not enabled!");
                 return;
             }
-            
+
             if (request.IsConnected)
             {
                 Debug.LogWarning("Already connected!");
@@ -93,7 +93,7 @@ namespace PupilLabs
         private IEnumerator Connect(bool retry = false)
         {
             yield return new WaitForSeconds(3f);
-           
+
             connectingDone = false;
 
             while (!request.IsConnected)
