@@ -54,7 +54,7 @@ namespace PupilLabs
         public void StartRecording()
         {
             if (!enabled)
-            {   
+            {
                 Debug.LogWarning("Component not enabled");
                 return;
             }
@@ -119,7 +119,7 @@ namespace PupilLabs
                 path = $"{Application.dataPath}/{date}";
                 path = path.Replace("Assets/", ""); //go one folder up
             }
-    
+
             if (!System.IO.Directory.Exists(path))
             {
                 System.IO.Directory.CreateDirectory(path);

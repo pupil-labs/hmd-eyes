@@ -122,7 +122,7 @@ namespace PupilLabs
             }
 
             calibration.StopCalibration();
-            
+
             marker.gameObject.SetActive(false);
 
             if (OnCalibrationRoutineDone != null)

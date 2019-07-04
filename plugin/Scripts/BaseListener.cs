@@ -58,7 +58,7 @@ namespace PupilLabs
             if (!subsCtrl.IsConnected)
             {
                 Debug.LogWarning("Not connected!");
-                IsListening = false; 
+                IsListening = false;
                 return;
             }
 
