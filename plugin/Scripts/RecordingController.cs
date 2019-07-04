@@ -18,6 +18,24 @@ namespace PupilLabs
 
         public bool IsRecording { get; private set; }
 
+        void OnEnable()
+        {
+            if (requestCtrl == null)
+            {
+                Debug.LogWarning("Request Controller missing");
+                enabled = false;
+                return;
+            }
+        }
+
+        void OnDisable()
+        {
+            if (IsRecording)
+            {
+                StopRecording();
+            }
+        }
+
         void Update()
         {
             if (startRecording)
@@ -35,9 +53,9 @@ namespace PupilLabs
 
         public void StartRecording()
         {
-            if (requestCtrl == null)
-            {
-                Debug.LogWarning("Request Controller missing");
+            if (!enabled)
+            {   
+                Debug.LogWarning("Component not enabled");
                 return;
             }
 
@@ -67,18 +85,6 @@ namespace PupilLabs
 
         public void StopRecording()
         {
-            if (requestCtrl == null)
-            {
-                Debug.LogWarning("Request Controller missing");
-                return;
-            }
-
-            if (!requestCtrl.IsConnected)
-            {
-                Debug.LogWarning("Not connected");
-                return;
-            }
-
             if (!IsRecording)
             {
                 Debug.Log("Recording is not running, nothing to stop.");

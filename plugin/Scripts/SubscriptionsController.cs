@@ -23,7 +23,7 @@ namespace PupilLabs
         {
             if (requestCtrl == null)
             {
-                Debug.LogError("RequestController missing!");
+                Debug.LogWarning("RequestController missing!");
                 enabled = false;
                 return;
             }
