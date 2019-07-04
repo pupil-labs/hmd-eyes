@@ -21,23 +21,9 @@ namespace PupilLabs
 
         void OnEnable()
         {
-            if (cameraAsParent == null)
+            if (cameraAsParent == null || subscriptionsController == null || eyeFrameMaterial == null)
             {
-                Debug.LogWarning("Frame Publisher needs the camera transform");
-                enabled = false;
-                return;
-            }
-
-            if (subscriptionsController == null)
-            {
-                Debug.LogWarning("Frame Publisher needs access to SubscriptionsController");
-                enabled = false;
-                return;
-            }
-
-            if (eyeFrameMaterial == null)
-            {
-                Debug.LogWarning("Texture material for eye frames missing.");
+                Debug.LogWarning("Required components missing!");
                 enabled = false;
                 return;
             }
@@ -64,7 +50,7 @@ namespace PupilLabs
             eyeImageRaw[eyeIdx] = frameData;
         }
 
-        public void InitializeFramePublishing(int eyeIndex)
+        void InitializeFramePublishing(int eyeIndex)
         {
             Transform parent = cameraAsParent;
 

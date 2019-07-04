@@ -36,12 +36,24 @@ namespace PupilLabs
         {
             calibration.OnCalibrationSucceeded += CalibrationSucceeded;
             calibration.OnCalibrationFailed += CalibrationFailed;
+
+            if (subsCtrl == null || marker == null || camera == null || settings == null || targets == null)
+            {
+                Debug.LogWarning("Required components missing.");
+                enabled = false;
+                return;
+            }
         }
 
         void OnDisable()
         {
             calibration.OnCalibrationSucceeded -= CalibrationSucceeded;
             calibration.OnCalibrationFailed -= CalibrationFailed;
+
+            if (calibration.IsCalibrating)
+            {
+                StopCalibration();
+            }
         }
 
         void Update()
@@ -59,24 +71,30 @@ namespace PupilLabs
 
         public void ToggleCalibration()
         {
+            if (calibration.IsCalibrating)
+            {
+                StopCalibration();
+            }
+            else
+            {
+                StartCalibration();
+            }
+        }
+
+        public void StartCalibration()
+        {
+            if (!enabled)
+            {
+                Debug.LogWarning("Component not enabled!");
+                return;
+            }
+
             if (!subsCtrl.IsConnected)
             {
                 Debug.LogWarning("Calibration not possible: not connected!");
                 return;
             }
 
-            if (calibration.IsCalibrating)
-            {
-                StopCalibrationRoutine();
-            }
-            else
-            {
-                InitializeCalibration();
-            }
-        }
-
-        private void InitializeCalibration()
-        {
             Debug.Log("Starting Calibration");
 
             targetIdx = 0;
@@ -92,6 +110,24 @@ namespace PupilLabs
             if (OnCalibrationStarted != null)
             {
                 OnCalibrationStarted();
+            }
+        }
+
+        public void StopCalibration()
+        {
+            if (!calibration.IsCalibrating)
+            {
+                Debug.Log("Nothing to stop.");
+                return;
+            }
+
+            calibration.StopCalibration();
+            
+            marker.gameObject.SetActive(false);
+
+            if (OnCalibrationRoutineDone != null)
+            {
+                OnCalibrationRoutineDone();
             }
         }
 
@@ -128,7 +164,7 @@ namespace PupilLabs
                     }
                     else
                     {
-                        StopCalibrationRoutine();
+                        StopCalibration();
                     }
                 }
             }
@@ -147,18 +183,6 @@ namespace PupilLabs
             if (OnCalibrationFailed != null)
             {
                 OnCalibrationFailed();
-            }
-        }
-
-        private void StopCalibrationRoutine()
-        {
-            calibration.StopCalibration();
-            
-            marker.gameObject.SetActive(false);
-
-            if (OnCalibrationRoutineDone != null)
-            {
-                OnCalibrationRoutineDone();
             }
         }
 

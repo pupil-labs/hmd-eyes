@@ -31,11 +31,31 @@ namespace PupilLabs
 
         void OnEnable() //automagic by conditional enable/disable component
         {
+            if (projectionMarker == null)
+            {
+                Debug.LogWarning("Marker reference missing.");
+                enabled = false;
+                return;
+            }
+            origMarkerScale = projectionMarker.localScale;
+
+            if (subscriptionsController == null || cameraTransform == null)
+            {
+                Debug.LogWarning("Required components missing.");
+                enabled = false;
+                return;
+            }
+            
             StartVisualizing();
         }
 
         void OnDisable() //automagic by conditional enable/disable component
         {
+            if (projectionMarker != null)
+            {
+                projectionMarker.localScale = origMarkerScale;
+            }
+
             StopVisualizing();
         }
 
@@ -51,28 +71,20 @@ namespace PupilLabs
 
         public void StartVisualizing()
         {
+            if (!enabled)
+            {
+                Debug.LogWarning("Component not enabled.");
+                return;
+            }
+
+            if (isGazing)
+            {
+                Debug.Log("Already gazing!");
+                return;
+            }
+
             Debug.Log("Start Visualizing Gaze");
-
-            if (subscriptionsController == null)
-            {
-                Debug.LogError("SubscriptionController missing");
-                return;
-            }
-
-            if (projectionMarker == null)
-            {
-                Debug.LogError("Marker reference missing");
-                return;
-            }
-
-            origMarkerScale = projectionMarker.localScale;
-
-            if (cameraTransform == null)
-            {
-                Debug.LogError("Camera reference missing");
-                return;
-            }
-
+            
             if (Listener == null)
             {
                 Listener = new GazeListener(subscriptionsController);
@@ -87,6 +99,12 @@ namespace PupilLabs
 
         public void StopVisualizing()
         {
+            if (!isGazing || !enabled)
+            {
+                Debug.Log("Nothing to stop.");
+                return;
+            }
+
             isGazing = false;
 
             if (Listener != null)
@@ -117,8 +135,6 @@ namespace PupilLabs
                 Debug.LogWarning("Marker missing");
                 return;
             }
-
-            projectionMarker.gameObject.SetActive(true);
 
             Vector3 origin = cameraTransform.position;
 

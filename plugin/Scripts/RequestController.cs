@@ -75,6 +75,12 @@ namespace PupilLabs
 
         public void RunConnect()
         {
+            if (!enabled)
+            {
+                Debug.LogWarning("Component not enabled!");
+                return;
+            }
+            
             if (request.IsConnected)
             {
                 Debug.LogWarning("Already connected!");
