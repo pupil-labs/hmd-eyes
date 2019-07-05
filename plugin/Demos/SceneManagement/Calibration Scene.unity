@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
+  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.1210787, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -297,8 +297,8 @@ MonoBehaviour:
   subsCtrl: {fileID: 1626429637}
   camera: {fileID: 1923697937}
   marker: {fileID: 275375132}
-  settings: {fileID: 11400000, guid: 6657b16c70ed7b04d90de3f4966a3770, type: 2}
-  targets: {fileID: 11400000, guid: 5dd7fa1e9c0861a4ea3d4a5a4f066f15, type: 2}
+  settings: {fileID: 11400000, guid: 6cec5b93a03c67142879d4fff2302527, type: 2}
+  targets: {fileID: 11400000, guid: 2f793d5fa5644814a9c638b030658e7f, type: 2}
 --- !u!4 &572299732
 Transform:
   m_ObjectHideFlags: 0

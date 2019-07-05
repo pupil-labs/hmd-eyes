@@ -6,8 +6,8 @@ namespace PupilLabs
 {
     public class GazeVisualizer : MonoBehaviour
     {
-        public SubscriptionsController subscriptionsController;
         public Transform gazeOrigin;
+        public GazeController gazeController;
 
         [Header("Settings")]
         [Range(0f, 1f)]
@@ -18,7 +18,6 @@ namespace PupilLabs
         [Range(0.01f, 0.1f)]
         public float sphereCastRadius = 0.05f;
 
-        public GazeListener Listener { get; private set; } = null;
 
         Vector3 localGazeDirection;
         float gazeDistance;
@@ -39,7 +38,7 @@ namespace PupilLabs
             }
             origMarkerScale = projectionMarker.localScale;
 
-            if (subscriptionsController == null || gazeOrigin == null)
+            if (gazeOrigin == null || gazeController == null)
             {
                 Debug.LogWarning("Required components missing.");
                 enabled = false;
@@ -85,13 +84,7 @@ namespace PupilLabs
 
             Debug.Log("Start Visualizing Gaze");
 
-            if (Listener == null)
-            {
-                Listener = new GazeListener(subscriptionsController);
-            }
-
-            Listener.Enable();
-            Listener.OnReceive3dGaze += ReceiveGaze;
+            gazeController.OnReceive3dGaze += ReceiveGaze;
 
             projectionMarker.gameObject.SetActive(true);
             isGazing = true;
@@ -105,18 +98,14 @@ namespace PupilLabs
                 return;
             }
 
-            isGazing = false;
-
-            if (Listener != null)
-            {
-                Listener.OnReceive3dGaze -= ReceiveGaze;
-                Listener.Disable();
-            }
-
             if (projectionMarker != null)
             {
                 projectionMarker.gameObject.SetActive(false);
             }
+
+            isGazing = false;
+
+            gazeController.OnReceive3dGaze -= ReceiveGaze;
         }
 
         void ReceiveGaze(GazeData gazeData)
