@@ -12,10 +12,19 @@ namespace PupilLabs.Demos
 
         void OnEnable()
         {
-            listener = new PupilListener(subsCtrl);
+            if (listener == null)
+            {
+                listener = new PupilListener(subsCtrl);
+            }
 
-            subsCtrl.requestCtrl.OnConnected += listener.Enable;
+            listener.Enable();
             listener.OnReceivePupilData += ReceivePupilData;
+        }
+
+        void OnDisable()
+        {
+            listener.Disable();
+            listener.OnReceivePupilData -= ReceivePupilData;
         }
 
 
