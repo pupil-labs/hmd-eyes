@@ -24,6 +24,7 @@ namespace PupilLabs
 
         //members
         Calibration calibration = new Calibration();
+        TimeSync timeSync = null;
 
         int targetIdx;
         int targetSampleCount;
@@ -43,6 +44,8 @@ namespace PupilLabs
                 enabled = false;
                 return;
             }
+
+            timeSync = subsCtrl.requestCtrl.TimeSync;
         }
 
         void OnDisable()
@@ -152,7 +155,7 @@ namespace PupilLabs
                 tLastSample = tNow;
 
                 //Adding the calibration reference data to the list that will be passed on, once the required sample amount is met.
-                double sampleTimeStamp = subsCtrl.requestCtrl.ConvertToPupilTime(Time.realtimeSinceStartup);
+                double sampleTimeStamp = timeSync.ConvertToPupilTime(Time.realtimeSinceStartup);
                 AddSample(sampleTimeStamp);
 
                 targetSampleCount++;//Increment the current calibration sample. (Default sample amount per calibration point is 120)

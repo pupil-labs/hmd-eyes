@@ -36,8 +36,7 @@ namespace PupilLabs
             set { request.PORT = value; }
         }
 
-        public double UnityToPupilTimeOffset { get { return timeSync.UnityToPupilTimeOffset; } }
-        private TimeSync timeSync = null;
+        public TimeSync TimeSync { get; private set; }
 
         private string PupilVersion;
 
@@ -126,8 +125,8 @@ namespace PupilLabs
         {
             Debug.Log(" Succesfully connected to Pupil! ");
 
-            timeSync = new TimeSync(request);
-            timeSync.UpdateTimeSync();
+            TimeSync = new TimeSync(this);
+            TimeSync.UpdateTimeSync();
             UpdatePupilVersion();
 
             StartEyeProcesses();
@@ -164,6 +163,11 @@ namespace PupilLabs
             }
 
             request.SendRequestMessage(dictionary);
+        }
+
+        public bool SendCommand(string command, out string response)
+        {
+            return request.SendCommand(command,out response);
         }
 
         public void StartEyeProcesses()
@@ -211,66 +215,10 @@ namespace PupilLabs
             Send(new Dictionary<string, object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
         }
 
-        [ContextMenu("Update TimeSync")]
-        public void UpdateTimeSync()
-        {
-            if (!request.IsConnected)
-            {
-                return;
-            }
-
-            timeSync.UpdateTimeSync();
-        }
-
-        public double GetPupilTimeStamp()
-        {
-            if (!request.IsConnected)
-            {
-                Debug.LogWarning("Not connected");
-                return 0;
-            }
-
-            return timeSync.GetPupilTimestamp();
-        }
-
-        public double ConvertToUnityTime(double pupilTimestamp)
-        {
-            if (!request.IsConnected)
-            {
-                Debug.LogWarning("Not connected");
-                return 0;
-            }
-
-            return timeSync.ConvertToUnityTime(pupilTimestamp);
-        }
-
-        public double ConvertToPupilTime(double unityTime)
-        {
-            if (!request.IsConnected)
-            {
-                Debug.LogWarning("Not connected");
-                return 0;
-            }
-
-            return timeSync.ConvertToPupilTime(unityTime);
-        }
-
-        [System.Obsolete("Setting the pupil timestamp might be in conflict with other plugins.")]
-        public void SetPupilTimestamp(double time)
-        {
-            if (!request.IsConnected)
-            {
-                Debug.LogWarning("Not connected");
-                return;
-            }
-
-            timeSync.SetPupilTimestamp(time);
-        }
-
         public string GetPupilVersion()
         {
             string pupilVersion = null;
-            request.SendCommand("v", out pupilVersion);
+            SendCommand("v", out pupilVersion);
             return pupilVersion;
         }
 
@@ -284,28 +232,6 @@ namespace PupilLabs
         public void ResetDefaultLocalConnection()
         {
             request.resetDefaultLocalConnection();
-        }
-
-        [ContextMenu("Check Time Sync")]
-        public void CheckTimeSync()
-        {
-            if (request.IsConnected)
-            {
-                timeSync.CheckTimeSync();
-            }
-            else
-            {
-                Debug.LogWarning("CheckTimeSync: not connected");
-            }
-        }
-
-        [ContextMenu("Sync Pupil Time To Time.now")]
-        void SyncPupilTimeToUnityTime()
-        {
-            if (request.IsConnected)
-            {
-                timeSync.SetPupilTimestamp(Time.realtimeSinceStartup);
-            }
         }
     }
 }

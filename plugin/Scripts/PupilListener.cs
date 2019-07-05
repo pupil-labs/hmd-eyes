@@ -25,7 +25,7 @@ namespace PupilLabs
 
         void ReceivePupilData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
-            PupilData pupilData = new PupilData(dictionary, subsCtrl.requestCtrl.UnityToPupilTimeOffset);
+            PupilData pupilData = new PupilData(dictionary, timeSync.UnityToPupilTimeOffset);
 
             if (OnReceivePupilData != null)
             {
