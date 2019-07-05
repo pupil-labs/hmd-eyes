@@ -111,6 +111,8 @@ namespace PupilLabs
             {
                 OnCalibrationStarted();
             }
+
+            subsCtrl.requestCtrl.OnDisconnecting += StopCalibration;
         }
 
         public void StopCalibration()
@@ -129,6 +131,8 @@ namespace PupilLabs
             {
                 OnCalibrationRoutineDone();
             }
+
+            subsCtrl.requestCtrl.OnDisconnecting -= StopCalibration;
         }
 
         private void UpdateCalibration()
