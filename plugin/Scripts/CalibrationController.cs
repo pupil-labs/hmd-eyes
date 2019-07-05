@@ -112,6 +112,7 @@ namespace PupilLabs
                 OnCalibrationStarted();
             }
 
+            //abort process on disconnecting
             subsCtrl.requestCtrl.OnDisconnecting += StopCalibration;
         }
 

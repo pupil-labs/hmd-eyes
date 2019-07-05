@@ -72,7 +72,6 @@ namespace PupilLabs
                 return;
             }
 
-            requestCtrl.OnDisconnecting += StopRecording;
 
             var path = GetRecordingPath();
             Debug.Log($"Recording path: {path}");
@@ -84,6 +83,9 @@ namespace PupilLabs
                 , { "record_eye",true}
             });
             IsRecording = true;
+
+            //abort process on disconnecting
+            requestCtrl.OnDisconnecting += StopRecording;
         }
 
         public void StopRecording()
