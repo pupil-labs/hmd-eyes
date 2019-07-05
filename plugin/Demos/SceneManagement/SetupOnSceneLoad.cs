@@ -4,7 +4,7 @@ namespace PupilLabs.Demos
 {
     public class SetupOnSceneLoad : MonoBehaviour
     {
-        public GazeVisualizer gazeVisualizer;
+        public GazeController gazeCtrl;
 
         void Start(){
             SubscriptionsController subsController = FindObjectOfType<SubscriptionsController>();
@@ -15,8 +15,8 @@ namespace PupilLabs.Demos
                 return;
             }
 
-            gazeVisualizer.subscriptionsController = subsController;
-            gazeVisualizer.enabled = true;
+            gazeCtrl.subscriptionsController = subsController;
+            gazeCtrl.enabled = true;
         }
     }
 }
