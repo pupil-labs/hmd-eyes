@@ -17,9 +17,6 @@ namespace PupilLabs
         public int initialWidth = 640, initialHeight = 480;
         [Range(1, 120)]
         public int maxFrameRate = 90;
-        public bool inBGR = false;
-        public bool recordAsync = true;
-        public bool asyncApply = true;
 
         public Texture2D StreamTexture { get; private set; }
 
@@ -29,8 +26,7 @@ namespace PupilLabs
         int index = 0;
         float tLastFrame;
         int width, height;
-        byte[] bgr24;
-        float[] projection_matrix = new float[16];
+        float[] projection_matrix = new float[9];
 
         const string topic = "hmd_streaming.world";
 
@@ -38,8 +34,6 @@ namespace PupilLabs
         {
             width = initialWidth;
             height = initialHeight;
-
-            bgr24 = new byte[width * height * 3];
 
             renderTexture = new RenderTexture(width, height, 24);
             centeredCamera.targetTexture = renderTexture;
@@ -72,28 +66,15 @@ namespace PupilLabs
             }
 
             tLastFrame = Time.time;
-
-            if (recordAsync)
-            {
-                AsyncGPUReadback.Request
-                (
-                    renderTexture, 0, TextureFormat.RGB24,
-                    (AsyncGPUReadbackRequest r) => ReadbackDone(r, Time.realtimeSinceStartup)
-                );
-                return;
-            }
-
-            RenderTexture.active = renderTexture;
-
-            StreamTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-            StreamTexture.Apply();
-
-            RenderTexture.active = null;
-
-            SendFrame(Time.realtimeSinceStartup);
+            
+            AsyncGPUReadback.Request
+            (
+                renderTexture, 0, TextureFormat.RGB24,
+                (AsyncGPUReadbackRequest r) => ReadbackDone(r, Time.realtimeSinceStartup)
+            );   
         }
 
-        void ReadbackDone(AsyncGPUReadbackRequest r, float timestamp = 0)
+        void ReadbackDone(AsyncGPUReadbackRequest r, float timestamp)
         {
             if (StreamTexture == null)
             {
@@ -101,20 +82,14 @@ namespace PupilLabs
             }
 
             StreamTexture.LoadRawTextureData(r.GetData<byte>());
-            if (asyncApply)
-            {
-                StreamTexture.Apply();
-            }
-
+            StreamTexture.Apply();
+            
             SendFrame(timestamp);
         }
 
         void SendFrame(float timestamp)
         {
-            for (int i = 0; i < 16; ++i)
-            {
-                projection_matrix[i] = centeredCamera.projectionMatrix[i];
-            }
+            UpdateIntrinsics();
 
             Dictionary<string, object> payload = new Dictionary<string, object> {
                 {"topic", topic},
@@ -122,37 +97,30 @@ namespace PupilLabs
                 {"height", height},
                 {"index", index},
                 {"timestamp", timestamp},
-                {"format", inBGR ? "bgr" : "rgb"},
-                {"projection_matrix", projection_matrix} //TODO everyframe? - might change I guess
+                {"format", "rgb"},
+                {"projection_matrix", projection_matrix}
             };
 
             NetMQMessage m = new NetMQMessage();
             m.Append(topic);
             m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(payload));
-
-            if (inBGR)
-            {
-                rgbToBgr(StreamTexture.GetRawTextureData());
-                m.Append(bgr24);
-            }
-            else
-            {
-                m.Append(StreamTexture.GetRawTextureData());
-            }
+            m.Append(StreamTexture.GetRawTextureData());
 
             pubSocket.SendMultipartMessage(m);
 
             index++;
         }
 
-        void rgbToBgr(byte[] rgb)
+        void UpdateIntrinsics()
         {
-            float tStart = Time.realtimeSinceStartup * 1000f;
-            for (int i = 0; i < rgb.Length; i++)
+            int idx = 0;
+            for (int r = 0; r < 3; r++)
             {
-                // 0 -> +2; 1 -> +0; 2 -> -2;
-                int offset = ((i % 3) - 1) * -2;
-                bgr24[i + offset] = rgb[i];
+                for (int c = 0; c < 3; c++)
+                {
+                    projection_matrix[idx] = centeredCamera.projectionMatrix[r,c];
+                    idx++;
+                }
             }
         }
     }
