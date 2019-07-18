@@ -9,7 +9,7 @@ namespace PupilLabs
     {
         public event Action<int, byte[]> OnReceiveEyeFrame;
 
-        public FrameListener(SubscriptionsController subsCtrl) : base(subsCtrl) {}
+        public FrameListener(SubscriptionsController subsCtrl) : base(subsCtrl,null) {}
 
         protected override void CustomEnable()
         {

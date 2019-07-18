@@ -7,10 +7,15 @@ namespace PupilLabs
 {
     public class CalibrationController : MonoBehaviour
     {
+        [Header("Pupil Labs Connection")]
         public SubscriptionsController subsCtrl;
+        public TimeSync timeSync;
+
+        [Header("Scene References")]
         public new Camera camera;
         public Transform marker;
 
+        [Header("Settings")]
         public CalibrationSettings settings;
         public CalibrationTargets targets;
 
@@ -24,7 +29,6 @@ namespace PupilLabs
 
         //members
         Calibration calibration = new Calibration();
-        TimeSync timeSync = null;
 
         int targetIdx;
         int targetSampleCount;
@@ -38,14 +42,12 @@ namespace PupilLabs
             calibration.OnCalibrationSucceeded += CalibrationSucceeded;
             calibration.OnCalibrationFailed += CalibrationFailed;
 
-            if (subsCtrl == null || marker == null || camera == null || settings == null || targets == null)
+            if (subsCtrl == null || timeSync == null || marker == null || camera == null || settings == null || targets == null)
             {
                 Debug.LogWarning("Required components missing.");
                 enabled = false;
                 return;
             }
-
-            timeSync = subsCtrl.requestCtrl.TimeSync;
         }
 
         void OnDisable()

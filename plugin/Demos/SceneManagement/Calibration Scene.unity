@@ -295,6 +295,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   subsCtrl: {fileID: 1626429637}
+  timeSync: {fileID: 1911545199}
   camera: {fileID: 1923697937}
   marker: {fileID: 275375132}
   settings: {fileID: 11400000, guid: 6cec5b93a03c67142879d4fff2302527, type: 2}
@@ -621,6 +622,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4881f4add51751a458e4bca6b3f9d6a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1911545199 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8580599546761768760, guid: 7cfc3ae6b3612574fa51b53532335333,
+    type: 3}
+  m_PrefabInstance: {fileID: 1911545196}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1911545197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c931c18d3b3065547ac15e2ff9c69b3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1923697935

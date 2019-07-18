@@ -36,8 +36,6 @@ namespace PupilLabs
             set { request.PORT = value; }
         }
 
-        public TimeSync TimeSync { get; private set; }
-
         private string PupilVersion;
 
         public string GetSubConnectionString()
@@ -125,8 +123,6 @@ namespace PupilLabs
         {
             Debug.Log(" Succesfully connected to Pupil! ");
 
-            TimeSync = new TimeSync(this);
-            TimeSync.UpdateTimeSync();
             UpdatePupilVersion();
 
             StartEyeProcesses();

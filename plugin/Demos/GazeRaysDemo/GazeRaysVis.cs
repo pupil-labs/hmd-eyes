@@ -34,7 +34,7 @@ namespace PupilLabs.Demos
     public class GazeRaysVis : MonoBehaviour
     {
         [Header("Pupil Communication")]
-        public SubscriptionsController subscriptionsController;
+        public GazeController gazeController;
         public CalibrationController calibrationController;
         public float confidenceThreshold = 0.6f;
         [Header("Origin")]
@@ -48,26 +48,19 @@ namespace PupilLabs.Demos
         public float rayLength = 5; //TODO ray!
 
         bool isGazing = false;
-        GazeListener gazeListener;
         Vector3 gazeNormalLeft, gazeNormalRight;
         Vector3 eyeCenterLeft, eyeCenterRight;
         Transform origin;
 
         void OnEnable()
         {
-            if (gazeListener == null)
-            {
-                gazeListener = new GazeListener(subscriptionsController);
-            }
-
             calibrationController.OnCalibrationSucceeded += StartVis;
         }
 
         public void StartVis()
         {
             isGazing = true;
-            gazeListener.Enable();
-            gazeListener.OnReceive3dGaze += ReceiveEyeData;
+            gazeController.OnReceive3dGaze += ReceiveEyeData;
         }
 
         void Update()

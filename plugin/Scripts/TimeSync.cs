@@ -7,36 +7,17 @@ using MessagePack;
 
 namespace PupilLabs
 {
-    public class TimeSync
+    public class TimeSync : MonoBehaviour
     {
-        RequestController requestCtrl;
+        [SerializeField] RequestController requestCtrl;
         
         public double UnityToPupilTimeOffset { get; private set; }
+
+        void OnEnable()
+        {
+            requestCtrl.OnConnected += UpdateTimeSync;
+        }
         
-        public TimeSync(RequestController ctrl)
-        {
-            this.requestCtrl = ctrl;
-        }
-
-        [System.Obsolete("Setting the pupil timestamp might be in conflict with other plugins.")]
-        public void SetPupilTimestamp(double time)
-        {
-            if (!requestCtrl.IsConnected)
-            {
-                Debug.LogWarning("Not connected");
-                return;
-            }
-
-            string response;
-            string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
-
-            float tBefore = Time.realtimeSinceStartup;
-            requestCtrl.SendCommand(command, out response);
-            float tAfter = Time.realtimeSinceStartup;
-
-            UnityToPupilTimeOffset = -(tAfter - tBefore) / 2f;
-        }
-
         public double GetPupilTimestamp()
         {
             if (!requestCtrl.IsConnected)
@@ -73,7 +54,7 @@ namespace PupilLabs
             return unityTime + UnityToPupilTimeOffset;
         }
 
-        // [ContextMenu("Update TimeSync")]
+        [ContextMenu("Update TimeSync")]
         public void UpdateTimeSync()
         {
             if (!requestCtrl.IsConnected)
@@ -90,7 +71,26 @@ namespace PupilLabs
             UnityToPupilTimeOffset = pupilTime - unityTime;
         }
 
-        // [ContextMenu("Check Time Sync")]
+        [System.Obsolete("Setting the pupil timestamp might be in conflict with other plugins.")]
+        public void SetPupilTimestamp(double time)
+        {
+            if (!requestCtrl.IsConnected)
+            {
+                Debug.LogWarning("Not connected");
+                return;
+            }
+
+            string response;
+            string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
+
+            float tBefore = Time.realtimeSinceStartup;
+            requestCtrl.SendCommand(command, out response);
+            float tAfter = Time.realtimeSinceStartup;
+
+            UnityToPupilTimeOffset = -(tAfter - tBefore) / 2f;
+        }
+
+        [ContextMenu("Check Time Sync")]
         public void CheckTimeSync()
         {
             if (!requestCtrl.IsConnected)

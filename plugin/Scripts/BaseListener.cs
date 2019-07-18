@@ -12,10 +12,10 @@ namespace PupilLabs
         protected SubscriptionsController subsCtrl;
         protected TimeSync timeSync;
 
-        public BaseListener(SubscriptionsController subsCtrl)
+        public BaseListener(SubscriptionsController subsCtrl, TimeSync timeSync)
         {
             this.subsCtrl = subsCtrl;
-            timeSync = this.subsCtrl.requestCtrl.TimeSync;
+            this.timeSync = timeSync;
         }
 
         ~BaseListener()

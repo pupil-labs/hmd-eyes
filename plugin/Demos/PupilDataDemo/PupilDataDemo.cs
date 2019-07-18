@@ -7,6 +7,8 @@ namespace PupilLabs.Demos
     public class PupilDataDemo : MonoBehaviour
     {
         public SubscriptionsController subsCtrl;
+        public TimeSync timeSync;
+
         public Text statusText;
         private PupilListener listener;
 
@@ -14,7 +16,7 @@ namespace PupilLabs.Demos
         {
             if (listener == null)
             {
-                listener = new PupilListener(subsCtrl);
+                listener = new PupilListener(subsCtrl,timeSync);
             }
 
             listener.Enable();

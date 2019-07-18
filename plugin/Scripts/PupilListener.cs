@@ -9,8 +9,9 @@ namespace PupilLabs
     {
         public event Action<PupilData> OnReceivePupilData;
 
-        public PupilListener(SubscriptionsController subsCtrl) : base(subsCtrl) { }
-        
+        public PupilListener(SubscriptionsController subsCtrl, TimeSync timeSync)
+            : base(subsCtrl, timeSync) { }
+
         protected override void CustomEnable()
         {
             Debug.Log("Enabling Pupil Listener");
@@ -18,8 +19,8 @@ namespace PupilLabs
         }
 
         protected override void CustomDisable()
-        {          
-            Debug.Log("Disabling Pupil Listener"); 
+        {
+            Debug.Log("Disabling Pupil Listener");
             subsCtrl.UnsubscribeFrom("pupil.", ReceivePupilData);
         }
 

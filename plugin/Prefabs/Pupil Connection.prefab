@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5849980755848409806}
   - component: {fileID: 5849980755848409807}
   - component: {fileID: 5849980755848409805}
+  - component: {fileID: 8580599546761768760}
   m_Layer: 0
   m_Name: Pupil Connection
   m_TagString: Untagged
@@ -47,6 +48,8 @@ MonoBehaviour:
   request:
     IP: 127.0.0.1
     PORT: 50020
+  retryConnectDelay: 5
+  connectOnEnable: 1
 --- !u!114 &5849980755848409805
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -57,6 +60,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e110fb4068dd8f345a0bec435adaf8d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requestCtrl: {fileID: 5849980755848409807}
+--- !u!114 &8580599546761768760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5849980755848409804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c931c18d3b3065547ac15e2ff9c69b3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   requestCtrl: {fileID: 5849980755848409807}

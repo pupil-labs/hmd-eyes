@@ -9,7 +9,8 @@ namespace PupilLabs
     {
         public event Action<GazeData> OnReceive3dGaze;
 
-        public GazeListener(SubscriptionsController subsCtrl) : base(subsCtrl) { }
+        public GazeListener(SubscriptionsController subsCtrl, TimeSync timeSync)
+            : base(subsCtrl, timeSync) { }
 
         protected override void CustomEnable()
         {

@@ -1932,6 +1932,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7cfc3ae6b3612574fa51b53532335333, type: 3}
+--- !u!114 &1911545197 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8580599546761768760, guid: 7cfc3ae6b3612574fa51b53532335333,
+    type: 3}
+  m_PrefabInstance: {fileID: 1911545196}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c931c18d3b3065547ac15e2ff9c69b3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1912657339
 GameObject:
   m_ObjectHideFlags: 0
@@ -2479,6 +2491,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 5dd7fa1e9c0861a4ea3d4a5a4f066f15,
         type: 2}
+    - target: {fileID: 5877764812355255333, guid: 5b1f0dffe8de01941a3bacf3f7b2c347,
+        type: 3}
+      propertyPath: timeSync
+      value: 
+      objectReference: {fileID: 1911545197}
     - target: {fileID: 5877764812355255331, guid: 5b1f0dffe8de01941a3bacf3f7b2c347,
         type: 3}
       propertyPath: subsCtrl
@@ -2524,6 +2541,11 @@ PrefabInstance:
       propertyPath: subscriptionsController
       value: 
       objectReference: {fileID: 1626429637}
+    - target: {fileID: 4328285620092746819, guid: 5b1f0dffe8de01941a3bacf3f7b2c347,
+        type: 3}
+      propertyPath: timeSync
+      value: 
+      objectReference: {fileID: 1911545197}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5b1f0dffe8de01941a3bacf3f7b2c347, type: 3}
 --- !u!114 &5877764812924331511 stripped
