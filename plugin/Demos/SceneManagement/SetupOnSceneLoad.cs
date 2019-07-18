@@ -8,15 +8,13 @@ namespace PupilLabs.Demos
 
         void Start(){
             SubscriptionsController subsController = FindObjectOfType<SubscriptionsController>();
-            TimeSync timeSync = FindObjectOfType<TimeSync>();
-            if (subsController == null || timeSync == null)
+            if (subsController == null)
             {
                 Debug.LogWarning("No SubscriptionController and/or TimeSync found. Missing 'DontDestory' on Pupil Connection object?");
                 return;
             }
 
             gazeCtrl.subscriptionsController = subsController;
-            gazeCtrl.timeSync = timeSync;
             gazeCtrl.enabled = true;
         }
     }

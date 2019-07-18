@@ -16,7 +16,7 @@ namespace PupilLabs.Demos
         {
             if (listener == null)
             {
-                listener = new PupilListener(subsCtrl,timeSync);
+                listener = new PupilListener(subsCtrl);
             }
 
             listener.Enable();
@@ -44,7 +44,8 @@ namespace PupilLabs.Demos
 
         void ReceivePupilData(PupilData pupilData)
         {
-            Debug.Log($"Receive Pupil Data with method {pupilData.Method} and confidence {pupilData.Confidence}");
+            double unityTime = timeSync.ConvertToUnityTime(pupilData.PupilTimestamp);
+            Debug.Log($"Receive Pupil Data with method {pupilData.Method} and confidence {pupilData.Confidence} at {unityTime}");
             if (pupilData.EyeIdx == 0)
             {
                 Debug.Log($"theta {Mathf.Rad2Deg * pupilData.Circle.Theta} phi {Mathf.Rad2Deg * pupilData.Circle.Phi}");

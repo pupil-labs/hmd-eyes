@@ -10,12 +10,10 @@ namespace PupilLabs
         public bool IsListening { get; private set; }
 
         protected SubscriptionsController subsCtrl;
-        protected TimeSync timeSync;
 
-        public BaseListener(SubscriptionsController subsCtrl, TimeSync timeSync)
+        public BaseListener(SubscriptionsController subsCtrl)
         {
             this.subsCtrl = subsCtrl;
-            this.timeSync = timeSync;
         }
 
         ~BaseListener()

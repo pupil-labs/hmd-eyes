@@ -6,7 +6,6 @@ namespace PupilLabs
     public class GazeController : MonoBehaviour
     {
         public SubscriptionsController subscriptionsController;
-        public TimeSync timeSync;
 
         public event Action<GazeData> OnReceive3dGaze;
         
@@ -14,7 +13,7 @@ namespace PupilLabs
 
         void OnEnable()
         {
-            if (subscriptionsController == null || timeSync == null)
+            if (subscriptionsController == null)
             {
                 Debug.LogWarning("Required components missing.");
                 enabled = false;
@@ -23,7 +22,7 @@ namespace PupilLabs
 
             if (listener == null)
             {
-                listener = new GazeListener(subscriptionsController,timeSync);
+                listener = new GazeListener(subscriptionsController);
                 listener.OnReceive3dGaze += Forward3dGaze;
             }
             

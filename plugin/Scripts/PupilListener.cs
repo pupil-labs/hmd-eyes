@@ -9,8 +9,7 @@ namespace PupilLabs
     {
         public event Action<PupilData> OnReceivePupilData;
 
-        public PupilListener(SubscriptionsController subsCtrl, TimeSync timeSync)
-            : base(subsCtrl, timeSync) { }
+        public PupilListener(SubscriptionsController subsCtrl) : base(subsCtrl) { }
 
         protected override void CustomEnable()
         {
@@ -26,7 +25,7 @@ namespace PupilLabs
 
         void ReceivePupilData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
-            PupilData pupilData = new PupilData(dictionary, timeSync.UnityToPupilTimeOffset);
+            PupilData pupilData = new PupilData(dictionary);
 
             if (OnReceivePupilData != null)
             {

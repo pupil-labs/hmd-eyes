@@ -9,8 +9,7 @@ namespace PupilLabs
     {
         public event Action<GazeData> OnReceive3dGaze;
 
-        public GazeListener(SubscriptionsController subsCtrl, TimeSync timeSync)
-            : base(subsCtrl, timeSync) { }
+        public GazeListener(SubscriptionsController subsCtrl) : base(subsCtrl) { }
 
         protected override void CustomEnable()
         {
@@ -26,7 +25,7 @@ namespace PupilLabs
 
         void Receive3DGaze(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
-            GazeData gazeData = new GazeData(topic, dictionary, timeSync.UnityToPupilTimeOffset);
+            GazeData gazeData = new GazeData(topic, dictionary);
 
             if (OnReceive3dGaze != null)
             {

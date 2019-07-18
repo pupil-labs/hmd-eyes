@@ -25,11 +25,6 @@ namespace PupilLabs
         /// Pupil time in seconds. 
         /// </summary>
         public double PupilTimestamp { get; private set; }
-        /// <summary>
-        /// Unity time in seconds.
-        /// Calculated by storing the offset between Unity and Pupil time. 
-        /// </summary>
-        public double UnityTimestamp { get; private set; }
 
         /// <summary>
         /// Position in the eye image frame in normalized coordinates.
@@ -105,19 +100,18 @@ namespace PupilLabs
         }
         public ProjectedEyeSphere ProjectedSphere { get; private set; } = new ProjectedEyeSphere();
 
-        public PupilData(Dictionary<string, object> dictionary, double unityToPupilTimeOffset)
+        public PupilData(Dictionary<string, object> dictionary)
         {
-            ParseDictionary(dictionary, unityToPupilTimeOffset);
+            ParseDictionary(dictionary);
         }
 
-        void ParseDictionary(Dictionary<string, object> dictionary, double unityToPupilTimeOffset)
+        void ParseDictionary(Dictionary<string, object> dictionary)
         {
             EyeIdx = System.Int32.Parse(Helpers.StringFromDictionary(dictionary, "id"));
             Confidence = Helpers.FloatFromDictionary(dictionary, "confidence");
             Method = Helpers.StringFromDictionary(dictionary, "method");
 
             PupilTimestamp = Helpers.DoubleFromDictionary(dictionary, "timestamp");
-            UnityTimestamp = PupilTimestamp - unityToPupilTimeOffset;
 
             NormPos = Helpers.ObjectToVector(dictionary["norm_pos"]);
             Diameter = Helpers.FloatFromDictionary(dictionary, "diameter");
