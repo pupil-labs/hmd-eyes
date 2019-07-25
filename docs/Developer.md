@@ -102,8 +102,8 @@ The `RequestController` is reponsible for connecting to the network API (includi
 
 **Settings**: 
 
-* `auto connect` - on by default
-* `IP` & `Port` - via the inspector under `Request`
+* `auto connect` - Connect on StartUp (default on)
+* `IP` & `Port` - need to match settings under Pupil Remote (changed via the inspector under `Request`)
 
 **Events**:  
     
@@ -114,7 +114,7 @@ The `RequestController` is reponsible for connecting to the network API (includi
 
 The `SubscriptionsController` allows to subscribe to data messages based on their topics. It manages all `SubscriptionSockets` and delegate bindings internally (see [Accessing Data](#accessing-data)). 
  
-**Events:** The method `SubscribeTo(...)` allows to bind `ReceiveDataDelegate` delegates for each topic individually. 
+**Events:** The method `SubscribeTo(...)` allows to bind C# event delegates for each topic individually. 
 
 ---
 
@@ -132,9 +132,30 @@ Demo: [Blink Demo](#Blink)
 
 The `SubscriptionsController` is the main component to get low-level data access. 
 
-> For the main topics ([pupil](#pupil-data) and [gaze](#gaze-tracker)) we provided additional abstraction with listener classes and high level components.
+> For the topics [pupil](#pupil-data) and [gaze](#gaze-tracker) we provided additional abstraction with listener classes and high level components.
 
 The **BlinkDemo** is a good starting point for understanding how the low-level communication with Pupil works in case you need access to data not provided by the *Pupil Communication* layer.
+
+```csharp
+//set via inspector
+public SubscriptionsController subscriptionsController; 
+public RequestController requestCtrl;
+//...
+
+  //binding your custom method to the events containting only "blinks" messages and starting the plugin
+  subscriptionsController.SubscribeTo("blinks", CustomReceiveData); 
+  requestCtrl.StartPlugin(
+    "Blink_Detection",
+    //...
+  );
+  //...
+
+//custom method to handle blink events 
+void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
+{
+  //...
+}
+```
 
 ### Pupil Data
 
@@ -142,22 +163,26 @@ Demo: [Pupil Demo](#Pupil)
 
 One of the most often asked for examples is getting values for pupil diameter.
 
-Since the hmd-eyes v1.0 we provide a dedicated `PupilListener` dispatching events containing fully preparsed `PupilData` objects - including diameter. Be aware that there are two values for diameter - one in pixels and one in mm.
+Since the hmd-eyes v1.0 we provide a dedicated `PupilListener` dispatching events containing fully preparsed `PupilData` objects.
+We highly recommend using the `PupilListener` instead of using low-level access and parsing the data dictionary by hand.
 
 Checkout the public properties of the [PupilData.cs](../plugin/Scripts/PupilData.cs) to see what kind of data is available.
 
 ### Gaze Data
 
-The `GazeListener` works identical to the `PupilListener` but dispatching events containing fully parsed `GazeData` objects. But in order to receive meaningful data it is needed to run a calibration routine beforehand. The whole setup is described in the next [section](#gaze-tracker).
+The `GazeListener` works identical to the `PupilListener` - dispatching events containing fully parsed `GazeData` objects. But in order to receive meaningful data it is needed to run a calibration routine beforehand. The whole setup is described in the next [section](#gaze-tracker).
 
 ## Gaze Tracking
 
-*TBD short version of full setup*
+Demo: [GazeDemo](#GazeDemo)
 
-<!-- For your own applications you might not want to visualize gaze at all but access it directly. In this case you need to write your own component utilizing the `GazeListener` class similar to the `GazeVisualizer`.
+Gaze tracking and mapping gaze data in Unity/VR world space is done via the following steps and components:
 
-Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. Keep in mind that most vectors like `GazeDirection` and `EyeCenter0/1` are local coordinates in VR camera space.  -->
+ * [Calibration](#calibration) routine to establish mapping between tracked pupils and the 3d gaze points (`Calibration` + `CalibrationController`)
+ * [Gaze data access](#accessing-gaze-data) as preparsed `GazeData` objects in local head/camera space (`GazeListener` + `GazeController`) 
+ * [Mapping gaze data](#Mapping-Gaze-Data) to VR world space (`GazeVisualizer`)
 
+> For using gaze tracking in your own scene hmd-eyes provides the prefab `Gaze Tracker` containing all needed components including the `Connection` prefab. After adding it to your own scene it is only necessary to assign the main camera to the *CalibrationController* and *GazeVisualizer**.
 
 ### Calibration 
 
@@ -166,7 +191,8 @@ In order to know what someone is looking at in the scene, we must establish a ma
 Before you calibrate you will need to ensure that eyes are well captured and that the pupil detection runs with high confidence (~0.8).
 Please refer to the Pupil [getting started](https://docs.pupil-labs.com/#capture-workflow) and [user docs](https://docs.pupil-labs.com/#pupil-detection).
 
-Use the `FrameVisualizer` component to check that you are capturing a good image in particular of the pupil of the eye. You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements.
+Use the `FrameVisualizer` component to check that you are capturing a good image in particular of the pupil of the eye. 
+You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements.
 
 ![Before Starting A Calibration](BeforeStartingCalibration.png)
 
@@ -192,7 +218,7 @@ The **Calibration Settings** are currently reduced to time and sample amount per
 
 The real flexibility lies in the **Calibration Targets**. 
 
-The plugin provides `CircleCalibrationTargets` as a default implementation, which allows to define targets as a list of circles with different *center* and *radii* plus the number of points for every circle. 
+The plugin provides `CircleCalibrationTargets` as a default implementation, which allows to define targets as a list of circles with different **center** and **radii** plus the number of **points** for every circle. 
 
 On top `CalibrationTargets` and the `CalibrationController` are setup in a way that you can write your own implementation of `CalibrationTargets` and plug them into the controller. Be aware that the controller expects targets in local/camera space and not world coordinates.
 
@@ -202,19 +228,11 @@ When the calibration process is complete, all reference points are sent to Pupil
 
 ### Accessing Gaze Data
 
-Demo: [GazeDemo](#GazeDemo)
+The `GazeListener` class takes care of subscribing to all `gaze.3d*` messages and provides C# events containing already parsed `GazeData`. On top the `GazeController` wraps the listener as a MonoBehavior to simplify the setup in Unity.
 
-The `GazeListener` class takes care of subscribing to all `gaze*` messages and provides C# events containing already parsed `GazeData`. Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. Keep in mind that vectors like the `GazeData.GazeDirection` and `GazeData.EyeCenter0/1` are in local VR camera space.
+Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. 
 
-The `GazeVisualizer` component already showcases how to access the `GazeDirection` after checking the confidence. 
-
-![Gaze Visualizer](GazeVisualizer.png)
-
-The `GazeVisualizer` component needs access to the `CalibrationController` (to start the visualization after a successful calibration) and again access to the Pupil Connection object.
-
-The visualization is using the `GazeData.GazeDirection` to project into the scene via raycasting.
-
-Checkout the `Gaze Controller` prefab to add gaze tracking to your own scenes.
+Keep in mind that vectors like the `GazeData.GazeDirection` and `GazeData.EyeCenter0/1` are in local VR camera space.
 
 #### GazeDirection + GazeDistance instead of GazePoint3d
 
@@ -222,6 +240,42 @@ Instead of directly using the data field `GazeData.GazePoint3d` we recommend to 
 
 Due to access to 3d informations about the VR environment, the gaze estimation can be enhanced by using the `GazeData.GazeDirection` to project into the scene via [raycasting](https://docs.unity3d.com/ScriptReference/Physics.Raycast.html).
 
+### Mapping Gaze Data
+
+The `GazeVisualizer` component already showcases how to access the `GazeDirection`, filter based on confidence and map/project into the VR scene.
+
+![Gaze Visualizer](GazeVisualizer.png)
+
+The `GazeVisualizer` component only needs access to the `GazeController` and the main camera `Transform`.
+
+The visualization is using the `GazeData.GazeDirection` to project into the scene via raycasting.
+
+For your own applications you might not want to visualize gaze at all but access it directly. In this case you might want to utilize the `GazeController` component similar to the `GazeVisualizer`:
+
+```csharp
+//set via inspector
+public GazeController gazeController;
+public Transform gazeOrigin; //transform of main cam
+//...
+
+  //bind custom method to gaze events
+  gazeController.OnReceive3dGaze += ReceiveGaze;
+  //...
+
+//custom method for receiving gaze
+void ReceiveGaze(GazeData gazeData)
+{
+    if (gazeData.Confidence >= confidenceThreshold)
+    {
+        localGazeDirection = gazeData.GazeDirection;
+        gazeDistance = gazeData.GazeDistance;
+    }
+}
+//...
+
+  //map direction to VR world space
+  Vector3 directioninWorldSpace = gazeOrigin.TransformDirection(localGazeDirection);
+```
 
 ## Utilities
 
