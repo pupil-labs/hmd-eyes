@@ -124,7 +124,7 @@ Both components provide a property for the connection status via `IsConnected()`
 
 ## Accessing Data 
 
-> Be aware that all timestamps received via hmd-eyes are in Pupil Time. Have a look the `TimeSync` component discusssed [here](#timesync). 
+> Be aware that all timestamps received via hmd-eyes are in Pupil Time. For converting into Unity Time please have a look the `TimeSync` component discusssed [here](#Time-Conversion). 
 
 ### Low-level data acess
 
@@ -281,27 +281,30 @@ void ReceiveGaze(GazeData gazeData)
 
 ### Time Conversion
 
-*TBD*
+All timestamps of data messages received from Pupil Capture/Service are in Pupil time. This is true for raw data received via the low-level API (`SubscriptionsController`) but as well for preparsed data objects like `PupilData` and `GazeData`. 
+
+Converting between Pupil time and Unity time is supported via the `TimeSync` component, which offers conversion methods in both directions. The component requires access to the `RequestController` and synchronizes after a connection is established. 
+If needed this can also be triggered manually via `TimeSync.UpdateTimeSync()`.
+
+> Be aware that `TimeSync` uses [`Time.realtimeSinceStartup`](https://docs.unity3d.com/2018.4/Documentation/ScriptReference/Time-realtimeSinceStartup.html) as the Unity time!
 
 ### Recording Data
 
 Demo: [DataRecordingDemo](#DataRecordingDemo)
 
 The Unity VR plugin allows to trigger recordings in Pupil Capture (Pupil Service does not support this feature). 
-The `RecordingController` component offers starting and stoping recordings via the inspector or by code using the methods `RecordingController.StartRecording` and `RecordingController.StopRecording` - in either case only once a connection has been established).
+The `RecordingController` component offers starting and stoping recordings via the inspector or by code using the methods `RecordingController.StartRecording` and `RecordingController.StopRecording`.
 
-We removed the functionality for recording a screen capture in Unity as this recording was incompatible with Pupil Player. 
-(We plan to support to stream a screen capture directly to Pupil Capture in the future.) 
+*TBD recording path*
 
-<!-- On the plugin side of things, two additional processes are started
-- a screen recording, saving the current view to a video file 
+In hmd-eyes v1.0 we removed support for recording a screen capture in Unity as this recording was incompatible with Pupil Player. 
+Instead you can stream the Unity scene directly to Pupil Capture and record everything there ([Streaming](#Streaming-Unity-Game-View)).
 
-- saving Pupil gaze data and their corresponding Unity positions in CSV format using this structure
-    - `Timestamp,Identifier,PupilPositionX,PupilPositionY,PupilPositionZ,UnityWorldPositionX,UnityWorldPositionY,UnityWorldPositionZ`
+### Streaming Unity Game View
 
-The resulting files are saved to the path set in `PupilSettings/Recorder/File Path`. You can change it manually, there, or through the `PupilGazeTracker` Inspector GUI under `Settings` by activating `CustomPath` and clicking the `Browse` button.  -->
+Demo: [StreamingDemo](#StreamingDemo)
 
-### Unity Sceen Screen Casting
+> Work-in-progress feature: While streaming is already supported in hmd-eyes v1.0, Pupil Capture ~v1.15 (not released yet) is needed to process the stream.
 
 *TBD*
 
@@ -350,6 +353,10 @@ The demo also takes the `GazeData.GazeMappingContext` into account - to check fo
 ### DataRecordingDemo
 
 A simple demo using the `RecordingController` component. The demo script allows starting and stoping the recording by pressing "R".
+
+### StreamingDemo
+
+*TBD*
 
 ### SceneManagementDemo
 
