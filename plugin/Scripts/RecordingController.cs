@@ -4,11 +4,12 @@ using UnityEngine;
 
 namespace PupilLabs
 {
+    [HelpURL("https://github.com/pupil-labs/hmd-eyes")]
     public class RecordingController : MonoBehaviour
     {
         public RequestController requestCtrl;
 
-        [Header("Custom Recording Path")]
+        [Header("Recording Path")]
         public bool useCustomPath;
         [SerializeField] private string customPath;
 
@@ -74,8 +75,7 @@ namespace PupilLabs
 
 
             var path = GetRecordingPath();
-            Debug.Log($"Recording path: {path}");
-
+           
             requestCtrl.Send(new Dictionary<string, object>
             {
                 { "subject","recording.should_start" }

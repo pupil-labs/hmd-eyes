@@ -238,7 +238,7 @@ Keep in mind that vectors like the `GazeData.GazeDirection` and `GazeData.EyeCen
 
 The `GazeData.MappingContext` indicates if the gaze estimation is based on `Binocular` gaze mapping or if it has to rely on the data of a single eye (`Monocular_0` or `Monocular_1`).
 
-The distinction is important for the following topics:
+This distinction is important for the following reasons:
 
 * `GazeDistance` is unknown for monocular therefore based on the last available binocular gaze estimate. 
 * Origin of the `GazeDirection` (Monocular -> EyeCenter of corresponding eye, Binocular in the Center)
