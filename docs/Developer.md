@@ -295,18 +295,27 @@ Demo: [DataRecordingDemo](#DataRecordingDemo)
 The Unity VR plugin allows to trigger recordings in Pupil Capture (Pupil Service does not support this feature). 
 The `RecordingController` component offers starting and stoping recordings via the inspector or by code using the methods `RecordingController.StartRecording` and `RecordingController.StopRecording`.
 
-*TBD recording path*
+> In hmd-eyes v1.0 we removed support for recording a screen capture in Unity as this recording was incompatible with Pupil Player. 
+> Instead you can stream the Unity scene directly to Pupil Capture and record everything there ([Screencast](#Screencast)).
 
-In hmd-eyes v1.0 we removed support for recording a screen capture in Unity as this recording was incompatible with Pupil Player. 
-Instead you can stream the Unity scene directly to Pupil Capture and record everything there ([Streaming](#Streaming-Unity-Game-View)).
+#### Recording Path
 
-### Streaming Unity Game View
+The default recording path of the `RecordingController` is inside the project one folder upwords of the Assets folder.
 
-Demo: [StreamingDemo](#StreamingDemo)
+You can also enable a *custom path* for your recordings, which you can specify as an absolute path (`C:/some/folder/you/like`) or relative to the Pupil Capture recordings folder (`my/custom/folder` -> `C:/Users/<username>/recordings/my/custom/folder`).
 
-> Work-in-progress feature: While streaming is already supported in hmd-eyes v1.0, Pupil Capture ~v1.15 (not released yet) is needed to process the stream.
+### Screencast
 
-*TBD*
+Demo: [Screencast Demo](#ScreencastDemo)
+
+> Work-in-progress feature: While streaming is implemented in hmd-eyes v1.0, Pupil Capture ~v1.15 (not released yet) is needed to process the stream.
+
+Streaming the VR Scene to Pupil Capture is done the `ScreenCast` component. 
+
+Besides access to the `RequestController` it requires an additional `Camera` in your scene with `Target Eye` set to `None`.
+Make sure the camera uses the VR head transform as the origin - normally just by adding it as a child to the main/VR camera.
+
+Hmd-eyes provides a prefab called `ScreenCast Camera`, which already contains a centered `Camera` and a `ScreenCast` component - make sure to wire it to your `RequestController` after appending it to your VR camera.
 
 ### Display Eye Images
 
@@ -354,7 +363,7 @@ The demo also takes the `GazeData.GazeMappingContext` into account - to check fo
 
 A simple demo using the `RecordingController` component. The demo script allows starting and stoping the recording by pressing "R".
 
-### StreamingDemo
+### ScreencastDemo
 
 *TBD*
 
