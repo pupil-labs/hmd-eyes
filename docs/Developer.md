@@ -365,7 +365,11 @@ A simple demo using the `RecordingController` component. The demo script allows 
 
 ### ScreencastDemo
 
-*TBD*
+A small demo featuring streaming VR scene content to Pupil Capture via the `ScreenCast` component as part of the `ScreenCast Camera` prefab.
+
+The demo also shows a preview of the streamed content on a plane in the background (please don't get visually trapped in the feedback...).
+
+> Work-in-progress feature: While streaming is implemented in hmd-eyes v1.0, Pupil Capture ~v1.15 (not released yet) is needed to process the stream.
 
 ### SceneManagementDemo
 
@@ -373,21 +377,21 @@ This demo is very similar to GazeDemo but contains of two scenes: the calibratio
 
 The scene switch is handled by listening to `CalibrationController.OnCalibrationSucceeded` and the `SetupOnSceneLoad` script in the application scene injects the `Pupil Connection` into the `GazeVisualizer`.
 
-### HoloLens - 2D/3D Calibration Demo 
+<!-- ### HoloLens - 2D/3D Calibration Demo 
 
-*TBD*
+*TBD* -->
 
 <!-- As it is not a common use-case for HoloLens to visualize complete scenes, we reduced the market scene to a single object - the `sharkman` - for the user to look at.  -->
-
+<!-- 
 ### Spherical Video demo
 
-*TBD*
+*TBD* -->
 
 <!-- Load and display a 360 degree video based on Unity's 2017.3 implementation. Combined with Pupil, this allows to visualize what the user is looking at.  -->
 
-### Heatmap demo
+<!-- ### Heatmap demo
 
-*TBD*
+*TBD* -->
 
 <!-- This demo shows how to generate and export spherical videos or still images with heat maps generated from gaze postions.
 
@@ -412,4 +416,4 @@ After calibration, press `h` to start recording the output video or to capture t
 The heatmap is available as Prefab, and can be added to existing scenes by dragging it onto the main camera of that scene. -->
 
 
-## FAQ
+<!-- ## FAQ -->
