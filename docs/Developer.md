@@ -234,6 +234,16 @@ Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.c
 
 Keep in mind that vectors like the `GazeData.GazeDirection` and `GazeData.EyeCenter0/1` are in local VR camera space.
 
+#### Gaze Mapping Context
+
+The `GazeData.MappingContext` indicates if the gaze estimation is based on `Binocular` gaze mapping or if it has to rely on the data of a single eye (`Monocular_0` or `Monocular_1`).
+
+The distinction is important for the following topics:
+
+* `GazeDistance` is unknown for monocular therefore based on the last available binocular gaze estimate. 
+* Origin of the `GazeDirection` (Monocular -> EyeCenter of corresponding eye, Binocular in the Center)
+* Availability of EyeCenter/GazeNormal (Binocular for both eyes, Monocular only for the corresponding eye)
+
 #### GazeDirection + GazeDistance instead of GazePoint3d
 
 Instead of directly using the data field `GazeData.GazePoint3d` we recommend to use the equivalent representation as `GazeData.GazeDirection` and `GazeData.GazeDistance` as this representation clearly separates the angular error from the depth error. Note that while the depth error increases with growing distance of the gaze target the direction remains accurate (angular error of less than 2 degrees).
