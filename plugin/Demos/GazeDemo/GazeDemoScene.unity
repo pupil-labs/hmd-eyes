@@ -2235,6 +2235,23 @@ PrefabInstance:
       propertyPath: m_Name
       value: Gaze Tracker
       objectReference: {fileID: 0}
+    - target: {fileID: 5759569962675804801, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
+        type: 3}
+      propertyPath: camera
+      value: 
+      objectReference: {fileID: 1923697937}
+    - target: {fileID: 5759569962675804801, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
+        type: 3}
+      propertyPath: settings
+      value: 
+      objectReference: {fileID: 11400000, guid: 6cec5b93a03c67142879d4fff2302527,
+        type: 2}
+    - target: {fileID: 5759569962675804801, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
+        type: 3}
+      propertyPath: targets
+      value: 
+      objectReference: {fileID: 11400000, guid: 2f793d5fa5644814a9c638b030658e7f,
+        type: 2}
     - target: {fileID: 5759569962967085357, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2300,11 +2317,11 @@ PrefabInstance:
       propertyPath: gazeOrigin
       value: 
       objectReference: {fileID: 1923697938}
-    - target: {fileID: 5759569962675804801, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
+    - target: {fileID: 5759569964053480821, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
         type: 3}
-      propertyPath: camera
-      value: 
-      objectReference: {fileID: 1923697937}
+      propertyPath: binocularOnly
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2223411468588952445, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
         type: 3}
       propertyPath: m_Camera

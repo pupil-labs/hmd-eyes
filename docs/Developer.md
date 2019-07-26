@@ -5,7 +5,7 @@
   + [Dependencies](#dependencies)
   + [VR Build and Player Settings](#vr-build-and-player-settings)
   + [Adding hmd-eyes to Existing Projects](#adding-hmd-eyes-to-existing-projects)
-  + [First Steps](#first-steps)
+  + [Next Steps](#next-steps)
 * [Plugin Overview](#plugin-overview)
 * [Connection to Pupil Capture/Service](#connection-to-pupil-capture-service)
     - [RequestController](#requestcontroller)
@@ -75,7 +75,7 @@ Instead HMD-Eyes provides what is called `Unity Package` assets
 
 To import either one in Unity, select `Assets/Import Package/Custom Package...` and navigate to where you downloaded the file to. You are presented with a dialog to choose from the files included in the package. Press `Import` to import all of them. This will create a new folder named `Plugins/Pupil` in your project structure including all necessary scripts and assets to integrate eye tracking with your own project.
 
-### First Steps
+### Next Steps
 
 To get started with hmd-eyes, we recommend to have a look at and play with the [Demo Scenes](#demo-scenes). Make sure that the demo scenes are working as described (especially the `GazeDemoScene`).
 

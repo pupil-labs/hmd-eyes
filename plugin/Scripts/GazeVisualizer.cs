@@ -12,6 +12,7 @@ namespace PupilLabs
         [Header("Settings")]
         [Range(0f, 1f)]
         public float confidenceThreshold = 0.6f;
+        public bool binocularOnly = true;
 
         [Header("Projected Visualization")]
         public Transform projectionMarker;
@@ -27,6 +28,7 @@ namespace PupilLabs
         float angleErrorEstimate = 2f;
 
         Vector3 origMarkerScale;
+        MeshRenderer targetRenderer;
 
         void OnEnable() //automagic by conditional enable/disable component
         {
@@ -44,6 +46,8 @@ namespace PupilLabs
                 enabled = false;
                 return;
             }
+
+            targetRenderer = projectionMarker.GetComponent<MeshRenderer>();
 
             StartVisualizing();
         }
@@ -110,11 +114,26 @@ namespace PupilLabs
 
         void ReceiveGaze(GazeData gazeData)
         {
-            if (gazeData.Confidence >= confidenceThreshold)
+            if (binocularOnly && gazeData.MappingContext != GazeData.GazeMappingContext.Binocular)
             {
-                localGazeDirection = gazeData.GazeDirection;
-                gazeDistance = gazeData.GazeDistance;
+                return;
             }
+
+            
+            if (targetRenderer != null)
+            {
+                Color c = targetRenderer.material.color;
+                c.a = MapConfidence(gazeData.Confidence);
+                targetRenderer.material.color = c;
+            }
+
+            if (gazeData.Confidence < confidenceThreshold)
+            {
+                return;
+            }
+            
+            localGazeDirection = gazeData.GazeDirection;
+            gazeDistance = gazeData.GazeDistance;
         }
 
         void ShowProjected()
@@ -155,6 +174,12 @@ namespace PupilLabs
             scale.x = scaleXY;
             scale.y = scaleXY;
             return scale;
+        }
+
+        float MapConfidence(float confidence)
+        {
+            // return Mathf.InverseLerp(confidenceThreshold,1,confidence);
+            return confidence;
         }
     }
 }
