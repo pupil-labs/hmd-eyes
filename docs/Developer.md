@@ -102,8 +102,8 @@ The `RequestController` is reponsible for connecting to the network API (includi
 
 **Settings**: 
 
-* `auto connect` - on by default
-* `IP` & `Port` - via the inspector under `Request`
+* `auto connect` - Connect on StartUp (default on)
+* `IP` & `Port` - need to match settings under Pupil Remote (changed via the inspector under `Request`)
 
 **Events**:  
     
@@ -114,7 +114,7 @@ The `RequestController` is reponsible for connecting to the network API (includi
 
 The `SubscriptionsController` allows to subscribe to data messages based on their topics. It manages all `SubscriptionSockets` and delegate bindings internally (see [Accessing Data](#accessing-data)). 
  
-**Events:** The method `SubscribeTo(...)` allows to bind `ReceiveDataDelegate` delegates for each topic individually. 
+**Events:** The method `SubscribeTo(...)` allows to bind C# event delegates for each topic individually. 
 
 ---
 
@@ -124,7 +124,7 @@ Both components provide a property for the connection status via `IsConnected()`
 
 ## Accessing Data 
 
-> Be aware that all timestamps received via hmd-eyes are in Pupil Time. Have a look the `TimeSync` component discusssed [here](#timesync). 
+> Be aware that all timestamps received via hmd-eyes are in Pupil Time. For converting into Unity Time please have a look the `TimeSync` component discusssed [here](#Time-Conversion). 
 
 ### Low-level data acess
 
@@ -132,9 +132,30 @@ Demo: [Blink Demo](#Blink)
 
 The `SubscriptionsController` is the main component to get low-level data access. 
 
-> For the main topics ([pupil](#pupil-data) and [gaze](#gaze-tracker)) we provided additional abstraction with listener classes and high level components.
+> For the topics [pupil](#pupil-data) and [gaze](#gaze-tracker) we provided additional abstraction with listener classes and high level components.
 
 The **BlinkDemo** is a good starting point for understanding how the low-level communication with Pupil works in case you need access to data not provided by the *Pupil Communication* layer.
+
+```csharp
+//set via inspector
+public SubscriptionsController subscriptionsController; 
+public RequestController requestCtrl;
+//...
+
+  //binding your custom method to the events containting only "blinks" messages and starting the plugin
+  subscriptionsController.SubscribeTo("blinks", CustomReceiveData); 
+  requestCtrl.StartPlugin(
+    "Blink_Detection",
+    //...
+  );
+  //...
+
+//custom method to handle blink events 
+void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
+{
+  //...
+}
+```
 
 ### Pupil Data
 
@@ -142,22 +163,26 @@ Demo: [Pupil Demo](#Pupil)
 
 One of the most often asked for examples is getting values for pupil diameter.
 
-Since the hmd-eyes v1.0 we provide a dedicated `PupilListener` dispatching events containing fully preparsed `PupilData` objects - including diameter. Be aware that there are two values for diameter - one in pixels and one in mm.
+Since the hmd-eyes v1.0 we provide a dedicated `PupilListener` dispatching events containing fully preparsed `PupilData` objects.
+We highly recommend using the `PupilListener` instead of using low-level access and parsing the data dictionary by hand.
 
 Checkout the public properties of the [PupilData.cs](../plugin/Scripts/PupilData.cs) to see what kind of data is available.
 
 ### Gaze Data
 
-The `GazeListener` works identical to the `PupilListener` but dispatching events containing fully parsed `GazeData` objects. But in order to receive meaningful data it is needed to run a calibration routine beforehand. The whole setup is described in the next [section](#gaze-tracker).
+The `GazeListener` works identical to the `PupilListener` - dispatching events containing fully parsed `GazeData` objects. But in order to receive meaningful data it is needed to run a calibration routine beforehand. The whole setup is described in the next [section](#gaze-tracker).
 
 ## Gaze Tracking
 
-*TBD short version of full setup*
+Demo: [GazeDemo](#GazeDemo)
 
-<!-- For your own applications you might not want to visualize gaze at all but access it directly. In this case you need to write your own component utilizing the `GazeListener` class similar to the `GazeVisualizer`.
+Gaze tracking and mapping gaze data in Unity/VR world space is done via the following steps and components:
 
-Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. Keep in mind that most vectors like `GazeDirection` and `EyeCenter0/1` are local coordinates in VR camera space.  -->
+ * [Calibration](#calibration) routine to establish mapping between tracked pupils and the 3d gaze points (`Calibration` + `CalibrationController`)
+ * [Gaze data access](#accessing-gaze-data) as preparsed `GazeData` objects in local head/camera space (`GazeListener` + `GazeController`) 
+ * [Mapping gaze data](#Mapping-Gaze-Data) to VR world space (`GazeVisualizer`)
 
+> For using gaze tracking in your own scene hmd-eyes provides the prefab `Gaze Tracker` containing all needed components including the `Connection` prefab. After adding it to your own scene it is only necessary to assign the main camera to the *CalibrationController* and *GazeVisualizer**.
 
 ### Calibration 
 
@@ -166,7 +191,8 @@ In order to know what someone is looking at in the scene, we must establish a ma
 Before you calibrate you will need to ensure that eyes are well captured and that the pupil detection runs with high confidence (~0.8).
 Please refer to the Pupil [getting started](https://docs.pupil-labs.com/#capture-workflow) and [user docs](https://docs.pupil-labs.com/#pupil-detection).
 
-Use the `FrameVisualizer` component to check that you are capturing a good image in particular of the pupil of the eye. You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements.
+Use the `FrameVisualizer` component to check that you are capturing a good image in particular of the pupil of the eye. 
+You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements.
 
 ![Before Starting A Calibration](BeforeStartingCalibration.png)
 
@@ -192,7 +218,7 @@ The **Calibration Settings** are currently reduced to time and sample amount per
 
 The real flexibility lies in the **Calibration Targets**. 
 
-The plugin provides `CircleCalibrationTargets` as a default implementation, which allows to define targets as a list of circles with different *center* and *radii* plus the number of points for every circle. 
+The plugin provides `CircleCalibrationTargets` as a default implementation, which allows to define targets as a list of circles with different **center** and **radii** plus the number of **points** for every circle. 
 
 On top `CalibrationTargets` and the `CalibrationController` are setup in a way that you can write your own implementation of `CalibrationTargets` and plug them into the controller. Be aware that the controller expects targets in local/camera space and not world coordinates.
 
@@ -202,19 +228,21 @@ When the calibration process is complete, all reference points are sent to Pupil
 
 ### Accessing Gaze Data
 
-Demo: [GazeDemo](#GazeDemo)
+The `GazeListener` class takes care of subscribing to all `gaze.3d*` messages and provides C# events containing already parsed `GazeData`. On top the `GazeController` wraps the listener as a MonoBehavior to simplify the setup in Unity.
 
-The `GazeListener` class takes care of subscribing to all `gaze*` messages and provides C# events containing already parsed `GazeData`. Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. Keep in mind that vectors like the `GazeData.GazeDirection` and `GazeData.EyeCenter0/1` are in local VR camera space.
+Checkout the public properties of the [GazeData.cs](../plugin/Scripts/GazeData.cs) to see what kind of data is available. 
 
-The `GazeVisualizer` component already showcases how to access the `GazeDirection` after checking the confidence. 
+Keep in mind that vectors like the `GazeData.GazeDirection` and `GazeData.EyeCenter0/1` are in local VR camera space.
 
-![Gaze Visualizer](GazeVisualizer.png)
+#### Gaze Mapping Context
 
-The `GazeVisualizer` component needs access to the `CalibrationController` (to start the visualization after a successful calibration) and again access to the Pupil Connection object.
+The `GazeData.MappingContext` indicates if the gaze estimation is based on `Binocular` gaze mapping or if it has to rely on the data of a single eye (`Monocular_0` or `Monocular_1`).
 
-The visualization is using the `GazeData.GazeDirection` to project into the scene via raycasting.
+This distinction is important for the following reasons:
 
-Checkout the `Gaze Controller` prefab to add gaze tracking to your own scenes.
+* `GazeDistance` is unknown for monocular therefore based on the last available binocular gaze estimate. 
+* Origin of the `GazeDirection` (Monocular -> EyeCenter of corresponding eye, Binocular in the Center)
+* Availability of EyeCenter/GazeNormal (Binocular for both eyes, Monocular only for the corresponding eye)
 
 #### GazeDirection + GazeDistance instead of GazePoint3d
 
@@ -222,34 +250,82 @@ Instead of directly using the data field `GazeData.GazePoint3d` we recommend to 
 
 Due to access to 3d informations about the VR environment, the gaze estimation can be enhanced by using the `GazeData.GazeDirection` to project into the scene via [raycasting](https://docs.unity3d.com/ScriptReference/Physics.Raycast.html).
 
+### Mapping Gaze Data
+
+The `GazeVisualizer` component already showcases how to access the `GazeDirection`, filter based on confidence and map/project into the VR scene.
+
+![Gaze Visualizer](GazeVisualizer.png)
+
+The `GazeVisualizer` component only needs access to the `GazeController` and the main camera `Transform`.
+
+The visualization is using the `GazeData.GazeDirection` to project into the scene via raycasting.
+
+For your own applications you might not want to visualize gaze at all but access it directly. In this case you might want to utilize the `GazeController` component similar to the `GazeVisualizer`:
+
+```csharp
+//set via inspector
+public GazeController gazeController;
+public Transform gazeOrigin; //transform of main cam
+//...
+
+  //bind custom method to gaze events
+  gazeController.OnReceive3dGaze += ReceiveGaze;
+  //...
+
+//custom method for receiving gaze
+void ReceiveGaze(GazeData gazeData)
+{
+    if (gazeData.Confidence >= confidenceThreshold)
+    {
+        localGazeDirection = gazeData.GazeDirection;
+        gazeDistance = gazeData.GazeDistance;
+    }
+}
+//...
+
+  //map direction to VR world space
+  Vector3 directioninWorldSpace = gazeOrigin.TransformDirection(localGazeDirection);
+```
 
 ## Utilities
 
 ### Time Conversion
 
-*TBD*
+All timestamps of data messages received from Pupil Capture/Service are in Pupil time. This is true for raw data received via the low-level API (`SubscriptionsController`) but as well for preparsed data objects like `PupilData` and `GazeData`. 
+
+Converting between Pupil time and Unity time is supported via the `TimeSync` component, which offers conversion methods in both directions. The component requires access to the `RequestController` and synchronizes after a connection is established. 
+If needed this can also be triggered manually via `TimeSync.UpdateTimeSync()`.
+
+> Be aware that `TimeSync` uses [`Time.realtimeSinceStartup`](https://docs.unity3d.com/2018.4/Documentation/ScriptReference/Time-realtimeSinceStartup.html) as the Unity time!
 
 ### Recording Data
 
 Demo: [DataRecordingDemo](#DataRecordingDemo)
 
 The Unity VR plugin allows to trigger recordings in Pupil Capture (Pupil Service does not support this feature). 
-The `RecordingController` component offers starting and stoping recordings via the inspector or by code using the methods `RecordingController.StartRecording` and `RecordingController.StopRecording` - in either case only once a connection has been established).
+The `RecordingController` component offers starting and stoping recordings via the inspector or by code using the methods `RecordingController.StartRecording` and `RecordingController.StopRecording`.
 
-We removed the functionality for recording a screen capture in Unity as this recording was incompatible with Pupil Player. 
-(We plan to support to stream a screen capture directly to Pupil Capture in the future.) 
+> In hmd-eyes v1.0 we removed support for recording a screen capture in Unity as this recording was incompatible with Pupil Player. 
+> Instead you can stream the Unity scene directly to Pupil Capture and record everything there ([Screencast](#Screencast)).
 
-<!-- On the plugin side of things, two additional processes are started
-- a screen recording, saving the current view to a video file 
+#### Recording Path
 
-- saving Pupil gaze data and their corresponding Unity positions in CSV format using this structure
-    - `Timestamp,Identifier,PupilPositionX,PupilPositionY,PupilPositionZ,UnityWorldPositionX,UnityWorldPositionY,UnityWorldPositionZ`
+The default recording path of the `RecordingController` is inside the project one folder upwords of the Assets folder.
 
-The resulting files are saved to the path set in `PupilSettings/Recorder/File Path`. You can change it manually, there, or through the `PupilGazeTracker` Inspector GUI under `Settings` by activating `CustomPath` and clicking the `Browse` button.  -->
+You can also enable a *custom path* for your recordings, which you can specify as an absolute path (`C:/some/folder/you/like`) or relative to the Pupil Capture recordings folder (`my/custom/folder` -> `C:/Users/<username>/recordings/my/custom/folder`).
 
-### Unity Sceen Screen Casting
+### Screencast
 
-*TBD*
+Demo: [Screencast Demo](#ScreencastDemo)
+
+> Work-in-progress feature: While streaming is implemented in hmd-eyes v1.0, Pupil Capture ~v1.15 (not released yet) is needed to process the stream.
+
+Streaming the VR Scene to Pupil Capture is done the `ScreenCast` component. 
+
+Besides access to the `RequestController` it requires an additional `Camera` in your scene with `Target Eye` set to `None`.
+Make sure the camera uses the VR head transform as the origin - normally just by adding it as a child to the main/VR camera.
+
+Hmd-eyes provides a prefab called `ScreenCast Camera`, which already contains a centered `Camera` and a `ScreenCast` component - make sure to wire it to your `RequestController` after appending it to your VR camera.
 
 ### Display Eye Images
 
@@ -297,27 +373,35 @@ The demo also takes the `GazeData.GazeMappingContext` into account - to check fo
 
 A simple demo using the `RecordingController` component. The demo script allows starting and stoping the recording by pressing "R".
 
+### ScreencastDemo
+
+A small demo featuring streaming VR scene content to Pupil Capture via the `ScreenCast` component as part of the `ScreenCast Camera` prefab.
+
+The demo also shows a preview of the streamed content on a plane in the background (please don't get visually trapped in the feedback...).
+
+> Work-in-progress feature: While streaming is implemented in hmd-eyes v1.0, Pupil Capture ~v1.15 (not released yet) is needed to process the stream.
+
 ### SceneManagementDemo
 
 This demo is very similar to GazeDemo but contains of two scenes: the calibration and the application scene. By applying the `DontDestroy` script to our `Pupil Connection` object of the calibration scene, we make sure it is available after switching the scene. 
 
 The scene switch is handled by listening to `CalibrationController.OnCalibrationSucceeded` and the `SetupOnSceneLoad` script in the application scene injects the `Pupil Connection` into the `GazeVisualizer`.
 
-### HoloLens - 2D/3D Calibration Demo 
+<!-- ### HoloLens - 2D/3D Calibration Demo 
 
-*TBD*
+*TBD* -->
 
 <!-- As it is not a common use-case for HoloLens to visualize complete scenes, we reduced the market scene to a single object - the `sharkman` - for the user to look at.  -->
-
+<!-- 
 ### Spherical Video demo
 
-*TBD*
+*TBD* -->
 
 <!-- Load and display a 360 degree video based on Unity's 2017.3 implementation. Combined with Pupil, this allows to visualize what the user is looking at.  -->
 
-### Heatmap demo
+<!-- ### Heatmap demo
 
-*TBD*
+*TBD* -->
 
 <!-- This demo shows how to generate and export spherical videos or still images with heat maps generated from gaze postions.
 
@@ -342,4 +426,4 @@ After calibration, press `h` to start recording the output video or to capture t
 The heatmap is available as Prefab, and can be added to existing scenes by dragging it onto the main camera of that scene. -->
 
 
-## FAQ
+<!-- ## FAQ -->
