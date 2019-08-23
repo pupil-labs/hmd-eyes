@@ -14,6 +14,7 @@ namespace PupilLabs
         [SerializeField] private string customPath;
 
         [Header("Controls")]
+        [SerializeField] private bool recordEyes = true;
         [SerializeField] private bool startRecording;
         [SerializeField] private bool stopRecording;
 
@@ -40,6 +41,18 @@ namespace PupilLabs
 
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                if (IsRecording)
+                {
+                    stopRecording = true;
+                }
+                else
+                {
+                    startRecording = true;
+                }
+            }
+
             if (startRecording)
             {
                 startRecording = false;
@@ -75,12 +88,12 @@ namespace PupilLabs
 
 
             var path = GetRecordingPath();
-           
+
             requestCtrl.Send(new Dictionary<string, object>
             {
                 { "subject","recording.should_start" }
                 , { "session_name", path }
-                , { "record_eye",true}
+                , { "record_eye",recordEyes}
             });
             IsRecording = true;
 
@@ -102,7 +115,7 @@ namespace PupilLabs
             });
 
             IsRecording = false;
-            
+
             requestCtrl.OnDisconnecting -= StopRecording;
         }
 
