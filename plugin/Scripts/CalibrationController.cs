@@ -18,6 +18,7 @@ namespace PupilLabs
         [Header("Settings")]
         public CalibrationSettings settings;
         public CalibrationTargets targets;
+        public bool showPreviewMarkers;
 
         public bool IsCalibrating { get { return calibration.IsCalibrating; } }
 
@@ -36,6 +37,9 @@ namespace PupilLabs
 
         float tLastSample = 0;
         float tLastTarget = 0;
+        List<GameObject> previewMarkers = new List<GameObject>();
+
+        bool previewMarkersActive = false;
 
         void OnEnable()
         {
@@ -48,6 +52,8 @@ namespace PupilLabs
                 enabled = false;
                 return;
             }
+
+            InitPreviewMarker();
         }
 
         void OnDisable()
@@ -63,6 +69,11 @@ namespace PupilLabs
 
         void Update()
         {
+            if (showPreviewMarkers != previewMarkersActive)
+            {
+                SetPreviewMarkers(showPreviewMarkers);
+            }
+
             if (calibration.IsCalibrating)
             {
                 UpdateCalibration();
@@ -71,6 +82,10 @@ namespace PupilLabs
             if (Input.GetKeyUp(KeyCode.C))
             {
                 ToggleCalibration();
+            }
+            else if (Input.GetKeyDown(KeyCode.P))
+            {
+                showPreviewMarkers = !showPreviewMarkers;
             }
         }
 
@@ -101,6 +116,8 @@ namespace PupilLabs
             }
 
             Debug.Log("Starting Calibration");
+
+            showPreviewMarkers = false;
 
             targetIdx = 0;
             targetSampleCount = 0;
@@ -200,21 +217,12 @@ namespace PupilLabs
         {
             float[] refData;
 
-            if (settings.mode == CalibrationSettings.Mode._3D)
-            {
-                refData = new float[] { currLocalTargetPos.x, currLocalTargetPos.y, currLocalTargetPos.z };
-                refData[1] /= camera.aspect;
+            refData = new float[] { currLocalTargetPos.x, currLocalTargetPos.y, currLocalTargetPos.z };
+            refData[1] /= camera.aspect;
 
-                for (int i = 0; i < refData.Length; i++)
-                {
-                    refData[i] *= Helpers.PupilUnitScalingFactor;
-                }
-            }
-            else
+            for (int i = 0; i < refData.Length; i++)
             {
-                Vector3 worldPos = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
-                Vector3 viewportPos = camera.WorldToViewportPoint(worldPos);
-                refData = new float[] { viewportPos.x, viewportPos.y };
+                refData[i] *= Helpers.PupilUnitScalingFactor;
             }
 
             calibration.AddCalibrationPointReferencePosition(refData, time);
@@ -233,5 +241,53 @@ namespace PupilLabs
             marker.position = camera.transform.localToWorldMatrix.MultiplyPoint(currLocalTargetPos);
             marker.LookAt(camera.transform.position);
         }
+
+        void OnDrawGizmos()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+            Gizmos.matrix = camera.transform.localToWorldMatrix;
+            for (int i = 0; i < targets.GetTargetCount(); ++i)
+            {
+                var target = targets.GetLocalTargetPosAt(i);
+                Gizmos.DrawWireSphere(target, 0.035f);
+            }
+        }
+
+        void InitPreviewMarker()
+        {
+
+            var previewMarkerParent = Instantiate(new GameObject(),camera.transform);
+            previewMarkerParent.transform.localPosition = Vector3.zero;
+            previewMarkerParent.transform.localRotation = Quaternion.identity;
+            previewMarkerParent.name = "Calibration Targets Preview";
+
+            for (int i = 0; i < targets.GetTargetCount(); ++i)
+            {
+                var target = targets.GetLocalTargetPosAt(i);
+                var previewMarker = Instantiate<GameObject>(marker.gameObject);
+                previewMarker.transform.parent = previewMarkerParent.transform;
+                previewMarker.transform.localPosition = target;
+                previewMarker.transform.LookAt(camera.transform.position);
+                previewMarker.SetActive(true);
+                previewMarkers.Add(previewMarker);
+            }
+
+            previewMarkersActive = true;
+        }
+
+        void SetPreviewMarkers(bool value)
+        {
+            foreach (var marker in previewMarkers)
+            {
+                marker.SetActive(value);
+            }
+
+            previewMarkersActive = value;
+        }
+
+
     }
 }
