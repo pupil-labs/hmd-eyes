@@ -23,6 +23,7 @@
     - [GazeDirection + GazeDistance instead of GazePoint3d](#gazedirection---gazedistance-instead-of-gazepoint3d)
   + [Mapping Gaze Data](#mapping-gaze-data)
 * [Utilities](#utilities)
+  + [Default Gaze Visualizer](#default-gaze-visualizer)
   + [Time Conversion](#time-conversion)
   + [Recording Data](#recording-data)
     - [Recording Path](#recording-path)
@@ -192,7 +193,7 @@ Gaze tracking and mapping gaze data in Unity/VR world space is done via the foll
 
  * [Calibration](#calibration) routine to establish mapping between tracked pupils and the 3d gaze points (`Calibration` + `CalibrationController`)
  * [Gaze data access](#accessing-gaze-data) as preparsed `GazeData` objects in local head/camera space (`GazeListener` + `GazeController`) 
- * [Mapping gaze data](#Mapping-Gaze-Data) to VR world space (`GazeVisualizer`)
+ * [Map gaze data](#Map-Gaze-Data-to-VR-World-Space) to VR world space (`GazeVisualizer`)
 
 > For using gaze tracking in your own scene hmd-eyes provides the prefab `Gaze Tracker` containing all needed components including the `Connection` prefab. After adding it to your own scene it is only necessary to assign the main camera to the *CalibrationController* and *GazeVisualizer**.
 
@@ -262,17 +263,11 @@ Instead of directly using the data field `GazeData.GazePoint3d` we recommend to 
 
 Due to access to 3d informations about the VR environment, the gaze estimation can be enhanced by using the `GazeData.GazeDirection` to project into the scene via [raycasting](https://docs.unity3d.com/ScriptReference/Physics.Raycast.html).
 
-### Mapping Gaze Data
+### Map Gaze Data to VR World Space 
 
-The `GazeVisualizer` component already showcases how to access the `GazeDirection`, filter based on confidence and map/project into the VR scene.
+The `GazeVisualizer` component is a [default implementation](#default-gaze-visualizer) for visualizing gaze data and part of the `Gaze Tracker` prefab. 
 
-![Gaze Visualizer](GazeVisualizer.png)
-
-The `GazeVisualizer` component only needs access to the `GazeController` and the main camera `Transform`.
-
-The visualization is using the `GazeData.GazeDirection` to project into the scene via raycasting.
-
-For your own applications you might not want to visualize gaze at all but access it directly. In this case you might want to utilize the `GazeController` component similar to the `GazeVisualizer`:
+It is intended to be used while testing your setup and as a reference when implementing your own gaze based behaviour via the `GazeController`:
 
 ```csharp
 //set via inspector
@@ -301,6 +296,17 @@ void ReceiveGaze(GazeData gazeData)
 
 ## Utilities
 
+### Default Gaze Visualizer
+
+The `GazeVisualizer` showcases how to access the `GazeDirection`, project it into into the scene and filter `GazeData` based on confidence and mapping context.
+
+The visualization is using the `GazeData.GazeDirection` to project into the scene via raycasting. Instead of casting a cone (to take the angular error into account) the implementation is using `Physics.SphereCast` as a approximation. 
+
+* Yellow disk: Gaze Direction with angular error based size.
+* Black sphere: Hit point between Gaze Direction and VR environment.
+
+![Gaze Visualizer](GazeVisualizer.png)
+
 ### Time Conversion
 
 All timestamps of data messages received from Pupil Capture/Service are in Pupil time. This is true for raw data received via the low-level API (`SubscriptionsController`) but as well for preparsed data objects like `PupilData` and `GazeData`. 
@@ -328,16 +334,17 @@ You can also enable a *custom path* for your recordings, which you can specify a
 
 ### Screencast
 
+> Requires Pupil Capture v1.15 or later (on windows v1.15.71+).
+
 Demo: [Screencast Demo](#ScreencastDemo)
 
-> Work-in-progress feature: While streaming is implemented in hmd-eyes v1.0, Pupil Capture ~v1.15 (not released yet) is needed to process the stream.
-
-Streaming the VR Scene to Pupil Capture is done the `ScreenCast` component. 
+Streaming the VR Scene to Pupil Capture is done via the `ScreenCast` component. 
+This allows to use Pupil Capture as an operator tool, supports to record everything in sync in Pupil Capture and playback in Pupil Player. 
 
 Besides access to the `RequestController` it requires an additional `Camera` in your scene with `Target Eye` set to `None`.
 Make sure the camera uses the VR head transform as the origin - normally just by adding it as a child to the main/VR camera.
 
-Hmd-eyes provides a prefab called `ScreenCast Camera`, which already contains a centered `Camera` and a `ScreenCast` component - make sure to wire it to your `RequestController` after appending it to your VR camera.
+Hmd-eyes provides a prefab called `ScreenCast Camera`, which already contains a centered `Camera` and a `ScreenCast` component - make sure to wire it to your `RequestController` & `TimeSync` component after appending it to your VR camera.
 
 ### Display Eye Images
 
@@ -387,11 +394,11 @@ A simple demo using the `RecordingController` component. The demo script allows 
 
 ### ScreencastDemo
 
-A small demo featuring streaming VR scene content to Pupil Capture via the `ScreenCast` component as part of the `ScreenCast Camera` prefab.
+> Requires Pupil Capture v1.15 or later (on windows v1.15.71+).
 
-The demo also shows a preview of the streamed content on a plane in the background (please don't get visually trapped in the feedback...).
+A small demo which features streaming of the VR view to Pupil Capture via the `ScreenCast` component. 
 
-> Work-in-progress feature: While streaming is implemented in hmd-eyes v1.0, Pupil Capture ~v1.15 (not released yet) is needed to process the stream.
+The component is part of the `ScreenCast Camera` prefab.
 
 ### SceneManagementDemo
 

@@ -16,9 +16,9 @@ namespace PupilLabs
 
         [Header("Projected Visualization")]
         public Transform projectionMarker;
+        public Transform gazeDirectionMarker;
         [Range(0.01f, 0.1f)]
         public float sphereCastRadius = 0.05f;
-
 
         Vector3 localGazeDirection;
         float gazeDistance;
@@ -29,16 +29,20 @@ namespace PupilLabs
 
         Vector3 origMarkerScale;
         MeshRenderer targetRenderer;
+        float minAlpha = 0.2f;
+        float maxAlpha = 0.8f;
 
-        void OnEnable() //automagic by conditional enable/disable component
+        float lastConfidence;
+
+        void OnEnable()
         {
-            if (projectionMarker == null)
+            if (projectionMarker == null || gazeDirectionMarker == null)
             {
                 Debug.LogWarning("Marker reference missing.");
                 enabled = false;
                 return;
             }
-            origMarkerScale = projectionMarker.localScale;
+            origMarkerScale = gazeDirectionMarker.localScale;
 
             if (gazeOrigin == null || gazeController == null)
             {
@@ -47,16 +51,16 @@ namespace PupilLabs
                 return;
             }
 
-            targetRenderer = projectionMarker.GetComponent<MeshRenderer>();
+            targetRenderer = gazeDirectionMarker.GetComponent<MeshRenderer>();
 
             StartVisualizing();
         }
 
-        void OnDisable() //automagic by conditional enable/disable component
+        void OnDisable() 
         {
-            if (projectionMarker != null)
+            if (gazeDirectionMarker != null)
             {
-                projectionMarker.localScale = origMarkerScale;
+                gazeDirectionMarker.localScale = origMarkerScale;
             }
 
             StopVisualizing();
@@ -68,6 +72,8 @@ namespace PupilLabs
             {
                 return;
             }
+
+            VisualizeConfidence();
 
             ShowProjected();
         }
@@ -91,6 +97,7 @@ namespace PupilLabs
             gazeController.OnReceive3dGaze += ReceiveGaze;
 
             projectionMarker.gameObject.SetActive(true);
+            gazeDirectionMarker.gameObject.SetActive(true);
             isGazing = true;
         }
 
@@ -106,6 +113,10 @@ namespace PupilLabs
             {
                 projectionMarker.gameObject.SetActive(false);
             }
+            if (gazeDirectionMarker != null)
+            {
+                gazeDirectionMarker.gameObject.SetActive(false);
+            }
 
             isGazing = false;
 
@@ -119,13 +130,7 @@ namespace PupilLabs
                 return;
             }
 
-            
-            if (targetRenderer != null)
-            {
-                Color c = targetRenderer.material.color;
-                c.a = MapConfidence(gazeData.Confidence);
-                targetRenderer.material.color = c;
-            }
+            lastConfidence = gazeData.Confidence;
 
             if (gazeData.Confidence < confidenceThreshold)
             {
@@ -136,29 +141,35 @@ namespace PupilLabs
             gazeDistance = gazeData.GazeDistance;
         }
 
+        void VisualizeConfidence()
+        {
+            if (targetRenderer != null)
+            {
+                Color c = targetRenderer.material.color;
+                c.a = MapConfidence(lastConfidence);
+                targetRenderer.material.color = c;
+            }
+        }
+
         void ShowProjected()
         {
-            if (projectionMarker == null)
-            {
-                Debug.LogWarning("Marker missing");
-                return;
-            }
-
+            gazeDirectionMarker.localScale = origMarkerScale;
+            
             Vector3 origin = gazeOrigin.position;
-
             Vector3 direction = gazeOrigin.TransformDirection(localGazeDirection);
 
-            projectionMarker.localScale = origMarkerScale;
             if (Physics.SphereCast(origin, sphereCastRadius, direction, out RaycastHit hit, Mathf.Infinity))
             {
                 Debug.DrawRay(origin, direction * hit.distance, Color.yellow);
 
                 projectionMarker.position = hit.point;
-                projectionMarker.rotation = Quaternion.FromToRotation(Vector3.forward, hit.normal);
+
+                gazeDirectionMarker.position = origin + direction * hit.distance;
+                gazeDirectionMarker.LookAt(origin);
 
                 if (errorAngleBasedMarkerRadius)
                 {
-                    projectionMarker.localScale = GetErrorAngleBasedScale(origMarkerScale, hit.distance, angleErrorEstimate);
+                    gazeDirectionMarker.localScale = GetErrorAngleBasedScale(origMarkerScale, hit.distance, angleErrorEstimate);
                 }
             }
             else
@@ -178,8 +189,7 @@ namespace PupilLabs
 
         float MapConfidence(float confidence)
         {
-            // return Mathf.InverseLerp(confidenceThreshold,1,confidence);
-            return confidence;
+            return Mathf.Lerp(minAlpha, maxAlpha, confidence);
         }
     }
 }
