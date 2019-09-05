@@ -9,6 +9,9 @@ namespace PupilLabs
         public SubscriptionsController subscriptionsController;
         public Transform cameraAsParent;
         public Material eyeFrameMaterial;
+        [Header("Settings")]
+        [Tooltip("Used for adjusting the Eye Frames, restart needed!")] 
+        public bool model200Hz;
 
         public int targetFPS = 20;
 
@@ -59,13 +62,14 @@ namespace PupilLabs
             eyeRenderer[eyeIndex].material = new Material(eyeFrameMaterial);
             eyeRenderer[eyeIndex].material.mainTexture = eyeTexture[eyeIndex];
             Vector2 textureScale;
+
             if (eyeIndex == 0) //right by default
             {
-                textureScale = new Vector2(-1, 1);
+                textureScale = model200Hz ? new Vector2(1, -1) : new Vector2(-1, 1);
             }
             else //index == 1 -> left by default
             {
-                textureScale = new Vector2(1, -1);
+                textureScale = model200Hz ? new Vector2(-1, 1) : new Vector2(1, -1);
             }
 
             eyeRenderer[eyeIndex].material.mainTextureScale = textureScale;

@@ -2312,6 +2312,11 @@ PrefabInstance:
       propertyPath: cameraAsParent
       value: 
       objectReference: {fileID: 1923697938}
+    - target: {fileID: 5759569963369521624, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
+        type: 3}
+      propertyPath: model200Hz
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5759569964053480821, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
         type: 3}
       propertyPath: gazeOrigin

@@ -302,10 +302,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 373669295}
     m_Modifications:
-    - target: {fileID: 434736744412245043, guid: efba1042cb327d945953eb7addc2989c,
+    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
         type: 3}
-      propertyPath: m_Name
-      value: Warning Text
+      propertyPath: m_Text
+      value: Experimental feature - requires Pupil Capture ~v1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
+        type: 3}
+      propertyPath: m_FontData.m_MaxSize
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0.4339623
+      objectReference: {fileID: 0}
+    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.0061409646
+      objectReference: {fileID: 0}
+    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.0061409646
       objectReference: {fileID: 0}
     - target: {fileID: 434736744412245452, guid: efba1042cb327d945953eb7addc2989c,
         type: 3}
@@ -362,35 +382,15 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 434736744412245043, guid: efba1042cb327d945953eb7addc2989c,
+        type: 3}
+      propertyPath: m_Name
+      value: Warning Text
+      objectReference: {fileID: 0}
     - target: {fileID: 434736744918915887, guid: efba1042cb327d945953eb7addc2989c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 150
-      objectReference: {fileID: 0}
-    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
-        type: 3}
-      propertyPath: m_Text
-      value: Experimental feature - requires Pupil Capture ~v1.15
-      objectReference: {fileID: 0}
-    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
-        type: 3}
-      propertyPath: m_FontData.m_MaxSize
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
-        type: 3}
-      propertyPath: m_Color.r
-      value: 0.4339623
-      objectReference: {fileID: 0}
-    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
-        type: 3}
-      propertyPath: m_Color.g
-      value: 0.0061409646
-      objectReference: {fileID: 0}
-    - target: {fileID: 434736744918915880, guid: efba1042cb327d945953eb7addc2989c,
-        type: 3}
-      propertyPath: m_Color.b
-      value: 0.0061409646
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: efba1042cb327d945953eb7addc2989c, type: 3}
@@ -798,7 +798,7 @@ MonoBehaviour:
   requestCtrl: {fileID: 1828663651}
   useCustomPath: 0
   customPath: 
-  recordEyeFrames: 0
+  recordEyeFrames: 1
   startRecording: 0
   stopRecording: 0
 --- !u!4 &1666975695

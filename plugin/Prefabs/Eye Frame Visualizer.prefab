@@ -47,6 +47,7 @@ MonoBehaviour:
   subscriptionsController: {fileID: 0}
   cameraAsParent: {fileID: 0}
   eyeFrameMaterial: {fileID: 2100000, guid: 4a2b2a619d58efc4ebe6a458e2690844, type: 2}
+  model200Hz: 1
   targetFPS: 20
 --- !u!114 &4642495214453592290
 MonoBehaviour:
