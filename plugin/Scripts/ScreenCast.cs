@@ -18,6 +18,7 @@ namespace PupilLabs
         public int initialWidth = 640, initialHeight = 480;
         [Range(1, 120)]
         public int maxFrameRate = 90;
+        public bool pauseStreaming = false;
 
         public Texture2D StreamTexture { get; private set; }
 
@@ -60,9 +61,7 @@ namespace PupilLabs
 
         void Update()
         {
-            UpdateIntrinsics();
-
-            if (!isSetup)
+            if (!isSetup || pauseStreaming)
             {
                 return;
             }
@@ -71,6 +70,8 @@ namespace PupilLabs
             {
                 return;
             }
+
+            UpdateIntrinsics();
 
             AsyncGPUReadback.Request
             (
