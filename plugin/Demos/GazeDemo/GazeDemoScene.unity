@@ -2223,6 +2223,49 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 572299731}
   enableAfterCalibration: 1
+--- !u!1 &2130084774
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2130084776}
+  - component: {fileID: 2130084775}
+  m_Layer: 0
+  m_Name: Gaze Demo
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2130084775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2130084774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b80f88b1d1951f48ad34ca424d37abf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &2130084776
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2130084774}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &5759569963246519122
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2244,13 +2287,13 @@ PrefabInstance:
         type: 3}
       propertyPath: settings
       value: 
-      objectReference: {fileID: 11400000, guid: 6cec5b93a03c67142879d4fff2302527,
+      objectReference: {fileID: 11400000, guid: 6657b16c70ed7b04d90de3f4966a3770,
         type: 2}
     - target: {fileID: 5759569962675804801, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
         type: 3}
       propertyPath: targets
       value: 
-      objectReference: {fileID: 11400000, guid: 2f793d5fa5644814a9c638b030658e7f,
+      objectReference: {fileID: 11400000, guid: 5dd7fa1e9c0861a4ea3d4a5a4f066f15,
         type: 2}
     - target: {fileID: 5759569962967085357, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
         type: 3}
@@ -2290,7 +2333,7 @@ PrefabInstance:
     - target: {fileID: 5759569962967085357, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
         type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 5759569962967085357, guid: a9383f0f3aa209a4eb0119d3ad1daa1d,
         type: 3}
