@@ -334,7 +334,7 @@ You can also enable a *custom path* for your recordings, which you can specify a
 
 ### Screencast
 
-> Requires Pupil Capture v1.15 or later (on windows v1.15.71+).
+> Requires Pupil Capture v1.15 or later (on windows v1.15.71+). 
 
 Demo: [Screencast Demo](#ScreencastDemo)
 
@@ -345,6 +345,8 @@ Besides access to the `RequestController` it requires an additional `Camera` in 
 Make sure the camera uses the VR head transform as the origin - normally just by adding it as a child to the main/VR camera.
 
 Hmd-eyes provides a prefab called `ScreenCast Camera`, which already contains a centered `Camera` and a `ScreenCast` component - make sure to wire it to your `RequestController` & `TimeSync` component after appending it to your VR camera.
+
+> Performance: Be aware that screen casting can be expensive in terms of performance. In order to not compromise the VR experience, please consider running Pupil Capture on a second machine connected via local network and/or adjust the screen cast resolution.
 
 ### Display Eye Images
 
