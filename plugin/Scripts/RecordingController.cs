@@ -14,7 +14,7 @@ namespace PupilLabs
         [SerializeField] private string customPath;
 
         [Header("Controls")]
-        [SerializeField] private bool recordEyes = true;
+        [SerializeField] private bool recordEyeFrames = true;
         [SerializeField] private bool startRecording;
         [SerializeField] private bool stopRecording;
 
@@ -93,7 +93,7 @@ namespace PupilLabs
             {
                 { "subject","recording.should_start" }
                 , { "session_name", path }
-                , { "record_eye",recordEyes}
+                , { "record_eye",recordEyeFrames}
             });
             IsRecording = true;
 

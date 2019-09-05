@@ -18,7 +18,7 @@ namespace PupilLabs
         [Header("Settings")]
         public CalibrationSettings settings;
         public CalibrationTargets targets;
-        public bool showPreviewMarkers;
+        public bool showPreview;
 
         public bool IsCalibrating { get { return calibration.IsCalibrating; } }
 
@@ -69,9 +69,9 @@ namespace PupilLabs
 
         void Update()
         {
-            if (showPreviewMarkers != previewMarkersActive)
+            if (showPreview != previewMarkersActive)
             {
-                SetPreviewMarkers(showPreviewMarkers);
+                SetPreviewMarkers(showPreview);
             }
 
             if (calibration.IsCalibrating)
@@ -85,7 +85,7 @@ namespace PupilLabs
             }
             else if (Input.GetKeyDown(KeyCode.P))
             {
-                showPreviewMarkers = !showPreviewMarkers;
+                showPreview = !showPreview;
             }
         }
 
@@ -117,7 +117,7 @@ namespace PupilLabs
 
             Debug.Log("Starting Calibration");
 
-            showPreviewMarkers = false;
+            showPreview = false;
 
             targetIdx = 0;
             targetSampleCount = 0;
@@ -259,10 +259,10 @@ namespace PupilLabs
         void InitPreviewMarker()
         {
 
-            var previewMarkerParent = Instantiate(new GameObject(),camera.transform);
+            var previewMarkerParent = new GameObject("Calibration Targets Preview");
+            previewMarkerParent.transform.SetParent(camera.transform);
             previewMarkerParent.transform.localPosition = Vector3.zero;
             previewMarkerParent.transform.localRotation = Quaternion.identity;
-            previewMarkerParent.name = "Calibration Targets Preview";
 
             for (int i = 0; i < targets.GetTargetCount(); ++i)
             {
