@@ -207,7 +207,8 @@ Please refer to the Pupil [getting started](https://docs.pupil-labs.com/#capture
 Use the `FrameVisualizer` component to check that you are capturing a good image in particular of the pupil of the eye. 
 You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements.
 
-![Before Starting A Calibration](BeforeStartingCalibration.png)
+<!-- ![Before Starting A Calibration](BeforeStartingCalibration.png) -->
+<img src="BeforeStartingCalibration.png" width=50%  />
 
 Once the communication between Unity and Pupil Capture has been setup, you are ready to calibrate. 
 We provided the `CalibrationController` component, based on the `Calibration` class. The `CalibrationController` guides through the process and acts as an interface, while the `Calibration` itself handles the communication with Pupil Capture.
@@ -352,9 +353,12 @@ Hmd-eyes provides a prefab called `ScreenCast Camera`, which already contains a 
 
 Demo: [Frame Publishing Demo](#FramePublishingDemo)
 
-To display images of the eyes, we provided a component called `FrameVisualizer`. It is based on the `FrameListener`, which takes care of subscribing to the `frame` topic and provides C# events on receiving eye frame data. The visualizer component displays the eye frames as `Texture2D` as children of the camera. 
+To display images of the eyes, we provided a component called `FrameVisualizer`. It is based on the `FrameListener`, which takes care of subscribing to the `frame` topic and provides C# events on receiving eye frame data. The visualizer component displays the eye frames as `Texture2D` as children of the camera.
 
 ![Frame Visualizer](FrameVisualizer.png)
+
+* Model200Hz: For rotating eye frame images depending on hmd-eyes hardware (200Hz or 120Hz)
+
 
 ## Demo Scenes 
 
