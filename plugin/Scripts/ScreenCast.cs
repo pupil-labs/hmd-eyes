@@ -12,6 +12,7 @@ namespace PupilLabs
     public class ScreenCast : MonoBehaviour
     {
         public RequestController requestCtrl;
+        public TimeSync timeSync;
         public Camera centeredCamera;
         [Tooltip("Can't be changed at runtime")]
         public int initialWidth = 640, initialHeight = 480;
@@ -26,10 +27,12 @@ namespace PupilLabs
         int index = 0;
         float tLastFrame;
         int width, height;
-        float[] projection_matrix = new float[9];
+        float[] intrinsics = {0,0,0,0,0,0,0,0,1};
 
         const string topic = "hmd_streaming.world";
 
+        float deltaTimeAcc = 0f;
+        
         void Awake()
         {
             width = initialWidth;
@@ -47,6 +50,8 @@ namespace PupilLabs
 
         void Setup()
         {
+            requestCtrl.StartPlugin("HMD_Streaming_Source");
+
             string connectionStr = requestCtrl.GetPubConnectionString();
             pubSocket = new PublisherSocket(connectionStr);
 
@@ -55,26 +60,26 @@ namespace PupilLabs
 
         void Update()
         {
+            UpdateIntrinsics();
+
             if (!isSetup)
             {
                 return;
             }
 
-            if (Time.time - tLastFrame < 1 / (float)maxFrameRate)
+            if (IgnoreFrameBasedOnFPS())
             {
                 return;
             }
 
-            tLastFrame = Time.time;
-            
             AsyncGPUReadback.Request
             (
                 renderTexture, 0, TextureFormat.RGB24,
-                (AsyncGPUReadbackRequest r) => ReadbackDone(r, Time.realtimeSinceStartup)
+                (AsyncGPUReadbackRequest r) => ReadbackDone(r, timeSync.ConvertToPupilTime(Time.realtimeSinceStartup))
             );   
         }
 
-        void ReadbackDone(AsyncGPUReadbackRequest r, float timestamp)
+        void ReadbackDone(AsyncGPUReadbackRequest r, double timestamp)
         {
             if (StreamTexture == null)
             {
@@ -87,10 +92,8 @@ namespace PupilLabs
             SendFrame(timestamp);
         }
 
-        void SendFrame(float timestamp)
+        void SendFrame(double timestamp)
         {
-            UpdateIntrinsics();
-
             Dictionary<string, object> payload = new Dictionary<string, object> {
                 {"topic", topic},
                 {"width", width},
@@ -98,7 +101,7 @@ namespace PupilLabs
                 {"index", index},
                 {"timestamp", timestamp},
                 {"format", "rgb"},
-                {"projection_matrix", projection_matrix}
+                {"projection_matrix", intrinsics}
             };
 
             NetMQMessage m = new NetMQMessage();
@@ -113,15 +116,29 @@ namespace PupilLabs
 
         void UpdateIntrinsics()
         {
-            int idx = 0;
-            for (int r = 0; r < 3; r++)
+            float fov = centeredCamera.fieldOfView;
+            float focalLength = 1f / (Mathf.Tan(fov / (2 * Mathf.Rad2Deg)) / height) / 2;
+            
+            // f 0   width/2
+            // 0   f height/2
+            // 0   0   1
+
+            intrinsics[0] = focalLength;
+            intrinsics[2] = width/2;
+            intrinsics[4] = focalLength;
+            intrinsics[5] = height/2;
+        }
+
+        bool IgnoreFrameBasedOnFPS()
+        {
+            deltaTimeAcc += Time.deltaTime;
+            if ( deltaTimeAcc < 1 / (float)maxFrameRate)
             {
-                for (int c = 0; c < 3; c++)
-                {
-                    projection_matrix[idx] = centeredCamera.projectionMatrix[r,c];
-                    idx++;
-                }
+                return true;
             }
+            deltaTimeAcc %= 1 / (float)maxFrameRate;
+
+            return false;
         }
     }
 }
