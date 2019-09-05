@@ -1,9 +1,5 @@
-hmd-eyes beta
+hmd-eyes
 ========
-
-**Work in progress:** This is the **beta version** of the new hmd-eyes Unity integration. We recommend using this version for everyone starting with hmd-eyes or starting a new project. Any level of feedback is highly appreciated.
-
----------------
 
 Building blocks for eye tracking in Augmented Reality `AR` and Virtual Reality `VR` or more generally Head Mounted Displays `HMD`. The purpose of this repository is do demonstrates how to implement Pupil with Unity3D. For details on Pupil computations, please have a look at the related repositories.
 
