@@ -1,3 +1,8 @@
-dev_Refactor-and-demos/Library/
-dev_Refactor-and-demos/Temp/
 *.pyc
+plugin/Tests*
+
+# Local gitignores
+*/Assets/.gitignore
+
+# VSCode
+*/**/.vscode/*
