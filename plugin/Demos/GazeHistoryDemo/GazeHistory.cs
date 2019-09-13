@@ -18,6 +18,9 @@ namespace PupilLabs.Demos
         [Header("Settings")]
         public float maxWidth;
         public float minLength;
+        [Header("Highlight")]
+        public Material highlight;
+
 
         public class ProjectedGaze
         {
@@ -29,6 +32,8 @@ namespace PupilLabs.Demos
         private int processedIndex = 0;
         private GameObject currentTarget = null;
         private LineRenderer currentLine = null;
+        private GameObject currentSelection = null;
+        private Material defaultMaterial = null;
 
         void Awake()
         {
@@ -39,6 +44,38 @@ namespace PupilLabs.Demos
         {
             // UpdateLineVis();
             UpdateSeperateLines();
+
+            if (gazeHistory.Count > 0)
+            {
+                GameObject curr = gazeHistory[gazeHistory.Count-1].target;
+                if (curr != currentSelection)
+                {
+                    if (currentSelection != null)
+                    {
+                        Unselect(currentSelection);
+                    }
+
+                    if (curr.tag == "Target")
+                    {
+                        Select(curr);
+                    }
+                }
+            }
+        }
+
+        void Select(GameObject obj)
+        {
+            MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
+            defaultMaterial = renderer.material;
+            renderer.material = highlight;
+            currentSelection = obj;
+        }
+
+        void Unselect(GameObject obj)
+        {
+            MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
+            renderer.material = defaultMaterial;
+            currentSelection = null;
         }
 
         void HandleGaze(GazeData gazeData)
