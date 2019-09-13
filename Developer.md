@@ -10,13 +10,13 @@ Note that there are difference in the setup for VR and HoloLens.
 ### VR Build and Player Settings
 
 
-![VR Build And Player Settings](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/VRBuildAndPlayerSettings.png)
+![VR Build And Player Settings](GettingStarted/VRBuildAndPlayerSettings.png)
 
 The software has been tested for both Oculus and OpenVR SDKs. Please make sure to select the correct SDK for your headset. 
 
 ### HoloLens Build and Player Settings
 
-![HoloLens Build And Player Settings](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/HoloLensBuildAndPlayerSettings.png)
+![HoloLens Build And Player Settings](GettingStarted/HoloLensBuildAndPlayerSettings.png)
 
 The `Build Settings` debugging option `Unity C# Projects` will allow you to debug the code at runtime while deploying to HoloLens. As this is not supported by Unity's own MonoDevelop IDE, you will need Visual Studio for this step. As an alternative debugging option, Unity's `Holographic Emulation` is also supported. 
 
@@ -43,18 +43,18 @@ The Unity scene `pupil_plugin/Calibration.unity`, which is included in both proj
 #### VR Settings
 
 1. `Local` vs `Remote` - Select the `PupilGazeTracker` gameobject to access the custom Inspector GUI. `Local` is used to communicate with Pupil Capture/Service when the Unity project and Pupil software are running on the same machine. `Remote` is used to communicate with Pupil Capture/Service running on another machine over the network. 
-    ![Pupil Gaze Tracker](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilGazeTracker.png)
+    ![Pupil Gaze Tracker](GettingStarted/PupilGazeTracker.png)
 1. `IP` and `Port` - `PupilSettings`, which is located in `pupil_plugin/Resources` is used to save global settings that are not specific to a scene. Select `Connection`, which lets you set both the IP (in case of Pupil running remotely) as well as the port over which to communicate. If the standard port of 50020 does not work for you, please set an alternative here and also make sure that the same port is set in Pupil Capture (more on that, later).
 
-![PupilSettings](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings.png)
+![PupilSettings](GettingStarted/PupilSettings.png)
 
 #### HoloLens Settings
 
 1. `UDP` - Pupil Capture/Service does not run natively on HoloLens/UWP. Pupil Capture/Service must run on a remote PC. The `PupilGazeTracker` gameobject includes an additional component called `UDP Communication`. A secondary port (named `Editor Mode UDP Port`) can be set. It is required if you use `Holographic Emulation` and (at least on Windows machines) needs to be different from the main port. 
-    ![Pupil Gaze Tracker For HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilGazeTracker_HoloLens.png)
+    ![Pupil Gaze Tracker For HoloLens](GettingStarted/PupilGazeTracker_HoloLens.png)
 1. `IP` and `Port` - The HoloLens implementation relies on UDP to communicate data between the Unity plugin and Pupil Capture/Service. Select `PupilSettings` in the `Project` tab and set the IP of the PC Pupil is running on under `Connection`. Please also make sure the port set here corresponds with the one you set in the `HoloLens Relay` plugin in Pupil Capture. 
 
-![PupilSettings for HoloLens](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettings_HoloLens.png)
+![PupilSettings for HoloLens](GettingStarted/PupilSettings_HoloLens.png)
 
 ## Calibration 
 
@@ -62,7 +62,7 @@ In order to know what someone is looking at in the scene, we must to establish a
 
 Once the communication between Unity and Pupil Capture/Service has been established, you are ready to calibrate. Before you calibrate you will need to ensure that the calibration pattern is displayed within your FOV and that eyes are well captured.
 
-![Before Starting A Calibration](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/BeforeStartingCalibration.png)
+![Before Starting A Calibration](GettingStarted/BeforeStartingCalibration.png)
 
 - Calibration area - Set the extent of the calibration area. A circle indicates the extent of the calibration area. You should set the circle radius so that it covers as much of our FOV as possible. (Note you will see 2 circles for a 3d calibration and one circle for a 2d calibration). 
 - Eye images - Check that you are capturing a good image of the eye. You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements. To disable this feature, select the `Pupil Manager` and toggle the `Display Eye Images` checkmark
@@ -73,7 +73,7 @@ The positioning of the calibration marker is very important, as it is used as a 
 
 Go to `pupil_plugin/PupilSettings` and select `Calibration` 
  
-![PupilSettings for Calibration](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/PupilSettingsCalibration.png)
+![PupilSettings for Calibration](GettingStarted/PupilSettingsCalibration.png)
 
 - `Points` defines the number of points per circle, the first being in the center of it. 
 - `Marker Scale` determines the size of the calibration marker on screen 
@@ -128,14 +128,14 @@ The first step to be able to access Pupil data is to subscribe to a topic.
 PupilTools.SubscribeTo(string topic)
 ```
 
-Once messages on a subscribed topic are available, the receiving socket is polled (`Connection.cs`, [line 199](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L199))
+Once messages on a subscribed topic are available, the receiving socket is polled (`Connection.cs`, [line 199](unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L199))
 
 ```c#
 if (subscriptionSocketForTopic [keys [i]].HasIn)    // key[i] being the 'topic' 
     subscriptionSocketForTopic [keys [i]].Poll ();
 ```
 
-Message interpretation is handled inside the code block starting in [line 127](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L127) of `Connection.cs`
+Message interpretation is handled inside the code block starting in [line 127](unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L127) of `Connection.cs`
 
 ```c#
 subscriptionSocketForTopic\[topic\].ReceiveReady += (s, a) =>
@@ -143,7 +143,7 @@ subscriptionSocketForTopic\[topic\].ReceiveReady += (s, a) =>
 
 ### `Gaze` Topic (available after successful calibration)
 
-After a successful calibration, `gaze` topic messages will be received. These messages contain dictionaries. These dictionaries are deserialized using the `MessagePackSerializer` classes ([line 167](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L167), `Connection.cs`) and stored to `PupilTools.gazeDictionary`
+After a successful calibration, `gaze` topic messages will be received. These messages contain dictionaries. These dictionaries are deserialized using the `MessagePackSerializer` classes ([line 167](unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/Networking/Connection.cs#L167), `Connection.cs`) and stored to `PupilTools.gazeDictionary`
 
 ```c#
 var dictionary = MessagePackSerializer.Deserialize<Dictionary<string,object>> (mStream);  
@@ -193,7 +193,7 @@ We include three demo scenes that exemplify subscribing to topics to get data fo
 - `Frame Publishing` (short description below) and 
 - `Pupil`, for which we will go into more detail, here: 
 
-One of the most often asked for examples is getting values for pupil diameter.  The steps involved (taken from [`PupilDemo.cs`](https://github.com/pupil-labs/hmd-eyes/blob/master/unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/PupilDemo.cs)) are as follows
+One of the most often asked for examples is getting values for pupil diameter.  The steps involved (taken from [`PupilDemo.cs`](unity_pupil_plugin_vr/Assets/pupil_plugin/Scripts/PupilDemo.cs)) are as follows
 
 - `PupilTools.SubscribeTo("pupil.")`, to subscribe to both eyes
 
@@ -251,7 +251,7 @@ Here a short description of the included examples and what should be visible on 
 
 This scene will display three colored markers representing the left eye (green), right (blue), and center point (red). If you have a well calibrated system, then the markers should be very close to each other.
 
-![Calibration Scene Three Colored Markers](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/CalibrationSceneThreeColoredMarkers.png)
+![Calibration Scene Three Colored Markers](GettingStarted/CalibrationSceneThreeColoredMarkers.png)
 
 ### Blink 
 
@@ -263,7 +263,7 @@ This scene demonstrates how to  subscribe to a topic and read data from the sock
 
 This demo scene shows how to communicate with Pupil and access eye video frames
 
-![Frame Publishing Demo](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/FramePublishing.png)
+![Frame Publishing Demo](GettingStarted/FramePublishing.png)
 
 ### Pupil
 
@@ -279,7 +279,7 @@ While the 3D calibration scene only includes a simple white marker visualization
 
 - A shader-based implementation that grays out the area around each of the eyes position (right) 
 
-	![2D Demo Visualization](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/2DDemoVisualizations.png) 
+	![2D Demo Visualization](GettingStarted/2DDemoVisualizations.png) 
 
 ### HoloLens - 2D/3D Calibration Demo 
 
@@ -297,15 +297,15 @@ Gaze positions are visualized as particles on a spherical texture that is overla
 
 After calibration, press `h` to start recording the output video or to capture the current view to an image. The output path is the same as the path defined by the settings for PupilGazeTracker recordings. 
 
-![Heatmap Component](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/HeatmapComponent.png)
+![Heatmap Component](GettingStarted/HeatmapComponent.png)
 
 - Mode 
 	- `Particle` will color the area the user is looking at 
 	- `ParticleDebug` will make the hetamap visible for the user wearing the HMD as well as the operator. 
 	- `Highlight` will only fill-in the area looked at 
-	    ![Highlight Mode Heatmap](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/HighlightModeHeatmap.jpg)
+	    ![Highlight Mode Heatmap](GettingStarted/HighlightModeHeatmap.jpg)
 	- `Image` will keep all particles and color code them based on the time of creation 
-	    ![Image Mode Heatmap](https://github.com/pupil-labs/hmd-eyes/blob/master/GettingStarted/ImageModeHeatmap.jpg)
+	    ![Image Mode Heatmap](GettingStarted/ImageModeHeatmap.jpg)
 	- `Particle Size` - The size of a single particle used to visualize each gaze position 
 	- `Remove Particle After X Seconds` - Set how many seconds a particle should be visualized (not used for Image mode) 
 	- `Particle Color` - The color of the particle in the visualization 
