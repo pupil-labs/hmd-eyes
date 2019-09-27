@@ -4,9 +4,10 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_Name: Cube_mat
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Probs_mat
   m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON
   m_LightmapFlags: 4
@@ -71,7 +72,8 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
+    - _WireThickness: 477
     - _ZWrite: 0
     m_Colors:
-    - _Color: {r: 0.625, g: 0.14246322, b: 0.14246322, a: 1}
+    - _Color: {r: 0.050980393, g: 0.07058824, b: 0.16470589, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
