@@ -6,8 +6,7 @@ using MessagePack;
 
 namespace PupilLabs
 {
-
-    public class Annotation : MonoBehaviour
+    public class AnnotationPublisher : MonoBehaviour
     {
         public RequestController requestCtrl;
         public TimeSync timeSync;

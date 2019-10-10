@@ -11,7 +11,7 @@ namespace PupilLabs.Demos
         public RecordingController recorder;
 
         [Header("Annotations")]
-        public Annotation annotation;
+        public AnnotationPublisher annotationPub;
         public Transform head;
         public bool sendHeadAsAnnotation = false;
 
@@ -48,7 +48,7 @@ namespace PupilLabs.Demos
             headData["head_world_y"] = head.position.y;
             headData["head_world_z"] = head.position.z;
 
-            annotation.SendAnnotation(label: "head pos", customData: headData);
+            annotationPub.SendAnnotation(label: "head pos", customData: headData);
         }
     }
 }

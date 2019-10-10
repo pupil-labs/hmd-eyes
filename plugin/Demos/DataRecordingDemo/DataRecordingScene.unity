@@ -522,7 +522,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   text: {fileID: 482216317}
   recorder: {fileID: 1365646334}
-  annotation: {fileID: 69086303}
+  annotationPub: {fileID: 69086303}
   head: {fileID: 594463173}
   sendHeadAsAnnotation: 1
 --- !u!4 &856017571
