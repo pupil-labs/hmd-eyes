@@ -23,6 +23,7 @@ namespace PupilLabs
         {
             subsCtrl.requestCtrl.OnConnected += OnConnected;
             calibrationController.OnCalibrationStarted += OnCalibrationStarted;
+            calibrationController.OnCalibrationRoutineDone += OnCalibrationRoutineDone;
             calibrationController.OnCalibrationSucceeded += CalibrationSucceeded;
             calibrationController.OnCalibrationFailed += CalibrationFailed;
         }
@@ -31,6 +32,7 @@ namespace PupilLabs
         {
             subsCtrl.requestCtrl.OnConnected -= OnConnected;
             calibrationController.OnCalibrationStarted -= OnCalibrationStarted;
+            calibrationController.OnCalibrationRoutineDone -= OnCalibrationRoutineDone;
             calibrationController.OnCalibrationSucceeded -= CalibrationSucceeded;
             calibrationController.OnCalibrationFailed -= CalibrationFailed;
         }
@@ -38,13 +40,19 @@ namespace PupilLabs
         private void OnConnected()
         {
             string text = "Connected";
-            text += "\n\nPlease warm up your eyes and press 'C' to start the calibration.";
+            text += "\n\nPlease warm up your eyes and press 'C' to start the calibration or 'P' to preview the calibration targets.";
             SetStatusText(text);
         }
 
         private void OnCalibrationStarted()
         {
             statusText.enabled = false;
+        }
+
+        private void OnCalibrationRoutineDone()
+        {
+            statusText.enabled = true;
+            SetStatusText("Calibration routine is done. Waiting for results ...");
         }
 
         private void CalibrationSucceeded()

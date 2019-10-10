@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using NetMQ;
@@ -20,27 +21,30 @@ namespace PupilLabs
             public int PORT = 50020;
             private string IPHeader;
             private string subport;
+            private string pubport;
 
             public RequestSocket requestSocket = null;
-            // ***************************************************************************
-            public PublisherSocket pubSocket = null;
-            private string pubport;
-            // ---------------------------------------------------------------------------
-
             private bool contextExists = false;
+            private float timeout = 1f;
             private TimeSpan requestTimeout = new System.TimeSpan(0, 0, 1); //= 1sec
 
             public bool IsConnected { get; set; }
 
-            public string GetConnectionString()
+            public string GetSubConnectionString()
             {
                 return IPHeader + subport;
             }
 
-            public void InitializeRequestSocket()
+            public string GetPubConnectionString()
             {
-                IPHeader = ">tcp://" + IP + ":";
+                return IPHeader + pubport;
+            }
 
+            public IEnumerator InitializeRequestSocketAsync(float timeout)
+            {
+                float tStarted = Time.realtimeSinceStartup;
+
+                IPHeader = ">tcp://" + IP + ":";
                 Debug.Log("Attempting to connect to : " + IPHeader + PORT);
 
                 if (!contextExists)
@@ -49,38 +53,53 @@ namespace PupilLabs
                 }
 
                 requestSocket = new RequestSocket(IPHeader + PORT);
-                requestSocket.SendFrame("SUB_PORT");
-                IsConnected = requestSocket.TryReceiveFrameString(requestTimeout, out subport);
-            }
 
-            // ***************************************************************************
-            public void InitializePubSocket()
-            {
-                if (!IsConnected || !contextExists)
+                yield return RequestReceiveAsync(
+                    () => requestSocket.SendFrame("SUB_PORT"),
+                    () => IsConnected = requestSocket.TryReceiveFrameString(out subport)
+                );
+
+                if (IsConnected)
                 {
-                    Debug.Log("Cannot set up Pub Socket if Request Socket is not connected.");
-                    return;
+                    yield return RequestReceiveAsync(
+                        () => requestSocket.SendFrame("PUB_PORT"),
+                        () => requestSocket.TryReceiveFrameString(out pubport)
+                    );
                 }
-
-                IPHeader = ">tcp://" + IP + ":";
-                requestSocket.SendFrame("PUB_PORT");
-                requestSocket.TryReceiveFrameString(requestTimeout, out pubport);
-                pubSocket = new PublisherSocket(IPHeader + pubport);
-                Debug.Log("pub socket on port: " + pubport);
             }
-            // ---------------------------------------------------------------------------
+
+            private IEnumerator RequestReceiveAsync(Action request, Action receive)
+            {
+                float tStarted = Time.realtimeSinceStartup;
+                
+                request();
+
+                bool msgReceived = false;
+                while (!msgReceived)
+                {
+                    if (Time.realtimeSinceStartup - tStarted > timeout)
+                    {
+                        yield break;
+                    }
+                    else
+                    {
+                        if (requestSocket.HasIn)
+                        {
+                            msgReceived = true;
+                            receive();
+                        }
+                        else
+                        {
+                            yield return new WaitForSeconds(0.1f);
+                        }
+                    }
+                }
+            }
 
             public void CloseSockets()
             {
                 if (requestSocket != null)
                     requestSocket.Close();
-
-                // ***************************************************************************
-                if (pubSocket != null)
-                    pubSocket.Close();
-                // ---------------------------------------------------------------------------
-
-                TerminateContext();
 
                 IsConnected = false;
             }
@@ -90,40 +109,16 @@ namespace PupilLabs
                 CloseSockets();
             }
 
-            public bool SendRequestMessage(Dictionary<string, object> data)
+            public void SendRequestMessage(Dictionary<string, object> data)
             {
-                if (requestSocket == null || !IsConnected)
-                {
-                    return false;
-                }
-
                 NetMQMessage m = new NetMQMessage();
 
                 m.Append("notify." + data["subject"]);
                 m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(data));
 
                 requestSocket.SendMultipartMessage(m);
-                return ReceiveRequestResponse();
+                ReceiveRequestResponse();
             }
-
-            // ***************************************************************************
-            public void SendPubMessage(Dictionary<string, object> data)
-            {
-                if (pubSocket == null || !IsConnected)
-                {
-                    Debug.Log("No valid Pub Socket found. Nothing sent.");
-                    return;
-                }
-
-                NetMQMessage m = new NetMQMessage();
-
-                m.Append(data["topic"].ToString());
-                m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(data));
-
-                pubSocket.SendMultipartMessage(m);
-                return;
-            }
-            // ---------------------------------------------------------------------------
 
             public bool SendCommand(string cmd, out string response)
             {
@@ -137,15 +132,10 @@ namespace PupilLabs
                 return requestSocket.TryReceiveFrameString(requestTimeout, out response);
             }
 
-            public bool ReceiveRequestResponse()
+            private void ReceiveRequestResponse()
             {
-                if (requestSocket == null || !IsConnected)
-                {
-                    return false;
-                }
-
                 NetMQMessage m = new NetMQMessage();
-                return requestSocket.TryReceiveMultipartMessage(requestTimeout, ref m);
+                requestSocket.TryReceiveMultipartMessage(requestTimeout, ref m);
             }
 
             private void CreateContext()

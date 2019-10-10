@@ -71,7 +71,7 @@ namespace PupilLabs
             calibrationData.Clear();
         }
 
-        public void AddCalibrationPointReferencePosition(float[] position, float timestamp)
+        public void AddCalibrationPointReferencePosition(float[] position, double timestamp)
         {
             calibrationData.Add(new Dictionary<string, object>() {
                 { settings.PositionKey, position },
@@ -106,6 +106,7 @@ namespace PupilLabs
             Debug.Log("Calibration should stop");
 
             IsCalibrating = false;
+
             requestCtrl.Send(new Dictionary<string, object> { { "subject", "calibration.should_stop" } });
         }
 

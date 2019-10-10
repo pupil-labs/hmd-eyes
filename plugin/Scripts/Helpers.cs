@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,30 +9,6 @@ namespace PupilLabs
         public static float PupilUnitScalingFactor = 1000;	// Pupil is currently operating in mm
         public const string leftEyeID = "1";
         public const string rightEyeID = "0";
-
-        public static bool Is3DCalibrationSupported(PupilLabs.RequestController requestCtrl)
-        {
-            List<int> versionNumbers = new List<int>();
-            string pupilVersion = requestCtrl.GetPupilVersion();
-            if (pupilVersion != null && pupilVersion != "Unknown command.")
-            {
-                var split = pupilVersion.Split('.');
-                versionNumbers = new List<int>();
-                int number;
-                foreach (var item in split)
-                {
-                    if (int.TryParse(item, out number))
-                        versionNumbers.Add(number);
-                }
-            }
-
-            if (versionNumbers.Count > 0)
-                if (versionNumbers[0] >= 1)
-                    return true;
-
-            Debug.Log("Pupil version below 1 detected. V1 is required for 3D calibration");
-            return false;
-        }
 
         private static object[] position_o;
         public static Vector3 ObjectToVector(object source)
@@ -64,12 +41,38 @@ namespace PupilLabs
             else
                 return Vector3.zero;
         }
+
+        public static int IntFromDictionary(Dictionary<string, object> source, string key)
+        {
+            source.TryGetValue(key, out object value_o);
+            return (int)value_o;
+        }
+
         public static float FloatFromDictionary(Dictionary<string, object> source, string key)
+        {
+            return (float)DoubleFromDictionary(source, key);
+        }
+
+        public static double DoubleFromDictionary(Dictionary<string, object> source, string key)
         {
             object value_o;
             source.TryGetValue(key, out value_o);
-            return (float)(double)value_o;
+            return (double)value_o;
         }
+
+        public static double TryCastToDouble(object obj)
+        {
+            Double? d = obj as Double?;
+            if (d.HasValue)
+            {
+                return d.Value;
+            }
+            else
+            {
+                return 0f;
+            }
+        }
+
         private static object IDo;
         public static string StringFromDictionary(Dictionary<string, object> source, string key)
         {
@@ -78,6 +81,7 @@ namespace PupilLabs
                 result = IDo.ToString();
             return result;
         }
+
         public static Dictionary<object, object> DictionaryFromDictionary(Dictionary<string, object> source, string key)
         {
             if (source.ContainsKey(key))

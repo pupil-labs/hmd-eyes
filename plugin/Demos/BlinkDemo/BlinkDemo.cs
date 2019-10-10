@@ -26,7 +26,6 @@ namespace PupilLabs.Demos
         void OnEnable()
         {
             requestCtrl.OnConnected += StartBlinkSubscription;
-            requestCtrl.OnDisconnecting += StopBlinkSubscription;
 
             if (requestCtrl.IsConnected)
             {
@@ -37,7 +36,6 @@ namespace PupilLabs.Demos
         void OnDisable()
         {
             requestCtrl.OnConnected -= StartBlinkSubscription;
-            requestCtrl.OnDisconnecting -= StopBlinkSubscription;
 
             if (requestCtrl.IsConnected)
             {

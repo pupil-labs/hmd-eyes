@@ -8,19 +8,21 @@ namespace PupilLabs
 
     public partial class RequestController : MonoBehaviour
     {
-
+        [Header("IP & Port")]
         [SerializeField]
-        private Request request = new Request();
+        private Request request;
+        [Header("Settings")]
+        public float retryConnectDelay = 5f;
+        public bool connectOnEnable = true;
 
-
-        public delegate void ConnectionDelegate();
-        public event ConnectionDelegate OnConnected;
-        public event ConnectionDelegate OnDisconnecting;
+        public event Action OnConnected;
+        public event Action OnDisconnecting;
 
         public bool IsConnected
         {
-            get { return request.IsConnected; }
+            get { return request.IsConnected && connectingDone; }
         }
+        private bool connectingDone;
 
         public string IP
         {
@@ -28,7 +30,7 @@ namespace PupilLabs
             set { request.IP = value; }
         }
 
-        public int PORT 
+        public int PORT
         {
             get { return request.PORT; }
             set { request.PORT = value; }
@@ -36,15 +38,25 @@ namespace PupilLabs
 
         private string PupilVersion;
 
-        public string GetConnectionString()
+        public string GetSubConnectionString()
         {
-            return request.GetConnectionString();
+            return request.GetSubConnectionString();
+        }
+
+        public string GetPubConnectionString()
+        {
+            return request.GetPubConnectionString();
         }
 
         void OnEnable()
         {
+            if (request == null)
+            {
+                request = new Request();
+            }
+
             PupilVersion = "not connected";
-            if (!IsConnected)
+            if (!request.IsConnected && connectOnEnable)
             {
                 RunConnect();
             }
@@ -52,7 +64,7 @@ namespace PupilLabs
 
         void OnDisable()
         {
-            if (IsConnected)
+            if (request.IsConnected)
             {
                 Disconnect();
             }
@@ -60,39 +72,50 @@ namespace PupilLabs
 
         public void RunConnect()
         {
-            StartCoroutine(Connect(retry: true, retryDelay: 5f));
+            if (!enabled)
+            {
+                Debug.LogWarning("Component not enabled!");
+                return;
+            }
+
+            if (request.IsConnected)
+            {
+                Debug.LogWarning("Already connected!");
+                return;
+            }
+
+            StartCoroutine(Connect(retry: true));
         }
 
-        private IEnumerator Connect(bool retry = false, float retryDelay = 5f)
+        private IEnumerator Connect(bool retry = false)
         {
             yield return new WaitForSeconds(3f);
 
-            while (!IsConnected)
-            {
-                request.InitializeRequestSocket();
-                // ***************************************************************************
-                request.InitializePubSocket();
-                // ---------------------------------------------------------------------------
+            connectingDone = false;
 
-                if (!IsConnected)
+            while (!request.IsConnected)
+            {
+                yield return StartCoroutine(request.InitializeRequestSocketAsync(1f));
+
+                if (!request.IsConnected)
                 {
                     request.TerminateContext();
 
                     if (retry)
                     {
                         Debug.LogWarning("Could not connect, Re-trying in 5 seconds! ");
-                        yield return new WaitForSeconds(retryDelay);
+                        yield return new WaitForSeconds(retryConnectDelay);
                     }
                     else
                     {
                         Debug.LogWarning("Could not connect! ");
-                        yield return null;
+                        yield break;
                     }
                 }
             }
 
             Connected();
-            
+
             yield break;
         }
 
@@ -100,11 +123,12 @@ namespace PupilLabs
         {
             Debug.Log(" Succesfully connected to Pupil! ");
 
-            SetPupilTimestamp(Time.realtimeSinceStartup);
             UpdatePupilVersion();
 
             StartEyeProcesses();
             SetDetectionMode("3d");
+
+            connectingDone = true;
 
             // RepaintGUI(); //
             if (OnConnected != null)
@@ -121,12 +145,28 @@ namespace PupilLabs
             request.CloseSockets();
         }
 
-        public bool Send(Dictionary<string, object> dictionary)
+        public void OnDestroy()
         {
-            return request.SendRequestMessage(dictionary);
+            request.TerminateContext();
         }
 
-        public bool StartEyeProcesses()
+        public void Send(Dictionary<string, object> dictionary)
+        {
+            if (!request.IsConnected)
+            {
+                Debug.LogWarning("Not connected!");
+                return;
+            }
+
+            request.SendRequestMessage(dictionary);
+        }
+
+        public bool SendCommand(string command, out string response)
+        {
+            return request.SendCommand(command,out response);
+        }
+
+        public void StartEyeProcesses()
         {
             var startLeftEye = new Dictionary<string, object> {
                 {"subject", "eye_process.should_start.1"},
@@ -139,10 +179,8 @@ namespace PupilLabs
                 { "delay", 0.2f}
             };
 
-            bool leftEyeRunning = Send(startLeftEye);
-            bool rightEyeRunning = Send(startRightEye);
-
-            return leftEyeRunning && rightEyeRunning;
+            Send(startLeftEye);
+            Send(startRightEye);
         }
 
         public void StartPlugin(string name, Dictionary<string, object> args = null)
@@ -168,35 +206,15 @@ namespace PupilLabs
             });
         }
 
-        public bool SetDetectionMode(string mode)
+        public void SetDetectionMode(string mode)
         {
-            return Send(new Dictionary<string, object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
-        }
-
-        public void SetPupilTimestamp(float time)
-        {
-            string response;
-            string command = "T " + time.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture);
-            request.SendCommand(command, out response);
-        }
-
-        public string GetPupilTimestamp()
-        {
-            string response;
-            bool success = request.SendCommand("t", out response);
-
-            if (!success)
-            {
-                Debug.LogWarning("GetPupilTimestamp: not connected!");
-            }
-
-            return response;
+            Send(new Dictionary<string, object> { { "subject", "set_detection_mapping_mode" }, { "mode", mode } });
         }
 
         public string GetPupilVersion()
         {
             string pupilVersion = null;
-            request.SendCommand("v", out pupilVersion);
+            SendCommand("v", out pupilVersion);
             return pupilVersion;
         }
 
@@ -211,37 +229,5 @@ namespace PupilLabs
         {
             request.resetDefaultLocalConnection();
         }
-
-        [ContextMenu("Check Time Sync")]
-        public void CheckTimeSync()
-        {
-            if (IsConnected)
-            {
-                Debug.Log($"Unity time: {Time.realtimeSinceStartup}");
-                Debug.Log($"Pupil Time: {GetPupilTimestamp()}");
-            }
-            else
-            {
-                Debug.LogWarning("CheckTimeSync: not connected");
-            }
-        }
-
-
-        // ***************************************************************************
-
-        public void SendSimpleCom(string com)
-        {
-            string resp;
-            request.SendCommand(com, out resp);
-            Debug.Log("Response: " + resp);
-        }
-
-
-        public void SendTrigger(Dictionary<string, object> data)
-        {
-            request.SendPubMessage(data);
-        }
-
-        //----------------------------------------------------------------------------
     }
 }

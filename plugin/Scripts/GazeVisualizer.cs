@@ -6,19 +6,20 @@ namespace PupilLabs
 {
     public class GazeVisualizer : MonoBehaviour
     {
-        public SubscriptionsController subscriptionsController;
-        public Transform cameraTransform;
+        public Transform gazeOrigin;
+        public GazeController gazeController;
 
         [Header("Settings")]
         [Range(0f, 1f)]
         public float confidenceThreshold = 0.6f;
+        public bool binocularOnly = true;
 
         [Header("Projected Visualization")]
         public Transform projectionMarker;
+        public Transform gazeDirectionMarker;
         [Range(0.01f, 0.1f)]
         public float sphereCastRadius = 0.05f;
 
-        GazeListener gazeListener = null;
         Vector3 localGazeDirection;
         float gazeDistance;
         bool isGazing = false;
@@ -27,14 +28,41 @@ namespace PupilLabs
         float angleErrorEstimate = 2f;
 
         Vector3 origMarkerScale;
+        MeshRenderer targetRenderer;
+        float minAlpha = 0.2f;
+        float maxAlpha = 0.8f;
+
+        float lastConfidence;
 
         void OnEnable()
         {
+            if (projectionMarker == null || gazeDirectionMarker == null)
+            {
+                Debug.LogWarning("Marker reference missing.");
+                enabled = false;
+                return;
+            }
+            origMarkerScale = gazeDirectionMarker.localScale;
+
+            if (gazeOrigin == null || gazeController == null)
+            {
+                Debug.LogWarning("Required components missing.");
+                enabled = false;
+                return;
+            }
+
+            targetRenderer = gazeDirectionMarker.GetComponent<MeshRenderer>();
+
             StartVisualizing();
         }
 
-        void OnDisable()
+        void OnDisable() 
         {
+            if (gazeDirectionMarker != null)
+            {
+                gazeDirectionMarker.localScale = origMarkerScale;
+            }
+
             StopVisualizing();
         }
 
@@ -45,93 +73,103 @@ namespace PupilLabs
                 return;
             }
 
+            VisualizeConfidence();
+
             ShowProjected();
         }
 
         public void StartVisualizing()
         {
+            if (!enabled)
+            {
+                Debug.LogWarning("Component not enabled.");
+                return;
+            }
+
+            if (isGazing)
+            {
+                Debug.Log("Already gazing!");
+                return;
+            }
+
             Debug.Log("Start Visualizing Gaze");
 
-            if (subscriptionsController == null)
-            {
-                Debug.LogError("SubscriptionController missing");
-                return;
-            }
+            gazeController.OnReceive3dGaze += ReceiveGaze;
 
-            if (projectionMarker == null)
-            {
-                Debug.LogError("Marker reference missing");
-                return;
-            }
-
-            origMarkerScale = projectionMarker.localScale;
-
-            if (cameraTransform == null)
-            {
-                Debug.LogError("Camera reference missing");
-                enabled = false;
-                return;
-            }
-
-            if (gazeListener == null)
-            {
-                gazeListener = new GazeListener(subscriptionsController);
-            }
-
-            gazeListener.OnReceive3dGaze += ReceiveGaze;
             projectionMarker.gameObject.SetActive(true);
+            gazeDirectionMarker.gameObject.SetActive(true);
             isGazing = true;
         }
 
         public void StopVisualizing()
         {
-            isGazing = false;
-
-            if (gazeListener != null)
+            if (!isGazing || !enabled)
             {
-                gazeListener.OnReceive3dGaze -= ReceiveGaze;
+                Debug.Log("Nothing to stop.");
+                return;
             }
 
             if (projectionMarker != null)
             {
                 projectionMarker.gameObject.SetActive(false);
             }
+            if (gazeDirectionMarker != null)
+            {
+                gazeDirectionMarker.gameObject.SetActive(false);
+            }
+
+            isGazing = false;
+
+            gazeController.OnReceive3dGaze -= ReceiveGaze;
         }
 
         void ReceiveGaze(GazeData gazeData)
         {
-            if (gazeData.Confidence >= confidenceThreshold)
+            if (binocularOnly && gazeData.MappingContext != GazeData.GazeMappingContext.Binocular)
             {
-                localGazeDirection = gazeData.GazeDirection;
-                gazeDistance = gazeData.GazeDistance;
+                return;
+            }
+
+            lastConfidence = gazeData.Confidence;
+
+            if (gazeData.Confidence < confidenceThreshold)
+            {
+                return;
+            }
+            
+            localGazeDirection = gazeData.GazeDirection;
+            gazeDistance = gazeData.GazeDistance;
+        }
+
+        void VisualizeConfidence()
+        {
+            if (targetRenderer != null)
+            {
+                Color c = targetRenderer.material.color;
+                c.a = MapConfidence(lastConfidence);
+                targetRenderer.material.color = c;
             }
         }
 
         void ShowProjected()
         {
-            if (projectionMarker == null)
-            {
-                Debug.LogWarning("Marker missing");
-                return;
-            }
+            gazeDirectionMarker.localScale = origMarkerScale;
+            
+            Vector3 origin = gazeOrigin.position;
+            Vector3 direction = gazeOrigin.TransformDirection(localGazeDirection);
 
-            projectionMarker.gameObject.SetActive(true);
-
-            Vector3 origin = cameraTransform.position;
-
-            Vector3 direction = cameraTransform.TransformDirection(localGazeDirection);
-
-            projectionMarker.localScale = origMarkerScale;
             if (Physics.SphereCast(origin, sphereCastRadius, direction, out RaycastHit hit, Mathf.Infinity))
             {
                 Debug.DrawRay(origin, direction * hit.distance, Color.yellow);
 
                 projectionMarker.position = hit.point;
-                projectionMarker.rotation = Quaternion.FromToRotation(Vector3.forward, hit.normal);
+
+                gazeDirectionMarker.position = origin + direction * hit.distance;
+                gazeDirectionMarker.LookAt(origin);
 
                 if (errorAngleBasedMarkerRadius)
                 {
-                    projectionMarker.localScale = GetErrorAngleBasedScale(origMarkerScale, hit.distance, angleErrorEstimate);
+                    gazeDirectionMarker.localScale = GetErrorAngleBasedScale(origMarkerScale, hit.distance, angleErrorEstimate);
                 }
             }
             else
@@ -147,6 +185,11 @@ namespace PupilLabs
             scale.x = scaleXY;
             scale.y = scaleXY;
             return scale;
+        }
+
+        float MapConfidence(float confidence)
+        {
+            return Mathf.Lerp(minAlpha, maxAlpha, confidence);
         }
     }
 }

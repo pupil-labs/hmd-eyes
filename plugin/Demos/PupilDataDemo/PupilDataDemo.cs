@@ -4,114 +4,51 @@ using UnityEngine.UI;
 
 namespace PupilLabs.Demos
 {
-
     public class PupilDataDemo : MonoBehaviour
     {
         public SubscriptionsController subsCtrl;
+        public TimeSync timeSync;
+
         public Text statusText;
-
-        private RequestController requestCtrl;
-
-        void Awake()
-        {
-            requestCtrl = subsCtrl.requestCtrl;
-        }
+        private PupilListener listener;
 
         void OnEnable()
         {
-            requestCtrl.OnConnected += StartPupilSubscription;
-            requestCtrl.OnDisconnecting += StopPupilSubscription;
-
-            if (requestCtrl.IsConnected)
+            if (listener == null)
             {
-                StartPupilSubscription();
+                listener = new PupilListener(subsCtrl);
             }
+
+            listener.Enable();
+            listener.OnReceivePupilData += ReceivePupilData;
         }
 
         void OnDisable()
         {
-            requestCtrl.OnConnected -= StartPupilSubscription;
-            requestCtrl.OnDisconnecting -= StopPupilSubscription;
-
-            if (requestCtrl.IsConnected)
-            {
-                StopPupilSubscription();
-            }
+            listener.Disable();
+            listener.OnReceivePupilData -= ReceivePupilData;
         }
+
 
         void Update()
         {
             if (statusText == null) { return; }
 
-            statusText.text = requestCtrl.IsConnected ? "Connected" : "Not connected";
+            statusText.text = subsCtrl.IsConnected ? "Connected" : "Not connected";
 
-            if (requestCtrl.IsConnected)
+            if (subsCtrl.IsConnected)
             {
                 statusText.text += "\n ... but nothing happening here. \nPlease check the console and have a look at the source code to get started.";
             }
         }
 
-        void StartPupilSubscription()
+        void ReceivePupilData(PupilData pupilData)
         {
-            Debug.Log("StartPupilSubscription");
-
-            subsCtrl.SubscribeTo("pupil", CustomReceiveData);
-        }
-
-        void StopPupilSubscription()
-        {
-            Debug.Log("StopPupilSubscription");
-
-            subsCtrl.UnsubscribeFrom("pupil", CustomReceiveData);
-        }
-
-        void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
-        {
-            Debug.Log($"Pupil Data received ({topic}) with confidence {dictionary["confidence"]}");
-            foreach (var item in dictionary)
+            double unityTime = timeSync.ConvertToUnityTime(pupilData.PupilTimestamp);
+            Debug.Log($"Receive Pupil Data with method {pupilData.Method} and confidence {pupilData.Confidence} at {unityTime}");
+            if (pupilData.EyeIdx == 0)
             {
-                switch (item.Key)
-                {
-                    case "topic":
-                    case "method":
-                    case "id":
-                        var textForKey = Helpers.StringFromDictionary(dictionary, item.Key);
-                        // Do stuff
-                        break;
-                    case "confidence":
-                    case "timestamp":
-                    case "diameter":
-                        var valueForKey = Helpers.FloatFromDictionary(dictionary, item.Key);
-                        // Do stuff
-                        break;
-                    case "norm_pos":
-                        var positionForKey = Helpers.VectorFromDictionary(dictionary, item.Key);
-                        // Do stuff
-                        break;
-                    case "ellipse":
-                        var dictionaryForKey = Helpers.DictionaryFromDictionary(dictionary, item.Key);
-                        foreach (var pupilEllipse in dictionaryForKey)
-                        {
-                            switch (pupilEllipse.Key.ToString())
-                            {
-                                case "angle":
-                                    var angle = (float)(double)pupilEllipse.Value;
-                                    // Do stuff
-                                    break;
-                                case "center":
-                                case "axes":
-                                    var vector = PupilLabs.Helpers.ObjectToVector(pupilEllipse.Value);
-                                    // Do stuff
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        // Do stuff
-                        break;
-                    default:
-                        break;
-                }
+                Debug.Log($"theta {Mathf.Rad2Deg * pupilData.Circle.Theta} phi {Mathf.Rad2Deg * pupilData.Circle.Phi}");
             }
         }
     }

@@ -7,42 +7,39 @@ namespace PupilLabs
     public class FrameVisualizer : MonoBehaviour
     {
         public SubscriptionsController subscriptionsController;
+        public Transform cameraAsParent;
+        public Material eyeFrameMaterial;
+        [Header("Settings")]
+        [Tooltip("Used for adjusting the Eye Frames, restart needed!")] 
+        public bool model200Hz;
 
         public int targetFPS = 20;
-        public Transform cameraAsParent;
+
+        public FrameListener Listener { get; private set; } = null;
 
         Texture2D[] eyeTexture = new Texture2D[2];
         byte[][] eyeImageRaw = new byte[2][];
         MeshRenderer[] eyeRenderer = new MeshRenderer[2];
         bool[] eyePublishingInitialized = new bool[2];
 
-        FrameListener publisher = null;
-
         void OnEnable()
         {
-            if (cameraAsParent == null)
+            if (cameraAsParent == null || subscriptionsController == null || eyeFrameMaterial == null)
             {
-                Debug.LogWarning("Frame Publisher needs the camera transform");
+                Debug.LogWarning("Required components missing!");
                 enabled = false;
                 return;
             }
 
-            if (subscriptionsController == null)
+            if (Listener == null)
             {
-                Debug.LogWarning("Frame Publisher needs access to SubscriptionsController");
-                enabled = false;
-                return;
-            }
-
-
-            if (publisher == null)
-            {
-                publisher = new FrameListener(subscriptionsController);
+                Listener = new FrameListener(subscriptionsController);
             }
 
             Debug.Log("Enabling Frame Visualizer");
 
-            publisher.OnReceiveEyeFrame += ReceiveEyeFrame;
+            Listener.Enable();
+            Listener.OnReceiveEyeFrame += ReceiveEyeFrame;
 
             eyePublishingInitialized = new bool[] { false, false };
         }
@@ -56,23 +53,23 @@ namespace PupilLabs
             eyeImageRaw[eyeIdx] = frameData;
         }
 
-        public void InitializeFramePublishing(int eyeIndex)
+        void InitializeFramePublishing(int eyeIndex)
         {
             Transform parent = cameraAsParent;
-            Shader shader = Shader.Find("Unlit/Texture");
 
             eyeTexture[eyeIndex] = new Texture2D(100, 100);
             eyeRenderer[eyeIndex] = InitializeEyeObject(eyeIndex, parent);
-            eyeRenderer[eyeIndex].material = new Material(shader);
+            eyeRenderer[eyeIndex].material = new Material(eyeFrameMaterial);
             eyeRenderer[eyeIndex].material.mainTexture = eyeTexture[eyeIndex];
             Vector2 textureScale;
+
             if (eyeIndex == 0) //right by default
             {
-                textureScale = new Vector2(-1, 1);
+                textureScale = model200Hz ? new Vector2(1, -1) : new Vector2(-1, 1);
             }
             else //index == 1 -> left by default
             {
-                textureScale = new Vector2(1, -1);
+                textureScale = model200Hz ? new Vector2(-1, 1) : new Vector2(1, -1);
             }
 
             eyeRenderer[eyeIndex].material.mainTextureScale = textureScale;
@@ -113,9 +110,10 @@ namespace PupilLabs
         {
             Debug.Log("Disabling Frame Visualizer");
 
-            if (publisher != null)
+            if (Listener != null)
             {
-                publisher.OnReceiveEyeFrame -= ReceiveEyeFrame;
+                Listener.OnReceiveEyeFrame -= ReceiveEyeFrame;
+                Listener.Disable();
             }
 
             for (int i = eyeRenderer.Length - 1; i >= 0; i--)

@@ -10,7 +10,10 @@ namespace PupilLabs
 
         public PupilLabs.RequestController requestCtrl;
 
-        public bool IsConnected { get { return requestCtrl.IsConnected; } }
+        public bool IsConnected
+        {
+            get { return !(requestCtrl == null || !requestCtrl.IsConnected); }
+        }
 
         public delegate void ReceiveDataDelegate(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null);
 
@@ -18,31 +21,54 @@ namespace PupilLabs
 
         void OnEnable()
         {
-            if (requestCtrl != null)
+            if (requestCtrl == null)
             {
-                requestCtrl.OnDisconnecting += Disconnect;
+                Debug.LogWarning("RequestController missing!");
+                enabled = false;
+                return;
             }
         }
 
-        void OnDisable()
+        void OnDestroy()
         {
-            Disconnect();
+            if (IsConnected)
+            {
+                Disconnect();
+            }
         }
 
         void Update()
         {
+            if (!IsConnected)
+            {
+                return;
+            }
+
             UpdateSubscriptionSockets();
         }
 
         public void Disconnect()
         {
+            if (!IsConnected)
+            {
+                return;
+            }
+
             foreach (var socketKey in subscriptions.Keys)
+            {
                 CloseSubscriptionSocket(socketKey);
+            }
             UpdateSubscriptionSockets();
         }
 
         public void SubscribeTo(string topic, ReceiveDataDelegate subscriberHandler)
         {
+            if (!IsConnected)
+            {
+                Debug.LogWarning("Not connected!");
+                return;
+            }
+
             if (!subscriptions.ContainsKey(topic))
             {
                 string connectionStr = requestCtrl.GetSubConnectionString();
@@ -57,6 +83,11 @@ namespace PupilLabs
 
         public void UnsubscribeFrom(string topic, ReceiveDataDelegate subscriberHandler)
         {
+            if (!IsConnected)
+            {
+                return;
+            }
+
             if (subscriptions.ContainsKey(topic) && subscriberHandler != null)
             {
                 subscriptions[topic].OnReceiveData -= subscriberHandler;

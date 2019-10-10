@@ -5,57 +5,27 @@ using UnityEngine;
 
 namespace PupilLabs
 {
-    public class GazeListener
+    public class GazeListener : BaseListener
     {
-
         public event Action<GazeData> OnReceive3dGaze;
 
-        private RequestController requestCtrl;
-        private SubscriptionsController subsCtrl;
+        public GazeListener(SubscriptionsController subsCtrl) : base(subsCtrl) { }
 
-        public GazeListener(SubscriptionsController subsCtrl)
-        {
-            this.subsCtrl = subsCtrl;
-            this.requestCtrl = subsCtrl.requestCtrl;
-
-            requestCtrl.OnConnected += Enable;
-            requestCtrl.OnDisconnecting += Disable;
-
-            if (requestCtrl.IsConnected)
-            {
-                Enable();
-            }
-        }
-
-        ~GazeListener()
-        {
-            requestCtrl.OnConnected -= Enable;
-            requestCtrl.OnDisconnecting -= Disable;
-
-            if (requestCtrl.IsConnected)
-            {
-                Disable();
-            }
-        }
-
-        public void Enable()
+        protected override void CustomEnable()
         {
             Debug.Log("Enabling Gaze Listener");
-
             subsCtrl.SubscribeTo("gaze.3d", Receive3DGaze);
         }
 
-        public void Disable()
+        protected override void CustomDisable()
         {
             Debug.Log("Disabling Gaze Listener");
-
             subsCtrl.UnsubscribeFrom("gaze.3d", Receive3DGaze);
         }
 
         void Receive3DGaze(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
         {
-
-            GazeData gazeData = new GazeData(topic, dictionary, requestCtrl.UnityToPupilTimeOffset);
+            GazeData gazeData = new GazeData(topic, dictionary);
 
             if (OnReceive3dGaze != null)
             {

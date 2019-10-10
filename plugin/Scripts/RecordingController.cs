@@ -4,37 +4,73 @@ using UnityEngine;
 
 namespace PupilLabs
 {
+    [HelpURL("https://github.com/pupil-labs/hmd-eyes")]
     public class RecordingController : MonoBehaviour
     {
         public RequestController requestCtrl;
 
-        [SerializeField] private bool startRecordingButton;
-        [SerializeField] private bool stopRecordingButton;
+        [Header("Recording Path")]
+        public bool useCustomPath;
+        [SerializeField] private string customPath;
+
+        [Header("Controls")]
+        [SerializeField] private bool recordEyeFrames = true;
+        [SerializeField] private bool startRecording;
+        [SerializeField] private bool stopRecording;
 
         public bool IsRecording { get; private set; }
-        // ***************************************************************************
-        public bool IsAwatingAnnotations { get; private set; }
-        // ---------------------------------------------------------------------------
+
+        void OnEnable()
+        {
+            if (requestCtrl == null)
+            {
+                Debug.LogWarning("Request Controller missing");
+                enabled = false;
+                return;
+            }
+
+        }
+
+        void OnDisable()
+        {
+            if (IsRecording)
+            {
+                StopRecording();
+            }
+        }
+
         void Update()
         {
-            if (startRecordingButton)
+            if (Input.GetKeyDown(KeyCode.R))
             {
-                startRecordingButton = false;
+                if (IsRecording)
+                {
+                    stopRecording = true;
+                }
+                else
+                {
+                    startRecording = true;
+                }
+            }
+
+            if (startRecording)
+            {
+                startRecording = false;
                 StartRecording();
             }
 
-            if (stopRecordingButton)
+            if (stopRecording)
             {
-                stopRecordingButton = false;
+                stopRecording = false;
                 StopRecording();
             }
         }
 
         public void StartRecording()
         {
-            if (requestCtrl == null)
+            if (!enabled)
             {
-                Debug.LogWarning("Request Controller missing");
+                Debug.LogWarning("Component not enabled");
                 return;
             }
 
@@ -50,120 +86,66 @@ namespace PupilLabs
                 return;
             }
 
-            // ***************************************************************************
-            StartAnnotationPlugin();
-            IsAwatingAnnotations = true;
-            // ---------------------------------------------------------------------------
 
-
-            var path = GetRecordingPath().Substring(2);
-            Debug.Log($"Recording path: {path}");
+            var path = GetRecordingPath();
 
             requestCtrl.Send(new Dictionary<string, object>
             {
                 { "subject","recording.should_start" }
                 , { "session_name", path }
-                , { "record_eye",true}
+                , { "record_eye",recordEyeFrames}
             });
             IsRecording = true;
+
+            //abort process on disconnecting
+            requestCtrl.OnDisconnecting += StopRecording;
         }
 
         public void StopRecording()
         {
-            if (requestCtrl == null)
-            {
-                Debug.LogWarning("Request Controller missing");
-                return;
-            }
-
-            if (!requestCtrl.IsConnected)
-            {
-                Debug.LogWarning("Not connected");
-                return;
-            }
-
             if (!IsRecording)
             {
                 Debug.Log("Recording is not running, nothing to stop.");
                 return;
             }
 
-            requestCtrl.Send(new Dictionary<string, object> 
-            { 
-                { "subject", "recording.should_stop" } 
+            requestCtrl.Send(new Dictionary<string, object>
+            {
+                { "subject", "recording.should_stop" }
             });
 
             IsRecording = false;
+
+            requestCtrl.OnDisconnecting -= StopRecording;
+        }
+
+        public void SetCustomPath(string path)
+        {
+            useCustomPath = true;
+            customPath = path;
         }
 
         private string GetRecordingPath()
         {
-            string date = System.DateTime.Now.ToString ("yyyy_MM_dd");
-            string path = Application.dataPath + "/" + date;
+            string path = "";
 
-            path = path.Replace ("Assets/", ""); //go one folder up
+            if (useCustomPath)
+            {
+                path = customPath;
+            }
+            else
+            {
+                string date = System.DateTime.Now.ToString("yyyy_MM_dd");
+                path = $"{Application.dataPath}/{date}";
+                path = path.Replace("Assets/", ""); //go one folder up
+            }
 
-            if (!System.IO.Directory.Exists (path))
-                System.IO.Directory.CreateDirectory (path);
+            if (!System.IO.Directory.Exists(path))
+            {
+                System.IO.Directory.CreateDirectory(path);
+            }
 
             return path;
         }
-
-        // ***************************************************************************
-
-        public void StartAnnotationPlugin()
-        {
-            if (requestCtrl == null)
-            {
-                Debug.LogWarning("Request Controller missing");
-                return;
-            }
-
-            if (!requestCtrl.IsConnected)
-            {
-                Debug.LogWarning("Not connected");
-                return;
-            }
-
-            requestCtrl.StartPlugin("Annotation_Capture");
-            Debug.Log("Starting annotation plugin.");
-        }
-
-        public void StopAnnotationPlugin()
-        {
-            if (requestCtrl == null)
-            {
-                Debug.LogWarning("Request Controller missing");
-                return;
-            }
-
-            if (!requestCtrl.IsConnected)
-            {
-                Debug.LogWarning("Not connected");
-                return;
-            }
-
-            requestCtrl.StopPlugin("Annotation_Capture");
-            Debug.Log("Stopping annotation plugin.");
-        }
-
-
-        public void SendSimpleTrigger(string label, float duration)
-        {
-            if (!IsAwatingAnnotations)
-            {
-                StartAnnotationPlugin();
-                IsAwatingAnnotations = true;
-            }
-
-            Dictionary<string, object> data = new Dictionary<string, object>();
-            data["topic"] = "annotation";
-            data["label"] = label;
-            data["timestamp"] = Time.realtimeSinceStartup;
-            data["duration"] = duration;
-
-            requestCtrl.SendTrigger(data);
-        }
-        // ---------------------------------------------------------------------------
     }
 }
