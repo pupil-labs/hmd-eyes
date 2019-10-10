@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using NetMQ;
 using NetMQ.Sockets;
@@ -31,20 +30,40 @@ namespace PupilLabs
             isSetup = true;
         }
 
-        public void SendAnnotation(string label, float duration)
+        public void SendAnnotation(string label, float duration = 0.0f, Dictionary<string, object> customData = null)
         {
+            double pupiltime = timeSync.ConvertToPupilTime(Time.realtimeSinceStartup);
+            SendAnnotation(label, pupiltime, duration, customData);
+        }
+
+        public void SendAnnotation(string label, double pupiltimestamp, float duration = 0.0f, Dictionary<string, object> customData = null)
+        {
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+
             if (!isSetup)
             {
                 Setup();
             }
 
-            Dictionary<string, object> data = new Dictionary<string, object>();
-            data["topic"] = "annotation";
-            data["label"] = label;
-            data["timestamp"] = timeSync.ConvertToPupilTime(Time.realtimeSinceStartup);
-            data["duration"] = duration;
+            Dictionary<string, object> annotation = new Dictionary<string, object>();
+            annotation["topic"] = "annotation";
+            annotation["label"] = label;
+            annotation["timestamp"] = pupiltimestamp;
+            annotation["duration"] = duration;
 
-            SendPubMessage(data);
+            //add custom data
+            if (customData != null)
+            {
+                foreach (var kv in customData)
+                {
+                    annotation.Add(kv.Key,kv.Value);
+                }
+            }
+
+            SendPubMessage(annotation);
         }
 
 

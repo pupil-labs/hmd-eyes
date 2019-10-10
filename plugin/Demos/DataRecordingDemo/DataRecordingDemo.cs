@@ -5,42 +5,50 @@ using UnityEngine.UI;
 
 namespace PupilLabs.Demos
 {
-    [RequireComponent(typeof(RecordingController))]
     public class DataRecordingDemo : MonoBehaviour
     {
         public Text text;
+        public RecordingController recorder;
 
-        RecordingController recording;
-
-        void Awake()
-        {
-            recording = GetComponent<RecordingController>();
-        }
+        [Header("Annotations")]
+        public Annotation annotation;
+        public Transform head;
+        public bool sendHeadAsAnnotation = false;
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                if (!recording.IsRecording)
-                {
-                    recording.StartRecording();
-                }
-                else
-                {
-                    recording.StopRecording();
-                }
-            }
+            bool connected = recorder.requestCtrl.IsConnected;
 
-            bool connected = recording.requestCtrl.IsConnected;
+            UpdateText(connected);
+
+            if (connected && sendHeadAsAnnotation)
+            {
+                SendExampleAnnotations();
+            }
+        }
+
+        void UpdateText(bool connected)
+        {
             text.text = connected ? "Connected" : "Not connected";
 
             if (connected)
             {
                 text.text += "\n\nPress R to Start/Stop the recording.";
 
-                var status = recording.IsRecording ? "recording" : "not recording";
+                var status = recorder.IsRecording ? "recording" : "not recording";
                 text.text += $"\n\nStatus: {status}";
             }
+        }
+
+        void SendExampleAnnotations()
+        {
+            Dictionary<string, object> headData = new Dictionary<string, object>();
+
+            headData["head_world_x"] = head.position.x;
+            headData["head_world_y"] = head.position.y;
+            headData["head_world_z"] = head.position.z;
+
+            annotation.SendAnnotation(label: "head pos", customData: headData);
         }
     }
 }
