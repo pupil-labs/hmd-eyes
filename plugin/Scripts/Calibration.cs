@@ -17,7 +17,7 @@ namespace PupilLabs
         //members
         SubscriptionsController subsCtrl;
         RequestController requestCtrl;
-        PublisherSocket pubSocket;
+        Publisher publisher;
         CalibrationSettings settings;
 
         List<Dictionary<string, object>> calibrationData = new List<Dictionary<string, object>>();
@@ -43,11 +43,11 @@ namespace PupilLabs
             subsCtrl.SubscribeTo("notify.calibration.failed", ReceiveFailure);
 
             requestCtrl.StartPlugin(settings.PluginName);
-            pubSocket = new PublisherSocket(requestCtrl.GetPubConnectionString());
+            publisher = new Publisher(requestCtrl);
 
             UpdateEyesTranslation();
 
-            Send(new Dictionary<string, object> {
+            requestCtrl.Send(new Dictionary<string, object> {
                 { "subject","calibration.should_start" },
                 {
                     "hmd_video_frame_size",
@@ -116,12 +116,8 @@ namespace PupilLabs
 
         private void Send(Dictionary<string, object> data)
         {
-            NetMQMessage m = new NetMQMessage();
-
-            m.Append("notify." + data["subject"]);
-            m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(data));
-
-            pubSocket.SendMultipartMessage(m);
+            string topic = "notify." + data["subject"];
+            publisher.Send(topic, data);
         }        
 
         private void UpdateEyesTranslation()

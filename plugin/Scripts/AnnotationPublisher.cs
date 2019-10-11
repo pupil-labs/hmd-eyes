@@ -11,7 +11,7 @@ namespace PupilLabs
         public RequestController requestCtrl;
         public TimeSync timeSync;
 
-        PublisherSocket pubSocket;
+        Publisher publisher;
         bool isSetup = false;
 
         void OnEnable()
@@ -23,8 +23,7 @@ namespace PupilLabs
         {
             requestCtrl.StartPlugin("Annotation_Capture");
 
-            string connectionStr = requestCtrl.GetPubConnectionString();
-            pubSocket = new PublisherSocket(connectionStr);
+            publisher = new Publisher(requestCtrl);
 
             isSetup = true;
         }
@@ -62,25 +61,8 @@ namespace PupilLabs
                 }
             }
 
-            SendPubMessage(annotation);
+            publisher.Send("annotation", annotation);
         }
 
-
-        private void SendPubMessage(Dictionary<string, object> data)
-        {
-            if (pubSocket == null || !isSetup)
-            {
-                Debug.Log("No valid Pub Socket found. Nothing sent.");
-                return;
-            }
-
-            NetMQMessage m = new NetMQMessage();
-
-            m.Append(data["topic"].ToString());
-            m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(data));
-
-            pubSocket.SendMultipartMessage(m);
-            return;
-        }
     }
 }
