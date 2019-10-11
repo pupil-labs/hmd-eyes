@@ -135,7 +135,7 @@ namespace PupilLabs
             }
 
             //abort process on disconnecting
-            subsCtrl.requestCtrl.OnDisconnecting += StopCalibration;
+            subsCtrl.OnDisconnecting += StopCalibration;
         }
 
         public void StopCalibration()
@@ -155,7 +155,7 @@ namespace PupilLabs
                 OnCalibrationRoutineDone();
             }
 
-            subsCtrl.requestCtrl.OnDisconnecting -= StopCalibration;
+            subsCtrl.OnDisconnecting -= StopCalibration;
         }
 
         private void UpdateCalibration()
@@ -244,10 +244,16 @@ namespace PupilLabs
 
         void OnDrawGizmos()
         {
+            if (camera == null || targets == null)
+            {
+                return;
+            }
+
             if (Application.isPlaying)
             {
                 return;
             }
+            
             Gizmos.matrix = camera.transform.localToWorldMatrix;
             for (int i = 0; i < targets.GetTargetCount(); ++i)
             {

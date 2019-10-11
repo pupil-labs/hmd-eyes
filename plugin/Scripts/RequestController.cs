@@ -15,8 +15,8 @@ namespace PupilLabs
         public float retryConnectDelay = 5f;
         public bool connectOnEnable = true;
 
-        public event Action OnConnected;
-        public event Action OnDisconnecting;
+        public event Action OnConnected = delegate {};
+        public event Action OnDisconnecting = delegate {};
 
         public bool IsConnected
         {
@@ -130,17 +130,12 @@ namespace PupilLabs
 
             connectingDone = true;
 
-            // RepaintGUI(); //
-            if (OnConnected != null)
-                OnConnected();
+            OnConnected();
         }
 
         public void Disconnect()
         {
-            if (OnDisconnecting != null)
-            {
-                OnDisconnecting();
-            }
+            OnDisconnecting();
 
             request.CloseSockets();
         }

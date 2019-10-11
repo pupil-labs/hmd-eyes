@@ -1,7 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using NetMQ.Sockets;
+using NetMQ;
+using MessagePack;
 
 namespace PupilLabs
 {
@@ -15,6 +17,7 @@ namespace PupilLabs
         //members
         SubscriptionsController subsCtrl;
         RequestController requestCtrl;
+        PublisherSocket pubSocket;
         CalibrationSettings settings;
 
         List<Dictionary<string, object>> calibrationData = new List<Dictionary<string, object>>();
@@ -40,10 +43,11 @@ namespace PupilLabs
             subsCtrl.SubscribeTo("notify.calibration.failed", ReceiveFailure);
 
             requestCtrl.StartPlugin(settings.PluginName);
+            pubSocket = new PublisherSocket(requestCtrl.GetPubConnectionString());
 
             UpdateEyesTranslation();
 
-            requestCtrl.Send(new Dictionary<string, object> {
+            Send(new Dictionary<string, object> {
                 { "subject","calibration.should_start" },
                 {
                     "hmd_video_frame_size",
@@ -89,7 +93,7 @@ namespace PupilLabs
         {
             Debug.Log("Send CalibrationReferenceData");
 
-            requestCtrl.Send(new Dictionary<string, object> {
+            Send(new Dictionary<string, object> {
                 { "subject","calibration.add_ref_data" },
                 {
                     "ref_data",
@@ -107,8 +111,18 @@ namespace PupilLabs
 
             IsCalibrating = false;
 
-            requestCtrl.Send(new Dictionary<string, object> { { "subject", "calibration.should_stop" } });
+            Send(new Dictionary<string, object> { { "subject", "calibration.should_stop" } });
         }
+
+        private void Send(Dictionary<string, object> data)
+        {
+            NetMQMessage m = new NetMQMessage();
+
+            m.Append("notify." + data["subject"]);
+            m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(data));
+
+            pubSocket.SendMultipartMessage(m);
+        }        
 
         private void UpdateEyesTranslation()
         {

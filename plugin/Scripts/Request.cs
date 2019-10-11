@@ -8,10 +8,8 @@ using MessagePack;
 
 namespace PupilLabs
 {
-
     public partial class RequestController
     {
-
         [System.Serializable]
         private class Request
         {
@@ -23,7 +21,7 @@ namespace PupilLabs
             private string subport;
             private string pubport;
 
-            public RequestSocket requestSocket = null;
+            private RequestSocket requestSocket = null;
             private bool contextExists = false;
             private float timeout = 1f;
             private TimeSpan requestTimeout = new System.TimeSpan(0, 0, 1); //= 1sec
@@ -71,7 +69,7 @@ namespace PupilLabs
             private IEnumerator RequestReceiveAsync(Action request, Action receive)
             {
                 float tStarted = Time.realtimeSinceStartup;
-                
+
                 request();
 
                 bool msgReceived = false;
