@@ -14,8 +14,6 @@ namespace PupilLabs
         [System.Serializable]
         private class Request
         {
-
-            [Header("Connection")]
             public string IP = "127.0.0.1";
             public int PORT = 50020;
             public string status = "Not connected!";
