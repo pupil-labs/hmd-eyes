@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using NetMQ;
 using NetMQ.Sockets;
+using NetMQ.Monitoring;
 using MessagePack;
 
 namespace PupilLabs
@@ -17,16 +18,19 @@ namespace PupilLabs
             [Header("Connection")]
             public string IP = "127.0.0.1";
             public int PORT = 50020;
+            public string status = "Not connected!";
             private string IPHeader;
             private string subport;
             private string pubport;
 
             private RequestSocket requestSocket = null;
-            private bool contextExists = false;
+            NetMQMonitor monitor;
             private float timeout = 1f;
             private TimeSpan requestTimeout = new System.TimeSpan(0, 0, 1); //= 1sec
 
             public bool IsConnected { get; set; }
+
+            public event Action OnReconnect = delegate { };
 
             public string GetSubConnectionString()
             {
@@ -40,18 +44,23 @@ namespace PupilLabs
 
             public IEnumerator InitializeRequestSocketAsync(float timeout)
             {
-                float tStarted = Time.realtimeSinceStartup;
+                AsyncIO.ForceDotNet.Force();
 
-                IPHeader = ">tcp://" + IP + ":";
+                IPHeader = $">tcp://{IP}:";
                 Debug.Log("Attempting to connect to : " + IPHeader + PORT);
-
-                if (!contextExists)
-                {
-                    CreateContext();
-                }
 
                 requestSocket = new RequestSocket(IPHeader + PORT);
 
+                yield return UpdatePorts();
+
+                if (IsConnected)
+                {
+                    SetupMonitor();
+                }
+            }
+
+            public IEnumerator UpdatePorts()
+            {
                 yield return RequestReceiveAsync(
                     () => requestSocket.SendFrame("SUB_PORT"),
                     () => IsConnected = requestSocket.TryReceiveFrameString(out subport)
@@ -59,6 +68,7 @@ namespace PupilLabs
 
                 if (IsConnected)
                 {
+                    status = "Connected";
                     yield return RequestReceiveAsync(
                         () => requestSocket.SendFrame("PUB_PORT"),
                         () => requestSocket.TryReceiveFrameString(out pubport)
@@ -94,17 +104,46 @@ namespace PupilLabs
                 }
             }
 
-            public void CloseSockets()
+            private void SetupMonitor()
             {
-                if (requestSocket != null)
-                    requestSocket.Close();
+                monitor = new NetMQMonitor(requestSocket, $"inproc://req{this.GetHashCode()}.inproc", SocketEvents.Connected | SocketEvents.Disconnected | SocketEvents.Closed);
+                monitor.Closed += (s, e) =>
+                {
+                    Debug.LogWarning($" {e.SocketEvent.ToString()}");
+                    status = "Closed";
+                };
 
-                IsConnected = false;
+                monitor.Disconnected += (s, e) =>
+                {
+                    Debug.LogWarning($"{e.SocketEvent.ToString()}");
+                };
+
+                monitor.Connected += (s, e) =>
+                {
+                    Debug.LogWarning($"{e.SocketEvent.ToString()}");
+                    status = "Connected";
+
+                    OnReconnect();
+                };
+
+                monitor.StartAsync();
             }
 
-            ~Request()
+            public void Close()
             {
-                CloseSockets();
+                Debug.Log("Close");
+
+                if (monitor != null)
+                {
+                    monitor.Stop();
+                    monitor.Dispose();
+                }
+                if (requestSocket != null)
+                {
+                    requestSocket.Close();
+                }
+
+                IsConnected = false;
             }
 
             public void SendRequestMessage(Dictionary<string, object> data)
@@ -136,28 +175,11 @@ namespace PupilLabs
                 requestSocket.TryReceiveMultipartMessage(requestTimeout, ref m);
             }
 
-            private void CreateContext()
-            {
-                AsyncIO.ForceDotNet.Force();
-                contextExists = true;
-            }
-
-            public void TerminateContext()
-            {
-                if (contextExists)
-                {
-                    Debug.Log("Request Context Cleanup");
-                    NetMQConfig.Cleanup(false);
-                    contextExists = false;
-                }
-            }
-
             public void resetDefaultLocalConnection()
             {
                 IP = "127.0.0.1";
                 PORT = 50020;
             }
-
         }
     }
 }

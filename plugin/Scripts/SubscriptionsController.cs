@@ -15,7 +15,7 @@ namespace PupilLabs
             get { return !(requestCtrl == null || !requestCtrl.IsConnected); }
         }
 
-        public event Action OnDisconnecting = delegate {};
+        public event Action OnDisconnecting = delegate { };
         public delegate void ReceiveDataDelegate(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null);
 
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
@@ -28,6 +28,8 @@ namespace PupilLabs
                 enabled = false;
                 return;
             }
+
+            requestCtrl.OnReconnect += Reconnect;
         }
 
         void OnDestroy()
@@ -78,7 +80,6 @@ namespace PupilLabs
                 Subscription subscription = new Subscription(connectionStr, topic);
 
                 subscriptions.Add(topic, subscription);
-                // subscriptions[topic].OnReceiveData += Logging; 
             }
 
             subscriptions[topic].OnReceiveData += subscriberHandler;
@@ -99,6 +100,16 @@ namespace PupilLabs
                 {
                     CloseSubscriptionSocket(topic);
                 }
+            }
+        }
+
+        private void Reconnect()
+        {
+            string newConnectionString = requestCtrl.GetSubConnectionString();
+
+            foreach (var subscription in subscriptions.Values)
+            {
+                subscription.Reconnect(newConnectionString);
             }
         }
 

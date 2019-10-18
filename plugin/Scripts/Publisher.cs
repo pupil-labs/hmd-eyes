@@ -7,35 +7,51 @@ namespace PupilLabs
 {
     public class Publisher
     {
+        private RequestController requestController;
         private PublisherSocket publisherSocket;
         private bool isSetup = false;
+        private bool waitingOnConnection = false;
 
         public Publisher(RequestController requestController)
         {
+            this.requestController = requestController;
+            
             if (requestController.IsConnected)
             {
-                Setup(requestController);
+                Setup();
             }
             else
             {
-                requestController.OnConnected += 
-                (
-                    () =>
-                    {
-                        Setup(requestController);
-                    }
-                );
+                waitingOnConnection = true;
+                requestController.OnConnected += DelayedSetup;
             }
-
         }
 
-        public void Send(string topic, Dictionary<string, object> data, byte [] thirdFrame = null)
+        public void Destroy()
+        {
+            if (waitingOnConnection)
+            {
+                requestController.OnConnected -= DelayedSetup;
+            }
+
+            if (isSetup)
+            {
+                if (publisherSocket != null)
+                {
+                    publisherSocket.Close();
+                }
+
+                requestController.OnReconnect -= Reconnect;
+            }    
+        }
+
+        public void Send(string topic, Dictionary<string, object> data, byte[] thirdFrame = null)
         {
             NetMQMessage m = new NetMQMessage();
 
             m.Append(topic);
             m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(data));
-            
+
             if (thirdFrame != null)
             {
                 m.Append(thirdFrame);
@@ -44,8 +60,32 @@ namespace PupilLabs
             publisherSocket.SendMultipartMessage(m);
         }
 
-        private void Setup(RequestController requestController)
+        private void DelayedSetup()
         {
+            waitingOnConnection = false;
+            requestController.OnConnected -= DelayedSetup;
+            Setup();
+        }
+
+        private void Setup()
+        {
+            publisherSocket = new PublisherSocket(requestController.GetPubConnectionString());
+            requestController.OnReconnect += Reconnect;
+            isSetup = true;
+        }
+
+        private void Reconnect()
+        {
+            if (requestController == null)
+            {
+                return;
+            }
+
+            if (publisherSocket != null)
+            {
+                publisherSocket.Close();
+            }
+
             publisherSocket = new PublisherSocket(requestController.GetPubConnectionString());
         }
     }
