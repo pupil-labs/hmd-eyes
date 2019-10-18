@@ -3,14 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace PupilLabs
 {
 
     public partial class RequestController : MonoBehaviour
     {
-        [Header("IP & Port")]
-        [SerializeField]
+        [SerializeField][HideInInspector]
         private Request request;
+        
         [Header("Settings")]
         public float retryConnectDelay = 5f;
         public bool connectOnEnable = true;
@@ -23,6 +27,9 @@ namespace PupilLabs
             get { return request.IsConnected && connectingDone; }
         }
         private bool connectingDone;
+        
+        [SerializeField][HideInInspector] 
+        private bool isConnecting = false;
 
         public string IP
         {
@@ -72,6 +79,12 @@ namespace PupilLabs
 
         public void RunConnect()
         {
+            if (isConnecting)
+            {
+                Debug.LogWarning("Already trying to connect!");
+                return;
+            }
+
             if (!enabled)
             {
                 Debug.LogWarning("Component not enabled!");
@@ -89,6 +102,8 @@ namespace PupilLabs
 
         private IEnumerator Connect(bool retry = false)
         {
+            isConnecting = true;
+
             yield return new WaitForSeconds(3f);
 
             connectingDone = false;
@@ -114,7 +129,11 @@ namespace PupilLabs
                 }
             }
 
+            isConnecting = false;
             Connected();
+#if UNITY_EDITOR
+            EditorUtility.SetDirty(this);
+#endif
 
             yield break;
         }
