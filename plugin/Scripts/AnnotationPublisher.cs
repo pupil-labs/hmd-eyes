@@ -28,7 +28,7 @@ namespace PupilLabs
             isSetup = true;
         }
 
-        void OnDestroy()
+        void OnApplicationQuit()
         {
             if (isSetup)
             {

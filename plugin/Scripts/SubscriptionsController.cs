@@ -32,7 +32,7 @@ namespace PupilLabs
             requestCtrl.OnReconnect += Reconnect;
         }
 
-        void OnDestroy()
+        void OnApplicationQuit()
         {
             if (IsConnected)
             {

@@ -14,7 +14,7 @@ namespace PupilLabs
     {
         [SerializeField][HideInInspector]
         private Request request;
-        
+
         [Header("Settings")]
         public float retryConnectDelay = 5f;
         public bool connectOnEnable = true;
@@ -79,15 +79,11 @@ namespace PupilLabs
 
         void OnDisable()
         {
-            if (request.IsConnected)
-            {
-                Disconnect();
-            }
+            Disconnect();
         }
 
         void OnDestroy()
         {
-            Debug.Log("Destroy!");
             Disconnect();
 
             NetMQCleanup.CleanupConnection(this);

@@ -79,7 +79,7 @@ namespace PupilLabs
             );   
         }
 
-        void OnDestroy()
+        void OnApplicationQuit()
         {
             if (publisher != null)
             {

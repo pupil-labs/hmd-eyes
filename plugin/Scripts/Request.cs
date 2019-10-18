@@ -17,7 +17,7 @@ namespace PupilLabs
             public string IP = "127.0.0.1";
             public int PORT = 50020;
             [SerializeField]
-            private string status = "Not connected!";
+            private string status = "Not connected";
             private string IPHeader;
             private string subport;
             private string pubport;
@@ -130,8 +130,6 @@ namespace PupilLabs
 
             public void Close()
             {
-                Debug.Log("Close");
-
                 if (monitor != null)
                 {
                     monitor.Stop();
@@ -142,6 +140,7 @@ namespace PupilLabs
                     requestSocket.Close();
                 }
 
+                status = "Not connected";
                 IsConnected = false;
             }
 
