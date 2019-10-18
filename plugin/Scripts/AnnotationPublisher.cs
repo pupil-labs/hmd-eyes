@@ -28,6 +28,14 @@ namespace PupilLabs
             isSetup = true;
         }
 
+        void OnDestroy()
+        {
+            if (isSetup)
+            {
+                publisher.Destroy();
+            }
+        }
+
         public void SendAnnotation(string label, float duration = 0.0f, Dictionary<string, object> customData = null)
         {
             double pupiltime = timeSync.ConvertToPupilTime(Time.realtimeSinceStartup);
@@ -63,6 +71,5 @@ namespace PupilLabs
 
             publisher.Send("annotation", annotation);
         }
-
     }
 }
