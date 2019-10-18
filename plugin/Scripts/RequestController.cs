@@ -43,6 +43,7 @@ namespace PupilLabs
             set { request.PORT = value; }
         }
 
+        [SerializeField][HideInInspector]
         private string PupilVersion;
 
         public string GetSubConnectionString()

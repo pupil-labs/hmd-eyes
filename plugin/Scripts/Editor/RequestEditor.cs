@@ -8,6 +8,7 @@ public class RequestEditor : Editor
 {
     private SerializedProperty ipProp;
     private SerializedProperty portProp;
+    private SerializedProperty versionProp;
     private SerializedProperty isConnectingProb;
 
     public void OnEnable()
@@ -17,6 +18,7 @@ public class RequestEditor : Editor
         portProp = requestProp.FindPropertyRelative("PORT");
 
         isConnectingProb = serializedObject.FindProperty("isConnecting");
+        versionProp = serializedObject.FindProperty("PupilVersion");
     }
 
     public override void OnInspectorGUI()
@@ -31,6 +33,7 @@ public class RequestEditor : Editor
         EditorGUILayout.LabelField("Connection", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(ipProp,new GUIContent("IP"));
         EditorGUILayout.PropertyField(portProp,new GUIContent("PORT"));
+        EditorGUILayout.LabelField("Pupil Version",versionProp.stringValue);
 
         GUILayout.BeginHorizontal();
         
