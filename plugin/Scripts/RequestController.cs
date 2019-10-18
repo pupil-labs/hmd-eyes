@@ -73,7 +73,7 @@ namespace PupilLabs
             PupilVersion = "not connected";
             if (!request.IsConnected && connectOnEnable)
             {
-                RunConnect();
+                RunConnect(3f);
             }
         }
 
@@ -89,7 +89,7 @@ namespace PupilLabs
             NetMQCleanup.CleanupConnection(this);
         }
 
-        public void RunConnect()
+        public void RunConnect(float delay = 0)
         {
             if (isConnecting)
             {
@@ -109,14 +109,14 @@ namespace PupilLabs
                 return;
             }
 
-            StartCoroutine(Connect(retry: true));
+            StartCoroutine(Connect(retry: true, delay: delay));
         }
 
-        private IEnumerator Connect(bool retry = false)
+        private IEnumerator Connect(bool retry = false, float delay = 0)
         {
             isConnecting = true;
 
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(delay);
 
             connectingDone = false;
 

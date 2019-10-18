@@ -23,6 +23,10 @@ namespace PupilLabs
                 NetMQConfig.Cleanup(block: false);
             }
         }
-    }
 
+        // static NetMQCleanup()
+        // {
+        //     Application.quitting += () => {NetMQConfig.Cleanup(block: false);};
+        // }
+    }
 }
