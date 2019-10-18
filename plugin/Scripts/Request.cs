@@ -16,7 +16,8 @@ namespace PupilLabs
         {
             public string IP = "127.0.0.1";
             public int PORT = 50020;
-            public string status = "Not connected!";
+            [SerializeField]
+            private string status = "Not connected!";
             private string IPHeader;
             private string subport;
             private string pubport;
