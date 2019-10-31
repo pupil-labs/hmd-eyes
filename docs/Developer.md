@@ -331,6 +331,16 @@ The default recording path of the `RecordingController` is inside the project on
 
 You can also enable a *custom path* for your recordings, which you can specify as an absolute path (`C:/some/folder/you/like`) or relative to the Pupil Capture recordings folder (`my/custom/folder` -> `C:/Users/<username>/recordings/my/custom/folder`).
 
+### Remote Annotations 
+
+Demo: [DataRecordingDemo](#DataRecordingDemo)
+
+The `AnnotationPublisher` component supports sending [remote annotations](https://docs.pupil-labs.com/developer/core/network-api/#remote-annotations) via the network API to Pupil Capture/Service. An annotation is technically speaking a timestamped label, which also supports custom data (primitive non nested data types). 
+
+Like all publisher based components, it requires access to the `RequestController` and the `TimeSync` component. 
+
+> Every annotion is printed on screen in Pupil Capture. Keep this in mind when sending annotations at a high frequency.
+
 ### Screencast
 
 > Requires Pupil Capture v1.15 or later (on windows v1.15.71+). 
@@ -340,8 +350,8 @@ Demo: [Screencast Demo](#ScreencastDemo)
 Streaming the VR Scene to Pupil Capture is done via the `ScreenCast` component. 
 This allows to use Pupil Capture as an operator tool, supports to record everything in sync in Pupil Capture and playback in Pupil Player. 
 
-Besides access to the `RequestController` it requires an additional `Camera` in your scene with `Target Eye` set to `None`.
-Make sure the camera uses the VR head transform as the origin - normally just by adding it as a child to the main/VR camera.
+Besides access to the `RequestController` and `TimeSync` component it also requires an additional `Camera` in your scene with `Target Eye` set to `None`.
+Make sure the camera uses the VR head transform as the origin - normally just by adding it as a child to the main/VR camera - and has position and rotation set to zero.
 
 Hmd-eyes provides a prefab called `ScreenCast Camera`, which already contains a centered `Camera` and a `ScreenCast` component - make sure to wire it to your `RequestController` & `TimeSync` component after appending it to your VR camera.
 
@@ -395,6 +405,8 @@ The demo also takes the `GazeData.GazeMappingContext` into account - to check fo
 ### DataRecordingDemo
 
 A simple demo using the `RecordingController` component. The demo script allows starting and stoping the recording by pressing "R".
+
+Demo now also features the `AnnotationPublisher` component, showcasing simple annotations and annotations containing custom data.
 
 ### ScreencastDemo
 

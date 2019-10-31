@@ -121,8 +121,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 69086304}
-  - component: {fileID: 69086303}
   - component: {fileID: 69086302}
+  - component: {fileID: 69086303}
   m_Layer: 0
   m_Name: Remote Annotations
   m_TagString: Untagged
@@ -524,7 +524,8 @@ MonoBehaviour:
   recorder: {fileID: 1365646334}
   annotationPub: {fileID: 69086303}
   head: {fileID: 594463173}
-  sendHeadAsAnnotation: 1
+  sendHeadAsAnnotation: 0
+  skipFrames: 0
 --- !u!4 &856017571
 Transform:
   m_ObjectHideFlags: 0

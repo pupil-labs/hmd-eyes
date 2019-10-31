@@ -21,9 +21,17 @@ namespace PupilLabs.Demos
 
             UpdateText(connected);
 
+            if (connected && Input.GetKeyDown(KeyCode.A))
+            {
+                SendSimpleAnnotation("Key A Pressed");
+            }
+
             if (connected && sendHeadAsAnnotation)
             {
-                SendExampleAnnotations();
+                if (Time.frameCount % 10 == 0)
+                {
+                    SendHeadPosAnnotations(); //limit annotation rate
+                }
             }
         }
 
@@ -33,14 +41,14 @@ namespace PupilLabs.Demos
 
             if (connected)
             {
-                text.text += "\n\nPress R to Start/Stop the recording.";
+                text.text += "\n\nPress R to Start/Stop the recording and A to send an annotation.";
 
                 var status = recorder.IsRecording ? "recording" : "not recording";
                 text.text += $"\n\nStatus: {status}";
             }
         }
 
-        void SendExampleAnnotations()
+        void SendHeadPosAnnotations()
         {
             Dictionary<string, object> headData = new Dictionary<string, object>();
 
@@ -49,6 +57,11 @@ namespace PupilLabs.Demos
             headData["head_world_z"] = head.position.z;
 
             annotationPub.SendAnnotation(label: "head pos", customData: headData);
+        }
+
+        void SendSimpleAnnotation(string label)
+        {
+            annotationPub.SendAnnotation(label: label);
         }
     }
 }
