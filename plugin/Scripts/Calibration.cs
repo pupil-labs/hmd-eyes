@@ -114,6 +114,14 @@ namespace PupilLabs
             Send(new Dictionary<string, object> { { "subject", "calibration.should_stop" } });
         }
 
+        public void Destroy()
+        {
+            if (publisher != null)
+            {
+                publisher.Destroy();
+            }
+        }
+
         private void Send(Dictionary<string, object> data)
         {
             string topic = "notify." + data["subject"];

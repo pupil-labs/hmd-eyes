@@ -9,6 +9,7 @@ public class RequestEditor : Editor
     private SerializedProperty ipProp;
     private SerializedProperty portProp;
     private SerializedProperty versionProp;
+    private SerializedProperty statusProb;
     private SerializedProperty isConnectingProb;
 
     public void OnEnable()
@@ -16,6 +17,7 @@ public class RequestEditor : Editor
         SerializedProperty requestProp = serializedObject.FindProperty("request");
         ipProp = requestProp.FindPropertyRelative("IP");
         portProp = requestProp.FindPropertyRelative("PORT");
+        statusProb = requestProp.FindPropertyRelative("status");
 
         isConnectingProb = serializedObject.FindProperty("isConnecting");
         versionProp = serializedObject.FindProperty("PupilVersion");
@@ -31,6 +33,7 @@ public class RequestEditor : Editor
         // request
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Connection", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Status",statusProb.stringValue);
         EditorGUILayout.PropertyField(ipProp,new GUIContent("IP"));
         EditorGUILayout.PropertyField(portProp,new GUIContent("PORT"));
         EditorGUILayout.LabelField("Pupil Version",versionProp.stringValue);

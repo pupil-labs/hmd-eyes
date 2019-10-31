@@ -79,6 +79,14 @@ namespace PupilLabs
             );   
         }
 
+        void OnApplicationQuit()
+        {
+            if (publisher != null)
+            {
+                publisher.Destroy();
+            }
+        }
+
         void ReadbackDone(AsyncGPUReadbackRequest r, double timestamp)
         {
             if (StreamTexture == null)

@@ -14,13 +14,14 @@ namespace PupilLabs
     {
         [SerializeField][HideInInspector]
         private Request request;
-        
+
         [Header("Settings")]
         public float retryConnectDelay = 5f;
         public bool connectOnEnable = true;
 
-        public event Action OnConnected = delegate {};
-        public event Action OnDisconnecting = delegate {};
+        public event Action OnConnected = delegate { };
+        public event Action OnDisconnecting = delegate { };
+        public event Action OnReconnect = delegate { };
 
         public bool IsConnected
         {
@@ -56,6 +57,13 @@ namespace PupilLabs
             return request.GetPubConnectionString();
         }
 
+        void Awake()
+        {
+            request.OnReconnect += RunReconnect;
+
+            NetMQCleanup.MonitorConnection(this);
+        }
+
         void OnEnable()
         {
             if (request == null)
@@ -66,19 +74,23 @@ namespace PupilLabs
             PupilVersion = "not connected";
             if (!request.IsConnected && connectOnEnable)
             {
-                RunConnect();
+                RunConnect(3f);
             }
         }
 
         void OnDisable()
         {
-            if (request.IsConnected)
-            {
-                Disconnect();
-            }
+            Disconnect();
         }
 
-        public void RunConnect()
+        void OnDestroy()
+        {
+            Disconnect();
+
+            NetMQCleanup.CleanupConnection(this);
+        }
+
+        public void RunConnect(float delay = 0)
         {
             if (isConnecting)
             {
@@ -98,14 +110,14 @@ namespace PupilLabs
                 return;
             }
 
-            StartCoroutine(Connect(retry: true));
+            StartCoroutine(Connect(retry: true, delay: delay));
         }
 
-        private IEnumerator Connect(bool retry = false)
+        private IEnumerator Connect(bool retry = false, float delay = 0)
         {
             isConnecting = true;
 
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(delay);
 
             connectingDone = false;
 
@@ -115,7 +127,7 @@ namespace PupilLabs
 
                 if (!request.IsConnected)
                 {
-                    request.TerminateContext();
+                    request.Close();
 
                     if (retry)
                     {
@@ -139,9 +151,22 @@ namespace PupilLabs
             yield break;
         }
 
+        private void RunReconnect()
+        {
+            StartCoroutine(Reconnect());
+        }
+
+        private IEnumerator Reconnect()
+        {
+            Debug.Log("Reconnecting");
+            yield return StartCoroutine(request.UpdatePorts());
+
+            OnReconnect();
+        }
+
         private void Connected()
         {
-            Debug.Log(" Succesfully connected to Pupil! ");
+            Debug.Log("Succesfully connected to Pupil! ");
 
             UpdatePupilVersion();
 
@@ -155,14 +180,14 @@ namespace PupilLabs
 
         public void Disconnect()
         {
+            if (!IsConnected)
+            {
+                return;
+            }
+
             OnDisconnecting();
 
-            request.CloseSockets();
-        }
-
-        public void OnDestroy()
-        {
-            request.TerminateContext();
+            request.Close();
         }
 
         public void Send(Dictionary<string, object> dictionary)
@@ -178,7 +203,7 @@ namespace PupilLabs
 
         public bool SendCommand(string command, out string response)
         {
-            return request.SendCommand(command,out response);
+            return request.SendCommand(command, out response);
         }
 
         public void StartEyeProcesses()

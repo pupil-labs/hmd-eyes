@@ -7,7 +7,6 @@ using System.IO;
 
 namespace PupilLabs
 {
-
     public partial class SubscriptionsController : MonoBehaviour
     {
         private class Subscription
@@ -26,11 +25,24 @@ namespace PupilLabs
 
             public Subscription(string connection, string topic)
             {
+                Setup(connection, topic);
+            }
+
+            public void Setup(string connection, string topic)
+            {
+                Close();
+
                 this.topic = topic;
+
                 socket = new SubscriberSocket(connection);
                 socket.Subscribe(topic);
 
                 socket.ReceiveReady += ParseData;
+            }
+
+            public void Reconnect(string connection)
+            {
+                Setup(connection, this.topic);
             }
 
             public void ParseData(object s, NetMQSocketEventArgs eventArgs)
@@ -65,7 +77,10 @@ namespace PupilLabs
 
             public void Close()
             {
-                socket.Close();
+                if (socket != null)
+                {
+                    socket.Close();
+                }
             }
         }
     }

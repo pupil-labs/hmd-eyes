@@ -158,6 +158,11 @@ namespace PupilLabs
             subsCtrl.OnDisconnecting -= StopCalibration;
         }
 
+        void OnApplicationQuit()
+        {
+            calibration.Destroy();
+        }
+
         private void UpdateCalibration()
         {
             UpdateMarker();
