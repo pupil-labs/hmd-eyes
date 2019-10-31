@@ -28,8 +28,6 @@ namespace PupilLabs
                 enabled = false;
                 return;
             }
-
-            requestCtrl.OnReconnect += Reconnect;
         }
 
         void OnApplicationQuit()
@@ -100,16 +98,6 @@ namespace PupilLabs
                 {
                     CloseSubscriptionSocket(topic);
                 }
-            }
-        }
-
-        private void Reconnect()
-        {
-            string newConnectionString = requestCtrl.GetSubConnectionString();
-
-            foreach (var subscription in subscriptions.Values)
-            {
-                subscription.Reconnect(newConnectionString);
             }
         }
 

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using NetMQ;
 using NetMQ.Sockets;
-using NetMQ.Monitoring;
 using MessagePack;
 
 namespace PupilLabs
@@ -23,13 +22,10 @@ namespace PupilLabs
             private string pubport;
 
             private RequestSocket requestSocket = null;
-            NetMQMonitor monitor;
             private float timeout = 1f;
             private TimeSpan requestTimeout = new System.TimeSpan(0, 0, 1); //= 1sec
 
             public bool IsConnected { get; set; }
-
-            public event Action OnReconnect = delegate { };
 
             public string GetSubConnectionString()
             {
@@ -51,11 +47,6 @@ namespace PupilLabs
                 requestSocket = new RequestSocket(IPHeader + PORT);
 
                 yield return UpdatePorts();
-
-                if (IsConnected)
-                {
-                    SetupMonitor();
-                }
             }
 
             public IEnumerator UpdatePorts()
@@ -103,38 +94,8 @@ namespace PupilLabs
                 }
             }
 
-            private void SetupMonitor()
-            {
-                monitor = new NetMQMonitor(requestSocket, $"inproc://req{this.GetHashCode()}.inproc", SocketEvents.Connected | SocketEvents.Disconnected | SocketEvents.Closed);
-                monitor.Closed += (s, e) =>
-                {
-                    Debug.LogWarning($" {e.SocketEvent.ToString()}");
-                    status = "Closed";
-                };
-
-                monitor.Disconnected += (s, e) =>
-                {
-                    Debug.LogWarning($"{e.SocketEvent.ToString()}");
-                };
-
-                monitor.Connected += (s, e) =>
-                {
-                    Debug.LogWarning($"{e.SocketEvent.ToString()}");
-                    status = "Connected";
-
-                    OnReconnect();
-                };
-
-                monitor.StartAsync();
-            }
-
             public void Close()
             {
-                if (monitor != null)
-                {
-                    monitor.Stop();
-                    monitor.Dispose();
-                }
                 if (requestSocket != null)
                 {
                     requestSocket.Close();

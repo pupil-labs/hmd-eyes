@@ -40,11 +40,6 @@ namespace PupilLabs
                 socket.ReceiveReady += ParseData;
             }
 
-            public void Reconnect(string connection)
-            {
-                Setup(connection, this.topic);
-            }
-
             public void ParseData(object s, NetMQSocketEventArgs eventArgs)
             {
                 NetMQMessage m = new NetMQMessage();

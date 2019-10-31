@@ -21,7 +21,6 @@ namespace PupilLabs
 
         public event Action OnConnected = delegate { };
         public event Action OnDisconnecting = delegate { };
-        public event Action OnReconnect = delegate { };
 
         public bool IsConnected
         {
@@ -58,9 +57,7 @@ namespace PupilLabs
         }
 
         void Awake()
-        {
-            request.OnReconnect += RunReconnect;
-
+        {   
             NetMQCleanup.MonitorConnection(this);
         }
 
@@ -149,19 +146,6 @@ namespace PupilLabs
 #endif
 
             yield break;
-        }
-
-        private void RunReconnect()
-        {
-            StartCoroutine(Reconnect());
-        }
-
-        private IEnumerator Reconnect()
-        {
-            Debug.Log("Reconnecting");
-            yield return StartCoroutine(request.UpdatePorts());
-
-            OnReconnect();
         }
 
         private void Connected()

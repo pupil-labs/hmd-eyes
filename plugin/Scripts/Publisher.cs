@@ -40,8 +40,6 @@ namespace PupilLabs
                 {
                     publisherSocket.Close();
                 }
-
-                requestController.OnReconnect -= Reconnect;
             }    
         }
 
@@ -70,23 +68,7 @@ namespace PupilLabs
         private void Setup()
         {
             publisherSocket = new PublisherSocket(requestController.GetPubConnectionString());
-            requestController.OnReconnect += Reconnect;
             isSetup = true;
-        }
-
-        private void Reconnect()
-        {
-            if (requestController == null)
-            {
-                return;
-            }
-
-            if (publisherSocket != null)
-            {
-                publisherSocket.Close();
-            }
-
-            publisherSocket = new PublisherSocket(requestController.GetPubConnectionString());
         }
     }
 }
