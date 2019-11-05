@@ -3,26 +3,33 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace PupilLabs
 {
 
     public partial class RequestController : MonoBehaviour
     {
-        [Header("IP & Port")]
-        [SerializeField]
+        [SerializeField][HideInInspector]
         private Request request;
+
         [Header("Settings")]
         public float retryConnectDelay = 5f;
         public bool connectOnEnable = true;
 
-        public event Action OnConnected;
-        public event Action OnDisconnecting;
+        public event Action OnConnected = delegate { };
+        public event Action OnDisconnecting = delegate { };
 
         public bool IsConnected
         {
             get { return request.IsConnected && connectingDone; }
         }
         private bool connectingDone;
+        
+        [SerializeField][HideInInspector] 
+        private bool isConnecting = false;
 
         public string IP
         {
@@ -36,6 +43,7 @@ namespace PupilLabs
             set { request.PORT = value; }
         }
 
+        [SerializeField][HideInInspector]
         private string PupilVersion;
 
         public string GetSubConnectionString()
@@ -48,6 +56,11 @@ namespace PupilLabs
             return request.GetPubConnectionString();
         }
 
+        void Awake()
+        {   
+            NetMQCleanup.MonitorConnection(this);
+        }
+
         void OnEnable()
         {
             if (request == null)
@@ -58,20 +71,30 @@ namespace PupilLabs
             PupilVersion = "not connected";
             if (!request.IsConnected && connectOnEnable)
             {
-                RunConnect();
+                RunConnect(3f);
             }
         }
 
         void OnDisable()
         {
-            if (request.IsConnected)
-            {
-                Disconnect();
-            }
+            Disconnect();
         }
 
-        public void RunConnect()
+        void OnDestroy()
         {
+            Disconnect();
+
+            NetMQCleanup.CleanupConnection(this);
+        }
+
+        public void RunConnect(float delay = 0)
+        {
+            if (isConnecting)
+            {
+                Debug.LogWarning("Already trying to connect!");
+                return;
+            }
+
             if (!enabled)
             {
                 Debug.LogWarning("Component not enabled!");
@@ -84,12 +107,14 @@ namespace PupilLabs
                 return;
             }
 
-            StartCoroutine(Connect(retry: true));
+            StartCoroutine(Connect(retry: true, delay: delay));
         }
 
-        private IEnumerator Connect(bool retry = false)
+        private IEnumerator Connect(bool retry = false, float delay = 0)
         {
-            yield return new WaitForSeconds(3f);
+            isConnecting = true;
+
+            yield return new WaitForSeconds(delay);
 
             connectingDone = false;
 
@@ -99,7 +124,7 @@ namespace PupilLabs
 
                 if (!request.IsConnected)
                 {
-                    request.TerminateContext();
+                    request.Close();
 
                     if (retry)
                     {
@@ -114,14 +139,18 @@ namespace PupilLabs
                 }
             }
 
+            isConnecting = false;
             Connected();
+#if UNITY_EDITOR
+            EditorUtility.SetDirty(this);
+#endif
 
             yield break;
         }
 
         private void Connected()
         {
-            Debug.Log(" Succesfully connected to Pupil! ");
+            Debug.Log("Succesfully connected to Pupil! ");
 
             UpdatePupilVersion();
 
@@ -130,24 +159,19 @@ namespace PupilLabs
 
             connectingDone = true;
 
-            // RepaintGUI(); //
-            if (OnConnected != null)
-                OnConnected();
+            OnConnected();
         }
 
         public void Disconnect()
         {
-            if (OnDisconnecting != null)
+            if (!IsConnected)
             {
-                OnDisconnecting();
+                return;
             }
 
-            request.CloseSockets();
-        }
+            OnDisconnecting();
 
-        public void OnDestroy()
-        {
-            request.TerminateContext();
+            request.Close();
         }
 
         public void Send(Dictionary<string, object> dictionary)
@@ -163,7 +187,7 @@ namespace PupilLabs
 
         public bool SendCommand(string command, out string response)
         {
-            return request.SendCommand(command,out response);
+            return request.SendCommand(command, out response);
         }
 
         public void StartEyeProcesses()

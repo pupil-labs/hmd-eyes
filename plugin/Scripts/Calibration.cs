@@ -1,7 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using NetMQ.Sockets;
+using NetMQ;
+using MessagePack;
 
 namespace PupilLabs
 {
@@ -15,6 +17,7 @@ namespace PupilLabs
         //members
         SubscriptionsController subsCtrl;
         RequestController requestCtrl;
+        Publisher publisher;
         CalibrationSettings settings;
 
         List<Dictionary<string, object>> calibrationData = new List<Dictionary<string, object>>();
@@ -40,6 +43,7 @@ namespace PupilLabs
             subsCtrl.SubscribeTo("notify.calibration.failed", ReceiveFailure);
 
             requestCtrl.StartPlugin(settings.PluginName);
+            publisher = new Publisher(requestCtrl);
 
             UpdateEyesTranslation();
 
@@ -89,7 +93,7 @@ namespace PupilLabs
         {
             Debug.Log("Send CalibrationReferenceData");
 
-            requestCtrl.Send(new Dictionary<string, object> {
+            Send(new Dictionary<string, object> {
                 { "subject","calibration.add_ref_data" },
                 {
                     "ref_data",
@@ -107,8 +111,22 @@ namespace PupilLabs
 
             IsCalibrating = false;
 
-            requestCtrl.Send(new Dictionary<string, object> { { "subject", "calibration.should_stop" } });
+            Send(new Dictionary<string, object> { { "subject", "calibration.should_stop" } });
         }
+
+        public void Destroy()
+        {
+            if (publisher != null)
+            {
+                publisher.Destroy();
+            }
+        }
+
+        private void Send(Dictionary<string, object> data)
+        {
+            string topic = "notify." + data["subject"];
+            publisher.Send(topic, data);
+        }        
 
         private void UpdateEyesTranslation()
         {

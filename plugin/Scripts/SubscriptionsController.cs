@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -15,6 +15,7 @@ namespace PupilLabs
             get { return !(requestCtrl == null || !requestCtrl.IsConnected); }
         }
 
+        public event Action OnDisconnecting = delegate { };
         public delegate void ReceiveDataDelegate(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null);
 
         private Dictionary<string, Subscription> subscriptions = new Dictionary<string, Subscription>();
@@ -29,7 +30,7 @@ namespace PupilLabs
             }
         }
 
-        void OnDestroy()
+        void OnApplicationQuit()
         {
             if (IsConnected)
             {
@@ -54,6 +55,8 @@ namespace PupilLabs
                 return;
             }
 
+            OnDisconnecting();
+
             foreach (var socketKey in subscriptions.Keys)
             {
                 CloseSubscriptionSocket(socketKey);
@@ -75,7 +78,6 @@ namespace PupilLabs
                 Subscription subscription = new Subscription(connectionStr, topic);
 
                 subscriptions.Add(topic, subscription);
-                // subscriptions[topic].OnReceiveData += Logging; 
             }
 
             subscriptions[topic].OnReceiveData += subscriberHandler;

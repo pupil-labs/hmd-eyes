@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PupilLabs
 {
-    [HelpURL("https://github.com/pupil-labs/hmd-eyes")]
+    [HelpURL("https://github.com/pupil-labs/hmd-eyes/blob/master/docs/Developer.md#recording-data")]
     public class RecordingController : MonoBehaviour
     {
         public RequestController requestCtrl;

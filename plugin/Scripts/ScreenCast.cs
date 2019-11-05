@@ -22,7 +22,7 @@ namespace PupilLabs
 
         public Texture2D StreamTexture { get; private set; }
 
-        PublisherSocket pubSocket;
+        Publisher publisher;
         RenderTexture renderTexture;
         bool isSetup = false;
         int index = 0;
@@ -53,8 +53,7 @@ namespace PupilLabs
         {
             requestCtrl.StartPlugin("HMD_Streaming_Source");
 
-            string connectionStr = requestCtrl.GetPubConnectionString();
-            pubSocket = new PublisherSocket(connectionStr);
+            publisher = new Publisher(requestCtrl);
 
             isSetup = true;
         }
@@ -78,6 +77,14 @@ namespace PupilLabs
                 renderTexture, 0, TextureFormat.RGB24,
                 (AsyncGPUReadbackRequest r) => ReadbackDone(r, timeSync.ConvertToPupilTime(Time.realtimeSinceStartup))
             );   
+        }
+
+        void OnApplicationQuit()
+        {
+            if (publisher != null)
+            {
+                publisher.Destroy();
+            }
         }
 
         void ReadbackDone(AsyncGPUReadbackRequest r, double timestamp)
@@ -105,12 +112,7 @@ namespace PupilLabs
                 {"projection_matrix", intrinsics}
             };
 
-            NetMQMessage m = new NetMQMessage();
-            m.Append(topic);
-            m.Append(MessagePackSerializer.Serialize<Dictionary<string, object>>(payload));
-            m.Append(StreamTexture.GetRawTextureData());
-
-            pubSocket.SendMultipartMessage(m);
+            publisher.Send(topic, payload, StreamTexture.GetRawTextureData());
 
             index++;
         }
