@@ -945,7 +945,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07784a1f038ce37408db5480ffadd7ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 0}
+  controller: {fileID: 3884603122069498156}
   enableAfterCalibration: 1
 --- !u!1 &1081280673
 GameObject:
@@ -2453,6 +2453,7 @@ MonoBehaviour:
   marker: {fileID: 3884603122905388261}
   settings: {fileID: 11400000, guid: 6657b16c70ed7b04d90de3f4966a3770, type: 2}
   targets: {fileID: 11400000, guid: 5dd7fa1e9c0861a4ea3d4a5a4f066f15, type: 2}
+  showPreview: 0
 --- !u!1 &3884603122069498157
 GameObject:
   m_ObjectHideFlags: 0
@@ -2726,7 +2727,7 @@ PrefabInstance:
         type: 3}
       propertyPath: cameraAsParent
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1923697938}
     - target: {fileID: 4642495214453592290, guid: 2c67456b2479c16409bdee4d0f3fd472,
         type: 3}
       propertyPath: controller
