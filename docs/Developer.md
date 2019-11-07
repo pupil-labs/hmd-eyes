@@ -46,7 +46,7 @@ Be aware that Pupil Capture sends out data packages in small bundles with a slig
 
 In contrast [Pupil Service](https://docs.pupil-labs.com/#pupil-service) features a simplified GUI and a toolset tailored towards low-latency real-time data access.
 
-Please refer to the Pupil Software [getting started](https://docs.pupil-labs.com/#capture-workflow) and [user docs](https://docs.pupil-labs.com/#pupil-detection) to ensure that eyes are well captured and that the pupil detection runs with high confidence (~0.8).
+Please refer to the Pupil Software [getting started](https://docs.pupil-labs.com/core/#_2-launch-pupil-capture) and [user guide](https://docs.pupil-labs.com/core/software/pupil-capture/#pupil-detection) to ensure that eyes are well captured and that the pupil detection runs with high confidence (~0.8).
 
 ### Dependencies
 
@@ -145,7 +145,7 @@ Demo: [Blink Demo](#Blink)
 
 The `SubscriptionsController` is the main component to get low-level data access. 
 
-> For the topics [pupil](#pupil-data) and [gaze](#gaze-tracker) we provided additional abstraction with listener classes and high level components.
+> For the topics [pupil](#pupil-data) and [gaze](#gaze-data) we provided additional abstraction with listener classes and high level components.
 
 The **BlinkDemo** is a good starting point for understanding how the low-level communication with Pupil works in case you need access to data not provided by the *Pupil Communication* layer.
 
@@ -183,7 +183,7 @@ Checkout the public properties of the [PupilData.cs](../plugin/Scripts/PupilData
 
 ### Gaze Data
 
-The `GazeListener` works identical to the `PupilListener` - dispatching events containing fully parsed `GazeData` objects. But in order to receive meaningful data it is needed to run a calibration routine beforehand. The whole setup is described in the next [section](#gaze-tracker).
+The `GazeListener` works identical to the `PupilListener` - dispatching events containing fully parsed `GazeData` objects. But in order to receive meaningful data it is needed to run a calibration routine beforehand. The whole setup is described in the next [section](#gaze-tracking).
 
 ## Gaze Tracking
 
@@ -202,7 +202,7 @@ Gaze tracking and mapping gaze data in Unity/VR world space is done via the foll
 In order to know what someone is looking at in the scene, we must establish a mapping between pupil positions and the gaze point. 
 
 Before you calibrate you will need to ensure that eyes are well captured and that the pupil detection runs with high confidence (~0.8).
-Please refer to the Pupil [getting started](https://docs.pupil-labs.com/#capture-workflow) and [user docs](https://docs.pupil-labs.com/#pupil-detection).
+Please refer to the Pupil [getting started](https://docs.pupil-labs.com/core/#_2-launch-pupil-capture) and [user guide](https://docs.pupil-labs.com/core/software/pupil-capture/#pupil-detection).
 
 Use the `FrameVisualizer` component to check that you are capturing a good image in particular of the pupil of the eye. 
 You may need to adjust the headset to ensure you can see the eye in all ranges of eye movements.
