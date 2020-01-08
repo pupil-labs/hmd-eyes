@@ -9,7 +9,7 @@ ctx = zmq.Context()
 
 #create a zmq REQ socket to talk to Pupil Service/Capture
 req = ctx.socket(zmq.REQ)
-req.connect('tcp://localhost:50020')
+req.connect('tcp://127.0.0.1:50020')
 
 
 #convenience functions
