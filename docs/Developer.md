@@ -356,6 +356,8 @@ Make sure the camera uses the VR head transform as the origin - normally just by
 
 Hmd-eyes provides a prefab called `ScreenCast Camera`, which already contains a centered `Camera` and a `ScreenCast` component - make sure to wire it to your `RequestController` & `TimeSync` component after appending it to your VR camera.
 
+> **Caveat (!)** During a recording, Pupil Capture expects the video stream to contain monotonic timestamps. Manually calling `TimeSync` during a recording can break this assumption and cause Pupil Capture to [crash](https://github.com/pupil-labs/pupil/issues/1826) (Pupil Capture version <`v1.22`) or to [stop the recording](https://github.com/pupil-labs/pupil/pull/1829) (Pupil Capture version >=`v1.23`).
+
 > Performance: Be aware that screen casting can be expensive in terms of performance. In order to not compromise the VR experience, please consider running Pupil Capture on a second machine connected via local network and/or adjust the screen cast resolution.
 
 ### Display Eye Images
