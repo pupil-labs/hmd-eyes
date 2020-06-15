@@ -14,7 +14,7 @@ namespace PupilLabs
         public int samplesPerTarget = 40;
 
 
-        public string PluginName { get { return "HMD_Calibration_3D"; } }
+        public string PluginName { get { return "HMD3DChoreographyPlugin"; } }
         public string PositionKey { get { return "mm_pos"; } }
         public string DetectionMode { get { return "3d"; } }
 
