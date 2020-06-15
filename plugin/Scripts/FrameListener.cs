@@ -16,7 +16,7 @@ namespace PupilLabs
             Debug.Log("Enabling Frame Listener");
 
             subsCtrl.SubscribeTo("frame.eye.", CustomReceiveData);
-            subsCtrl.requestCtrl.StartPlugin("Frame_Publisher");
+            subsCtrl.requestCtrl.StartPlugin("NetworkApiPlugin");
         }
 
         protected override void CustomDisable()
@@ -24,7 +24,6 @@ namespace PupilLabs
             Debug.Log("Disabling Frame Listener");
 
             subsCtrl.UnsubscribeFrom("frame.eye.", CustomReceiveData);
-            subsCtrl.requestCtrl.StopPlugin("Frame_Publisher");
         }
 
         void CustomReceiveData(string topic, Dictionary<string, object> dictionary, byte[] thirdFrame = null)
