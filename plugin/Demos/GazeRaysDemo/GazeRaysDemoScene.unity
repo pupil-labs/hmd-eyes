@@ -2449,7 +2449,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   subsCtrl: {fileID: 3884603121319554452}
   timeSync: {fileID: 8791324678702504027}
-  camera: {fileID: 0}
+  camera: {fileID: 1923697937}
   marker: {fileID: 3884603122905388261}
   settings: {fileID: 11400000, guid: 6657b16c70ed7b04d90de3f4966a3770, type: 2}
   targets: {fileID: 11400000, guid: 5dd7fa1e9c0861a4ea3d4a5a4f066f15, type: 2}
