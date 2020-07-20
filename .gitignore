@@ -6,3 +6,4 @@ plugin/Tests*
 
 # VSCode
 */**/.vscode/*
+.vscode/*
