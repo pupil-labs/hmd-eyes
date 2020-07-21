@@ -73,12 +73,6 @@ namespace PupilLabs
             calibrationData.Add(new Dictionary<string, object>() {
                 { settings.PositionKey, position },
                 { "timestamp", timestamp },
-                { "id", int.Parse(Helpers.rightEyeID) }
-            });
-            calibrationData.Add(new Dictionary<string, object>() {
-                { settings.PositionKey, position },
-                { "timestamp", timestamp },
-                { "id", int.Parse(Helpers.leftEyeID) }
             });
         }
 
