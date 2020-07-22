@@ -46,9 +46,40 @@ namespace PupilLabs
             calibration.OnCalibrationSucceeded += CalibrationSucceeded;
             calibration.OnCalibrationFailed += CalibrationFailed;
 
-            if (subsCtrl == null || timeSync == null || marker == null || camera == null || settings == null || targets == null)
+            bool allReferencesValid = true;
+            if (subsCtrl == null)
             {
-                Debug.LogWarning("Required components missing.");
+                Debug.LogError("SubscriptionsController reference missing!");
+                allReferencesValid = false;
+            }
+            if (timeSync == null)
+            {
+                Debug.LogError("TimeSync reference missing!");
+                allReferencesValid = false;
+            }
+            if (marker == null)
+            {
+                Debug.LogError("Marker reference missing!");
+                allReferencesValid = false;
+            }
+            if (camera == null)
+            {
+                Debug.LogError("Camera reference missing!");
+                allReferencesValid = false;
+            }
+            if (settings == null)
+            {
+                Debug.LogError("CalibrationSettings reference missing!");
+                allReferencesValid = false;
+            }
+            if (targets == null)
+            {
+                Debug.LogError("CalibrationTargets reference missing!");
+                allReferencesValid = false;
+            }
+            if (!allReferencesValid)
+            {
+                Debug.LogError("CalibrationController is missing required references to other components. Please connect the references, or the component won't work correctly.");
                 enabled = false;
                 return;
             }
@@ -258,7 +289,7 @@ namespace PupilLabs
             {
                 return;
             }
-            
+
             Gizmos.matrix = camera.transform.localToWorldMatrix;
             for (int i = 0; i < targets.GetTargetCount(); ++i)
             {

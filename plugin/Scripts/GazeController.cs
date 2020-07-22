@@ -8,14 +8,14 @@ namespace PupilLabs
         public SubscriptionsController subscriptionsController;
 
         public event Action<GazeData> OnReceive3dGaze;
-        
+
         GazeListener listener;
 
         void OnEnable()
         {
             if (subscriptionsController == null)
             {
-                Debug.LogWarning("Required components missing.");
+                Debug.LogError("GazeController is missing the required SubscriptionsController reference. Please connect the reference, or the component won't work correctly.");
                 enabled = false;
                 return;
             }
@@ -25,8 +25,8 @@ namespace PupilLabs
                 listener = new GazeListener(subscriptionsController);
                 listener.OnReceive3dGaze += Forward3dGaze;
             }
-            
-            listener.Enable();            
+
+            listener.Enable();
         }
 
         void OnDisable()

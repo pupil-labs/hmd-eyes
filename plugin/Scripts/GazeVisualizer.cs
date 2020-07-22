@@ -36,27 +36,41 @@ namespace PupilLabs
 
         void OnEnable()
         {
-            if (projectionMarker == null || gazeDirectionMarker == null)
+            bool allReferencesValid = true;
+            if (projectionMarker == null)
             {
-                Debug.LogWarning("Marker reference missing.");
+                Debug.LogError("ProjectionMarker reference missing!");
+                allReferencesValid = false;
+            }
+            if (gazeDirectionMarker == null)
+            {
+                Debug.LogError("GazeDirectionMarker reference missing!");
+                allReferencesValid = false;
+            }
+            if (gazeOrigin == null)
+            {
+                Debug.LogError("GazeOrigin reference missing!");
+                allReferencesValid = false;
+            }
+            if (gazeController == null)
+            {
+                Debug.LogError("GazeController reference missing!");
+                allReferencesValid = false;
+            }
+            if (!allReferencesValid)
+            {
+                Debug.LogError("GazeVisualizer is missing required references to other components. Please connect the references, or the component won't work correctly.");
                 enabled = false;
                 return;
             }
+
             origMarkerScale = gazeDirectionMarker.localScale;
-
-            if (gazeOrigin == null || gazeController == null)
-            {
-                Debug.LogWarning("Required components missing.");
-                enabled = false;
-                return;
-            }
-
             targetRenderer = gazeDirectionMarker.GetComponent<MeshRenderer>();
 
             StartVisualizing();
         }
 
-        void OnDisable() 
+        void OnDisable()
         {
             if (gazeDirectionMarker != null)
             {
@@ -136,7 +150,7 @@ namespace PupilLabs
             {
                 return;
             }
-            
+
             localGazeDirection = gazeData.GazeDirection;
             gazeDistance = gazeData.GazeDistance;
         }
@@ -154,7 +168,7 @@ namespace PupilLabs
         void ShowProjected()
         {
             gazeDirectionMarker.localScale = origMarkerScale;
-            
+
             Vector3 origin = gazeOrigin.position;
             Vector3 direction = gazeOrigin.TransformDirection(localGazeDirection);
 

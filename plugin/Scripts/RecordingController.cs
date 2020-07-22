@@ -24,7 +24,7 @@ namespace PupilLabs
         {
             if (requestCtrl == null)
             {
-                Debug.LogWarning("Request Controller missing");
+                Debug.LogError("RecordingController is missing the required RequestController reference. Please connect the reference, or the component won't work correctly.");
                 enabled = false;
                 return;
             }
