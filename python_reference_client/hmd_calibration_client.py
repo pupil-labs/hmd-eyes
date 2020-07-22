@@ -39,11 +39,11 @@ n = {"subject": "start_plugin", "name": "HMD3DChoreographyPlugin", "args": {}}
 print(send_recv_notification(n))
 
 # start caliration routine with params. This will make pupil start sampeling pupil data.
-# the eye-translations have to be in mm
+# the eye-translations have to be in mm, these here are default values from Unity XR
 n = {
     "subject": "calibration.should_start",
-    "translation_eye0": [27.84765, 0.0, 0.0],
-    "translation_eye1": [-27.84765, 0.0, 0.0],
+    "translation_eye0": [34.75, 0.0, 0.0],
+    "translation_eye1": [-34.75, 0.0, 0.0],
     "record": True,
 }
 print(send_recv_notification(n))
