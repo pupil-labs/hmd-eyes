@@ -9,14 +9,17 @@ namespace PupilLabs
     {
         public event Action<int, byte[]> OnReceiveEyeFrame;
 
-        public FrameListener(SubscriptionsController subsCtrl) : base(subsCtrl) {}
+        public FrameListener(SubscriptionsController subsCtrl) : base(subsCtrl) { }
 
         protected override void CustomEnable()
         {
             Debug.Log("Enabling Frame Listener");
 
             subsCtrl.SubscribeTo("frame.eye.", CustomReceiveData);
-            subsCtrl.requestCtrl.StartPlugin("NetworkApiPlugin");
+            subsCtrl.requestCtrl.Send(new Dictionary<string, object> {
+                {"subject", "frame_publishing.set_format"},
+                {"format", "jpeg"}
+            });
         }
 
         protected override void CustomDisable()
