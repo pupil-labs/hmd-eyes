@@ -10,7 +10,7 @@ namespace PupilLabs
         public Transform cameraAsParent;
         public Material eyeFrameMaterial;
         [Header("Settings")]
-        [Tooltip("Used for adjusting the Eye Frames, restart needed!")]
+        [Tooltip("Used for adjusting the Eye Frames. Changes require restarting play mode!")]
         public bool model200Hz;
 
         public int targetFPS = 20;
@@ -142,5 +142,4 @@ namespace PupilLabs
         }
     }
 }
-
 
