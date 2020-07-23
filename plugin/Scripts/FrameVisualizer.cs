@@ -10,7 +10,7 @@ namespace PupilLabs
         public Transform cameraAsParent;
         public Material eyeFrameMaterial;
         [Header("Settings")]
-        [Tooltip("Used for adjusting the Eye Frames, restart needed!")] 
+        [Tooltip("Used for adjusting the Eye Frames. Changes require restarting play mode!")]
         public bool model200Hz;
 
         public int targetFPS = 20;
@@ -24,9 +24,25 @@ namespace PupilLabs
 
         void OnEnable()
         {
-            if (cameraAsParent == null || subscriptionsController == null || eyeFrameMaterial == null)
+            bool allReferencesValid = true;
+            if (cameraAsParent == null)
             {
-                Debug.LogWarning("Required components missing!");
+                Debug.LogError("Camera reference 'cameraAsParent' missing!");
+                allReferencesValid = false;
+            }
+            if (subscriptionsController == null)
+            {
+                Debug.LogError("SubscriptionsController reference missing!");
+                allReferencesValid = false;
+            }
+            if (eyeFrameMaterial == null)
+            {
+                Debug.LogError("EyeFrameMaterial reference missing!");
+                allReferencesValid = false;
+            }
+            if (!allReferencesValid)
+            {
+                Debug.LogError("FrameVisualizer is missing required references to other components. Please connect the references, or the component won't work correctly.");
                 enabled = false;
                 return;
             }
@@ -126,5 +142,4 @@ namespace PupilLabs
         }
     }
 }
-
 

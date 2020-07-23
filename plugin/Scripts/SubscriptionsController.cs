@@ -24,7 +24,7 @@ namespace PupilLabs
         {
             if (requestCtrl == null)
             {
-                Debug.LogWarning("RequestController missing!");
+                Debug.LogError("SubscriptionsController is missing the required RequestController reference. Please connect the reference, or the component won't work correctly.");
                 enabled = false;
                 return;
             }
