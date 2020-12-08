@@ -196,7 +196,8 @@ namespace PupilLabs
             if (context == GazeMappingContext.Binocular)
             {
                 var binoDic = dictionary["eye_centers_3d"] as Dictionary<object, object>;
-                vecObj = binoDic[eye];
+                // Starting with Pupil 3.0, all keys are strings
+                vecObj = binoDic.ContainsKey(eye) ? binoDic[eye] : binoDic[eye.ToString()];
             }
             else
             {
@@ -214,7 +215,8 @@ namespace PupilLabs
             if (context == GazeMappingContext.Binocular)
             {
                 var binoDic = dictionary["gaze_normals_3d"] as Dictionary<object, object>;
-                vecObj = binoDic[eye];
+                // Starting with Pupil 3.0, all keys are strings
+                vecObj = binoDic.ContainsKey(eye) ? binoDic[eye] : binoDic[eye.ToString()];
             }
             else
             {
