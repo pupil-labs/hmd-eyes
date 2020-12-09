@@ -34,7 +34,7 @@ namespace PupilLabs
         /// <summary>
         /// Diameter of the pupil in image pixels as observed in the eye image frame (is not corrected for perspective)
         /// </summary>
-        public float Diameter { get; private set; } 
+        public float Diameter { get; private set; }
 
         /// <summary>
         /// Pupil ellipse in eye camera image coordinate system.
@@ -50,7 +50,7 @@ namespace PupilLabs
         /// <summary>
         /// Confidence of the current eye model (0-1)
         /// </summary>
-        public float ModelConfidence { get; private set; } 
+        public float ModelConfidence { get; private set; }
         /// <summary>
         /// Id of the current eye model. 
         /// When a slippage is detected the model is replaced and the id changes.
@@ -125,9 +125,15 @@ namespace PupilLabs
             //+3d
             if (Method.Contains("3d"))
             {
-                ModelId = Helpers.StringFromDictionary(dictionary, "model_id");
+                // Starting with Pupil 3.0, pye3d is used as 3d pupil detector. Its generated data does no
+                // longer include the keys model_id and model_birth_timestamp. We handle the missing data
+                // by filling a default value.
+                ModelId = dictionary.ContainsKey("model_id") ?
+                    Helpers.StringFromDictionary(dictionary, "model_id") : "0";
+                ModelBirthTimestamp = dictionary.ContainsKey("model_birth_timestamp") ?
+                    Helpers.DoubleFromDictionary(dictionary, "model_birth_timestamp") : 0.0;
+
                 ModelConfidence = Helpers.FloatFromDictionary(dictionary, "model_confidence");
-                ModelBirthTimestamp = Helpers.DoubleFromDictionary(dictionary, "model_birth_timestamp");
                 Diameter3d = Helpers.FloatFromDictionary(dictionary, "diameter_3d");
 
                 TryExtractCircle3d(dictionary);
