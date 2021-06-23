@@ -104,16 +104,16 @@ namespace PupilLabs.Demos
                 return;
             }
 
-            if (data.IsEyeDataAvailable(0))
-            {
-                gazeNormalLeft = data.GazeNormal0;
-                eyeCenterLeft = data.EyeCenter0;
-            }
-
             if (data.IsEyeDataAvailable(1))
             {
-                gazeNormalRight = data.GazeNormal1;
-                eyeCenterRight = data.EyeCenter1;
+                gazeNormalLeft = data.GazeNormal1;
+                eyeCenterLeft = data.EyeCenter1;
+            }
+
+            if (data.IsEyeDataAvailable(0))
+            {
+                gazeNormalRight = data.GazeNormal0;
+                eyeCenterRight = data.EyeCenter0;
             }
         }
     }
