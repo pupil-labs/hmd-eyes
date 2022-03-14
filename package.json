@@ -1,0 +1,53 @@
+{
+    "name": "com.pupillabs.hmdeyes",
+    "version": "1.4.0",
+    "description": "Pupil Labs HMD Eyes for Unity Desktop",
+    "displayName": "Pupil Labs HMD Eyes for Unity Desktop",
+    "unity": "2020.3",
+    "author": {
+        "name": "Pupil Labs"
+    },
+    "documentationUrl": "https://github.com/pupil-labs/hmd-eyes",
+    "samples": [
+        {
+            "displayName": "BlinkDemo",
+            "description": "Blink Demo",
+            "path": "Samples~/BlinkDemo"
+        },
+        {
+            "displayName": "DataRecordingDemo",
+            "description": "Data Recording Demo",
+            "path": "Samples~/DataRecordingDemo"
+        },
+        {
+            "displayName": "FramePublisherDemo",
+            "description": "Frame Publisher Demo",
+            "path": "Samples~/FramePublisherDemo"
+        },
+        {
+            "displayName": "GazeDemo",
+            "description": "Gaze Demo",
+            "path": "Samples~/GazeDemo"
+        },
+        {
+            "displayName": "GazeRaysDemo",
+            "description": "Gaze Rays Demo",
+            "path": "Samples~/GazeRaysDemo"
+        },
+        {
+            "displayName": "PupilDataDemo",
+            "description": "Pupil Data Demo",
+            "path": "Samples~/PupilDataDemo"
+        },
+        {
+            "displayName": "SceneManagement",
+            "description": "Scene Management",
+            "path": "Samples~/SceneManagement"
+        },
+        {
+            "displayName": "ScreenCastDemo",
+            "description": "Screen Cast Demo",
+            "path": "Samples~/ScreenCastDemo"
+        }
+    ]
+}
