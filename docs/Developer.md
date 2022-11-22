@@ -254,8 +254,9 @@ The `GazeData.MappingContext` indicates if the gaze estimation is based on `Bino
 This distinction is important for the following reasons:
 
 * `GazeDistance` is unknown for monocular therefore based on the last available binocular gaze estimate. 
-* Origin of the `GazeDirection` (Monocular -> EyeCenter of corresponding eye, Binocular in the Center)
 * Availability of EyeCenter/GazeNormal (Binocular for both eyes, Monocular only for the corresponding eye)
+
+The origin of the `GazeDirection` is always the origin of the local heads camera space.
 
 #### GazeDirection + GazeDistance instead of GazePoint3d
 
